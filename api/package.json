@@ -6,7 +6,8 @@
   "main": "src/functions/*.js",
   "scripts": {
     "start": "func start",
-    "test": "node --test"
+    "smoke": "node scripts/smoke-test.js",
+    "test": "node --test test/errors.test.js test/validators.test.js"
   },
   "dependencies": {
     "@azure/functions": "^4.6.0",

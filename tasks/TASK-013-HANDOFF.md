@@ -11,6 +11,10 @@ Verificacion ejecutada:
 - Leido docs/API_CONTRACTS.md.
 - Leido tasks/TASK-013.md.
 - Leido tasks/TASK-009-HANDOFF.md.
+- Leido tasks/TASK-016-HANDOFF.md.
+- Leido tasks/TASK-017-HANDOFF.md.
+- Leido api/README.md.
+- Leido api/scripts/smoke-test.js.
 - Revisada estructura API en api/.
 - Ejecutado `npm test` en api/.
 - Confirmado que api/local.settings.json no existe.
@@ -19,7 +23,7 @@ Verificacion ejecutada:
 
 Resultado:
 - No aprobado.
-- La API base ya existe y las pruebas unitarias pasan.
+- La API base ya existe, tiene dependencias instaladas segun TASK-017, smoke test preparado y las pruebas unitarias pasan.
 - No se pudo ejecutar validacion end-to-end SQL/API porque no hay ambiente local o Azure con SQL accesible desde QA.
 - No se puede confirmar que la base este lista para integracion Web Dev hasta probar endpoints reales contra SQL.
 
@@ -44,6 +48,7 @@ Checks no ejecutados por falta de ambiente:
 - Confirmar `404 COMPANY_NOT_FOUND` con `companyId` distinto a `PILOT_COMPANY_ID`.
 - Confirmar `404 CUSTOMER_NOT_FOUND` contra SQL.
 - Confirmar `400 VALIDATION_ERROR` desde endpoints reales.
+- `npm run smoke`, porque requiere API corriendo contra SQL con `API_BASE_URL`, `SQL_CONNECTION_STRING` y `PILOT_COMPANY_ID`.
 
 Hallazgos:
 - P1: No existe ambiente API/SQL ejecutable para QA; falta `SQL_CONNECTION_STRING` y `PILOT_COMPANY_ID` configurados sin exponer secretos.
@@ -62,7 +67,10 @@ P2/P3:
 
 Evidencia:
 - `tasks/TASK-009-HANDOFF.md` existe y declara endpoints API implementados.
+- `tasks/TASK-016-HANDOFF.md` identifica Azure SQL existente `sqlserver-pj13-brazil/sql-db-puntoclub`, pero indica que no se ejecuto schema/seed ni se configuraron secretos.
+- `tasks/TASK-017-HANDOFF.md` indica API local preparada, dependencias instaladas y smoke test agregado, pero bloqueada para SQL real por falta de conexion segura.
 - `api/package.json` define `npm test` como `node --test`.
+- `api/package.json` define `npm run smoke` como `node scripts/smoke-test.js`.
 - `npm test`: 7/7 tests pasados.
 - `api/local.settings.sample.json` incluye `SQL_CONNECTION_STRING` vacio y `PILOT_COMPANY_ID` esperado como `1`.
 - `api/local.settings.json`: no existe.

@@ -15,6 +15,9 @@
 - TASK-013: Revalidar SQL/API base despues de Backend/API.
 - TASK-016: Inventariar Azure SQL existente y preparar conexion segura.
 - TASK-017: Ejecutar API contra Azure SQL existente y entregar ambiente QA.
+- TASK-019: Aplicar schema/seed en Azure SQL existente con aprobacion explicita.
+- TASK-020: Levantar API con conexion real y ejecutar smoke test.
+- TASK-021: Revalidar SQL/API base contra ambiente real.
 
 ## P1 pre-lanzamiento
 
@@ -23,6 +26,7 @@
 - TASK-014: Preparar creacion real de recursos Azure.
 - TASK-015: Integrar UI de clientes contra API real.
 - TASK-018: Revalidar UI contra API real en ambiente disponible.
+- TASK-022: Revalidar UI contra API real despues de smoke test Backend/API.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 

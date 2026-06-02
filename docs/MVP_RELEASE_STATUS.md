@@ -14,19 +14,19 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-016: Infra / Azure inventaria Azure SQL existente y prepara conexion segura.
-- TASK-013: QA revalida SQL/API base cuando exista API conectada a SQL.
+- TASK-019: Infra / Azure aplica schema/seed en Azure SQL existente con aprobacion explicita.
 
 ### Siguiente
 
-- TASK-017: Backend/API ejecuta API contra Azure SQL existente y entrega comandos/URL QA.
-- TASK-018: Web Dev revalida UI contra API real en ambiente disponible.
+- TASK-020: Backend/API levanta API con conexion real y ejecuta smoke test.
+- TASK-021: QA revalida SQL/API base contra ambiente real.
+- TASK-022: Web Dev revalida UI contra API real.
 
 ### Bloqueado
 
 - QA SQL/API base bloqueado por falta de API ejecutable y base ejecutada.
-- Creacion real de Azure bloqueada hasta confirmar suscripcion y region.
-- Configuracion SQL/API depende de inventariar la Azure SQL Database existente.
+- API/QA/Web end-to-end bloqueados hasta aplicar `database/schema.sql` y `database/seed.sql` en `sqlserver-pj13-brazil/sql-db-puntoclub`.
+- Configuracion runtime bloqueada hasta crear/usar un usuario SQL de aplicacion con permisos minimos y configurar `SQL_CONNECTION_STRING` fuera del repo.
 
 ### Hecho
 
@@ -48,6 +48,9 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-013: QA reintento validacion; no aprobado por falta de SQL/API real accesible.
 - TASK-014: Infra / Azure preparo guia de recursos; pendiente ajustar con DB existente confirmada.
 - TASK-015: Web Dev integro cliente HTTP real; pendiente validar contra API+SQL real.
+- TASK-016: Infra / Azure inventario Azure SQL existente y plan seguro de conexion.
+- TASK-017: Backend/API preparo API local, dependencias y smoke test; bloqueado para SQL real por falta de secreto/DB aplicada.
+- TASK-018: Web Dev revalido UI parcialmente; no aprobado end-to-end por falta de API real.
 
 ## Riesgos principales
 
@@ -58,4 +61,4 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Priorizar TASK-016 y TASK-017. QA no debe repetir validacion hasta que exista API ejecutable conectada a `sqlserver-pj13-brazil/sql-db-puntoclub` con schema/seed aplicados.
+Priorizar TASK-019 con aprobacion explicita del usuario. QA no debe repetir validacion hasta que exista API ejecutable conectada a `sqlserver-pj13-brazil/sql-db-puntoclub` con schema/seed aplicados.
