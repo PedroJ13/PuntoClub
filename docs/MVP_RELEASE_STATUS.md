@@ -12,25 +12,31 @@ Persistencia recomendada y aceptada para plan inicial: Azure SQL Database minima
 
 ### Ahora
 
-- TASK-001: Definir MVP y arquitectura inicial.
-- TASK-002: Infra Azure propone recursos y costo minimo.
-- TASK-003: SQL DEV propone modelo SQL inicial.
+- TASK-007: Product / Architect / Release decide auth fase 1 y fuente confiable de companyId.
+- TASK-008: SQL DEV prepara script ejecutable con seed minimo para piloto/QA.
+- TASK-009: Backend/API implementa primera base API contra SQL.
 
 ### Siguiente
 
-- TASK-004: Backend/API propone contratos API MVP.
-- TASK-005: Web Dev propone pantallas MVP.
-- TASK-006: QA prepara checklist MVP.
+- TASK-010: Web Dev implementa busqueda/listado y registro de cliente.
+- TASK-011: Infra / Azure prepara recursos production piloto.
+- TASK-012: QA valida SQL/API base cuando exista ambiente.
 
 ### Bloqueado
 
-- Ninguno documentado.
+- Implementacion end-to-end depende de auth fase 1.
 
 ### Hecho
 
 - Repo GitHub `PedroJ13/PuntoClub` creado y conectado.
 - Chat-start `SQL_DEV.md` creado.
 - Decision de uso real piloto confirmada.
+- TASK-001: MVP y arquitectura inicial definidos.
+- TASK-002: Infra Azure propuso recursos y costo minimo.
+- TASK-003: SQL DEV propuso modelo SQL inicial.
+- TASK-004: Backend/API propuso contratos API MVP.
+- TASK-005: Web Dev propuso pantallas MVP.
+- TASK-006: QA preparo checklist MVP.
 
 ## Riesgos principales
 
@@ -41,4 +47,4 @@ Persistencia recomendada y aceptada para plan inicial: Azure SQL Database minima
 
 ## Siguiente paso recomendado
 
-Procesar TASK-002 y TASK-003 antes de implementar pantallas o API.
+Resolver TASK-007 antes de cerrar implementacion API/Web, mientras SQL DEV y Backend/API pueden avanzar con base tecnica controlada.
