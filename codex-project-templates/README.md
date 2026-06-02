@@ -25,6 +25,17 @@ Estas plantillas son genericas y no pertenecen a un proyecto especifico.
 - `{{UX_RECOMMENDATIONS_DOC}}`
 - `{{OPTIONAL_SKILL_LINE}}`
 
+## Plantillas disponibles
+
+- `PRODUCT_ARCHITECT_RELEASE.md`
+- `BACKEND_API.md`
+- `SQL_DEV.md`
+- `WEB_DEV.md`
+- `INFRA.md`
+- `QA.md`
+- `DISENO_UX.md`
+- `PULSO_PROYECTO.md`
+
 ## Regla base
 
 Mantener los chat-start cortos. El objetivo es orientar al agente, no duplicar toda la documentacion del proyecto.
