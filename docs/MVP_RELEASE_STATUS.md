@@ -12,18 +12,19 @@ Persistencia recomendada y aceptada para plan inicial: Azure SQL Database minima
 
 ### Ahora
 
-- TASK-008: SQL DEV prepara script ejecutable con seed minimo para piloto/QA.
 - TASK-009: Backend/API implementa primera base API contra SQL.
 - TASK-010: Web Dev implementa busqueda/listado y registro de cliente.
+- TASK-013: QA revalida SQL/API base cuando Backend/API entregue TASK-009.
 
 ### Siguiente
 
-- TASK-011: Infra / Azure prepara recursos production piloto.
-- TASK-012: QA valida SQL/API base cuando exista ambiente.
+- TASK-014: Infra / Azure prepara creacion real de recursos cuando se confirme suscripcion/region.
+- TASK-015: Web Dev integra cliente contra API real cuando TASK-009 este aprobado.
 
 ### Bloqueado
 
-- QA end-to-end depende de SQL/API base y ambiente disponible.
+- QA SQL/API base bloqueado por falta de API ejecutable y base ejecutada.
+- Creacion real de Azure bloqueada hasta confirmar suscripcion y region.
 
 ### Hecho
 
@@ -37,6 +38,9 @@ Persistencia recomendada y aceptada para plan inicial: Azure SQL Database minima
 - TASK-005: Web Dev propuso pantallas MVP.
 - TASK-006: QA preparo checklist MVP.
 - TASK-007: Product / Architect / Release decidio auth fase 1 y fuente confiable de companyId.
+- TASK-008: SQL DEV preparo seed minimo para empresa piloto.
+- TASK-011: Infra / Azure preparo plan production piloto.
+- TASK-012: QA intento validar SQL/API base; no aprobado por falta de API/ambiente.
 
 ## Riesgos principales
 
@@ -47,4 +51,4 @@ Persistencia recomendada y aceptada para plan inicial: Azure SQL Database minima
 
 ## Siguiente paso recomendado
 
-Continuar TASK-008, TASK-009 y TASK-010. Backend/API debe aplicar `PILOT_COMPANY_ID` server-side.
+Priorizar TASK-009. QA no debe repetir validacion hasta que exista API ejecutable y schema/seed ejecutados en una base accesible.

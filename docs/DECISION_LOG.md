@@ -41,3 +41,11 @@ Motivo: Desbloquea el piloto real sin construir todavia registro publico, aproba
 Impacto: Los contratos mantienen `/api/companies/{companyId}` para no romper la forma multiempresa futura, pero Backend/API debe validar que el `companyId` del path coincide con el `PILOT_COMPANY_ID` configurado. Si no coincide, debe responder `404 COMPANY_NOT_FOUND`. Web Dev puede usar un `companyId` configurado no editable para construir rutas, pero no debe tratarlo como autoridad de seguridad.
 
 Riesgo aceptado: El MVP no resuelve usuarios/roles por empresa. Para piloto controlado, el acceso a la app debe limitarse operativamente usando el mecanismo disponible de Azure Static Web Apps o controles de despliegue, y la API mantiene la proteccion minima validando contra configuracion server-side.
+
+## 2026-06-02 - Key Vault y storage de logos diferidos para piloto minimo
+
+Decision: Para el piloto minimo, Key Vault y storage propio de logos quedan diferidos. Los secretos se manejaran como app settings seguros de Azure Functions y Static Web Apps. Los logos usaran URL externa o quedaran fuera hasta decision especifica.
+
+Motivo: Mantener costo y complejidad bajos mientras se valida el flujo principal de clientes, compras, puntos y redenciones.
+
+Impacto: Infra / Azure no debe crear Key Vault ni storage de logos salvo nueva decision. Si aparecen mas secretos, staging permanente, rotacion o carga propia de logos, se reabre como P1 pre-lanzamiento.

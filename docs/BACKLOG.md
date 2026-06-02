@@ -12,14 +12,16 @@
 - TASK-008: Preparar SQL ejecutable con seed minimo para piloto/QA.
 - TASK-009: Implementar base API contra SQL.
 - TASK-010: Implementar busqueda/listado y registro de cliente.
+- TASK-013: Revalidar SQL/API base despues de Backend/API.
 
 ## P1 pre-lanzamiento
 
 - TASK-011: Preparar recursos Azure production piloto.
 - TASK-012: Validar SQL/API base en ambiente disponible.
+- TASK-014: Preparar creacion real de recursos Azure.
+- TASK-015: Integrar UI de clientes contra API real.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
-- Preparar datos seed para QA.
 
 ## P2 recomendable
 
