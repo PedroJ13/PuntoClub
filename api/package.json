@@ -1,0 +1,16 @@
+{
+  "name": "punto-club-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Punto Club MVP API on Azure Functions.",
+  "main": "src/functions/*.js",
+  "scripts": {
+    "start": "func start",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.6.0",
+    "mssql": "^11.0.1"
+  },
+  "devDependencies": {}
+}

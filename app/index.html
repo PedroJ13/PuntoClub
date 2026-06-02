@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Punto Club</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Empresa piloto</p>
+          <h1>Punto Club</h1>
+        </div>
+        <div class="status-pill" id="data-source-status">Mock local</div>
+      </header>
+
+      <main class="workspace" aria-live="polite">
+        <section class="customers-panel" aria-labelledby="customers-title">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Clientes</p>
+              <h2 id="customers-title">Busqueda operativa</h2>
+            </div>
+            <button class="secondary-button" id="clear-search-button" type="button">Limpiar</button>
+          </div>
+
+          <form class="search-form" id="customer-search-form">
+            <label for="customer-search">Telefono, nombre o email</label>
+            <div class="search-row">
+              <input
+                id="customer-search"
+                name="search"
+                type="search"
+                autocomplete="off"
+                placeholder="Ej. 8888, Maria, cliente@correo.com"
+              />
+              <button type="submit">Buscar</button>
+            </div>
+          </form>
+
+          <div id="customers-feedback" class="feedback" hidden></div>
+          <div id="customers-list" class="customers-list"></div>
+        </section>
+
+        <section class="form-panel" aria-labelledby="new-customer-title">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Registro</p>
+              <h2 id="new-customer-title">Nuevo cliente</h2>
+            </div>
+          </div>
+
+          <div id="success-message" class="success-message" hidden></div>
+
+          <form id="new-customer-form" class="customer-form" novalidate>
+            <div class="field">
+              <label for="customer-name">Nombre</label>
+              <input id="customer-name" name="name" maxlength="160" autocomplete="name" />
+              <p class="field-error" id="customer-name-error"></p>
+            </div>
+
+            <div class="field">
+              <label for="customer-phone">Telefono</label>
+              <input id="customer-phone" name="phone" maxlength="32" autocomplete="tel" />
+              <p class="field-error" id="customer-phone-error"></p>
+            </div>
+
+            <div class="field">
+              <label for="customer-email">Email</label>
+              <input id="customer-email" name="email" maxlength="254" autocomplete="email" />
+              <p class="field-error" id="customer-email-error"></p>
+            </div>
+
+            <div id="form-error" class="form-error" hidden></div>
+
+            <div class="form-actions">
+              <button class="secondary-button" id="reset-form-button" type="button">Vaciar</button>
+              <button id="save-customer-button" type="submit">Registrar cliente</button>
+            </div>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

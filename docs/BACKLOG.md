@@ -13,6 +13,8 @@
 - TASK-009: Implementar base API contra SQL.
 - TASK-010: Implementar busqueda/listado y registro de cliente.
 - TASK-013: Revalidar SQL/API base despues de Backend/API.
+- TASK-016: Inventariar Azure SQL existente y preparar conexion segura.
+- TASK-017: Ejecutar API contra Azure SQL existente y entregar ambiente QA.
 
 ## P1 pre-lanzamiento
 
@@ -20,6 +22,7 @@
 - TASK-012: Validar SQL/API base en ambiente disponible.
 - TASK-014: Preparar creacion real de recursos Azure.
 - TASK-015: Integrar UI de clientes contra API real.
+- TASK-018: Revalidar UI contra API real en ambiente disponible.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 

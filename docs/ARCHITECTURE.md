@@ -4,7 +4,7 @@
 
 - Frontend: Azure Static Web Apps.
 - API: Azure Functions.
-- Base de datos: Azure SQL Database minima.
+- Base de datos: Azure SQL Database existente `sqlserver-pj13-brazil/sql-db-puntoclub`.
 - Storage: pendiente de decision para logos.
 - Auth fase 1: modo empresa piloto unica con `PILOT_COMPANY_ID` server-side.
 
@@ -36,6 +36,7 @@ El MVP no implementa multiempresa autoservicio ni usuarios por empresa.
 Decision operativa:
 
 - Configurar `PILOT_COMPANY_ID` en Azure Functions como secreto/config de ambiente.
+- Configurar `SQL_CONNECTION_STRING` contra `sqlserver-pj13-brazil/sql-db-puntoclub` como secreto/config de ambiente.
 - Mantener rutas `/api/companies/{companyId}` para compatibilidad con el modelo futuro.
 - Backend/API debe rechazar cualquier `companyId` que no coincida con `PILOT_COMPANY_ID`.
 - Web Dev puede leer un `companyId` configurado para construir rutas, pero no debe permitir editarlo ni usarlo como control de seguridad.

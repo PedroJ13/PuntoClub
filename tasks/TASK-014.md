@@ -6,7 +6,7 @@ Asignada a Infra / Azure.
 
 ## Contexto
 
-TASK-011 dejo plan production piloto sin crear recursos reales. El usuario ya creo una Azure SQL Database para Punto Club, por lo que Infra / Azure no debe crear otra DB.
+TASK-011 dejo plan production piloto sin crear recursos reales. El usuario ya creo una Azure SQL Database para Punto Club: `sqlserver-pj13-brazil/sql-db-puntoclub`. Infra / Azure no debe crear otra DB.
 
 ## Objetivo
 
