@@ -18,6 +18,9 @@
 - TASK-019: Aplicar schema/seed en Azure SQL existente con aprobacion explicita.
 - TASK-020: Levantar API con conexion real y ejecutar smoke test.
 - TASK-021: Revalidar SQL/API base contra ambiente real.
+- TASK-023: Crear/configurar usuario SQL runtime y connection string segura.
+- TASK-024: Levantar API real y ejecutar smoke test.
+- TASK-025: Revalidar SQL/API real despues de smoke test.
 
 ## P1 pre-lanzamiento
 
@@ -27,6 +30,7 @@
 - TASK-015: Integrar UI de clientes contra API real.
 - TASK-018: Revalidar UI contra API real en ambiente disponible.
 - TASK-022: Revalidar UI contra API real despues de smoke test Backend/API.
+- TASK-026: Revalidar UI contra API real despues de QA.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 

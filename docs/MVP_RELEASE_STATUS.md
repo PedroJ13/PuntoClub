@@ -14,19 +14,19 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-019: Infra / Azure aplica schema/seed en Azure SQL existente con aprobacion explicita.
+- TASK-023: Infra / Azure crea/configura usuario SQL runtime por canal seguro.
 
 ### Siguiente
 
-- TASK-020: Backend/API levanta API con conexion real y ejecuta smoke test.
-- TASK-021: QA revalida SQL/API base contra ambiente real.
-- TASK-022: Web Dev revalida UI contra API real.
+- TASK-024: Backend/API levanta API real y ejecuta smoke test.
+- TASK-025: QA revalida SQL/API real.
+- TASK-026: Web Dev revalida UI contra API real.
 
 ### Bloqueado
 
 - QA SQL/API base bloqueado por falta de API ejecutable y base ejecutada.
-- API/QA/Web end-to-end bloqueados hasta aplicar `database/schema.sql` y `database/seed.sql` en `sqlserver-pj13-brazil/sql-db-puntoclub`.
-- Configuracion runtime bloqueada hasta crear/usar un usuario SQL de aplicacion con permisos minimos y configurar `SQL_CONNECTION_STRING` fuera del repo.
+- API/QA/Web end-to-end bloqueados hasta crear usuario SQL runtime, configurar `SQL_CONNECTION_STRING` fuera del repo y levantar API real.
+- Backend/API local tambien requiere Azure Functions Core Tools o un despliegue Azure Function disponible.
 
 ### Hecho
 
@@ -51,6 +51,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-016: Infra / Azure inventario Azure SQL existente y plan seguro de conexion.
 - TASK-017: Backend/API preparo API local, dependencias y smoke test; bloqueado para SQL real por falta de secreto/DB aplicada.
 - TASK-018: Web Dev revalido UI parcialmente; no aprobado end-to-end por falta de API real.
+- TASK-019: Infra / Azure aplico `database/schema.sql` y `database/seed.sql` en Azure SQL existente.
+- TASK-020: Backend/API intento levantar API real; bloqueado por falta de usuario runtime, `SQL_CONNECTION_STRING` y Azure Functions Core Tools/API desplegada.
+- TASK-021: QA reintento validacion real; no aprobado por falta de API real.
+- TASK-022: Web Dev reintento validacion real; no aprobado por falta de API real.
 
 ## Riesgos principales
 
@@ -61,4 +65,4 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Priorizar TASK-019 con aprobacion explicita del usuario. QA no debe repetir validacion hasta que exista API ejecutable conectada a `sqlserver-pj13-brazil/sql-db-puntoclub` con schema/seed aplicados.
+Priorizar TASK-023. Se requiere apoyo del usuario para definir/generar el password del usuario runtime o un canal seguro equivalente. QA no debe repetir validacion hasta que Backend/API entregue smoke test real exitoso.
