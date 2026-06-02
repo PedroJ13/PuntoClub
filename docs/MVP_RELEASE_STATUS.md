@@ -8,6 +8,8 @@ Decision confirmada: fase 1 sera uso real piloto con empresas, no solo demo.
 
 Persistencia recomendada y aceptada para plan inicial: Azure SQL Database minima.
 
+Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; Infra / Azure debe inventariar y usar la existente.
+
 ## Tablero operativo
 
 ### Ahora
@@ -25,6 +27,7 @@ Persistencia recomendada y aceptada para plan inicial: Azure SQL Database minima
 
 - QA SQL/API base bloqueado por falta de API ejecutable y base ejecutada.
 - Creacion real de Azure bloqueada hasta confirmar suscripcion y region.
+- Configuracion SQL/API depende de inventariar la Azure SQL Database existente.
 
 ### Hecho
 

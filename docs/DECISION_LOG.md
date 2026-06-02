@@ -49,3 +49,11 @@ Decision: Para el piloto minimo, Key Vault y storage propio de logos quedan dife
 Motivo: Mantener costo y complejidad bajos mientras se valida el flujo principal de clientes, compras, puntos y redenciones.
 
 Impacto: Infra / Azure no debe crear Key Vault ni storage de logos salvo nueva decision. Si aparecen mas secretos, staging permanente, rotacion o carga propia de logos, se reabre como P1 pre-lanzamiento.
+
+## 2026-06-02 - Usar Azure SQL Database existente
+
+Decision: El usuario ya creo una Azure SQL Database para Punto Club. Infra / Azure no debe crear otra base de datos SQL para el piloto.
+
+Motivo: Evitar recursos duplicados, costo innecesario y confusion operativa.
+
+Impacto: Infra / Azure debe inventariar la base existente y documentar servidor, database name, region, tier y forma segura de conexion sin guardar secretos. SQL DEV y Backend/API deben usar esa DB como destino para schema, seed y conexion.
