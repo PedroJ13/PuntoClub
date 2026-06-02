@@ -12,7 +12,9 @@ Propuesta inicial Backend/API para MVP. No implementa endpoints.
 - Montos: decimal con 2 posiciones.
 - Puntos: enteros positivos.
 - Timestamps de respuesta: UTC.
-- Auth fase 1 pendiente de decision; hasta definirla, ningun contrato debe confiar en datos de empresa enviados por frontend sin validacion server-side.
+- Auth fase 1: modo empresa piloto unica. La fuente confiable de empresa es `PILOT_COMPANY_ID` configurado server-side.
+- Todas las rutas con `{companyId}` deben validar que el valor del path coincide con `PILOT_COMPANY_ID`; si no coincide, responder `404 COMPANY_NOT_FOUND`.
+- El frontend puede usar un `companyId` configurado para construir rutas, pero no es autoridad de seguridad.
 - `pointsEarned` se calcula server-side como `ROUND(amount * pointsPercentage / 100, 0)` a entero para montos positivos.
 
 ## Formato de error
@@ -319,6 +321,7 @@ Validaciones:
 
 ## Validaciones que dependen de SQL
 
+- Empresa autorizada para MVP: `companyId` del path coincide con `PILOT_COMPANY_ID` configurado server-side.
 - Empresa valida: `Companies.id` existe y `status` permite operar.
 - Cliente pertenece a empresa: FK compuesta `(company_id, customer_id)`.
 - Factura duplicada: indice unico `UX_Purchases_company_invoice`.
@@ -336,5 +339,4 @@ Validaciones:
 
 ## Pendientes de decision
 
-- Auth fase 1 y fuente confiable de `companyId`.
 - Paginacion para listados e historial si el piloto supera volumen basico.

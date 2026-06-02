@@ -31,3 +31,13 @@ Decision: Para MVP, una empresa con `status = inactive` no puede operar. La API 
 Motivo: Mantener comportamiento simple y seguro mientras no existe panel administrativo avanzado.
 
 Impacto: Backend/API debe validar `Companies.status = active` antes de operaciones principales. Web Dev debe mostrar un error operativo claro sin prometer reactivacion autoservicio.
+
+## 2026-06-02 - Auth fase 1 en modo empresa piloto unica
+
+Decision: Para fase 1, Punto Club operara en modo empresa piloto unica. La fuente confiable de `companyId` sera configuracion server-side de ambiente, por ejemplo `PILOT_COMPANY_ID=1`; el frontend no puede elegir ni cambiar la empresa operativa.
+
+Motivo: Desbloquea el piloto real sin construir todavia registro publico, aprobacion administrativa, invitaciones, usuarios por empresa o multiempresa autoservicio.
+
+Impacto: Los contratos mantienen `/api/companies/{companyId}` para no romper la forma multiempresa futura, pero Backend/API debe validar que el `companyId` del path coincide con el `PILOT_COMPANY_ID` configurado. Si no coincide, debe responder `404 COMPANY_NOT_FOUND`. Web Dev puede usar un `companyId` configurado no editable para construir rutas, pero no debe tratarlo como autoridad de seguridad.
+
+Riesgo aceptado: El MVP no resuelve usuarios/roles por empresa. Para piloto controlado, el acceso a la app debe limitarse operativamente usando el mecanismo disponible de Azure Static Web Apps o controles de despliegue, y la API mantiene la proteccion minima validando contra configuracion server-side.
