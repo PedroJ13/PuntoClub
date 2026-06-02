@@ -14,18 +14,19 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-028: Backend/API reintenta API real y smoke test con regla temporal de firewall.
+- TASK-031: Backend/API alinea contrato de IDs/timestamps observado por QA.
+- TASK-032: Infra / Azure prepara API estable con Azure Functions.
 
 ### Siguiente
 
-- TASK-029: QA revalida SQL/API real.
-- TASK-030: Web Dev revalida UI contra API real.
+- TASK-033: QA valida API estable.
+- TASK-034: Web Dev valida UI contra API estable.
 
 ### Bloqueado
 
 - QA SQL/API base bloqueado por falta de API ejecutable y base ejecutada.
-- API/QA/Web end-to-end bloqueados por conectividad/firewall local hacia Azure SQL.
-- Backend/API local usa servidor local de desarrollo porque Azure Functions Core Tools no esta disponible.
+- Validacion compartible bloqueada hasta tener API estable en Azure Functions o mecanismo equivalente.
+- Validacion local funciona con regla temporal de firewall, pero no es ideal para usuario/equipos.
 
 ### Hecho
 
@@ -59,6 +60,9 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-025: QA no aprobo; endpoints reales fallan con `500 INTERNAL_ERROR` por conectividad SQL/firewall.
 - TASK-026: Web Dev no aprobo; UI maneja error controlado, pero no valida flujo real por conectividad SQL/firewall.
 - TASK-027: Infra / Azure definio ruta repetible: regla temporal por IP local para desbloqueo inmediato; Azure Functions como ruta estable posterior.
+- TASK-028: Backend/API ejecuto smoke test real dos veces contra Azure SQL con regla temporal.
+- TASK-029: QA aprobo SQL/API real con observaciones P2.
+- TASK-030: Web Dev aprobo UI de clientes contra API real local con regla temporal.
 
 ## Riesgos principales
 
@@ -69,4 +73,4 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Priorizar TASK-028 con regla temporal de firewall por IP local y limpieza obligatoria. QA no debe repetir validacion hasta que Backend/API entregue smoke test real repetible.
+Priorizar estabilizar API en Azure Functions antes de pedir prueba de usuario final. El flujo de clientes esta validado tecnicamente, pero aun no hay URL estable para prueba comoda.

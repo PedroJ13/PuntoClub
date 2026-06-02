@@ -67,3 +67,11 @@ Decision: Para desbloquear validaciones locales inmediatas, se usara una regla t
 Motivo: Permite validar rapido la API contra Azure SQL sin abrir recursos permanentes ni crear Static Web Apps todavia.
 
 Impacto: Backend/API puede ejecutar TASK-028 abriendo una regla temporal documentada, correr smoke test, y cerrar la regla. QA y Web Dev no deben validar hasta que el smoke test sea repetible.
+
+## 2026-06-02 - IDs bigint como string en API
+
+Decision: Los ids respaldados por SQL `bigint` pueden devolverse como string en respuestas API.
+
+Motivo: Evita perdida de precision en JavaScript y es consistente con serializacion segura de valores grandes.
+
+Impacto: Backend/API debe documentarlo y Web Dev debe tratar ids como strings opacos. QA no debe marcarlo como P1 mientras el contrato lo acepte.

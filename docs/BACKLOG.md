@@ -24,6 +24,8 @@
 - TASK-027: Definir acceso estable para API contra Azure SQL.
 - TASK-028: Reintentar API real y smoke test con acceso estable.
 - TASK-029: Revalidar SQL/API real con ambiente repetible.
+- TASK-031: Alinear contrato de ids BigInt y timestamp de redencion.
+- TASK-032: Preparar API estable en Azure Functions.
 
 ## P1 pre-lanzamiento
 
@@ -35,6 +37,8 @@
 - TASK-022: Revalidar UI contra API real despues de smoke test Backend/API.
 - TASK-026: Revalidar UI contra API real despues de QA.
 - TASK-030: Revalidar UI contra API real con ambiente repetible.
+- TASK-033: Validar API estable en Azure Functions.
+- TASK-034: Validar UI contra API estable.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 

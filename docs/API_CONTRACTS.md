@@ -12,6 +12,7 @@ Propuesta inicial Backend/API para MVP. No implementa endpoints.
 - Montos: decimal con 2 posiciones.
 - Puntos: enteros positivos.
 - Timestamps de respuesta: UTC.
+- IDs respaldados por SQL `bigint` pueden serializarse como string. El frontend debe tratarlos como identificadores opacos, no como numeros para calculo.
 - Auth fase 1: modo empresa piloto unica. La fuente confiable de empresa es `PILOT_COMPANY_ID` configurado server-side.
 - Todas las rutas con `{companyId}` deben validar que el valor del path coincide con `PILOT_COMPANY_ID`; si no coincide, responder `404 COMPANY_NOT_FOUND`.
 - El frontend puede usar un `companyId` configurado para construir rutas, pero no es autoridad de seguridad.
