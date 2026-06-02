@@ -23,6 +23,8 @@ Fase 1 sera un uso real piloto, no solo una demo visual. El MVP debe cuidar pers
 - Web Dev: UI operativa, formularios, estados, responsive e integracion API.
 - Diseno / UX: claridad de flujos, copy, errores, confirmaciones y coherencia.
 - QA: checklist, pruebas, regresion, severidad y cierre de release.
+- Pulso: salud del proyecto, riesgos, prioridades y lectura ejecutiva.
+- PO Test: validacion como Product Owner o usuario real; no recibe tareas de implementacion.
 
 ## Flujo de tareas
 

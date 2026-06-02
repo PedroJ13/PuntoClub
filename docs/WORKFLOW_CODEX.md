@@ -13,7 +13,19 @@ Product / Architect / Release coordina. Cada chat especializado trabaja tareas p
 5. El equipo crea `tasks/TASK-###-HANDOFF.md`.
 6. Product / Architect / Release procesa el handoff y actualiza release status, backlog o decision log.
 
-## Chats
+## Chats reales del proyecto
+
+- Product / Architect / Release: coordinacion, decisiones, backlog y release.
+- SQL DEV: base de datos, modelo SQL, migraciones, integridad e indices.
+- Pulso: salud del proyecto, riesgos, prioridades y lectura ejecutiva.
+- QA: pruebas formales, regresion, severidad y cierre de calidad.
+- Backend API: endpoints, contratos, validaciones server-side e integracion con SQL.
+- Infra / Azure: recursos Azure, deploy, secretos, ambientes y costos.
+- Diseno / UX: flujos, claridad, copy, errores y experiencia.
+- Web Dev: frontend, pantallas, formularios e integracion con API.
+- PO Test: pruebas como Product Owner o usuario real. No recibe tareas de implementacion; reporta hallazgos para triage.
+
+## Chat-starts
 
 - `chat-start/PRODUCT_ARCHITECT_RELEASE.md`
 - `chat-start/INFRA.md`
