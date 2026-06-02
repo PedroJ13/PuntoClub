@@ -59,3 +59,11 @@ Motivo: Evitar recursos duplicados, costo innecesario y confusion operativa.
 Impacto: Infra / Azure debe inventariar la base existente y documentar servidor, database name, region, tier y forma segura de conexion sin guardar secretos. SQL DEV y Backend/API deben usar esa DB como destino para schema, seed y conexion.
 
 Detalle confirmado: servidor/base `sqlserver-pj13-brazil/sql-db-puntoclub`.
+
+## 2026-06-02 - Validacion API/SQL con firewall temporal
+
+Decision: Para desbloquear validaciones locales inmediatas, se usara una regla temporal de firewall por IP local durante la ventana de prueba, con limpieza obligatoria al terminar. La ruta estable posterior sera Azure Functions con app settings seguros.
+
+Motivo: Permite validar rapido la API contra Azure SQL sin abrir recursos permanentes ni crear Static Web Apps todavia.
+
+Impacto: Backend/API puede ejecutar TASK-028 abriendo una regla temporal documentada, correr smoke test, y cerrar la regla. QA y Web Dev no deben validar hasta que el smoke test sea repetible.

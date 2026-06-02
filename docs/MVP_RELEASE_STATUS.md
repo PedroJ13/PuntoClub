@@ -14,11 +14,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-027: Infra / Azure define acceso estable para API contra Azure SQL.
+- TASK-028: Backend/API reintenta API real y smoke test con regla temporal de firewall.
 
 ### Siguiente
 
-- TASK-028: Backend/API reintenta API real y smoke test con acceso estable.
 - TASK-029: QA revalida SQL/API real.
 - TASK-030: Web Dev revalida UI contra API real.
 
@@ -59,6 +58,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-024: Backend/API logro smoke test real una vez con regla temporal de firewall, pero no queda repetible para QA.
 - TASK-025: QA no aprobo; endpoints reales fallan con `500 INTERNAL_ERROR` por conectividad SQL/firewall.
 - TASK-026: Web Dev no aprobo; UI maneja error controlado, pero no valida flujo real por conectividad SQL/firewall.
+- TASK-027: Infra / Azure definio ruta repetible: regla temporal por IP local para desbloqueo inmediato; Azure Functions como ruta estable posterior.
 
 ## Riesgos principales
 
@@ -69,4 +69,4 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Priorizar TASK-027. Se requiere apoyo del usuario para aprobar una ruta estable: regla temporal/repetible de firewall para IP local de validacion, API desplegada en Azure, o networking mas controlado. QA no debe repetir validacion hasta que Backend/API entregue smoke test real repetible.
+Priorizar TASK-028 con regla temporal de firewall por IP local y limpieza obligatoria. QA no debe repetir validacion hasta que Backend/API entregue smoke test real repetible.
