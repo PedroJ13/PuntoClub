@@ -121,7 +121,12 @@ function renderCustomers(customers, search) {
 }
 
 function renderCustomersError(error) {
-  const message = error instanceof ApiError ? error.message : "No se pudo cargar el listado.";
+  const message =
+    error instanceof ApiError && error.code === "INTERNAL_ERROR"
+      ? "No se pudo consultar clientes. Intente de nuevo."
+      : error instanceof ApiError
+        ? error.message
+        : "No se pudo cargar el listado.";
   elements.customersList.innerHTML = "";
   setCustomersFeedback(message);
 }
@@ -145,6 +150,11 @@ function renderFormError(error) {
 
   if (error instanceof ApiError && error.code === "DUPLICATE_CUSTOMER") {
     showFormError("Ya existe un cliente con ese telefono o email. Busquelo antes de registrar.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "INTERNAL_ERROR") {
+    showFormError("No se pudo registrar el cliente. Intente de nuevo.");
     return;
   }
 

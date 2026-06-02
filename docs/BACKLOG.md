@@ -21,6 +21,9 @@
 - TASK-023: Crear/configurar usuario SQL runtime y connection string segura.
 - TASK-024: Levantar API real y ejecutar smoke test.
 - TASK-025: Revalidar SQL/API real despues de smoke test.
+- TASK-027: Definir acceso estable para API contra Azure SQL.
+- TASK-028: Reintentar API real y smoke test con acceso estable.
+- TASK-029: Revalidar SQL/API real con ambiente repetible.
 
 ## P1 pre-lanzamiento
 
@@ -31,6 +34,7 @@
 - TASK-018: Revalidar UI contra API real en ambiente disponible.
 - TASK-022: Revalidar UI contra API real despues de smoke test Backend/API.
 - TASK-026: Revalidar UI contra API real despues de QA.
+- TASK-030: Revalidar UI contra API real con ambiente repetible.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 

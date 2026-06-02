@@ -1,3 +1,7 @@
+const { loadLocalSettings } = require('./load-local-settings');
+
+loadLocalSettings();
+
 const baseUrl = (process.env.API_BASE_URL || 'http://localhost:7071/api').replace(/\/$/, '');
 const companyId = process.env.PILOT_COMPANY_ID || '1';
 

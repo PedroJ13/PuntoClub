@@ -14,19 +14,19 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-023: Infra / Azure crea/configura usuario SQL runtime por canal seguro.
+- TASK-027: Infra / Azure define acceso estable para API contra Azure SQL.
 
 ### Siguiente
 
-- TASK-024: Backend/API levanta API real y ejecuta smoke test.
-- TASK-025: QA revalida SQL/API real.
-- TASK-026: Web Dev revalida UI contra API real.
+- TASK-028: Backend/API reintenta API real y smoke test con acceso estable.
+- TASK-029: QA revalida SQL/API real.
+- TASK-030: Web Dev revalida UI contra API real.
 
 ### Bloqueado
 
 - QA SQL/API base bloqueado por falta de API ejecutable y base ejecutada.
-- API/QA/Web end-to-end bloqueados hasta crear usuario SQL runtime, configurar `SQL_CONNECTION_STRING` fuera del repo y levantar API real.
-- Backend/API local tambien requiere Azure Functions Core Tools o un despliegue Azure Function disponible.
+- API/QA/Web end-to-end bloqueados por conectividad/firewall local hacia Azure SQL.
+- Backend/API local usa servidor local de desarrollo porque Azure Functions Core Tools no esta disponible.
 
 ### Hecho
 
@@ -55,6 +55,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-020: Backend/API intento levantar API real; bloqueado por falta de usuario runtime, `SQL_CONNECTION_STRING` y Azure Functions Core Tools/API desplegada.
 - TASK-021: QA reintento validacion real; no aprobado por falta de API real.
 - TASK-022: Web Dev reintento validacion real; no aprobado por falta de API real.
+- TASK-023: Infra / Azure creo `puntoclub_app_user`, configuro `api/local.settings.json` ignorado por git y confirmo permisos minimos.
+- TASK-024: Backend/API logro smoke test real una vez con regla temporal de firewall, pero no queda repetible para QA.
+- TASK-025: QA no aprobo; endpoints reales fallan con `500 INTERNAL_ERROR` por conectividad SQL/firewall.
+- TASK-026: Web Dev no aprobo; UI maneja error controlado, pero no valida flujo real por conectividad SQL/firewall.
 
 ## Riesgos principales
 
@@ -65,4 +69,4 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Priorizar TASK-023. Se requiere apoyo del usuario para definir/generar el password del usuario runtime o un canal seguro equivalente. QA no debe repetir validacion hasta que Backend/API entregue smoke test real exitoso.
+Priorizar TASK-027. Se requiere apoyo del usuario para aprobar una ruta estable: regla temporal/repetible de firewall para IP local de validacion, API desplegada en Azure, o networking mas controlado. QA no debe repetir validacion hasta que Backend/API entregue smoke test real repetible.

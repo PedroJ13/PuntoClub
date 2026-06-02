@@ -5,6 +5,7 @@
   "description": "Punto Club MVP API on Azure Functions.",
   "main": "src/functions/*.js",
   "scripts": {
+    "serve:local": "node scripts/local-api-server.js",
     "start": "func start",
     "smoke": "node scripts/smoke-test.js",
     "test": "node --test test/errors.test.js test/validators.test.js"

@@ -31,6 +31,13 @@ cd api
 npm start
 ```
 
+If Azure Functions Core Tools is not installed, Backend/API can run the local development server that uses the same repository and validation modules:
+
+```powershell
+cd api
+npm run serve:local
+```
+
 Default local base URL:
 
 ```text
