@@ -30,6 +30,7 @@
 - TASK-036: Decidir/implementar o retirar GET settings.
 - TASK-039: Redeployar Azure Functions con GET settings.
 - TASK-040: Preparar Static Web Apps y CORS para origen frontend real.
+- TASK-043: Crear y publicar Static Web Apps de Punto Club.
 
 ## P1 pre-lanzamiento
 
@@ -47,6 +48,7 @@
 - TASK-038: QA smoke UI/API despues de CORS.
 - TASK-041: Validar API estable despues de redeploy.
 - TASK-042: Validar frontend publicado cuando exista.
+- TASK-044: Revalidar frontend publicado.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 

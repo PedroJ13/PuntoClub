@@ -4,6 +4,8 @@
 
 Listo para prueba de Product Owner en ambiente local controlado.
 
+La prueba desde URL publicada sigue pendiente hasta crear Static Web Apps de Punto Club.
+
 ## Flujo a probar
 
 Clientes - buscar/listar y registrar cliente.
@@ -75,6 +77,10 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - Historial.
 - Login/auth real.
 - Prueba desde URL publica.
+
+## Pendiente para prueba publicada
+
+Cuando Infra / Azure entregue una URL de Static Web Apps para Punto Club, repetir este flujo desde esa URL. Esa validacion esta cubierta por `tasks/TASK-044.md`.
 
 ## Como reportar hallazgos
 

@@ -14,19 +14,17 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-039: Backend/API redeploya paquete Azure Functions con `GET /settings`.
-- TASK-040: Infra / Azure prepara Static Web Apps y CORS para origen frontend real.
+- TASK-043: Infra / Azure crea/publica Static Web Apps de Punto Club solo con confirmacion explicita del usuario.
 
 ### Siguiente
 
-- TASK-041: QA valida API estable despues de redeploy.
-- TASK-042: Web Dev / QA valida frontend publicado cuando exista.
+- TASK-044: Web Dev / QA revalida frontend publicado cuando exista URL estable.
 
 ### Bloqueado
 
-- QA SQL/API base bloqueado por falta de API ejecutable y base ejecutada.
-- `GET /settings` esta implementado en codigo, pero falta redeployar Azure Functions para que exista en la URL estable.
-- Frontend aun no esta publicado; PO Test usa UI local con API estable.
+- Frontend publicado bloqueado hasta crear Static Web Apps o elegir otro mecanismo de publicacion.
+- CORS para origen frontend real bloqueado hasta tener hostname de Static Web Apps.
+- PO Test publicado bloqueado; PO Test local sigue disponible con UI local contra API estable.
 
 ### Hecho
 
@@ -71,6 +69,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-036: Backend/API implemento `GET /settings` en codigo local; falta redeploy en Azure Functions.
 - TASK-037: Web Dev aprobo UI de clientes contra API estable con CORS.
 - TASK-038: QA aprobo smoke UI/API del flujo clientes desde navegador.
+- TASK-039: Backend/API redeployo Azure Functions y `GET /settings` ya responde `200` en URL estable.
+- TASK-040: Infra / Azure preparo plan de Static Web Apps sin crear recurso.
+- TASK-041: QA aprobo API estable despues del redeploy, con observaciones P2/P3.
+- TASK-042: Web Dev / QA no pudo aprobar frontend publicado porque no existe Static Web Apps de Punto Club.
 
 ## Riesgos principales
 
@@ -81,11 +83,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Flujo clientes listo para PO Test en ambiente local controlado. Siguiente prioridad: publicar frontend o preparar origen estable para pruebas mas comodas.
+Flujo clientes listo para PO Test en ambiente local controlado. Siguiente prioridad: confirmar si se crea `swa-puntoclub-prod-001` en plan Free para tener URL frontend estable.
 
 ## Listo para probar
 
 - Flujo: Clientes - buscar/listar y registrar cliente.
 - Ambiente: UI local en `http://127.0.0.1:4175` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
 - Estado: aprobado por QA en TASK-038, sin P0/P1.
-- Limitacion: no hay Static Web Apps todavia; la prueba sigue usando frontend local.
+- Limitacion: no hay Static Web Apps todavia; la prueba publicada no es ejecutable hasta crear la URL frontend.
