@@ -14,19 +14,19 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-035: Infra / Azure habilita CORS para API estable o define same-origin.
-- TASK-036: Backend/API decide implementar o retirar `GET /settings`.
+- TASK-039: Backend/API redeploya paquete Azure Functions con `GET /settings`.
+- TASK-040: Infra / Azure prepara Static Web Apps y CORS para origen frontend real.
 
 ### Siguiente
 
-- TASK-037: Web Dev revalida UI contra API estable con CORS.
-- TASK-038: QA smoke UI/API despues de CORS.
+- TASK-041: QA valida API estable despues de redeploy.
+- TASK-042: Web Dev / QA valida frontend publicado cuando exista.
 
 ### Bloqueado
 
 - QA SQL/API base bloqueado por falta de API ejecutable y base ejecutada.
-- UI en navegador bloqueada por falta de CORS en Azure Functions para el origen del frontend.
-- API estable existe y QA aprobo endpoints principales sin P0/P1.
+- `GET /settings` esta implementado en codigo, pero falta redeployar Azure Functions para que exista en la URL estable.
+- Frontend aun no esta publicado; PO Test usa UI local con API estable.
 
 ### Hecho
 
@@ -67,6 +67,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-032: Infra / Azure creo Azure Functions estable en `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
 - TASK-033: QA aprobo API estable con observaciones P2.
 - TASK-034: Web Dev no aprobo UI contra API estable por CORS ausente.
+- TASK-035: Infra / Azure habilito CORS para origenes locales de prueba.
+- TASK-036: Backend/API implemento `GET /settings` en codigo local; falta redeploy en Azure Functions.
+- TASK-037: Web Dev aprobo UI de clientes contra API estable con CORS.
+- TASK-038: QA aprobo smoke UI/API del flujo clientes desde navegador.
 
 ## Riesgos principales
 
@@ -77,4 +81,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Priorizar TASK-035. El flujo de clientes no debe pasar a PO Test en navegador hasta que CORS/same-origin permita usar la API estable desde la UI.
+Flujo clientes listo para PO Test en ambiente local controlado. Siguiente prioridad: publicar frontend o preparar origen estable para pruebas mas comodas.
+
+## Listo para probar
+
+- Flujo: Clientes - buscar/listar y registrar cliente.
+- Ambiente: UI local en `http://127.0.0.1:4175` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
+- Estado: aprobado por QA en TASK-038, sin P0/P1.
+- Limitacion: no hay Static Web Apps todavia; la prueba sigue usando frontend local.

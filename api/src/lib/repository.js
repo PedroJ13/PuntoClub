@@ -43,6 +43,35 @@ async function ensureActiveCompany(companyId) {
   return result.recordset[0];
 }
 
+async function getCompanySettings(companyId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .query(`
+      SELECT id, name, email, phone, logo_url, points_percentage, status, updated_at
+      FROM dbo.Companies
+      WHERE id = @company_id
+        AND status = 'active'
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+  }
+
+  const row = result.recordset[0];
+  return {
+    id: toApiId(row.id),
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    logoUrl: row.logo_url,
+    pointsPercentage: Number(row.points_percentage),
+    status: row.status,
+    updatedAt: toIsoTimestamp(row.updated_at)
+  };
+}
+
 async function listCustomers(companyId, search) {
   const sql = getSql();
   const pool = await getPool();
@@ -235,6 +264,7 @@ module.exports = {
   ensureActiveCompany,
   getActivity,
   getBalance,
+  getCompanySettings,
   listCustomers,
   toApiId,
   toIsoTimestamp

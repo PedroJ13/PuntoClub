@@ -28,6 +28,8 @@
 - TASK-032: Preparar API estable en Azure Functions.
 - TASK-035: Habilitar CORS o definir same-origin para API estable.
 - TASK-036: Decidir/implementar o retirar GET settings.
+- TASK-039: Redeployar Azure Functions con GET settings.
+- TASK-040: Preparar Static Web Apps y CORS para origen frontend real.
 
 ## P1 pre-lanzamiento
 
@@ -43,6 +45,8 @@
 - TASK-034: Validar UI contra API estable.
 - TASK-037: Revalidar UI contra API estable con CORS.
 - TASK-038: QA smoke UI/API despues de CORS.
+- TASK-041: Validar API estable despues de redeploy.
+- TASK-042: Validar frontend publicado cuando exista.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 

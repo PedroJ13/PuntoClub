@@ -66,6 +66,11 @@ async function route(request, response) {
   const companyId = requirePilotCompany(segments[1]);
   await repository.ensureActiveCompany(companyId);
 
+  if (request.method === 'GET' && segments.length === 3 && segments[2] === 'settings') {
+    const settings = await repository.getCompanySettings(companyId);
+    return send(response, 200, settings);
+  }
+
   if (request.method === 'GET' && segments.length === 3 && segments[2] === 'customers') {
     const items = await repository.listCustomers(companyId, url.searchParams.get('search'));
     return send(response, 200, { items });

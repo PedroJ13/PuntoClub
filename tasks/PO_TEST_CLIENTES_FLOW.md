@@ -18,15 +18,17 @@ Clientes - buscar/listar y registrar cliente.
 
 ## Ambiente
 
-Por ahora no hay URL publica estable.
+Por ahora no hay URL publica del frontend.
 
-La prueba requiere que Backend/API este corriendo localmente contra Azure SQL y que la regla temporal de firewall este abierta durante la ventana de prueba.
+La API estable ya esta disponible en Azure Functions. La UI todavia se prueba localmente.
 
 Valores esperados:
 
 ```text
 Frontend local: http://127.0.0.1:4173
+Frontend local alternativo: http://127.0.0.1:4175
 API local: http://localhost:7071/api
+API estable: https://func-puntoclub-prod-br-001.azurewebsites.net/api
 Company ID: 1
 ```
 
@@ -34,10 +36,10 @@ Company ID: 1
 
 Confirmar con Product / Architect / Release o Backend/API que:
 
-- API local esta levantada.
-- `npm run smoke` paso exitosamente.
-- La regla temporal de firewall esta abierta.
-- No hay P0/P1 abiertos en TASK-029.
+- La UI local esta levantada.
+- `app/app-config.js` apunta a `https://func-puntoclub-prod-br-001.azurewebsites.net`.
+- No hay P0/P1 abiertos en TASK-038.
+- Si se usa un puerto distinto a `4173` o `4175`, puede fallar CORS.
 
 ## Checklist PO
 

@@ -30,6 +30,11 @@ function assert(condition, message) {
 
 async function main() {
   const suffix = Date.now();
+  const settings = await request('GET', `/companies/${companyId}/settings`, null, 200);
+  assert(settings.id === String(companyId), 'Company settings id must match PILOT_COMPANY_ID as string.');
+  assert(settings.status === 'active', 'Company settings must return active company.');
+  assert(typeof settings.updatedAt === 'string' && /^\d{4}-\d{2}-\d{2}T.*Z$/.test(settings.updatedAt), 'Company settings updatedAt must be a UTC timestamp.');
+
   const customer = await request('POST', `/companies/${companyId}/customers`, {
     name: `QA Smoke ${suffix}`,
     phone: `+506${String(suffix).slice(-8)}`,
