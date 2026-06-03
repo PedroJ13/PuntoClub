@@ -9,9 +9,13 @@ function toIsoDate(value) {
   return value instanceof Date ? value.toISOString().slice(0, 10) : value;
 }
 
+function toApiId(value) {
+  return value == null ? value : String(value);
+}
+
 function mapCustomer(row) {
   return {
-    id: row.id,
+    id: toApiId(row.id),
     name: row.name,
     phone: row.phone,
     email: row.email,
@@ -115,8 +119,8 @@ async function createPurchase(companyId, payload, pointsEarned) {
 
   const row = result.recordset[0];
   return {
-    id: row.id,
-    customerId: row.customer_id,
+    id: toApiId(row.id),
+    customerId: toApiId(row.customer_id),
     invoiceNumber: row.invoice_number,
     purchaseDate: toIsoDate(row.purchase_date),
     amount: Number(row.amount),
@@ -144,7 +148,7 @@ async function getBalance(companyId, customerId) {
 
   const row = result.recordset[0];
   return {
-    customerId: row.customer_id,
+    customerId: toApiId(row.customer_id),
     pointsEarned: row.points_earned,
     pointsRedeemed: row.points_redeemed,
     pointsBalance: row.points_balance
@@ -174,7 +178,7 @@ async function getActivity(companyId, customerId) {
 
   return result.recordset.map((row) => ({
     type: row.type,
-    id: row.id,
+    id: toApiId(row.id),
     date: toIsoDate(row.activity_date),
     invoiceNumber: row.invoice_number || undefined,
     amount: row.amount == null ? undefined : Number(row.amount),
@@ -194,17 +198,31 @@ async function createRedemption(companyId, payload) {
     .input('note', sql.NVarChar(500), payload.note)
     .execute('dbo.RegisterRedemption');
 
-  const activity = await getActivity(companyId, payload.customerId);
   const balance = await getBalance(companyId, payload.customerId);
-  const latest = activity.find((item) => item.type === 'redemption' && item.points === -payload.pointsRedeemed);
+  const latestResult = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('customer_id', sql.BigInt, payload.customerId)
+    .input('redemption_date', sql.Date, payload.redemptionDate)
+    .input('points_redeemed', sql.Int, payload.pointsRedeemed)
+    .query(`
+      SELECT TOP (1) id, created_at
+      FROM dbo.Redemptions
+      WHERE company_id = @company_id
+        AND customer_id = @customer_id
+        AND redemption_date = @redemption_date
+        AND points_redeemed = @points_redeemed
+      ORDER BY created_at DESC, id DESC
+    `);
+
+  const latest = latestResult.recordset[0];
 
   return {
-    id: latest ? latest.id : null,
-    customerId: payload.customerId,
+    id: latest ? toApiId(latest.id) : null,
+    customerId: toApiId(payload.customerId),
     redemptionDate: payload.redemptionDate,
     pointsRedeemed: payload.pointsRedeemed,
     note: payload.note,
-    createdAt: latest ? latest.date : null,
+    createdAt: latest ? toIsoTimestamp(latest.created_at) : null,
     balanceAfter: balance.pointsBalance
   };
 }
@@ -217,5 +235,7 @@ module.exports = {
   ensureActiveCompany,
   getActivity,
   getBalance,
-  listCustomers
+  listCustomers,
+  toApiId,
+  toIsoTimestamp
 };

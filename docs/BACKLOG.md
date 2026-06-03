@@ -26,6 +26,8 @@
 - TASK-029: Revalidar SQL/API real con ambiente repetible.
 - TASK-031: Alinear contrato de ids BigInt y timestamp de redencion.
 - TASK-032: Preparar API estable en Azure Functions.
+- TASK-035: Habilitar CORS o definir same-origin para API estable.
+- TASK-036: Decidir/implementar o retirar GET settings.
 
 ## P1 pre-lanzamiento
 
@@ -39,6 +41,8 @@
 - TASK-030: Revalidar UI contra API real con ambiente repetible.
 - TASK-033: Validar API estable en Azure Functions.
 - TASK-034: Validar UI contra API estable.
+- TASK-037: Revalidar UI contra API estable con CORS.
+- TASK-038: QA smoke UI/API despues de CORS.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 

@@ -14,19 +14,19 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-031: Backend/API alinea contrato de IDs/timestamps observado por QA.
-- TASK-032: Infra / Azure prepara API estable con Azure Functions.
+- TASK-035: Infra / Azure habilita CORS para API estable o define same-origin.
+- TASK-036: Backend/API decide implementar o retirar `GET /settings`.
 
 ### Siguiente
 
-- TASK-033: QA valida API estable.
-- TASK-034: Web Dev valida UI contra API estable.
+- TASK-037: Web Dev revalida UI contra API estable con CORS.
+- TASK-038: QA smoke UI/API despues de CORS.
 
 ### Bloqueado
 
 - QA SQL/API base bloqueado por falta de API ejecutable y base ejecutada.
-- Validacion compartible bloqueada hasta tener API estable en Azure Functions o mecanismo equivalente.
-- Validacion local funciona con regla temporal de firewall, pero no es ideal para usuario/equipos.
+- UI en navegador bloqueada por falta de CORS en Azure Functions para el origen del frontend.
+- API estable existe y QA aprobo endpoints principales sin P0/P1.
 
 ### Hecho
 
@@ -63,6 +63,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-028: Backend/API ejecuto smoke test real dos veces contra Azure SQL con regla temporal.
 - TASK-029: QA aprobo SQL/API real con observaciones P2.
 - TASK-030: Web Dev aprobo UI de clientes contra API real local con regla temporal.
+- TASK-031: Backend/API alineo ids bigint como string y timestamp UTC de redencion.
+- TASK-032: Infra / Azure creo Azure Functions estable en `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
+- TASK-033: QA aprobo API estable con observaciones P2.
+- TASK-034: Web Dev no aprobo UI contra API estable por CORS ausente.
 
 ## Riesgos principales
 
@@ -73,4 +77,4 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Priorizar estabilizar API en Azure Functions antes de pedir prueba de usuario final. El flujo de clientes esta validado tecnicamente, pero aun no hay URL estable para prueba comoda.
+Priorizar TASK-035. El flujo de clientes no debe pasar a PO Test en navegador hasta que CORS/same-origin permita usar la API estable desde la UI.

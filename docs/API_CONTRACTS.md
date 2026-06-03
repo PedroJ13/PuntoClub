@@ -12,7 +12,7 @@ Propuesta inicial Backend/API para MVP. No implementa endpoints.
 - Montos: decimal con 2 posiciones.
 - Puntos: enteros positivos.
 - Timestamps de respuesta: UTC.
-- IDs respaldados por SQL `bigint` pueden serializarse como string. El frontend debe tratarlos como identificadores opacos, no como numeros para calculo.
+- IDs respaldados por SQL `bigint` se serializan como string en respuestas. El frontend debe tratarlos como identificadores opacos, no como numeros para calculo.
 - Auth fase 1: modo empresa piloto unica. La fuente confiable de empresa es `PILOT_COMPANY_ID` configurado server-side.
 - Todas las rutas con `{companyId}` deben validar que el valor del path coincide con `PILOT_COMPANY_ID`; si no coincide, responder `404 COMPANY_NOT_FOUND`.
 - El frontend puede usar un `companyId` configurado para construir rutas, pero no es autoridad de seguridad.
@@ -57,7 +57,7 @@ Respuesta `200`:
 
 ```json
 {
-  "id": 1,
+  "id": "1",
   "name": "Cafe Central",
   "email": "hola@cafecentral.test",
   "phone": "+50622223333",
@@ -111,7 +111,7 @@ Respuesta `200`:
 {
   "items": [
     {
-      "id": 10,
+      "id": "10",
       "name": "Maria Soto",
       "phone": "+50688887777",
       "email": "maria@example.com",
@@ -140,7 +140,7 @@ Respuesta `201`:
 
 ```json
 {
-  "id": 10,
+  "id": "10",
   "name": "Maria Soto",
   "phone": "+50688887777",
   "email": "maria@example.com",
@@ -171,7 +171,7 @@ Payload:
 
 ```json
 {
-  "customerId": 10,
+  "customerId": "10",
   "invoiceNumber": "FAC-1001",
   "purchaseDate": "2026-06-02",
   "amount": 25000.00
@@ -182,8 +182,8 @@ Respuesta `201`:
 
 ```json
 {
-  "id": 50,
-  "customerId": 10,
+  "id": "50",
+  "customerId": "10",
   "invoiceNumber": "FAC-1001",
   "purchaseDate": "2026-06-02",
   "amount": 25000.00,
@@ -218,7 +218,7 @@ Payload:
 
 ```json
 {
-  "customerId": 10,
+  "customerId": "10",
   "redemptionDate": "2026-06-02",
   "pointsRedeemed": 500,
   "note": "Canje aplicado en caja"
@@ -229,8 +229,8 @@ Respuesta `201`:
 
 ```json
 {
-  "id": 70,
-  "customerId": 10,
+  "id": "70",
+  "customerId": "10",
   "redemptionDate": "2026-06-02",
   "pointsRedeemed": 500,
   "note": "Canje aplicado en caja",
@@ -264,7 +264,7 @@ Respuesta `200`:
 
 ```json
 {
-  "customerId": 10,
+  "customerId": "10",
   "pointsEarned": 1250,
   "pointsRedeemed": 500,
   "pointsBalance": 750
@@ -289,7 +289,7 @@ Respuesta `200`:
 
 ```json
 {
-  "customerId": 10,
+  "customerId": "10",
   "balance": {
     "pointsEarned": 1250,
     "pointsRedeemed": 500,
@@ -298,7 +298,7 @@ Respuesta `200`:
   "items": [
     {
       "type": "purchase",
-      "id": 50,
+      "id": "50",
       "date": "2026-06-02",
       "invoiceNumber": "FAC-1001",
       "amount": 25000.00,
@@ -306,7 +306,7 @@ Respuesta `200`:
     },
     {
       "type": "redemption",
-      "id": 70,
+      "id": "70",
       "date": "2026-06-02",
       "note": "Canje aplicado en caja",
       "points": -500

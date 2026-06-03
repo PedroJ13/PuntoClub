@@ -22,6 +22,12 @@ async function request(method, path, body, expectedStatus) {
   return data;
 }
 
+function assert(condition, message) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
 async function main() {
   const suffix = Date.now();
   const customer = await request('POST', `/companies/${companyId}/customers`, {
@@ -29,24 +35,31 @@ async function main() {
     phone: `+506${String(suffix).slice(-8)}`,
     email: `qa-${suffix}@puntoclub.test`
   }, 201);
+  assert(typeof customer.id === 'string', 'Customer id must be serialized as string.');
 
   await request('GET', `/companies/${companyId}/customers?search=${encodeURIComponent(customer.phone)}`, null, 200);
 
-  await request('POST', `/companies/${companyId}/purchases`, {
+  const purchase = await request('POST', `/companies/${companyId}/purchases`, {
     customerId: customer.id,
     invoiceNumber: `SMOKE-${suffix}`,
     purchaseDate: '2026-06-02',
     amount: 1000
   }, 201);
+  assert(typeof purchase.id === 'string', 'Purchase id must be serialized as string.');
+  assert(typeof purchase.customerId === 'string', 'Purchase customerId must be serialized as string.');
 
   const balanceBefore = await request('GET', `/companies/${companyId}/customers/${customer.id}/balance`, null, 200);
+  assert(typeof balanceBefore.customerId === 'string', 'Balance customerId must be serialized as string.');
 
-  await request('POST', `/companies/${companyId}/redemptions`, {
+  const redemption = await request('POST', `/companies/${companyId}/redemptions`, {
     customerId: customer.id,
     redemptionDate: '2026-06-02',
     pointsRedeemed: 1,
     note: 'Smoke test redemption'
   }, 201);
+  assert(typeof redemption.id === 'string', 'Redemption id must be serialized as string.');
+  assert(typeof redemption.customerId === 'string', 'Redemption customerId must be serialized as string.');
+  assert(/^\d{4}-\d{2}-\d{2}T.*Z$/.test(redemption.createdAt), 'Redemption createdAt must be a complete UTC timestamp.');
 
   const activity = await request('GET', `/companies/${companyId}/customers/${customer.id}/activity`, null, 200);
   const balanceAfter = await request('GET', `/companies/${companyId}/customers/${customer.id}/balance`, null, 200);
