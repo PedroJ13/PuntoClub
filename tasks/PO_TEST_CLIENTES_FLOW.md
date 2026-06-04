@@ -2,9 +2,9 @@
 
 ## Estado
 
-Listo para prueba de Product Owner en ambiente local controlado.
+Listo para prueba de Product Owner en ambiente publicado.
 
-La prueba desde URL publicada sigue pendiente hasta que Static Web Apps cargue la UI real de Punto Club.
+Web Dev / QA aprobo el flujo publicado en TASK-046, sin P0/P1.
 
 ## Flujo a probar
 
@@ -20,19 +20,20 @@ Clientes - buscar/listar y registrar cliente.
 
 ## Ambiente
 
-URL publica creada, pero pendiente de deploy real de `app/`:
+URL publica:
 
 ```text
 https://calm-dune-075dc5c0f.7.azurestaticapps.net
 ```
 
-La API estable ya esta disponible en Azure Functions. La UI todavia se prueba localmente.
+La API estable ya esta disponible en Azure Functions.
 
 Valores esperados:
 
 ```text
 Frontend local: http://127.0.0.1:4173
 Frontend local alternativo: http://127.0.0.1:4175
+Frontend publicado: https://calm-dune-075dc5c0f.7.azurestaticapps.net
 API local: http://localhost:7071/api
 API estable: https://func-puntoclub-prod-br-001.azurewebsites.net/api
 Company ID: 1
@@ -42,10 +43,9 @@ Company ID: 1
 
 Confirmar con Product / Architect / Release o Backend/API que:
 
-- La UI local esta levantada.
-- `app/app-config.js` apunta a `https://func-puntoclub-prod-br-001.azurewebsites.net`.
-- No hay P0/P1 abiertos en TASK-038.
-- Si se usa un puerto distinto a `4173` o `4175`, puede fallar CORS.
+- La URL publicada carga Punto Club, no la pagina default de Azure Static Web Apps.
+- El indicador muestra `API real`.
+- No hay P0/P1 abiertos en TASK-046.
 
 ## Checklist PO
 
@@ -80,11 +80,11 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - Saldo.
 - Historial.
 - Login/auth real.
-- Prueba desde URL publica.
+- Cambios de configuracion Azure.
 
-## Pendiente para prueba publicada
+## Ambiente alternativo local
 
-Cuando Infra / Azure confirme que la URL publicada ya carga la UI real, repetir este flujo desde esa URL. Esa validacion esta cubierta por `tasks/TASK-046-assignment.md`.
+Si la URL publicada tuviera una interrupcion temporal, se puede repetir el flujo en UI local contra API estable usando `http://127.0.0.1:4175`, siempre que CORS siga permitido para ese origen.
 
 ## Como reportar hallazgos
 

@@ -14,17 +14,15 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-045: Infra / Azure completa GitHub Secret y publica `app/` en Static Web Apps.
+- PO Test puede ejecutar el flujo clientes en la URL publicada.
 
 ### Siguiente
 
-- TASK-046: Web Dev / QA revalida frontend publicado despues del deploy real de `app/`.
+- Product / Architect / Release procesara hallazgos de PO Test si aparecen.
 
 ### Bloqueado
 
-- Frontend publicado bloqueado hasta cargar GitHub Secret `AZURE_STATIC_WEB_APPS_API_TOKEN_SWA_PUNTOCLUB_PROD_001` y ejecutar GitHub Actions.
-- PO Test publicado bloqueado; la URL `https://calm-dune-075dc5c0f.7.azurestaticapps.net` existe pero todavia muestra contenido default de Azure Static Web Apps.
-- PO Test local sigue disponible con UI local contra API estable.
+- No hay bloqueos P0/P1 abiertos para el flujo clientes publicado.
 
 ### Hecho
 
@@ -75,6 +73,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-042: Web Dev / QA no pudo aprobar frontend publicado porque no existe Static Web Apps de Punto Club.
 - TASK-043: Infra / Azure creo `swa-puntoclub-prod-001`, configuro CORS real y preparo workflow GitHub Actions; falta GitHub Secret/deploy.
 - TASK-044: Web Dev / QA no aprobo frontend publicado porque la SWA muestra pagina default, no la UI de Punto Club.
+- TASK-045: Infra / Azure completo GitHub Secret/deploy con apoyo del usuario y subio workflow de Static Web Apps.
+- TASK-046: Web Dev / QA aprobo frontend publicado para PO Test del flujo clientes.
 
 ## Riesgos principales
 
@@ -85,11 +85,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Flujo clientes listo para PO Test en ambiente local controlado. Siguiente prioridad: completar GitHub Secret/deploy para que `https://calm-dune-075dc5c0f.7.azurestaticapps.net` cargue la UI real.
+Flujo clientes listo para PO Test en ambiente publicado. Siguiente prioridad: ejecutar PO Test y convertir cualquier hallazgo en tarea pequena.
 
 ## Listo para probar
 
 - Flujo: Clientes - buscar/listar y registrar cliente.
-- Ambiente: UI local en `http://127.0.0.1:4175` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
-- Estado: aprobado por QA en TASK-038, sin P0/P1.
-- Limitacion: la URL publicada existe, pero aun no carga la UI real; prueba publicada pendiente de TASK-045/TASK-046.
+- Ambiente: frontend publicado `https://calm-dune-075dc5c0f.7.azurestaticapps.net` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
+- Estado: aprobado por Web Dev / QA en TASK-046, sin P0/P1.
+- Nota: UI local sigue disponible como apoyo, pero PO Test recomendado debe usar la URL publicada.
