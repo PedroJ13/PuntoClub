@@ -14,17 +14,17 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-043: Infra / Azure crea/publica Static Web Apps de Punto Club solo con confirmacion explicita del usuario.
+- TASK-045: Infra / Azure completa GitHub Secret y publica `app/` en Static Web Apps.
 
 ### Siguiente
 
-- TASK-044: Web Dev / QA revalida frontend publicado cuando exista URL estable.
+- TASK-046: Web Dev / QA revalida frontend publicado despues del deploy real de `app/`.
 
 ### Bloqueado
 
-- Frontend publicado bloqueado hasta crear Static Web Apps o elegir otro mecanismo de publicacion.
-- CORS para origen frontend real bloqueado hasta tener hostname de Static Web Apps.
-- PO Test publicado bloqueado; PO Test local sigue disponible con UI local contra API estable.
+- Frontend publicado bloqueado hasta cargar GitHub Secret `AZURE_STATIC_WEB_APPS_API_TOKEN_SWA_PUNTOCLUB_PROD_001` y ejecutar GitHub Actions.
+- PO Test publicado bloqueado; la URL `https://calm-dune-075dc5c0f.7.azurestaticapps.net` existe pero todavia muestra contenido default de Azure Static Web Apps.
+- PO Test local sigue disponible con UI local contra API estable.
 
 ### Hecho
 
@@ -73,6 +73,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-040: Infra / Azure preparo plan de Static Web Apps sin crear recurso.
 - TASK-041: QA aprobo API estable despues del redeploy, con observaciones P2/P3.
 - TASK-042: Web Dev / QA no pudo aprobar frontend publicado porque no existe Static Web Apps de Punto Club.
+- TASK-043: Infra / Azure creo `swa-puntoclub-prod-001`, configuro CORS real y preparo workflow GitHub Actions; falta GitHub Secret/deploy.
+- TASK-044: Web Dev / QA no aprobo frontend publicado porque la SWA muestra pagina default, no la UI de Punto Club.
 
 ## Riesgos principales
 
@@ -83,11 +85,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Flujo clientes listo para PO Test en ambiente local controlado. Siguiente prioridad: confirmar si se crea `swa-puntoclub-prod-001` en plan Free para tener URL frontend estable.
+Flujo clientes listo para PO Test en ambiente local controlado. Siguiente prioridad: completar GitHub Secret/deploy para que `https://calm-dune-075dc5c0f.7.azurestaticapps.net` cargue la UI real.
 
 ## Listo para probar
 
 - Flujo: Clientes - buscar/listar y registrar cliente.
 - Ambiente: UI local en `http://127.0.0.1:4175` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
 - Estado: aprobado por QA en TASK-038, sin P0/P1.
-- Limitacion: no hay Static Web Apps todavia; la prueba publicada no es ejecutable hasta crear la URL frontend.
+- Limitacion: la URL publicada existe, pero aun no carga la UI real; prueba publicada pendiente de TASK-045/TASK-046.
