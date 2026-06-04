@@ -32,6 +32,7 @@
 - TASK-040: Preparar Static Web Apps y CORS para origen frontend real.
 - TASK-043: Crear y publicar Static Web Apps de Punto Club.
 - TASK-045: Completar GitHub Secret y deploy de Static Web Apps.
+- TASK-047: Ajustar flujo clientes para registrar compra desde cliente.
 
 ## P1 pre-lanzamiento
 
@@ -51,6 +52,7 @@
 - TASK-042: Validar frontend publicado cuando exista.
 - TASK-044: Revalidar frontend publicado.
 - TASK-046: Revalidar frontend publicado despues del deploy real.
+- TASK-048: Validar flujo publicado clientes + registrar compra.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 

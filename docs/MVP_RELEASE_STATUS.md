@@ -14,11 +14,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- PO Test puede ejecutar el flujo clientes en la URL publicada.
+- TASK-047: Web Dev ajusta flujo publicado segun hallazgos de PO Test: no busqueda inicial, puntos visibles y registrar compra desde cliente.
 
 ### Siguiente
 
-- Product / Architect / Release procesara hallazgos de PO Test si aparecen.
+- TASK-048: QA valida flujo clientes + registrar compra en URL publicada.
 
 ### Bloqueado
 
@@ -85,7 +85,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Flujo clientes listo para PO Test en ambiente publicado. Siguiente prioridad: ejecutar PO Test y convertir cualquier hallazgo en tarea pequena.
+Procesar hallazgos de PO Test para que el flujo operativo vaya de cliente a compra con menos friccion.
 
 ## Listo para probar
 
