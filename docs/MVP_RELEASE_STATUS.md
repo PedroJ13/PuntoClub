@@ -14,15 +14,15 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-047: Web Dev ajusta flujo publicado segun hallazgos de PO Test: no busqueda inicial, puntos visibles y registrar compra desde cliente.
+- TASK-049: QA revalida flujo clientes + registrar compra despues del deploy de TASK-047.
 
 ### Siguiente
 
-- TASK-048: QA valida flujo clientes + registrar compra en URL publicada.
+- Product / Architect / Release procesa resultado de TASK-049 y avisa si queda listo para PO Test.
 
 ### Bloqueado
 
-- No hay bloqueos P0/P1 abiertos para el flujo clientes publicado.
+- TASK-048 no aprobado porque la URL publicada aun servia la UI anterior al momento de la prueba.
 
 ### Hecho
 
@@ -75,6 +75,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-044: Web Dev / QA no aprobo frontend publicado porque la SWA muestra pagina default, no la UI de Punto Club.
 - TASK-045: Infra / Azure completo GitHub Secret/deploy con apoyo del usuario y subio workflow de Static Web Apps.
 - TASK-046: Web Dev / QA aprobo frontend publicado para PO Test del flujo clientes.
+- TASK-047: Web Dev ajusto flujo local para registrar compra desde cliente, mostrar puntos y evitar busqueda inicial automatica.
+- TASK-048: QA no aprobo porque el frontend publicado todavia no reflejaba TASK-047.
 
 ## Riesgos principales
 
@@ -85,11 +87,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Procesar hallazgos de PO Test para que el flujo operativo vaya de cliente a compra con menos friccion.
+Publicar cambios de TASK-047 y repetir QA publicado para confirmar el flujo de compra.
 
 ## Listo para probar
 
 - Flujo: Clientes - buscar/listar y registrar cliente.
 - Ambiente: frontend publicado `https://calm-dune-075dc5c0f.7.azurestaticapps.net` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
 - Estado: aprobado por Web Dev / QA en TASK-046, sin P0/P1.
-- Nota: UI local sigue disponible como apoyo, pero PO Test recomendado debe usar la URL publicada.
+- Nota: los nuevos hallazgos de PO Test sobre compra estan en proceso; esperar TASK-049 antes de volver a probar compra en publicado.

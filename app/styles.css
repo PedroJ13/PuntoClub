@@ -115,18 +115,24 @@ input:focus {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+  grid-template-columns: minmax(0, 1.2fr) minmax(340px, 0.9fr);
   gap: 20px;
   align-items: start;
 }
 
 .customers-panel,
-.form-panel {
+.form-panel,
+.purchase-panel {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
   box-shadow: var(--shadow);
   padding: 22px;
+}
+
+.side-stack {
+  display: grid;
+  gap: 20px;
 }
 
 .section-header {
@@ -209,7 +215,7 @@ input:focus {
 
 .customer-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 16px;
   align-items: center;
 }
@@ -234,6 +240,63 @@ input:focus {
   gap: 8px;
 }
 
+.points-badge {
+  min-width: 108px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 10px;
+  background: var(--surface-strong);
+  text-align: right;
+}
+
+.points-badge span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.points-badge strong {
+  display: block;
+  color: var(--text);
+  font-size: 1.04rem;
+  line-height: 1.2;
+}
+
+.points-badge.strong {
+  min-width: 132px;
+  background: #ecfdf3;
+  color: var(--success);
+}
+
+.selected-customer-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 14px;
+  background: #ffffff;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.selected-customer-card h3 {
+  margin: 0 0 4px;
+  color: var(--text);
+  font-size: 1rem;
+}
+
+.selected-customer-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
 .row-actions button {
   min-width: 44px;
   padding: 0 12px;
@@ -248,6 +311,22 @@ input:focus {
 .customer-form {
   display: grid;
   gap: 16px;
+}
+
+.purchase-form {
+  display: grid;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.purchase-form[hidden] {
+  display: none;
+}
+
+.field-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 12px;
 }
 
 .field-error {
@@ -281,14 +360,16 @@ input:focus {
   }
 
   .customers-panel,
-  .form-panel {
+  .form-panel,
+  .purchase-panel {
     padding: 16px;
   }
 }
 
 @media (max-width: 560px) {
   .search-row,
-  .customer-row {
+  .customer-row,
+  .field-grid {
     grid-template-columns: 1fr;
   }
 
@@ -305,5 +386,16 @@ input:focus {
 
   button {
     width: 100%;
+  }
+
+  .points-badge,
+  .selected-customer-card {
+    width: 100%;
+    text-align: left;
+  }
+
+  .selected-customer-card {
+    align-items: stretch;
+    flex-direction: column;
   }
 }

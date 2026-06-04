@@ -33,6 +33,7 @@
 - TASK-043: Crear y publicar Static Web Apps de Punto Club.
 - TASK-045: Completar GitHub Secret y deploy de Static Web Apps.
 - TASK-047: Ajustar flujo clientes para registrar compra desde cliente.
+- TASK-049: Revalidar flujo publicado clientes + registrar compra despues del deploy.
 
 ## P1 pre-lanzamiento
 

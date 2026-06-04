@@ -18,7 +18,20 @@ const initialCustomers = [
 ];
 
 let mockCustomers = [...initialCustomers];
+let mockBalances = new Map(
+  initialCustomers.map((customer) => [
+    String(customer.id),
+    {
+      customerId: String(customer.id),
+      pointsEarned: 0,
+      pointsRedeemed: 0,
+      pointsBalance: 0,
+    },
+  ]),
+);
+let mockInvoices = new Set();
 let nextCustomerId = 12;
+let nextPurchaseId = 50;
 
 export class ApiError extends Error {
   constructor(code, message, details = []) {
@@ -39,6 +52,7 @@ export function createCustomerApi(config) {
 
 function createHttpCustomerApi(config) {
   const customersUrl = buildApiUrl(config, `/api/companies/${config.companyId}/customers`);
+  const purchasesUrl = buildApiUrl(config, `/api/companies/${config.companyId}/purchases`);
 
   return {
     sourceLabel: "API real",
@@ -53,6 +67,23 @@ function createHttpCustomerApi(config) {
     },
     async createCustomer(payload) {
       const response = await fetch(customersUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      return parseResponse(response);
+    },
+    async getCustomerBalance(customerId) {
+      const url = buildApiUrl(
+        config,
+        `/api/companies/${config.companyId}/customers/${customerId}/balance`,
+      );
+      const response = await fetch(url);
+      return parseResponse(response);
+    },
+    async createPurchase(payload) {
+      const response = await fetch(purchasesUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -119,7 +150,61 @@ function createMockCustomerApi() {
 
       nextCustomerId += 1;
       mockCustomers = [customer, ...mockCustomers];
+      mockBalances.set(String(customer.id), {
+        customerId: String(customer.id),
+        pointsEarned: 0,
+        pointsRedeemed: 0,
+        pointsBalance: 0,
+      });
       return customer;
+    },
+    async getCustomerBalance(customerId) {
+      await wait(200);
+      const balance = mockBalances.get(String(customerId));
+
+      if (!balance) {
+        throw new ApiError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.");
+      }
+
+      return balance;
+    },
+    async createPurchase(payload) {
+      await wait(450);
+      validatePurchase(payload);
+
+      const customer = mockCustomers.find((item) => String(item.id) === String(payload.customerId));
+
+      if (!customer) {
+        throw new ApiError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.");
+      }
+
+      if (mockInvoices.has(normalize(payload.invoiceNumber))) {
+        throw new ApiError("DUPLICATE_INVOICE", "La factura ya existe para esta empresa.");
+      }
+
+      mockInvoices.add(normalize(payload.invoiceNumber));
+      const amount = Number(payload.amount);
+      const pointsEarned = Math.round(amount * 0.05);
+      const currentBalance = mockBalances.get(String(customer.id));
+      const balance = {
+        customerId: String(customer.id),
+        pointsEarned: currentBalance.pointsEarned + pointsEarned,
+        pointsRedeemed: currentBalance.pointsRedeemed,
+        pointsBalance: currentBalance.pointsBalance + pointsEarned,
+      };
+      mockBalances.set(String(customer.id), balance);
+
+      const purchase = {
+        id: String(nextPurchaseId),
+        customerId: String(customer.id),
+        invoiceNumber: payload.invoiceNumber.trim(),
+        purchaseDate: payload.purchaseDate,
+        amount,
+        pointsEarned,
+        createdAt: new Date().toISOString(),
+      };
+      nextPurchaseId += 1;
+      return purchase;
     },
   };
 }
@@ -152,6 +237,30 @@ function validateCustomer(payload) {
 
   if (payload.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email.trim())) {
     details.push({ field: "email", message: "El email no tiene un formato valido." });
+  }
+
+  if (details.length > 0) {
+    throw new ApiError("VALIDATION_ERROR", "Revise los campos marcados.", details);
+  }
+}
+
+function validatePurchase(payload) {
+  const details = [];
+
+  if (!String(payload.customerId ?? "").trim()) {
+    details.push({ field: "customerId", message: "El cliente es requerido." });
+  }
+
+  if (!String(payload.invoiceNumber ?? "").trim()) {
+    details.push({ field: "invoiceNumber", message: "El comprobante es requerido." });
+  }
+
+  if (!String(payload.purchaseDate ?? "").trim()) {
+    details.push({ field: "purchaseDate", message: "La fecha es requerida." });
+  }
+
+  if (!Number.isFinite(Number(payload.amount)) || Number(payload.amount) <= 0) {
+    details.push({ field: "amount", message: "El monto debe ser mayor que 0." });
   }
 
   if (details.length > 0) {

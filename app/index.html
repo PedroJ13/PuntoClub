@@ -21,7 +21,7 @@
           <div class="section-header">
             <div>
               <p class="eyebrow">Clientes</p>
-              <h2 id="customers-title">Busqueda operativa</h2>
+              <h2 id="customers-title">Buscar cliente</h2>
             </div>
             <button class="secondary-button" id="clear-search-button" type="button">Limpiar</button>
           </div>
@@ -44,43 +44,89 @@
           <div id="customers-list" class="customers-list"></div>
         </section>
 
-        <section class="form-panel" aria-labelledby="new-customer-title">
-          <div class="section-header">
-            <div>
-              <p class="eyebrow">Registro</p>
-              <h2 id="new-customer-title">Nuevo cliente</h2>
-            </div>
-          </div>
-
-          <div id="success-message" class="success-message" hidden></div>
-
-          <form id="new-customer-form" class="customer-form" novalidate>
-            <div class="field">
-              <label for="customer-name">Nombre</label>
-              <input id="customer-name" name="name" maxlength="160" autocomplete="name" />
-              <p class="field-error" id="customer-name-error"></p>
+        <div class="side-stack">
+          <section class="form-panel" aria-labelledby="new-customer-title">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Registro</p>
+                <h2 id="new-customer-title">Nuevo cliente</h2>
+              </div>
             </div>
 
-            <div class="field">
-              <label for="customer-phone">Telefono</label>
-              <input id="customer-phone" name="phone" maxlength="32" autocomplete="tel" />
-              <p class="field-error" id="customer-phone-error"></p>
+            <div id="success-message" class="success-message" hidden></div>
+
+            <form id="new-customer-form" class="customer-form" novalidate>
+              <div class="field">
+                <label for="customer-name">Nombre</label>
+                <input id="customer-name" name="name" maxlength="160" autocomplete="name" />
+                <p class="field-error" id="customer-name-error"></p>
+              </div>
+
+              <div class="field">
+                <label for="customer-phone">Telefono</label>
+                <input id="customer-phone" name="phone" maxlength="32" autocomplete="tel" />
+                <p class="field-error" id="customer-phone-error"></p>
+              </div>
+
+              <div class="field">
+                <label for="customer-email">Email</label>
+                <input id="customer-email" name="email" maxlength="254" autocomplete="email" />
+                <p class="field-error" id="customer-email-error"></p>
+              </div>
+
+              <div id="form-error" class="form-error" hidden></div>
+
+              <div class="form-actions">
+                <button class="secondary-button" id="reset-form-button" type="button">Vaciar</button>
+                <button id="save-customer-button" type="submit">Registrar cliente</button>
+              </div>
+            </form>
+          </section>
+
+          <section class="purchase-panel" aria-labelledby="purchase-title">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Compra</p>
+                <h2 id="purchase-title">Registrar compra</h2>
+              </div>
             </div>
 
-            <div class="field">
-              <label for="customer-email">Email</label>
-              <input id="customer-email" name="email" maxlength="254" autocomplete="email" />
-              <p class="field-error" id="customer-email-error"></p>
+            <div id="selected-customer-card" class="selected-customer-card">
+              Seleccione un cliente para registrar compra.
             </div>
 
-            <div id="form-error" class="form-error" hidden></div>
+            <div id="purchase-success-message" class="success-message" hidden></div>
 
-            <div class="form-actions">
-              <button class="secondary-button" id="reset-form-button" type="button">Vaciar</button>
-              <button id="save-customer-button" type="submit">Registrar cliente</button>
-            </div>
-          </form>
-        </section>
+            <form id="purchase-form" class="purchase-form" hidden novalidate>
+              <div class="field">
+                <label for="purchase-invoice-number">Factura o comprobante</label>
+                <input id="purchase-invoice-number" name="invoiceNumber" maxlength="80" autocomplete="off" />
+                <p class="field-error" id="purchase-invoice-number-error"></p>
+              </div>
+
+              <div class="field-grid">
+                <div class="field">
+                  <label for="purchase-date">Fecha</label>
+                  <input id="purchase-date" name="purchaseDate" type="date" />
+                  <p class="field-error" id="purchase-date-error"></p>
+                </div>
+
+                <div class="field">
+                  <label for="purchase-amount">Monto</label>
+                  <input id="purchase-amount" name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" />
+                  <p class="field-error" id="purchase-amount-error"></p>
+                </div>
+              </div>
+
+              <div id="purchase-error" class="form-error" hidden></div>
+
+              <div class="form-actions">
+                <button class="secondary-button" id="reset-purchase-button" type="button">Vaciar compra</button>
+                <button id="save-purchase-button" type="submit">Registrar compra</button>
+              </div>
+            </form>
+          </section>
+        </div>
       </main>
     </div>
 
