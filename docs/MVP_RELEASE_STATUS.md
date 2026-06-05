@@ -15,9 +15,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Ahora
 
 - PO Test puede ejecutar el flujo cliente + compra en la URL publicada.
+- TASK-050: Web Dev implementa redencion/canje de puntos desde cliente.
+- TASK-052: Infra / Azure revisa riesgos operativos pre-piloto.
 
 ### Siguiente
 
+- TASK-051: QA valida flujo publicado cliente + compra + redencion despues de TASK-050.
 - Product / Architect / Release procesa hallazgos de PO Test si aparecen.
 
 ### Bloqueado
@@ -88,7 +91,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar PO Test del flujo cliente + compra en ambiente publicado.
+Ejecutar PO Test del flujo cliente + compra en ambiente publicado y avanzar canje/redencion de puntos como siguiente capacidad MVP.
 
 ## Listo para probar
 

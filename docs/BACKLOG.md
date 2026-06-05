@@ -34,6 +34,8 @@
 - TASK-045: Completar GitHub Secret y deploy de Static Web Apps.
 - TASK-047: Ajustar flujo clientes para registrar compra desde cliente.
 - TASK-049: Revalidar flujo publicado clientes + registrar compra despues del deploy.
+- TASK-050: Implementar redencion/canje de puntos desde cliente.
+- TASK-052: Revisar riesgos operativos pre-piloto.
 
 ## P1 pre-lanzamiento
 
@@ -54,6 +56,7 @@
 - TASK-044: Revalidar frontend publicado.
 - TASK-046: Revalidar frontend publicado despues del deploy real.
 - TASK-048: Validar flujo publicado clientes + registrar compra.
+- TASK-051: Validar flujo publicado cliente + compra + redencion.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 
