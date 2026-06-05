@@ -32,6 +32,7 @@ let mockBalances = new Map(
 let mockInvoices = new Set();
 let nextCustomerId = 12;
 let nextPurchaseId = 50;
+let nextRedemptionId = 70;
 
 export class ApiError extends Error {
   constructor(code, message, details = []) {
@@ -53,6 +54,7 @@ export function createCustomerApi(config) {
 function createHttpCustomerApi(config) {
   const customersUrl = buildApiUrl(config, `/api/companies/${config.companyId}/customers`);
   const purchasesUrl = buildApiUrl(config, `/api/companies/${config.companyId}/purchases`);
+  const redemptionsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/redemptions`);
 
   return {
     sourceLabel: "API real",
@@ -84,6 +86,15 @@ function createHttpCustomerApi(config) {
     },
     async createPurchase(payload) {
       const response = await fetch(purchasesUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      return parseResponse(response);
+    },
+    async createRedemption(payload) {
+      const response = await fetch(redemptionsUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -206,6 +217,43 @@ function createMockCustomerApi() {
       nextPurchaseId += 1;
       return purchase;
     },
+    async createRedemption(payload) {
+      await wait(450);
+      validateRedemption(payload);
+
+      const customer = mockCustomers.find((item) => String(item.id) === String(payload.customerId));
+
+      if (!customer) {
+        throw new ApiError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.");
+      }
+
+      const currentBalance = mockBalances.get(String(customer.id));
+      const pointsRedeemed = Number(payload.pointsRedeemed);
+
+      if (pointsRedeemed > currentBalance.pointsBalance) {
+        throw new ApiError("INSUFFICIENT_POINTS", "El cliente no tiene puntos suficientes.");
+      }
+
+      const balance = {
+        customerId: String(customer.id),
+        pointsEarned: currentBalance.pointsEarned,
+        pointsRedeemed: currentBalance.pointsRedeemed + pointsRedeemed,
+        pointsBalance: currentBalance.pointsBalance - pointsRedeemed,
+      };
+      mockBalances.set(String(customer.id), balance);
+
+      const redemption = {
+        id: String(nextRedemptionId),
+        customerId: String(customer.id),
+        redemptionDate: payload.redemptionDate,
+        pointsRedeemed,
+        note: payload.note.trim() || null,
+        createdAt: new Date().toISOString(),
+        balanceAfter: balance.pointsBalance,
+      };
+      nextRedemptionId += 1;
+      return redemption;
+    },
   };
 }
 
@@ -261,6 +309,32 @@ function validatePurchase(payload) {
 
   if (!Number.isFinite(Number(payload.amount)) || Number(payload.amount) <= 0) {
     details.push({ field: "amount", message: "El monto debe ser mayor que 0." });
+  }
+
+  if (details.length > 0) {
+    throw new ApiError("VALIDATION_ERROR", "Revise los campos marcados.", details);
+  }
+}
+
+function validateRedemption(payload) {
+  const details = [];
+  const pointsRedeemed = Number(payload.pointsRedeemed);
+  const note = String(payload.note ?? "").trim();
+
+  if (!String(payload.customerId ?? "").trim()) {
+    details.push({ field: "customerId", message: "El cliente es requerido." });
+  }
+
+  if (!String(payload.redemptionDate ?? "").trim()) {
+    details.push({ field: "redemptionDate", message: "La fecha es requerida." });
+  }
+
+  if (!Number.isInteger(pointsRedeemed) || pointsRedeemed <= 0) {
+    details.push({ field: "pointsRedeemed", message: "Los puntos deben ser un entero mayor que 0." });
+  }
+
+  if (note.length > 500) {
+    details.push({ field: "note", message: "La nota debe tener 500 caracteres o menos." });
   }
 
   if (details.length > 0) {

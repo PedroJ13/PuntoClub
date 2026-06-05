@@ -33,6 +33,18 @@ const elements = {
   savePurchaseButton: document.querySelector("#save-purchase-button"),
   resetPurchaseButton: document.querySelector("#reset-purchase-button"),
   purchaseSuccessMessage: document.querySelector("#purchase-success-message"),
+  redemptionCustomerCard: document.querySelector("#redemption-customer-card"),
+  redemptionForm: document.querySelector("#redemption-form"),
+  redemptionDateInput: document.querySelector("#redemption-date"),
+  redemptionPointsInput: document.querySelector("#redemption-points"),
+  redemptionNoteInput: document.querySelector("#redemption-note"),
+  redemptionDateError: document.querySelector("#redemption-date-error"),
+  redemptionPointsError: document.querySelector("#redemption-points-error"),
+  redemptionNoteError: document.querySelector("#redemption-note-error"),
+  redemptionError: document.querySelector("#redemption-error"),
+  saveRedemptionButton: document.querySelector("#save-redemption-button"),
+  resetRedemptionButton: document.querySelector("#reset-redemption-button"),
+  redemptionSuccessMessage: document.querySelector("#redemption-success-message"),
 };
 
 let currentCustomers = [];
@@ -41,6 +53,7 @@ const customerBalances = new Map();
 
 elements.dataSourceStatus.textContent = api.sourceLabel;
 elements.purchaseDateInput.value = getToday();
+elements.redemptionDateInput.value = getToday();
 
 elements.searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -69,6 +82,15 @@ elements.purchaseForm.addEventListener("submit", async (event) => {
 
 elements.resetPurchaseButton.addEventListener("click", () => {
   clearPurchaseForm({ keepSuccess: false });
+});
+
+elements.redemptionForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitRedemption();
+});
+
+elements.resetRedemptionButton.addEventListener("click", () => {
+  clearRedemptionForm({ keepSuccess: false });
 });
 
 renderSearchPrompt();
@@ -196,6 +218,37 @@ async function submitPurchase() {
   }
 }
 
+async function submitRedemption() {
+  clearRedemptionMessages();
+
+  if (!selectedCustomer) {
+    showRedemptionError("Seleccione un cliente antes de redimir puntos.");
+    return;
+  }
+
+  setRedemptionSubmitting(true);
+
+  const payload = {
+    customerId: selectedCustomer.id,
+    redemptionDate: elements.redemptionDateInput.value,
+    pointsRedeemed: elements.redemptionPointsInput.value,
+    note: elements.redemptionNoteInput.value,
+  };
+
+  try {
+    const redemption = await api.createRedemption(payload);
+    showRedemptionSuccess(
+      `Canje registrado. Puntos redimidos: ${formatPoints(redemption.pointsRedeemed)}.`,
+    );
+    clearRedemptionForm({ keepSuccess: true });
+    await refreshCustomerBalance(selectedCustomer.id);
+  } catch (error) {
+    renderRedemptionError(error);
+  } finally {
+    setRedemptionSubmitting(false);
+  }
+}
+
 async function refreshCustomerBalance(customerId) {
   const balance = await safeGetBalance(customerId);
   customerBalances.set(String(customerId), balance);
@@ -275,20 +328,27 @@ function renderCustomers(customers, search) {
             <button type="button" data-action="purchase" data-customer-id="${escapeHtml(customer.id)}">
               Registrar compra
             </button>
+            <button class="secondary-button" type="button" data-action="redemption" data-customer-id="${escapeHtml(customer.id)}">
+              Redimir puntos
+            </button>
           </div>
         </article>
       `,
     )
     .join("");
 
-  elements.customersList.querySelectorAll("[data-action='purchase']").forEach((button) => {
+  elements.customersList.querySelectorAll("[data-action]").forEach((button) => {
     button.addEventListener("click", () => {
       const customer = currentCustomers.find(
         (item) => String(item.id) === String(button.dataset.customerId),
       );
 
       if (customer) {
-        selectCustomer(customer, { focusPurchase: true });
+        const action = button.dataset.action;
+        selectCustomer(customer, {
+          focusPurchase: action === "purchase",
+          focusRedemption: action === "redemption",
+        });
       }
     });
   });
@@ -301,23 +361,33 @@ function selectCustomer(customer, options = {}) {
   };
   renderSelectedCustomer();
   clearPurchaseForm({ keepSuccess: false });
+  clearRedemptionForm({ keepSuccess: false });
   elements.purchaseForm.hidden = false;
+  elements.redemptionForm.hidden = false;
   elements.purchaseDateInput.value = getToday();
+  elements.redemptionDateInput.value = getToday();
 
   if (options.focusPurchase) {
     elements.purchaseInvoiceInput.focus();
     elements.purchaseForm.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+
+  if (options.focusRedemption) {
+    elements.redemptionPointsInput.focus();
+    elements.redemptionForm.scrollIntoView({ block: "center", behavior: "smooth" });
   }
 }
 
 function renderSelectedCustomer() {
   if (!selectedCustomer) {
     elements.purchaseForm.hidden = true;
+    elements.redemptionForm.hidden = true;
     elements.selectedCustomerCard.textContent = "Seleccione un cliente para registrar compra.";
+    elements.redemptionCustomerCard.textContent = "Seleccione un cliente para redimir puntos.";
     return;
   }
 
-  elements.selectedCustomerCard.innerHTML = `
+  const customerCard = `
     <div>
       <h3>${escapeHtml(selectedCustomer.name)}</h3>
       <p>${escapeHtml(selectedCustomer.phone)} - ${escapeHtml(selectedCustomer.email || "Sin email")}</p>
@@ -327,6 +397,9 @@ function renderSelectedCustomer() {
       <strong>${formatBalance(selectedCustomer.balance)}</strong>
     </div>
   `;
+
+  elements.selectedCustomerCard.innerHTML = customerCard;
+  elements.redemptionCustomerCard.innerHTML = customerCard;
 }
 
 function renderCustomersError(error) {
@@ -395,6 +468,36 @@ function renderPurchaseError(error) {
   showPurchaseError("No se pudo registrar la compra. Intente de nuevo.");
 }
 
+function renderRedemptionError(error) {
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    error.details.forEach((detail) => {
+      const target = {
+        redemptionDate: elements.redemptionDateError,
+        pointsRedeemed: elements.redemptionPointsError,
+        note: elements.redemptionNoteError,
+      }[detail.field];
+
+      if (target) {
+        target.textContent = getRedemptionValidationMessage(detail);
+      }
+    });
+    showRedemptionError("Revise los campos marcados.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "INSUFFICIENT_POINTS") {
+    showRedemptionError("El cliente no tiene puntos suficientes para este canje.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "CUSTOMER_NOT_FOUND") {
+    showRedemptionError("El cliente seleccionado ya no esta disponible.");
+    return;
+  }
+
+  showRedemptionError("No se pudo redimir puntos. Intente de nuevo.");
+}
+
 function getCustomerValidationMessage(detail) {
   const messagesByField = {
     name: "El nombre es requerido y debe tener 160 caracteres o menos.",
@@ -410,6 +513,16 @@ function getPurchaseValidationMessage(detail) {
     invoiceNumber: "La factura o comprobante es requerido y debe tener 80 caracteres o menos.",
     purchaseDate: "La fecha de compra es requerida.",
     amount: "El monto debe ser mayor que 0.",
+  };
+
+  return messagesByField[detail.field] ?? detail.message;
+}
+
+function getRedemptionValidationMessage(detail) {
+  const messagesByField = {
+    redemptionDate: "La fecha de canje es requerida.",
+    pointsRedeemed: "Los puntos a redimir deben ser un entero mayor que 0.",
+    note: "La nota debe tener 500 caracteres o menos.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
@@ -438,6 +551,16 @@ function showPurchaseError(message) {
 function showPurchaseSuccess(message) {
   elements.purchaseSuccessMessage.hidden = false;
   elements.purchaseSuccessMessage.textContent = message;
+}
+
+function showRedemptionError(message) {
+  elements.redemptionError.hidden = false;
+  elements.redemptionError.textContent = message;
+}
+
+function showRedemptionSuccess(message) {
+  elements.redemptionSuccessMessage.hidden = false;
+  elements.redemptionSuccessMessage.textContent = message;
 }
 
 function clearForm(options = {}) {
@@ -481,6 +604,25 @@ function clearPurchaseMessages(options = {}) {
   }
 }
 
+function clearRedemptionForm(options = {}) {
+  elements.redemptionForm.reset();
+  elements.redemptionDateInput.value = getToday();
+  clearRedemptionMessages(options);
+}
+
+function clearRedemptionMessages(options = {}) {
+  elements.redemptionDateError.textContent = "";
+  elements.redemptionPointsError.textContent = "";
+  elements.redemptionNoteError.textContent = "";
+  elements.redemptionError.hidden = true;
+  elements.redemptionError.textContent = "";
+
+  if (!options.keepSuccess) {
+    elements.redemptionSuccessMessage.hidden = true;
+    elements.redemptionSuccessMessage.textContent = "";
+  }
+}
+
 function setSubmitting(isSubmitting) {
   elements.saveButton.disabled = isSubmitting;
   elements.saveButton.textContent = isSubmitting ? "Registrando..." : "Registrar cliente";
@@ -489,6 +631,11 @@ function setSubmitting(isSubmitting) {
 function setPurchaseSubmitting(isSubmitting) {
   elements.savePurchaseButton.disabled = isSubmitting;
   elements.savePurchaseButton.textContent = isSubmitting ? "Registrando..." : "Registrar compra";
+}
+
+function setRedemptionSubmitting(isSubmitting) {
+  elements.saveRedemptionButton.disabled = isSubmitting;
+  elements.saveRedemptionButton.textContent = isSubmitting ? "Redimiendo..." : "Redimir puntos";
 }
 
 function formatBalance(balance) {

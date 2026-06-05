@@ -36,6 +36,8 @@
 - TASK-049: Revalidar flujo publicado clientes + registrar compra despues del deploy.
 - TASK-050: Implementar redencion/canje de puntos desde cliente.
 - TASK-052: Revisar riesgos operativos pre-piloto.
+- TASK-053: Revalidar flujo publicado cliente + compra + redencion despues del deploy.
+- TASK-054: Preparar deploy repetible de API o renovar paquete antes de expiracion SAS.
 
 ## P1 pre-lanzamiento
 

@@ -126,6 +126,50 @@
               </div>
             </form>
           </section>
+
+          <section class="redemption-panel" aria-labelledby="redemption-title">
+            <div class="section-header">
+              <div>
+                <p class="eyebrow">Canje</p>
+                <h2 id="redemption-title">Redimir puntos</h2>
+              </div>
+            </div>
+
+            <div id="redemption-customer-card" class="selected-customer-card">
+              Seleccione un cliente para redimir puntos.
+            </div>
+
+            <div id="redemption-success-message" class="success-message" hidden></div>
+
+            <form id="redemption-form" class="redemption-form" hidden novalidate>
+              <div class="field-grid">
+                <div class="field">
+                  <label for="redemption-date">Fecha</label>
+                  <input id="redemption-date" name="redemptionDate" type="date" />
+                  <p class="field-error" id="redemption-date-error"></p>
+                </div>
+
+                <div class="field">
+                  <label for="redemption-points">Puntos a redimir</label>
+                  <input id="redemption-points" name="pointsRedeemed" type="number" min="1" step="1" inputmode="numeric" />
+                  <p class="field-error" id="redemption-points-error"></p>
+                </div>
+              </div>
+
+              <div class="field">
+                <label for="redemption-note">Nota opcional</label>
+                <textarea id="redemption-note" name="note" maxlength="500" rows="3"></textarea>
+                <p class="field-error" id="redemption-note-error"></p>
+              </div>
+
+              <div id="redemption-error" class="form-error" hidden></div>
+
+              <div class="form-actions">
+                <button class="secondary-button" id="reset-redemption-button" type="button">Vaciar canje</button>
+                <button id="save-redemption-button" type="submit">Redimir puntos</button>
+              </div>
+            </form>
+          </section>
         </div>
       </main>
     </div>

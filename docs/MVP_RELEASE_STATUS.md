@@ -15,17 +15,17 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Ahora
 
 - PO Test puede ejecutar el flujo cliente + compra en la URL publicada.
-- TASK-050: Web Dev implementa redencion/canje de puntos desde cliente.
-- TASK-052: Infra / Azure revisa riesgos operativos pre-piloto.
+- TASK-053: QA revalida flujo publicado cliente + compra + redencion despues del deploy de TASK-050.
+- TASK-054: Infra / Azure prepara deploy repetible de API o renovacion segura antes de que expire el SAS.
 
 ### Siguiente
 
-- TASK-051: QA valida flujo publicado cliente + compra + redencion despues de TASK-050.
 - Product / Architect / Release procesa hallazgos de PO Test si aparecen.
 
 ### Bloqueado
 
-- No hay bloqueos P0/P1 abiertos para el flujo cliente + compra publicado.
+- TASK-051 no aprobado porque la URL publicada aun servia la UI anterior al momento de la prueba.
+- P1 operativo: `WEBSITE_RUN_FROM_PACKAGE` de Azure Functions usa SAS privado con expiracion `2026-06-10T21:28Z`.
 
 ### Hecho
 
@@ -81,6 +81,9 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-047: Web Dev ajusto flujo local para registrar compra desde cliente, mostrar puntos y evitar busqueda inicial automatica.
 - TASK-048: QA no aprobo porque el frontend publicado todavia no reflejaba TASK-047.
 - TASK-049: QA aprobo flujo publicado cliente + compra despues del deploy, sin P0/P1.
+- TASK-050: Web Dev implemento redencion/canje local contra API estable, pendiente revalidacion publicada.
+- TASK-051: QA no aprobo porque el frontend publicado todavia no reflejaba TASK-050.
+- TASK-052: Infra / Azure identifico riesgos operativos pre-piloto; principal P1 es deploy API/SAS con expiracion.
 
 ## Riesgos principales
 
@@ -91,7 +94,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar PO Test del flujo cliente + compra en ambiente publicado y avanzar canje/redencion de puntos como siguiente capacidad MVP.
+Desplegar redencion/canje, repetir QA publicado y resolver riesgo P1 de deploy API antes del 2026-06-10.
 
 ## Listo para probar
 
