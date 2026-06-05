@@ -1,22 +1,26 @@
-# PO Test - Flujo Clientes
+# PO Test - Flujo Clientes + Compra
 
 ## Estado
 
 Listo para prueba de Product Owner en ambiente publicado.
 
-Web Dev / QA aprobo el flujo publicado en TASK-046, sin P0/P1.
+QA aprobo el flujo publicado en TASK-049, sin P0/P1.
 
 ## Flujo a probar
 
-Clientes - buscar/listar y registrar cliente.
+Clientes - buscar/listar, registrar cliente y registrar compra.
 
 ## Alcance
 
 - Buscar clientes existentes.
+- Confirmar puntos acumulados visibles.
+- Registrar compra para cliente existente.
 - Registrar un cliente nuevo.
-- Buscar el cliente recien creado.
+- Registrar compra para el cliente recien creado.
 - Intentar registrar duplicado.
+- Confirmar que el duplicado abre el registro de compra del cliente existente.
 - Ver validaciones de campos requeridos.
+- Ver validaciones de compra.
 
 ## Ambiente
 
@@ -45,23 +49,31 @@ Confirmar con Product / Architect / Release o Backend/API que:
 
 - La URL publicada carga Punto Club, no la pagina default de Azure Static Web Apps.
 - El indicador muestra `API real`.
-- No hay P0/P1 abiertos en TASK-046.
+- No hay P0/P1 abiertos en TASK-049.
 
 ## Checklist PO
 
 - [ ] Abrir la UI.
 - [ ] Confirmar que la pantalla carga sin error critico.
 - [ ] Confirmar que indica fuente `API real`.
+- [ ] Confirmar que no carga clientes automaticamente al abrir.
 - [ ] Buscar un cliente existente.
-- [ ] Confirmar que la lista muestra nombre, telefono y email.
+- [ ] Confirmar que la lista muestra nombre, telefono, email y puntos acumulados.
+- [ ] Usar `Registrar compra` en un cliente existente.
+- [ ] Registrar compra con factura, fecha y monto.
+- [ ] Confirmar mensaje de compra registrada y puntos actualizados.
 - [ ] Registrar un cliente nuevo con nombre, telefono y email.
-- [ ] Confirmar mensaje de registro exitoso.
-- [ ] Buscar por telefono el cliente creado.
+- [ ] Confirmar que despues de registrar cliente se abre/permite registrar compra.
+- [ ] Registrar compra para ese cliente nuevo.
 - [ ] Intentar registrar otro cliente con el mismo telefono.
-- [ ] Confirmar que aparece error de duplicado entendible.
+- [ ] Confirmar que aparece mensaje de duplicado entendible.
+- [ ] Confirmar que el duplicado abre el registro de compra del cliente existente cuando sea posible.
 - [ ] Intentar registrar cliente sin nombre.
 - [ ] Intentar registrar cliente sin telefono.
 - [ ] Confirmar que los errores de campos son claros.
+- [ ] Intentar compra sin factura.
+- [ ] Intentar compra con monto `0`.
+- [ ] Confirmar que los errores de compra son claros.
 - [ ] Probar en desktop.
 - [ ] Probar en mobile o ventana estrecha.
 
@@ -69,15 +81,17 @@ Confirmar con Product / Architect / Release o Backend/API que:
 
 - El cliente nuevo se registra correctamente.
 - La busqueda encuentra clientes reales.
-- El duplicado se bloquea con mensaje claro.
+- Los puntos acumulados son visibles.
+- Una compra se registra correctamente para cliente existente.
+- Una compra se registra correctamente despues de crear cliente.
+- El duplicado muestra mensaje claro y permite continuar hacia compra del existente cuando aplica.
 - Los campos requeridos muestran errores claros.
+- Los errores de compra muestran mensajes claros.
 - La UI no se rompe visualmente en desktop ni mobile.
 
 ## Fuera de alcance
 
-- Compras.
 - Redenciones.
-- Saldo.
 - Historial.
 - Login/auth real.
 - Cambios de configuracion Azure.
@@ -103,6 +117,8 @@ Captura o nota:
 Severidad sugerida:
 
 - P1: no permite buscar o registrar cliente.
+- P1: no permite registrar compra para cliente existente o nuevo.
 - P1: permite duplicado evidente.
+- P1: puntos no se actualizan despues de compra.
 - P2: mensaje confuso pero hay workaround.
 - P3: detalle visual o copy menor.

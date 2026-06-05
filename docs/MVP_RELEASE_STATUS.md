@@ -14,15 +14,15 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-049: QA revalida flujo clientes + registrar compra despues del deploy de TASK-047.
+- PO Test puede ejecutar el flujo cliente + compra en la URL publicada.
 
 ### Siguiente
 
-- Product / Architect / Release procesa resultado de TASK-049 y avisa si queda listo para PO Test.
+- Product / Architect / Release procesa hallazgos de PO Test si aparecen.
 
 ### Bloqueado
 
-- TASK-048 no aprobado porque la URL publicada aun servia la UI anterior al momento de la prueba.
+- No hay bloqueos P0/P1 abiertos para el flujo cliente + compra publicado.
 
 ### Hecho
 
@@ -77,6 +77,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-046: Web Dev / QA aprobo frontend publicado para PO Test del flujo clientes.
 - TASK-047: Web Dev ajusto flujo local para registrar compra desde cliente, mostrar puntos y evitar busqueda inicial automatica.
 - TASK-048: QA no aprobo porque el frontend publicado todavia no reflejaba TASK-047.
+- TASK-049: QA aprobo flujo publicado cliente + compra despues del deploy, sin P0/P1.
 
 ## Riesgos principales
 
@@ -87,11 +88,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Publicar cambios de TASK-047 y repetir QA publicado para confirmar el flujo de compra.
+Ejecutar PO Test del flujo cliente + compra en ambiente publicado.
 
 ## Listo para probar
 
-- Flujo: Clientes - buscar/listar y registrar cliente.
+- Flujo: Clientes + registrar compra.
 - Ambiente: frontend publicado `https://calm-dune-075dc5c0f.7.azurestaticapps.net` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
-- Estado: aprobado por Web Dev / QA en TASK-046, sin P0/P1.
-- Nota: los nuevos hallazgos de PO Test sobre compra estan en proceso; esperar TASK-049 antes de volver a probar compra en publicado.
+- Estado: aprobado por QA en TASK-049, sin P0/P1.
+- Nota: las pruebas crean datos reales de QA en la empresa piloto.
