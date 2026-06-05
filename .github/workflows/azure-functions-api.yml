@@ -60,6 +60,13 @@ jobs:
             -x "*.log" \
             -x "tests/*"
 
+      - name: Clear run-from-package setting
+        run: |
+          az functionapp config appsettings delete \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_FUNCTIONAPP_NAME" \
+            --setting-names WEBSITE_RUN_FROM_PACKAGE
+
       - name: Deploy Azure Functions
         run: |
           az functionapp deployment source config-zip \
