@@ -15,6 +15,7 @@ permissions:
 
 env:
   AZURE_FUNCTIONAPP_NAME: func-puntoclub-prod-br-001
+  AZURE_RESOURCE_GROUP: resource_group_main
   AZURE_CLIENT_ID: 84308cf7-053b-46b1-beef-b8245e851271
   AZURE_TENANT_ID: a50d6327-9af1-45f4-ab3e-4a931f70e318
   AZURE_SUBSCRIPTION_ID: ea1a3068-3abc-425a-ad65-53be62bdf0c6
@@ -50,11 +51,21 @@ jobs:
           tenant-id: ${{ env.AZURE_TENANT_ID }}
           subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Package API
+        run: |
+          cd api
+          zip -r ../api-deploy.zip . \
+            -x "local.settings.json" \
+            -x "local-secrets/*" \
+            -x "*.log" \
+            -x "tests/*"
+
       - name: Deploy Azure Functions
-        uses: Azure/functions-action@v1
-        with:
-          app-name: ${{ env.AZURE_FUNCTIONAPP_NAME }}
-          package: api
+        run: |
+          az functionapp deployment source config-zip \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_FUNCTIONAPP_NAME" \
+            --src api-deploy.zip
 
       - name: Smoke test stable API
         working-directory: api
