@@ -15,17 +15,15 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Ahora
 
 - PO Test puede ejecutar el flujo cliente + compra + redencion en la URL publicada.
-- TASK-055: Infra / Azure preparo workflow formal de deploy API; falta ejecutar primer run en GitHub Actions.
 
 ### Siguiente
 
-- TASK-057: QA valida API estable despues del primer run real del workflow API.
 - Product / Architect / Release procesa hallazgos de PO Test si aparecen.
 
 ### Bloqueado
 
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion publicado.
-- Deuda P1 mitigada temporalmente: API package SAS renovado hasta `2027-06-05T21:31Z`, pero falta deploy API repetible formal.
+- No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
 ### Hecho
 
@@ -88,6 +86,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-054: Infra / Azure renovo temporalmente `WEBSITE_RUN_FROM_PACKAGE`; nuevo SAS expira `2027-06-05T21:31Z`.
 - TASK-055: Infra / Azure preparo OIDC y workflow GitHub Actions para deploy API, pendiente primer run.
 - TASK-056: QA marco no ejecutable porque aun no habia deploy/run API que validar.
+- TASK-057: QA aprobo API estable despues del primer run real exitoso del workflow API.
 
 ## Riesgos principales
 
@@ -98,11 +97,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar PO Test del flujo cliente + compra + redencion y correr el primer workflow API para cerrar deploy repetible.
+Ejecutar PO Test del flujo cliente + compra + redencion en ambiente publicado.
 
 ## Listo para probar
 
 - Flujo: Clientes + registrar compra + redimir puntos.
 - Ambiente: frontend publicado `https://calm-dune-075dc5c0f.7.azurestaticapps.net` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
 - Estado: aprobado por QA en TASK-053, sin P0/P1.
+- API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
