@@ -1,26 +1,30 @@
-# PO Test - Flujo Clientes + Compra
+# PO Test - Flujo Clientes + Compra + Redencion
 
 ## Estado
 
 Listo para prueba de Product Owner en ambiente publicado.
 
-QA aprobo el flujo publicado en TASK-049, sin P0/P1.
+QA aprobo el flujo publicado en TASK-053, sin P0/P1.
 
 ## Flujo a probar
 
-Clientes - buscar/listar, registrar cliente y registrar compra.
+Clientes - buscar/listar, registrar cliente, registrar compra y redimir puntos.
 
 ## Alcance
 
 - Buscar clientes existentes.
 - Confirmar puntos acumulados visibles.
 - Registrar compra para cliente existente.
+- Redimir puntos para cliente existente con saldo.
 - Registrar un cliente nuevo.
 - Registrar compra para el cliente recien creado.
+- Redimir parte de los puntos del cliente recien creado.
 - Intentar registrar duplicado.
 - Confirmar que el duplicado abre el registro de compra del cliente existente.
 - Ver validaciones de campos requeridos.
 - Ver validaciones de compra.
+- Ver validaciones de redencion.
+- Ver error de saldo insuficiente.
 
 ## Ambiente
 
@@ -49,7 +53,7 @@ Confirmar con Product / Architect / Release o Backend/API que:
 
 - La URL publicada carga Punto Club, no la pagina default de Azure Static Web Apps.
 - El indicador muestra `API real`.
-- No hay P0/P1 abiertos en TASK-049.
+- No hay P0/P1 abiertos en TASK-053.
 
 ## Checklist PO
 
@@ -62,9 +66,15 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - [ ] Usar `Registrar compra` en un cliente existente.
 - [ ] Registrar compra con factura, fecha y monto.
 - [ ] Confirmar mensaje de compra registrada y puntos actualizados.
+- [ ] Usar `Redimir puntos` en un cliente con saldo.
+- [ ] Redimir una cantidad menor o igual al saldo.
+- [ ] Confirmar mensaje de canje registrado y puntos actualizados.
+- [ ] Intentar redimir mas puntos que el saldo.
+- [ ] Confirmar mensaje claro de saldo insuficiente.
 - [ ] Registrar un cliente nuevo con nombre, telefono y email.
 - [ ] Confirmar que despues de registrar cliente se abre/permite registrar compra.
 - [ ] Registrar compra para ese cliente nuevo.
+- [ ] Redimir parte de los puntos del cliente nuevo.
 - [ ] Intentar registrar otro cliente con el mismo telefono.
 - [ ] Confirmar que aparece mensaje de duplicado entendible.
 - [ ] Confirmar que el duplicado abre el registro de compra del cliente existente cuando sea posible.
@@ -74,6 +84,9 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - [ ] Intentar compra sin factura.
 - [ ] Intentar compra con monto `0`.
 - [ ] Confirmar que los errores de compra son claros.
+- [ ] Intentar redencion sin puntos.
+- [ ] Intentar redencion con puntos `0`.
+- [ ] Confirmar que los errores de redencion son claros.
 - [ ] Probar en desktop.
 - [ ] Probar en mobile o ventana estrecha.
 
@@ -84,14 +97,17 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - Los puntos acumulados son visibles.
 - Una compra se registra correctamente para cliente existente.
 - Una compra se registra correctamente despues de crear cliente.
+- Una redencion se registra correctamente para cliente con saldo.
+- El saldo se descuenta correctamente despues de redimir.
+- Saldo insuficiente se bloquea con mensaje claro.
 - El duplicado muestra mensaje claro y permite continuar hacia compra del existente cuando aplica.
 - Los campos requeridos muestran errores claros.
 - Los errores de compra muestran mensajes claros.
+- Los errores de redencion muestran mensajes claros.
 - La UI no se rompe visualmente en desktop ni mobile.
 
 ## Fuera de alcance
 
-- Redenciones.
 - Historial.
 - Login/auth real.
 - Cambios de configuracion Azure.
@@ -118,7 +134,10 @@ Severidad sugerida:
 
 - P1: no permite buscar o registrar cliente.
 - P1: no permite registrar compra para cliente existente o nuevo.
+- P1: no permite redimir puntos con saldo suficiente.
 - P1: permite duplicado evidente.
 - P1: puntos no se actualizan despues de compra.
+- P1: puntos no se descuentan despues de redencion.
+- P1: permite redimir mas puntos que el saldo.
 - P2: mensaje confuso pero hay workaround.
 - P3: detalle visual o copy menor.

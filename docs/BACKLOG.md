@@ -38,6 +38,7 @@
 - TASK-052: Revisar riesgos operativos pre-piloto.
 - TASK-053: Revalidar flujo publicado cliente + compra + redencion despues del deploy.
 - TASK-054: Preparar deploy repetible de API o renovar paquete antes de expiracion SAS.
+- TASK-055: Preparar workflow formal de deploy API.
 
 ## P1 pre-lanzamiento
 
@@ -59,6 +60,7 @@
 - TASK-046: Revalidar frontend publicado despues del deploy real.
 - TASK-048: Validar flujo publicado clientes + registrar compra.
 - TASK-051: Validar flujo publicado cliente + compra + redencion.
+- TASK-056: Validar API estable despues del workflow de deploy API.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 
