@@ -61,6 +61,7 @@
 - TASK-048: Validar flujo publicado clientes + registrar compra.
 - TASK-051: Validar flujo publicado cliente + compra + redencion.
 - TASK-056: Validar API estable despues del workflow de deploy API.
+- TASK-057: Validar API estable despues del primer run real del workflow API.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 

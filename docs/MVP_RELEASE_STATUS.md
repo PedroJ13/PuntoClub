@@ -15,11 +15,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Ahora
 
 - PO Test puede ejecutar el flujo cliente + compra + redencion en la URL publicada.
-- TASK-055: Infra / Azure prepara workflow formal de deploy API con GitHub Actions.
+- TASK-055: Infra / Azure preparo workflow formal de deploy API; falta ejecutar primer run en GitHub Actions.
 
 ### Siguiente
 
-- TASK-056: QA valida API estable despues de que exista deploy API repetible.
+- TASK-057: QA valida API estable despues del primer run real del workflow API.
 - Product / Architect / Release procesa hallazgos de PO Test si aparecen.
 
 ### Bloqueado
@@ -86,6 +86,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-052: Infra / Azure identifico riesgos operativos pre-piloto; principal P1 es deploy API/SAS con expiracion.
 - TASK-053: QA aprobo flujo publicado cliente + compra + redencion despues del deploy, sin P0/P1.
 - TASK-054: Infra / Azure renovo temporalmente `WEBSITE_RUN_FROM_PACKAGE`; nuevo SAS expira `2027-06-05T21:31Z`.
+- TASK-055: Infra / Azure preparo OIDC y workflow GitHub Actions para deploy API, pendiente primer run.
+- TASK-056: QA marco no ejecutable porque aun no habia deploy/run API que validar.
 
 ## Riesgos principales
 
@@ -96,7 +98,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar PO Test del flujo cliente + compra + redencion y formalizar deploy repetible de API.
+Ejecutar PO Test del flujo cliente + compra + redencion y correr el primer workflow API para cerrar deploy repetible.
 
 ## Listo para probar
 
