@@ -40,6 +40,7 @@
 - TASK-054: Preparar deploy repetible de API o renovar paquete antes de expiracion SAS.
 - TASK-055: Preparar workflow formal de deploy API.
 - TASK-058: Reorganizar UI por menu lateral de paneles.
+- TASK-060: Revalidar UI publicada con menu lateral de paneles despues del deploy.
 
 ## P1 pre-lanzamiento
 

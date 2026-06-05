@@ -17,35 +17,20 @@
       </header>
 
       <main class="workspace" aria-live="polite">
-        <section class="customers-panel" aria-labelledby="customers-title">
-          <div class="section-header">
-            <div>
-              <p class="eyebrow">Clientes</p>
-              <h2 id="customers-title">Buscar cliente</h2>
-            </div>
-            <button class="secondary-button" id="clear-search-button" type="button">Limpiar</button>
-          </div>
+        <aside class="panel-nav" aria-label="Flujo de caja">
+          <button class="panel-nav-button" type="button" data-panel-target="customer" aria-pressed="true">
+            Registrar cliente
+          </button>
+          <button class="panel-nav-button" type="button" data-panel-target="purchase" aria-pressed="false">
+            Registrar compra
+          </button>
+          <button class="panel-nav-button" type="button" data-panel-target="redemption" aria-pressed="false">
+            Redimir puntos
+          </button>
+        </aside>
 
-          <form class="search-form" id="customer-search-form">
-            <label for="customer-search">Telefono, nombre o email</label>
-            <div class="search-row">
-              <input
-                id="customer-search"
-                name="search"
-                type="search"
-                autocomplete="off"
-                placeholder="Ej. 8888, Maria, cliente@correo.com"
-              />
-              <button type="submit">Buscar</button>
-            </div>
-          </form>
-
-          <div id="customers-feedback" class="feedback" hidden></div>
-          <div id="customers-list" class="customers-list"></div>
-        </section>
-
-        <div class="side-stack">
-          <section class="form-panel" aria-labelledby="new-customer-title">
+        <div class="panel-stack">
+          <section class="form-panel operation-panel" data-panel="customer" aria-labelledby="new-customer-title">
             <div class="section-header">
               <div>
                 <p class="eyebrow">Registro</p>
@@ -83,7 +68,7 @@
             </form>
           </section>
 
-          <section class="purchase-panel" aria-labelledby="purchase-title">
+          <section class="purchase-panel operation-panel" data-panel="purchase" aria-labelledby="purchase-title" hidden>
             <div class="section-header">
               <div>
                 <p class="eyebrow">Compra</p>
@@ -122,12 +107,13 @@
 
               <div class="form-actions">
                 <button class="secondary-button" id="reset-purchase-button" type="button">Vaciar compra</button>
+                <button class="secondary-button" id="go-redemption-button" type="button">Ir a redimir puntos</button>
                 <button id="save-purchase-button" type="submit">Registrar compra</button>
               </div>
             </form>
           </section>
 
-          <section class="redemption-panel" aria-labelledby="redemption-title">
+          <section class="redemption-panel operation-panel" data-panel="redemption" aria-labelledby="redemption-title" hidden>
             <div class="section-header">
               <div>
                 <p class="eyebrow">Canje</p>
@@ -171,6 +157,33 @@
             </form>
           </section>
         </div>
+
+        <section class="customers-panel" aria-labelledby="customers-title">
+          <div class="section-header">
+            <div>
+              <p class="eyebrow">Clientes</p>
+              <h2 id="customers-title">Buscar cliente</h2>
+            </div>
+            <button class="secondary-button" id="clear-search-button" type="button">Limpiar</button>
+          </div>
+
+          <form class="search-form" id="customer-search-form">
+            <label for="customer-search">Telefono, nombre o email</label>
+            <div class="search-row">
+              <input
+                id="customer-search"
+                name="search"
+                type="search"
+                autocomplete="off"
+                placeholder="Ej. 8888, Maria, cliente@correo.com"
+              />
+              <button type="submit">Buscar</button>
+            </div>
+          </form>
+
+          <div id="customers-feedback" class="feedback" hidden></div>
+          <div id="customers-list" class="customers-list"></div>
+        </section>
       </main>
     </div>
 

@@ -15,16 +15,15 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Ahora
 
 - PO Test puede ejecutar el flujo cliente + compra + redencion en la URL publicada.
-- TASK-058: Web Dev reorganiza UI por menu lateral de paneles para evitar scroll/busqueda de formularios.
+- TASK-060: QA revalida UI publicada con menu lateral de paneles despues del deploy de TASK-058.
 
 ### Siguiente
 
-- TASK-059: QA valida flujo publicado con menu lateral y transiciones registrar/compra/redencion.
 - Product / Architect / Release procesa hallazgos de PO Test si aparecen.
 
 ### Bloqueado
 
-- No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion publicado.
+- TASK-059 no aprobado porque la URL publicada aun servia la UI anterior al momento de la prueba.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
 ### Hecho
@@ -89,6 +88,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-055: Infra / Azure preparo OIDC y workflow GitHub Actions para deploy API, pendiente primer run.
 - TASK-056: QA marco no ejecutable porque aun no habia deploy/run API que validar.
 - TASK-057: QA aprobo API estable despues del primer run real exitoso del workflow API.
+- TASK-058: Web Dev reorganizo UI local por menu/paneles para registrar cliente, compra y redencion.
+- TASK-059: QA no aprobo porque la URL publicada todavia no reflejaba TASK-058.
 
 ## Riesgos principales
 
@@ -99,7 +100,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Procesar hallazgo UX de PO Test: los paneles quedan fuera de pantalla; se requiere menu lateral y transiciones claras entre registro, compra y redencion.
+Desplegar cambios de TASK-058 y repetir QA publicado para confirmar menu lateral/paneles.
 
 ## Listo para probar
 

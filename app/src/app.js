@@ -5,6 +5,8 @@ const api = createCustomerApi(config);
 
 const elements = {
   dataSourceStatus: document.querySelector("#data-source-status"),
+  panelButtons: document.querySelectorAll("[data-panel-target]"),
+  operationPanels: document.querySelectorAll("[data-panel]"),
   searchForm: document.querySelector("#customer-search-form"),
   searchInput: document.querySelector("#customer-search"),
   clearSearchButton: document.querySelector("#clear-search-button"),
@@ -32,6 +34,7 @@ const elements = {
   purchaseError: document.querySelector("#purchase-error"),
   savePurchaseButton: document.querySelector("#save-purchase-button"),
   resetPurchaseButton: document.querySelector("#reset-purchase-button"),
+  goRedemptionButton: document.querySelector("#go-redemption-button"),
   purchaseSuccessMessage: document.querySelector("#purchase-success-message"),
   redemptionCustomerCard: document.querySelector("#redemption-customer-card"),
   redemptionForm: document.querySelector("#redemption-form"),
@@ -49,11 +52,18 @@ const elements = {
 
 let currentCustomers = [];
 let selectedCustomer = null;
+let activePanel = "customer";
 const customerBalances = new Map();
 
 elements.dataSourceStatus.textContent = api.sourceLabel;
 elements.purchaseDateInput.value = getToday();
 elements.redemptionDateInput.value = getToday();
+
+elements.panelButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setActivePanel(button.dataset.panelTarget, { focus: true });
+  });
+});
 
 elements.searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -84,6 +94,10 @@ elements.resetPurchaseButton.addEventListener("click", () => {
   clearPurchaseForm({ keepSuccess: false });
 });
 
+elements.goRedemptionButton.addEventListener("click", () => {
+  setActivePanel("redemption", { focus: true });
+});
+
 elements.redemptionForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   await submitRedemption();
@@ -95,6 +109,7 @@ elements.resetRedemptionButton.addEventListener("click", () => {
 
 renderSearchPrompt();
 renderSelectedCustomer();
+setActivePanel("customer");
 
 async function loadCustomers(search) {
   const trimmedSearch = search.trim();
@@ -134,9 +149,10 @@ async function submitCustomer() {
     currentCustomers = [customerWithBalance];
     elements.searchInput.value = customer.phone;
     renderCustomers(currentCustomers, customer.phone);
-    selectCustomer(customerWithBalance, { focusPurchase: true });
-    showSuccess(`Cliente registrado: ${customer.name}. Ahora puede registrar la compra.`);
-    clearForm({ keepSuccess: true, focus: false });
+    selectCustomer(customerWithBalance);
+    setActivePanel("customer");
+    showSuccess(`Cliente registrado: ${customer.name}. Puede registrar compra desde el menu.`);
+    clearForm({ keepSuccess: true });
   } catch (error) {
     if (error instanceof ApiError && error.code === "DUPLICATE_CUSTOMER") {
       await handleDuplicateCustomer(payload);
@@ -165,7 +181,7 @@ async function handleDuplicateCustomer(payload) {
   currentCustomers = [customerWithBalance];
   elements.searchInput.value = customerWithBalance.phone || customerWithBalance.email || "";
   renderCustomers(currentCustomers, elements.searchInput.value);
-  selectCustomer(customerWithBalance, { focusPurchase: true });
+  selectCustomer(customerWithBalance, { panel: "purchase", focusPurchase: true });
 }
 
 async function findExistingCustomer(payload) {
@@ -346,6 +362,7 @@ function renderCustomers(customers, search) {
       if (customer) {
         const action = button.dataset.action;
         selectCustomer(customer, {
+          panel: action,
           focusPurchase: action === "purchase",
           focusRedemption: action === "redemption",
         });
@@ -367,15 +384,45 @@ function selectCustomer(customer, options = {}) {
   elements.purchaseDateInput.value = getToday();
   elements.redemptionDateInput.value = getToday();
 
+  if (options.panel) {
+    setActivePanel(options.panel);
+  }
+
   if (options.focusPurchase) {
     elements.purchaseInvoiceInput.focus();
-    elements.purchaseForm.scrollIntoView({ block: "center", behavior: "smooth" });
   }
 
   if (options.focusRedemption) {
     elements.redemptionPointsInput.focus();
-    elements.redemptionForm.scrollIntoView({ block: "center", behavior: "smooth" });
   }
+}
+
+function setActivePanel(panel, options = {}) {
+  activePanel = panel || "customer";
+
+  elements.panelButtons.forEach((button) => {
+    const isActive = button.dataset.panelTarget === activePanel;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+
+  elements.operationPanels.forEach((panelElement) => {
+    panelElement.hidden = panelElement.dataset.panel !== activePanel;
+  });
+
+  if (options.focus) {
+    focusActivePanel();
+  }
+}
+
+function focusActivePanel() {
+  const focusTarget = {
+    customer: elements.nameInput,
+    purchase: selectedCustomer ? elements.purchaseInvoiceInput : elements.searchInput,
+    redemption: selectedCustomer ? elements.redemptionPointsInput : elements.searchInput,
+  }[activePanel];
+
+  focusTarget?.focus();
 }
 
 function renderSelectedCustomer() {
