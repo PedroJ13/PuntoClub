@@ -15,9 +15,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Ahora
 
 - PO Test puede ejecutar el flujo cliente + compra + redencion en la URL publicada.
+- TASK-058: Web Dev reorganiza UI por menu lateral de paneles para evitar scroll/busqueda de formularios.
 
 ### Siguiente
 
+- TASK-059: QA valida flujo publicado con menu lateral y transiciones registrar/compra/redencion.
 - Product / Architect / Release procesa hallazgos de PO Test si aparecen.
 
 ### Bloqueado
@@ -97,7 +99,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar PO Test del flujo cliente + compra + redencion en ambiente publicado.
+Procesar hallazgo UX de PO Test: los paneles quedan fuera de pantalla; se requiere menu lateral y transiciones claras entre registro, compra y redencion.
 
 ## Listo para probar
 
