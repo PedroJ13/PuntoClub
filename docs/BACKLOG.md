@@ -60,6 +60,9 @@
 - TASK-079: Retirar regla temporal SQL de auditoria.
 - TASK-080: Evaluar endurecimiento operativo SQL pre-piloto.
 - TASK-081: Regresion MVP publicada pre-piloto.
+- TASK-082: Limpiar mensaje persistente de duplicado.
+- TASK-083: Validar limpieza de mensaje persistente.
+- TASK-084: Preparar runbook de calentamiento SQL para piloto.
 
 ## P1 pre-lanzamiento
 

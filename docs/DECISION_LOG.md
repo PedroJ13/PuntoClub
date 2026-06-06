@@ -75,3 +75,13 @@ Decision: Los ids respaldados por SQL `bigint` pueden devolverse como string en 
 Motivo: Evita perdida de precision en JavaScript y es consistente con serializacion segura de valores grandes.
 
 Impacto: Backend/API debe documentarlo y Web Dev debe tratar ids como strings opacos. QA no debe marcarlo como P1 mientras el contrato lo acepte.
+
+## 2026-06-06 - Operacion SQL para piloto controlado
+
+Decision: Para el piloto controlado, no se cambiara firewall SQL ni SKU/compute antes de una ventana separada de prueba. Se mantendra Azure SQL serverless y la regla existente `AllowAllWindowsAzureIps` por ahora, con runbook de calentamiento/verificacion antes de sesiones de uso real.
+
+Motivo: TASK-081 aprobo la regresion MVP sin P0/P1 y TASK-078 no encontro problemas de integridad. Cambiar firewall o compute justo antes del piloto podria romper la API o subir costo sin una ventana de validacion dedicada.
+
+Impacto: Infra / Azure debe preparar un runbook operativo de calentamiento. Si el piloto requiere mayor postura de seguridad o menor latencia inicial, se abrira tarea separada para allowlist de IPs outbound de Function App, ajuste de auto-pause o cambio temporal a provisioned.
+
+Riesgo aceptado: `AllowAllWindowsAzureIps` mantiene una superficie de red amplia y SQL serverless puede tener latencia de reanudacion. Se acepta temporalmente para piloto pequeno/controlado, con monitoreo y runbook.
