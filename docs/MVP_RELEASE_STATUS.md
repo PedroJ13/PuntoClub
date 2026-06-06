@@ -14,16 +14,18 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Web Dev agrega historial resumido de cliente y SQL/Infra preparan chequeos pre-piloto.
+- Release commitea/despliega historial de cliente y coordina desbloqueo de auditoria SQL.
 
 ### Siguiente
 
-- QA valida historial publicado despues del deploy de TASK-073.
+- QA revalida historial publicado con TASK-076.
+- Infra / Azure define acceso seguro para que SQL DEV reintente auditoria pre-piloto.
 
 ### Bloqueado
 
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla web por zonas.
-- Historial resumido aun no esta aprobado en UI publicada.
+- TASK-075 no aprobo porque historial no estaba desplegado en UI publicada.
+- TASK-072 quedo bloqueada por firewall de Azure SQL para IP `200.229.6.103`.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
 ### Hecho
@@ -105,6 +107,13 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-073: Asignada a Web Dev para mostrar historial resumido de cliente en UI.
 - TASK-074: Asignada a Infra / Azure para checklist operativo pre-piloto.
 - TASK-075: Asignada a QA para validar historial publicado despues de TASK-073.
+- TASK-072: SQL DEV no pudo auditar por firewall Azure SQL; requiere acceso temporal o ambiente permitido.
+- TASK-073: Web Dev implemento historial resumido localmente; pendiente deploy.
+- TASK-074: Infra / Azure completo checklist operativo pre-piloto.
+- TASK-075: QA no aprobo porque la URL publicada todavia no tenia historial.
+- TASK-076: Asignada a QA para revalidar historial publicado despues del commit/deploy de TASK-073.
+- TASK-077: Asignada a Infra / Azure para desbloquear acceso SQL seguro/temporal.
+- TASK-078: Asignada a SQL DEV para reintentar auditoria SQL despues de TASK-077.
 
 ## Riesgos principales
 
@@ -115,12 +124,14 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Completar TASK-072, TASK-073 y TASK-074; luego ejecutar TASK-075 cuando el historial este desplegado.
+Desplegar TASK-073 y ejecutar TASK-076. En paralelo, completar TASK-077 para desbloquear TASK-078.
 
 ## Listo para probar
 
 - Flujo: Clientes + registrar compra + redimir puntos en pantalla web por zonas.
 - Ambiente: frontend publicado `https://calm-dune-075dc5c0f.7.azurestaticapps.net` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
 - Estado: aprobado por QA en TASK-071, sin P0/P1.
+- Historial: implementado localmente en TASK-073; pendiente revalidacion publicada TASK-076.
+- Auditoria SQL pre-piloto: pendiente por firewall SQL.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.

@@ -25,6 +25,10 @@ const elements = {
   operationStatus: document.querySelector("#operation-status"),
   operationEmpty: document.querySelector("#operation-empty"),
   selectedCustomerCard: document.querySelector("#selected-customer-card"),
+  historyPanel: document.querySelector("#history-panel"),
+  historySummary: document.querySelector("#history-summary"),
+  historyList: document.querySelector("#history-list"),
+  historyError: document.querySelector("#history-error"),
   purchaseForm: document.querySelector("#purchase-form"),
   purchaseInvoiceInput: document.querySelector("#purchase-invoice-number"),
   purchaseDateInput: document.querySelector("#purchase-date"),
@@ -221,8 +225,11 @@ async function submitPurchase() {
   try {
     const purchase = await api.createPurchase(payload);
     await refreshCustomerBalance(selectedCustomer.id);
-    resetOperation(`Compra registrada. Pts. ganados: ${formatPoints(purchase.pointsEarned)}.`);
-    elements.searchInput.focus();
+    clearPurchaseForm({ keepStatus: true });
+    await openOperation(
+      "history",
+      `Compra registrada. Pts. ganados: ${formatPoints(purchase.pointsEarned)}.`,
+    );
   } catch (error) {
     renderPurchaseError(error);
   } finally {
@@ -250,8 +257,11 @@ async function submitRedemption() {
   try {
     const redemption = await api.createRedemption(payload);
     await refreshCustomerBalance(selectedCustomer.id);
-    resetOperation(`Canje registrado. Pts. redimidos: ${formatPoints(redemption.pointsRedeemed)}.`);
-    elements.searchInput.focus();
+    clearRedemptionForm({ keepStatus: true });
+    await openOperation(
+      "history",
+      `Canje registrado. Pts. redimidos: ${formatPoints(redemption.pointsRedeemed)}.`,
+    );
   } catch (error) {
     renderRedemptionError(error);
   } finally {
@@ -358,6 +368,9 @@ function renderCustomer(customer) {
         <button type="button" data-action="purchase" data-customer-id="${escapeHtml(customer.id)}">
           Compra
         </button>
+        <button class="secondary-button" type="button" data-action="history" data-customer-id="${escapeHtml(customer.id)}">
+          Historial
+        </button>
         ${
           canRedeem
             ? `<button class="secondary-button" type="button" data-action="redemption" data-customer-id="${escapeHtml(customer.id)}">Redimir</button>`
@@ -380,7 +393,7 @@ function selectCustomer(customer) {
   }
 }
 
-function openOperation(type) {
+async function openOperation(type, statusMessage = "") {
   if (!selectedCustomer) {
     return;
   }
@@ -388,15 +401,25 @@ function openOperation(type) {
   clearOperationMessages();
   elements.operationEmpty.hidden = true;
   elements.selectedCustomerCard.hidden = false;
-  elements.operationTitle.textContent = type === "purchase" ? "Registrar compra" : "Redimir puntos";
+  elements.operationTitle.textContent = getOperationTitle(type);
   elements.purchaseForm.hidden = type !== "purchase";
   elements.redemptionForm.hidden = type !== "redemption";
+  elements.historyPanel.hidden = type !== "history";
   elements.purchaseDateInput.value = getToday();
   elements.redemptionDateInput.value = getToday();
+
+  if (statusMessage) {
+    showOperationStatus(statusMessage);
+  }
 
   if (type === "purchase") {
     clearPurchaseForm({ keepStatus: true });
     elements.purchaseInvoiceInput.focus();
+    return;
+  }
+
+  if (type === "history") {
+    await loadCustomerActivity();
     return;
   }
 
@@ -412,9 +435,33 @@ function resetOperation(message = "") {
   elements.selectedCustomerCard.hidden = true;
   elements.purchaseForm.hidden = true;
   elements.redemptionForm.hidden = true;
+  elements.historyPanel.hidden = true;
 
   if (message) {
     showOperationStatus(message);
+  }
+}
+
+async function loadCustomerActivity() {
+  if (!selectedCustomer) {
+    return;
+  }
+
+  const customerId = selectedCustomer.id;
+  clearHistoryMessages();
+  renderHistoryLoading();
+
+  try {
+    const activity = await api.getCustomerActivity(customerId);
+
+    if (!selectedCustomer || String(selectedCustomer.id) !== String(customerId)) {
+      return;
+    }
+
+    updateCustomerBalance(customerId, activity.balance);
+    renderHistory(activity);
+  } catch (error) {
+    renderHistoryError(error);
   }
 }
 
@@ -434,6 +481,70 @@ function renderSelectedCustomer() {
       <strong>${formatBalance(selectedCustomer.balance)}</strong>
     </div>
   `;
+}
+
+function renderHistoryLoading() {
+  elements.historySummary.innerHTML = "";
+  elements.historyList.innerHTML = '<div class="loading-state">Cargando historial...</div>';
+}
+
+function renderHistory(activity) {
+  const items = Array.isArray(activity.items) ? activity.items : [];
+  const balance = activity.balance ?? selectedCustomer?.balance;
+
+  elements.historySummary.innerHTML = `
+    <div>
+      <span>Ganados</span>
+      <strong>${formatBalancePart(balance, "pointsEarned")}</strong>
+    </div>
+    <div>
+      <span>Redimidos</span>
+      <strong>${formatBalancePart(balance, "pointsRedeemed")}</strong>
+    </div>
+    <div>
+      <span>Actuales</span>
+      <strong>${formatBalance(balance)}</strong>
+    </div>
+  `;
+
+  if (items.length === 0) {
+    elements.historyList.innerHTML = '<div class="empty-state">Sin movimientos para este cliente.</div>';
+    return;
+  }
+
+  elements.historyList.innerHTML = items.map((item) => renderHistoryItem(item)).join("");
+}
+
+function renderHistoryItem(item) {
+  const type = String(item.type ?? "").toLowerCase();
+  const isPurchase = type === "purchase";
+  const points = Number(item.points ?? 0);
+  const pointsClass = points >= 0 ? "is-positive" : "is-negative";
+  const title = isPurchase ? "Compra" : "Canje";
+  const detail = isPurchase
+    ? `Factura ${item.invoiceNumber ? escapeHtml(item.invoiceNumber) : "sin comprobante"} - ${formatMoney(item.amount)}`
+    : escapeHtml(item.note || "Sin nota");
+
+  return `
+    <article class="history-row">
+      <div>
+        <h3>${title}</h3>
+        <p>${formatDate(item.date)} - ${detail}</p>
+      </div>
+      <strong class="history-points ${pointsClass}">${formatSignedPoints(points)}</strong>
+    </article>
+  `;
+}
+
+function renderHistoryError(error) {
+  const message =
+    error instanceof ApiError && error.code === "CUSTOMER_NOT_FOUND"
+      ? "El cliente seleccionado ya no esta disponible."
+      : "No se pudo cargar el historial. Intente de nuevo.";
+  elements.historySummary.innerHTML = "";
+  elements.historyList.innerHTML = "";
+  elements.historyError.hidden = false;
+  elements.historyError.textContent = message;
 }
 
 function renderCustomersError(error) {
@@ -651,6 +762,7 @@ function clearOperationMessages() {
   elements.operationStatus.textContent = "";
   clearPurchaseMessages();
   clearRedemptionMessages();
+  clearHistoryMessages();
 }
 
 function setSubmitting(isSubmitting) {
@@ -672,6 +784,26 @@ function getBalanceValue(balance) {
   return balance && balance.pointsBalance != null ? Number(balance.pointsBalance) : 0;
 }
 
+function updateCustomerBalance(customerId, balance) {
+  if (!balance) {
+    return;
+  }
+
+  customerBalances.set(String(customerId), balance);
+  currentCustomers = currentCustomers.map((customer) =>
+    String(customer.id) === String(customerId) ? { ...customer, balance } : customer,
+  );
+
+  if (selectedCustomer && String(selectedCustomer.id) === String(customerId)) {
+    selectedCustomer = { ...selectedCustomer, balance };
+    renderSelectedCustomer();
+  }
+
+  if (currentCustomers.length) {
+    renderCustomers(currentCustomers, elements.searchInput.value.trim());
+  }
+}
+
 function formatBalance(balance) {
   if (!balance || balance.pointsBalance == null) {
     return "No disponible";
@@ -680,8 +812,66 @@ function formatBalance(balance) {
   return formatPoints(balance.pointsBalance);
 }
 
+function formatBalancePart(balance, key) {
+  if (!balance || balance[key] == null) {
+    return "No disponible";
+  }
+
+  return formatPoints(balance[key]);
+}
+
 function formatPoints(value) {
   return new Intl.NumberFormat("es-CR", { maximumFractionDigits: 0 }).format(Number(value));
+}
+
+function formatSignedPoints(value) {
+  const numberValue = Number(value);
+  const prefix = numberValue >= 0 ? "+" : "-";
+  return `${prefix}${formatPoints(Math.abs(numberValue))} pts`;
+}
+
+function formatMoney(value) {
+  if (!Number.isFinite(Number(value))) {
+    return "Monto no disponible";
+  }
+
+  return new Intl.NumberFormat("es-CR", {
+    style: "currency",
+    currency: "CRC",
+    maximumFractionDigits: 2,
+  }).format(Number(value));
+}
+
+function formatDate(value) {
+  if (!value) {
+    return "Fecha no disponible";
+  }
+
+  const date = new Date(`${String(value).slice(0, 10)}T00:00:00`);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return new Intl.DateTimeFormat("es-CR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
+function getOperationTitle(type) {
+  const titles = {
+    purchase: "Registrar compra",
+    redemption: "Redimir puntos",
+    history: "Historial",
+  };
+
+  return titles[type] ?? "Operacion";
+}
+
+function clearHistoryMessages() {
+  elements.historyError.hidden = true;
+  elements.historyError.textContent = "";
 }
 
 function getToday() {

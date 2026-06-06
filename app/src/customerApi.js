@@ -29,6 +29,7 @@ let mockBalances = new Map(
     },
   ]),
 );
+let mockActivity = new Map(initialCustomers.map((customer) => [String(customer.id), []]));
 let mockInvoices = new Set();
 let nextCustomerId = 12;
 let nextPurchaseId = 50;
@@ -80,6 +81,14 @@ function createHttpCustomerApi(config) {
       const url = buildApiUrl(
         config,
         `/api/companies/${config.companyId}/customers/${customerId}/balance`,
+      );
+      const response = await fetch(url);
+      return parseResponse(response);
+    },
+    async getCustomerActivity(customerId) {
+      const url = buildApiUrl(
+        config,
+        `/api/companies/${config.companyId}/customers/${customerId}/activity`,
       );
       const response = await fetch(url);
       return parseResponse(response);
@@ -167,6 +176,7 @@ function createMockCustomerApi() {
         pointsRedeemed: 0,
         pointsBalance: 0,
       });
+      mockActivity.set(String(customer.id), []);
       return customer;
     },
     async getCustomerBalance(customerId) {
@@ -214,6 +224,17 @@ function createMockCustomerApi() {
         pointsEarned,
         createdAt: new Date().toISOString(),
       };
+      mockActivity.set(String(customer.id), [
+        {
+          type: "purchase",
+          id: purchase.id,
+          date: purchase.purchaseDate,
+          invoiceNumber: purchase.invoiceNumber,
+          amount: purchase.amount,
+          points: purchase.pointsEarned,
+        },
+        ...(mockActivity.get(String(customer.id)) ?? []),
+      ]);
       nextPurchaseId += 1;
       return purchase;
     },
@@ -251,8 +272,32 @@ function createMockCustomerApi() {
         createdAt: new Date().toISOString(),
         balanceAfter: balance.pointsBalance,
       };
+      mockActivity.set(String(customer.id), [
+        {
+          type: "redemption",
+          id: redemption.id,
+          date: redemption.redemptionDate,
+          note: redemption.note,
+          points: -redemption.pointsRedeemed,
+        },
+        ...(mockActivity.get(String(customer.id)) ?? []),
+      ]);
       nextRedemptionId += 1;
       return redemption;
+    },
+    async getCustomerActivity(customerId) {
+      await wait(300);
+      const balance = mockBalances.get(String(customerId));
+
+      if (!balance) {
+        throw new ApiError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.");
+      }
+
+      return {
+        customerId: String(customerId),
+        balance,
+        items: mockActivity.get(String(customerId)) ?? [],
+      };
     },
   };
 }

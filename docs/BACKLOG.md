@@ -54,6 +54,9 @@
 - TASK-073: Mostrar historial resumido de cliente en UI.
 - TASK-074: Checklist operativo Azure pre-piloto.
 - TASK-075: Validar historial publicado de cliente.
+- TASK-076: Revalidar historial publicado despues del deploy.
+- TASK-077: Desbloquear acceso SQL para auditoria pre-piloto.
+- TASK-078: Reintentar auditoria SQL pre-piloto.
 
 ## P1 pre-lanzamiento
 
