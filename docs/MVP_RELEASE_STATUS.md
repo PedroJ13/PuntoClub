@@ -14,11 +14,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Release commitea/despliega correccion P3 y deja runbook de calentamiento SQL documentado.
+- MVP publicado queda listo para piloto controlado.
 
 ### Siguiente
 
-- QA revalida correccion P3 publicada con TASK-085.
+- Ejecutar runbook de calentamiento antes de sesiones reales y procesar hallazgos de PO/piloto si aparecen.
 
 ### Bloqueado
 
@@ -27,7 +27,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - No hay bloqueos P0/P1 abiertos para integridad SQL auditada.
 - Regla temporal SQL `tmp-task077-sql-audit-200-229-6-103` retirada en TASK-079.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
-- P3 de mensaje persistente corregido localmente en TASK-082; pendiente revalidacion publicada TASK-085.
+- No hay P2/P3 abiertos conocidos despues de TASK-085.
 
 ### Hecho
 
@@ -131,6 +131,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-083: QA no aprobo porque la URL publicada todavia tenia el comportamiento anterior.
 - TASK-084: Infra / Azure preparo runbook de calentamiento SQL.
 - TASK-085: Asignada a QA para revalidar limpieza P3 despues del commit/deploy de TASK-082.
+- TASK-085: QA aprobo correccion publicada del mensaje persistente; sin P0/P1/P2/P3.
 
 ## Riesgos principales
 
@@ -141,7 +142,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Desplegar TASK-082 y ejecutar TASK-085.
+Ejecutar piloto controlado usando `docs/PILOT_RUNBOOK.md` antes de sesiones reales.
 
 ## Listo para probar
 
@@ -153,6 +154,7 @@ Desplegar TASK-082 y ejecutar TASK-085.
 - Regla temporal SQL de auditoria: retirada en TASK-079.
 - Regresion MVP publicada: aprobada por QA en TASK-081, sin P0/P1.
 - Runbook SQL: documentado en `docs/PILOT_RUNBOOK.md`.
-- Pendiente pre-piloto: revalidar P3 publicado con TASK-085.
+- Correccion P3 mensaje duplicado: aprobada por QA en TASK-085.
+- Estado pre-piloto: listo para piloto controlado.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.

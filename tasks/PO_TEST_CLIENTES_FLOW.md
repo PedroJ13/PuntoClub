@@ -4,16 +4,17 @@
 
 Listo para prueba de Product Owner en ambiente publicado.
 
-QA aprobo el flujo publicado en pantalla web por zonas en TASK-071, sin P0/P1.
+QA aprobo la regresion MVP publicada en TASK-081, sin P0/P1. QA tambien aprobo la correccion final de copy/estado en TASK-085, sin P0/P1/P2/P3.
 
 ## Flujo a probar
 
-Clientes - buscar/listar, registrar cliente, registrar compra y redimir puntos.
+Clientes - buscar/listar, registrar cliente, registrar compra, redimir puntos y revisar historial.
 
 ## Alcance
 
 - Buscar clientes existentes.
 - Confirmar puntos acumulados visibles.
+- Revisar historial resumido de compras y redenciones.
 - Registrar compra para cliente existente.
 - Redimir puntos para cliente existente con saldo.
 - Registrar un cliente nuevo.
@@ -53,7 +54,8 @@ Confirmar con Product / Architect / Release o Backend/API que:
 
 - La URL publicada carga Punto Club, no la pagina default de Azure Static Web Apps.
 - El indicador muestra `API real`.
-- No hay P0/P1 abiertos en TASK-071.
+- No hay P0/P1 abiertos en TASK-081.
+- No hay P2/P3 abiertos conocidos despues de TASK-085.
 
 ## Checklist PO
 
@@ -67,6 +69,8 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - [ ] Confirmar que el foco inicial esta en buscar.
 - [ ] Buscar un cliente existente.
 - [ ] Confirmar que resultados muestra nombre, telefono/email, `Pts.` y acciones.
+- [ ] Abrir `Historial` desde un resultado.
+- [ ] Confirmar que historial muestra ganados, redimidos, actuales y movimientos.
 - [ ] Usar `Compra` desde un resultado.
 - [ ] Registrar compra con factura, fecha y monto.
 - [ ] Confirmar mensaje de compra registrada, puntos actualizados y foco de vuelta a buscar.
@@ -85,6 +89,7 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - [ ] Intentar registrar otro cliente con el mismo telefono.
 - [ ] Confirmar que aparece mensaje de duplicado entendible.
 - [ ] Confirmar que el duplicado busca/selecciona el cliente existente.
+- [ ] Confirmar que el mensaje de duplicado no queda persistente al abrir compra, historial o redencion.
 - [ ] Intentar registrar cliente sin nombre.
 - [ ] Intentar registrar cliente sin telefono.
 - [ ] Confirmar que los errores de campos son claros.
@@ -94,6 +99,7 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - [ ] Intentar redencion sin puntos.
 - [ ] Intentar redencion con puntos `0`.
 - [ ] Confirmar que los errores de redencion son claros.
+- [ ] Confirmar historial final con compra y redencion.
 - [ ] Probar en desktop.
 - [ ] Probar en mobile o ventana estrecha.
 
@@ -105,6 +111,7 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - Una compra se registra correctamente para cliente existente.
 - Una compra se registra correctamente despues de crear cliente.
 - Una redencion se registra correctamente para cliente con saldo.
+- El historial muestra compra y redencion del cliente.
 - El saldo se descuenta correctamente despues de redimir.
 - Saldo insuficiente se bloquea con mensaje claro.
 - La pantalla por zonas evita buscar formularios apilados con scroll.
@@ -116,7 +123,6 @@ Confirmar con Product / Architect / Release o Backend/API que:
 
 ## Fuera de alcance
 
-- Historial.
 - Login/auth real.
 - Cambios de configuracion Azure.
 
