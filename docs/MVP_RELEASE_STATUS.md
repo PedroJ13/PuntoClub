@@ -14,16 +14,16 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Web Dev corrige copy puntual de busqueda sin resultados para quitar referencia a `zona 2`.
+- TASK-069 quedo implementada localmente; Release commitea/despliega el copy sin referencia a zonas.
 
 ### Siguiente
 
-- QA revalida copy publicado sin referencias a zonas.
+- QA revalida el copy publicado con TASK-071 despues del deploy.
 
 ### Bloqueado
 
 - No hay bloqueos de ambiente reportados para este ajuste.
-- TASK-068 no aprobo por P1 de copy: mensaje sin resultados menciona `zona 2`.
+- TASK-070 no aprobo porque la URL publicada todavia servia `src/app.js` anterior con referencia a `zona 2`.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
 ### Hecho
@@ -98,7 +98,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-067: QA no aprobo porque la URL publicada todavia servia la version anterior con labels `Zona X`.
 - TASK-068: QA confirmo layout y flujo publicados, pero no aprobo por copy `Sin resultados. Registre el cliente en la zona 2.`
 - TASK-069: Asignada a Web Dev para quitar referencia a zonas en copy sin resultados.
-- TASK-070: Asignada a QA para revalidar copy publicado sin referencias a zonas.
+- TASK-070: QA no aprobo porque la URL publicada todavia servia el copy anterior con `zona 2`.
+- TASK-071: Asignada a QA para revalidar copy publicado despues del commit/deploy de TASK-069.
 
 ## Riesgos principales
 
@@ -109,12 +110,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Completar TASK-069, desplegar y ejecutar TASK-070.
+Completar deploy de TASK-069 y ejecutar TASK-071.
 
 ## Listo para probar
 
 - Flujo: Clientes + registrar compra + redimir puntos en pantalla web por zonas.
 - Ambiente: frontend publicado `https://calm-dune-075dc5c0f.7.azurestaticapps.net` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
-- Estado: layout publicado validado en TASK-068, pendiente correccion puntual de copy por referencia a `zona 2`.
+- Estado: copy corregido localmente en TASK-069; pendiente revalidacion publicada TASK-071.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.

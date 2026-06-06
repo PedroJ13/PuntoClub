@@ -313,7 +313,7 @@ function renderLoading() {
 function renderCustomers(customers, search) {
   if (customers.length === 0) {
     const text = search
-      ? "Sin resultados. Registre el cliente en la zona 2."
+      ? "Sin resultados. Complete el registro para crear este cliente."
       : "Busque un cliente para operar o registre uno nuevo.";
     elements.customersList.innerHTML = `<div class="empty-state">${escapeHtml(text)}</div>`;
     return;

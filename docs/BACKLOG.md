@@ -49,6 +49,7 @@
 - TASK-068: Revalidar layout ajustado despues del deploy.
 - TASK-069: Quitar referencia a zona en mensaje sin resultados.
 - TASK-070: Revalidar copy sin referencia a zonas.
+- TASK-071: Revalidar copy publicado despues del deploy.
 
 ## P1 pre-lanzamiento
 
