@@ -126,10 +126,10 @@ textarea:focus {
 
 .workspace {
   display: grid;
-  grid-template-columns: minmax(280px, 0.78fr) minmax(380px, 1.22fr);
+  grid-template-columns: minmax(420px, 1fr) minmax(300px, 0.58fr);
   grid-template-areas:
     "search register"
-    "results results"
+    "results register"
     "operation operation";
   gap: 14px;
   align-items: start;
@@ -141,6 +141,7 @@ textarea:focus {
 
 .form-panel {
   grid-area: register;
+  align-self: stretch;
 }
 
 .results-panel {
@@ -263,7 +264,7 @@ textarea:focus {
 .customers-list {
   display: grid;
   gap: 8px;
-  max-height: 260px;
+  max-height: 280px;
   overflow: auto;
   padding-right: 2px;
 }
@@ -293,6 +294,7 @@ textarea:focus {
   margin: 0 0 3px;
   font-size: 0.98rem;
   letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 .customer-main {
@@ -306,6 +308,10 @@ textarea:focus {
   margin: 0;
   color: var(--muted);
   font-size: 0.88rem;
+}
+
+.customer-meta span {
+  overflow-wrap: anywhere;
 }
 
 .row-actions {
@@ -399,8 +405,8 @@ textarea:focus {
     grid-template-columns: 1fr;
     grid-template-areas:
       "search"
-      "register"
       "results"
+      "register"
       "operation";
   }
 

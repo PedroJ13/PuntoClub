@@ -46,6 +46,7 @@
 - TASK-065: Revalidar pantalla web por zonas despues del deploy.
 - TASK-066: Ajustar layout web por zonas segun PO Test.
 - TASK-067: Validar ajuste de layout web por zonas.
+- TASK-068: Revalidar layout ajustado despues del deploy.
 
 ## P1 pre-lanzamiento
 
