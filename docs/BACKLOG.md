@@ -43,6 +43,7 @@
 - TASK-060: Revalidar UI publicada con menu lateral de paneles despues del deploy.
 - TASK-061: Ajustar copy de puntos e iconos de acciones.
 - TASK-063: Rediseñar pantalla web en una sola vista por zonas.
+- TASK-065: Revalidar pantalla web por zonas despues del deploy.
 
 ## P1 pre-lanzamiento
 

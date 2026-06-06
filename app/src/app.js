@@ -5,8 +5,6 @@ const api = createCustomerApi(config);
 
 const elements = {
   dataSourceStatus: document.querySelector("#data-source-status"),
-  panelButtons: document.querySelectorAll("[data-panel-target]"),
-  operationPanels: document.querySelectorAll("[data-panel]"),
   searchForm: document.querySelector("#customer-search-form"),
   searchInput: document.querySelector("#customer-search"),
   clearSearchButton: document.querySelector("#clear-search-button"),
@@ -23,6 +21,9 @@ const elements = {
   saveButton: document.querySelector("#save-customer-button"),
   resetFormButton: document.querySelector("#reset-form-button"),
   successMessage: document.querySelector("#success-message"),
+  operationTitle: document.querySelector("#operation-title"),
+  operationStatus: document.querySelector("#operation-status"),
+  operationEmpty: document.querySelector("#operation-empty"),
   selectedCustomerCard: document.querySelector("#selected-customer-card"),
   purchaseForm: document.querySelector("#purchase-form"),
   purchaseInvoiceInput: document.querySelector("#purchase-invoice-number"),
@@ -34,9 +35,6 @@ const elements = {
   purchaseError: document.querySelector("#purchase-error"),
   savePurchaseButton: document.querySelector("#save-purchase-button"),
   resetPurchaseButton: document.querySelector("#reset-purchase-button"),
-  goRedemptionButton: document.querySelector("#go-redemption-button"),
-  purchaseSuccessMessage: document.querySelector("#purchase-success-message"),
-  redemptionCustomerCard: document.querySelector("#redemption-customer-card"),
   redemptionForm: document.querySelector("#redemption-form"),
   redemptionDateInput: document.querySelector("#redemption-date"),
   redemptionPointsInput: document.querySelector("#redemption-points"),
@@ -47,23 +45,15 @@ const elements = {
   redemptionError: document.querySelector("#redemption-error"),
   saveRedemptionButton: document.querySelector("#save-redemption-button"),
   resetRedemptionButton: document.querySelector("#reset-redemption-button"),
-  redemptionSuccessMessage: document.querySelector("#redemption-success-message"),
 };
 
 let currentCustomers = [];
 let selectedCustomer = null;
-let activePanel = "customer";
 const customerBalances = new Map();
 
 elements.dataSourceStatus.textContent = api.sourceLabel;
 elements.purchaseDateInput.value = getToday();
 elements.redemptionDateInput.value = getToday();
-
-elements.panelButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    setActivePanel(button.dataset.panelTarget, { focus: true });
-  });
-});
 
 elements.searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -74,6 +64,8 @@ elements.clearSearchButton.addEventListener("click", () => {
   elements.searchInput.value = "";
   currentCustomers = [];
   renderSearchPrompt();
+  resetOperation();
+  elements.searchInput.focus();
 });
 
 elements.form.addEventListener("submit", async (event) => {
@@ -91,11 +83,7 @@ elements.purchaseForm.addEventListener("submit", async (event) => {
 });
 
 elements.resetPurchaseButton.addEventListener("click", () => {
-  clearPurchaseForm({ keepSuccess: false });
-});
-
-elements.goRedemptionButton.addEventListener("click", () => {
-  setActivePanel("redemption", { focus: true });
+  clearPurchaseForm({ keepStatus: true });
 });
 
 elements.redemptionForm.addEventListener("submit", async (event) => {
@@ -104,29 +92,36 @@ elements.redemptionForm.addEventListener("submit", async (event) => {
 });
 
 elements.resetRedemptionButton.addEventListener("click", () => {
-  clearRedemptionForm({ keepSuccess: false });
+  clearRedemptionForm({ keepStatus: true });
 });
 
 renderSearchPrompt();
-renderSelectedCustomer();
-setActivePanel("customer");
+resetOperation();
+elements.searchInput.focus();
 
 async function loadCustomers(search) {
   const trimmedSearch = search.trim();
 
+  clearCustomerMessages();
+
   if (!trimmedSearch) {
     currentCustomers = [];
     renderSearchPrompt();
+    elements.searchInput.focus();
     return;
   }
 
-  setCustomersFeedback("");
   renderLoading();
 
   try {
     const result = await api.searchCustomers(trimmedSearch);
     currentCustomers = await withBalances(result.items);
     renderCustomers(currentCustomers, trimmedSearch);
+
+    if (currentCustomers.length === 0) {
+      setCustomersFeedback("No encontramos ese cliente. Complete el registro para crearlo.");
+      elements.nameInput.focus();
+    }
   } catch (error) {
     currentCustomers = [];
     renderCustomersError(error);
@@ -148,11 +143,12 @@ async function submitCustomer() {
     const [customerWithBalance] = await withBalances([customer]);
     currentCustomers = [customerWithBalance];
     elements.searchInput.value = customer.phone;
+    setCustomersFeedback("");
     renderCustomers(currentCustomers, customer.phone);
     selectCustomer(customerWithBalance);
-    setActivePanel("customer");
-    showSuccess(`Cliente registrado: ${customer.name}. Puede registrar compra desde el menu.`);
-    clearForm({ keepSuccess: true });
+    showSuccess(`Cliente registrado: ${customer.name}.`);
+    clearForm({ keepSuccess: true, focus: false });
+    elements.searchInput.focus();
   } catch (error) {
     if (error instanceof ApiError && error.code === "DUPLICATE_CUSTOMER") {
       await handleDuplicateCustomer(payload);
@@ -166,13 +162,13 @@ async function submitCustomer() {
 }
 
 async function handleDuplicateCustomer(payload) {
-  showFormError("Ya existe un cliente con ese telefono o email. Abrimos su registro de compra.");
+  showFormError("Ya existe un cliente con ese telefono o email. Lo buscamos y seleccionamos.");
 
   const match = await findExistingCustomer(payload);
 
   if (!match) {
     showFormError(
-      "Ya existe un cliente con ese telefono o email, pero no pudimos encontrarlo para registrar compra.",
+      "Ya existe un cliente con ese telefono o email, pero no pudimos encontrarlo automaticamente.",
     );
     return;
   }
@@ -180,8 +176,10 @@ async function handleDuplicateCustomer(payload) {
   const [customerWithBalance] = await withBalances([match]);
   currentCustomers = [customerWithBalance];
   elements.searchInput.value = customerWithBalance.phone || customerWithBalance.email || "";
+  setCustomersFeedback("");
   renderCustomers(currentCustomers, elements.searchInput.value);
-  selectCustomer(customerWithBalance, { panel: "purchase", focusPurchase: true });
+  selectCustomer(customerWithBalance);
+  elements.searchInput.focus();
 }
 
 async function findExistingCustomer(payload) {
@@ -222,11 +220,9 @@ async function submitPurchase() {
 
   try {
     const purchase = await api.createPurchase(payload);
-    showPurchaseSuccess(
-      `Compra registrada. Puntos ganados: ${formatPoints(purchase.pointsEarned)}.`,
-    );
-    clearPurchaseForm({ keepSuccess: true });
     await refreshCustomerBalance(selectedCustomer.id);
+    resetOperation(`Compra registrada. Pts. ganados: ${formatPoints(purchase.pointsEarned)}.`);
+    elements.searchInput.focus();
   } catch (error) {
     renderPurchaseError(error);
   } finally {
@@ -253,11 +249,9 @@ async function submitRedemption() {
 
   try {
     const redemption = await api.createRedemption(payload);
-    showRedemptionSuccess(
-      `Canje registrado. Puntos redimidos: ${formatPoints(redemption.pointsRedeemed)}.`,
-    );
-    clearRedemptionForm({ keepSuccess: true });
     await refreshCustomerBalance(selectedCustomer.id);
+    resetOperation(`Canje registrado. Pts. redimidos: ${formatPoints(redemption.pointsRedeemed)}.`);
+    elements.searchInput.focus();
   } catch (error) {
     renderRedemptionError(error);
   } finally {
@@ -309,7 +303,7 @@ async function safeGetBalance(customerId) {
 function renderSearchPrompt() {
   setCustomersFeedback("");
   elements.customersList.innerHTML =
-    '<div class="empty-state">Busque por telefono, nombre o email para atender al cliente.</div>';
+    '<div class="empty-state">Busque un cliente para operar o registre uno nuevo.</div>';
 }
 
 function renderLoading() {
@@ -319,38 +313,14 @@ function renderLoading() {
 function renderCustomers(customers, search) {
   if (customers.length === 0) {
     const text = search
-      ? "No encontramos clientes con esa busqueda. Puede registrarlo en el formulario."
-      : "Busque por telefono, nombre o email para atender al cliente.";
+      ? "Sin resultados. Registre el cliente en la zona 2."
+      : "Busque un cliente para operar o registre uno nuevo.";
     elements.customersList.innerHTML = `<div class="empty-state">${escapeHtml(text)}</div>`;
     return;
   }
 
   elements.customersList.innerHTML = customers
-    .map(
-      (customer) => `
-        <article class="customer-row">
-          <div>
-            <h3>${escapeHtml(customer.name)}</h3>
-            <p class="customer-meta">
-              <span>${escapeHtml(customer.phone)}</span>
-              <span>${escapeHtml(customer.email || "Sin email")}</span>
-            </p>
-          </div>
-          <div class="points-badge">
-            <span>Puntos</span>
-            <strong>${formatBalance(customer.balance)}</strong>
-          </div>
-          <div class="row-actions">
-            <button type="button" data-action="purchase" data-customer-id="${escapeHtml(customer.id)}">
-              Registrar compra
-            </button>
-            <button class="secondary-button" type="button" data-action="redemption" data-customer-id="${escapeHtml(customer.id)}">
-              Redimir puntos
-            </button>
-          </div>
-        </article>
-      `,
-    )
+    .map((customer) => renderCustomer(customer))
     .join("");
 
   elements.customersList.querySelectorAll("[data-action]").forEach((button) => {
@@ -360,93 +330,110 @@ function renderCustomers(customers, search) {
       );
 
       if (customer) {
-        const action = button.dataset.action;
-        selectCustomer(customer, {
-          panel: action,
-          focusPurchase: action === "purchase",
-          focusRedemption: action === "redemption",
-        });
+        selectCustomer(customer);
+        openOperation(button.dataset.action);
       }
     });
   });
 }
 
-function selectCustomer(customer, options = {}) {
+function renderCustomer(customer) {
+  const points = getBalanceValue(customer.balance);
+  const canRedeem = points > 0;
+
+  return `
+    <article class="customer-row ${selectedCustomer && String(selectedCustomer.id) === String(customer.id) ? "is-selected" : ""}">
+      <div class="customer-main">
+        <h3>${escapeHtml(customer.name)}</h3>
+        <p class="customer-meta">
+          <span>${escapeHtml(customer.phone)}</span>
+          <span>${escapeHtml(customer.email || "Sin email")}</span>
+        </p>
+      </div>
+      <div class="points-badge">
+        <span>Pts.</span>
+        <strong>${formatBalance(customer.balance)}</strong>
+      </div>
+      <div class="row-actions">
+        <button type="button" data-action="purchase" data-customer-id="${escapeHtml(customer.id)}">
+          Compra
+        </button>
+        ${
+          canRedeem
+            ? `<button class="secondary-button" type="button" data-action="redemption" data-customer-id="${escapeHtml(customer.id)}">Redimir</button>`
+            : ""
+        }
+      </div>
+    </article>
+  `;
+}
+
+function selectCustomer(customer) {
   selectedCustomer = {
     ...customer,
     balance: customer.balance ?? customerBalances.get(String(customer.id)),
   };
   renderSelectedCustomer();
-  clearPurchaseForm({ keepSuccess: false });
-  clearRedemptionForm({ keepSuccess: false });
-  elements.purchaseForm.hidden = false;
-  elements.redemptionForm.hidden = false;
+
+  if (currentCustomers.length) {
+    renderCustomers(currentCustomers, elements.searchInput.value.trim());
+  }
+}
+
+function openOperation(type) {
+  if (!selectedCustomer) {
+    return;
+  }
+
+  clearOperationMessages();
+  elements.operationEmpty.hidden = true;
+  elements.selectedCustomerCard.hidden = false;
+  elements.operationTitle.textContent = type === "purchase" ? "Registrar compra" : "Redimir puntos";
+  elements.purchaseForm.hidden = type !== "purchase";
+  elements.redemptionForm.hidden = type !== "redemption";
   elements.purchaseDateInput.value = getToday();
   elements.redemptionDateInput.value = getToday();
 
-  if (options.panel) {
-    setActivePanel(options.panel);
-  }
-
-  if (options.focusPurchase) {
+  if (type === "purchase") {
+    clearPurchaseForm({ keepStatus: true });
     elements.purchaseInvoiceInput.focus();
+    return;
   }
 
-  if (options.focusRedemption) {
-    elements.redemptionPointsInput.focus();
-  }
+  clearRedemptionForm({ keepStatus: true });
+  elements.redemptionPointsInput.focus();
 }
 
-function setActivePanel(panel, options = {}) {
-  activePanel = panel || "customer";
+function resetOperation(message = "") {
+  clearOperationMessages();
+  elements.operationTitle.textContent = "Operacion";
+  elements.operationEmpty.hidden = false;
+  elements.operationEmpty.textContent = message || "Seleccione una accion de un cliente para registrar compra o redimir puntos.";
+  elements.selectedCustomerCard.hidden = true;
+  elements.purchaseForm.hidden = true;
+  elements.redemptionForm.hidden = true;
 
-  elements.panelButtons.forEach((button) => {
-    const isActive = button.dataset.panelTarget === activePanel;
-    button.classList.toggle("is-active", isActive);
-    button.setAttribute("aria-pressed", String(isActive));
-  });
-
-  elements.operationPanels.forEach((panelElement) => {
-    panelElement.hidden = panelElement.dataset.panel !== activePanel;
-  });
-
-  if (options.focus) {
-    focusActivePanel();
+  if (message) {
+    showOperationStatus(message);
   }
-}
-
-function focusActivePanel() {
-  const focusTarget = {
-    customer: elements.nameInput,
-    purchase: selectedCustomer ? elements.purchaseInvoiceInput : elements.searchInput,
-    redemption: selectedCustomer ? elements.redemptionPointsInput : elements.searchInput,
-  }[activePanel];
-
-  focusTarget?.focus();
 }
 
 function renderSelectedCustomer() {
   if (!selectedCustomer) {
-    elements.purchaseForm.hidden = true;
-    elements.redemptionForm.hidden = true;
-    elements.selectedCustomerCard.textContent = "Seleccione un cliente para registrar compra.";
-    elements.redemptionCustomerCard.textContent = "Seleccione un cliente para redimir puntos.";
+    elements.selectedCustomerCard.hidden = true;
     return;
   }
 
-  const customerCard = `
+  elements.selectedCustomerCard.innerHTML = `
     <div>
       <h3>${escapeHtml(selectedCustomer.name)}</h3>
       <p>${escapeHtml(selectedCustomer.phone)} - ${escapeHtml(selectedCustomer.email || "Sin email")}</p>
     </div>
     <div class="points-badge strong">
-      <span>Puntos actuales</span>
+      <span>Pts. actuales</span>
       <strong>${formatBalance(selectedCustomer.balance)}</strong>
     </div>
   `;
-
-  elements.selectedCustomerCard.innerHTML = customerCard;
-  elements.redemptionCustomerCard.innerHTML = customerCard;
 }
 
 function renderCustomersError(error) {
@@ -575,6 +562,10 @@ function getRedemptionValidationMessage(detail) {
   return messagesByField[detail.field] ?? detail.message;
 }
 
+function clearCustomerMessages() {
+  setCustomersFeedback("");
+}
+
 function setCustomersFeedback(message) {
   elements.customersFeedback.hidden = !message;
   elements.customersFeedback.textContent = message;
@@ -595,19 +586,14 @@ function showPurchaseError(message) {
   elements.purchaseError.textContent = message;
 }
 
-function showPurchaseSuccess(message) {
-  elements.purchaseSuccessMessage.hidden = false;
-  elements.purchaseSuccessMessage.textContent = message;
-}
-
 function showRedemptionError(message) {
   elements.redemptionError.hidden = false;
   elements.redemptionError.textContent = message;
 }
 
-function showRedemptionSuccess(message) {
-  elements.redemptionSuccessMessage.hidden = false;
-  elements.redemptionSuccessMessage.textContent = message;
+function showOperationStatus(message) {
+  elements.operationStatus.hidden = false;
+  elements.operationStatus.textContent = message;
 }
 
 function clearForm(options = {}) {
@@ -638,17 +624,12 @@ function clearPurchaseForm(options = {}) {
   clearPurchaseMessages(options);
 }
 
-function clearPurchaseMessages(options = {}) {
+function clearPurchaseMessages() {
   elements.purchaseInvoiceError.textContent = "";
   elements.purchaseDateError.textContent = "";
   elements.purchaseAmountError.textContent = "";
   elements.purchaseError.hidden = true;
   elements.purchaseError.textContent = "";
-
-  if (!options.keepSuccess) {
-    elements.purchaseSuccessMessage.hidden = true;
-    elements.purchaseSuccessMessage.textContent = "";
-  }
 }
 
 function clearRedemptionForm(options = {}) {
@@ -657,17 +638,19 @@ function clearRedemptionForm(options = {}) {
   clearRedemptionMessages(options);
 }
 
-function clearRedemptionMessages(options = {}) {
+function clearRedemptionMessages() {
   elements.redemptionDateError.textContent = "";
   elements.redemptionPointsError.textContent = "";
   elements.redemptionNoteError.textContent = "";
   elements.redemptionError.hidden = true;
   elements.redemptionError.textContent = "";
+}
 
-  if (!options.keepSuccess) {
-    elements.redemptionSuccessMessage.hidden = true;
-    elements.redemptionSuccessMessage.textContent = "";
-  }
+function clearOperationMessages() {
+  elements.operationStatus.hidden = true;
+  elements.operationStatus.textContent = "";
+  clearPurchaseMessages();
+  clearRedemptionMessages();
 }
 
 function setSubmitting(isSubmitting) {
@@ -677,12 +660,16 @@ function setSubmitting(isSubmitting) {
 
 function setPurchaseSubmitting(isSubmitting) {
   elements.savePurchaseButton.disabled = isSubmitting;
-  elements.savePurchaseButton.textContent = isSubmitting ? "Registrando..." : "Registrar compra";
+  elements.savePurchaseButton.textContent = isSubmitting ? "Registrando..." : "Confirmar compra";
 }
 
 function setRedemptionSubmitting(isSubmitting) {
   elements.saveRedemptionButton.disabled = isSubmitting;
-  elements.saveRedemptionButton.textContent = isSubmitting ? "Redimiendo..." : "Redimir puntos";
+  elements.saveRedemptionButton.textContent = isSubmitting ? "Redimiendo..." : "Confirmar canje";
+}
+
+function getBalanceValue(balance) {
+  return balance && balance.pointsBalance != null ? Number(balance.pointsBalance) : 0;
 }
 
 function formatBalance(balance) {

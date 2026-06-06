@@ -15,15 +15,15 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Ahora
 
 - PO Test puede ejecutar el flujo cliente + compra + redencion con menu/paneles en la URL publicada.
-- TASK-063: Web Dev rediseña la pantalla web en una sola vista por zonas, sin menu.
+- TASK-065: QA revalida pantalla web por zonas despues del deploy de TASK-063.
 
 ### Siguiente
 
-- TASK-064: QA valida la pantalla web por zonas y el flujo de foco/busqueda/registro/operacion.
 - Product / Architect / Release procesa hallazgos de PO Test si aparecen.
 
 ### Bloqueado
 
+- TASK-064 no aprobado porque la URL publicada aun servia la UI anterior al momento de la prueba.
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion con menu/paneles.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
@@ -92,6 +92,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-058: Web Dev reorganizo UI local por menu/paneles para registrar cliente, compra y redencion.
 - TASK-059: QA no aprobo porque la URL publicada todavia no reflejaba TASK-058.
 - TASK-060: QA aprobo UI publicada con menu/paneles para cliente, compra y redencion, sin P0/P1.
+- TASK-063: Web Dev rediseño localmente la pantalla web en una sola vista por zonas, sin menu.
+- TASK-064: QA no aprobo porque la URL publicada todavia no reflejaba TASK-063.
 
 ## Riesgos principales
 
@@ -102,7 +104,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Procesar cambio de diseño: descartar menu y usar una sola pantalla web con paneles por zona y foco guiado.
+Desplegar cambios de TASK-063 y repetir QA publicado para confirmar la pantalla web por zonas.
 
 ## Listo para probar
 
