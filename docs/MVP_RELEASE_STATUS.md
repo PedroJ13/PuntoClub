@@ -14,14 +14,15 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- PO Test puede ejecutar el flujo cliente + compra + redencion en pantalla web por zonas.
+- Web Dev ajusta layout de pantalla web por zonas segun hallazgos de PO Test.
 
 ### Siguiente
 
-- Product / Architect / Release procesa hallazgos de PO Test si aparecen.
+- QA revalida el layout publicado despues de TASK-066.
 
 ### Bloqueado
 
+- No hay bloqueos de ambiente reportados para este ajuste.
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla por zonas.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
@@ -93,6 +94,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-063: Web Dev rediseño localmente la pantalla web en una sola vista por zonas, sin menu.
 - TASK-064: QA no aprobo porque la URL publicada todavia no reflejaba TASK-063.
 - TASK-065: QA aprobo pantalla web por zonas publicada, sin P0/P1.
+- TASK-066: Asignada a Web Dev para ajustar layout segun hallazgos de PO Test.
+- TASK-067: Asignada a QA para revalidar layout publicado despues de TASK-066.
 
 ## Riesgos principales
 
@@ -103,12 +106,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar PO Test del flujo cliente + compra + redencion en pantalla web por zonas.
+Completar TASK-066 y desplegar; luego ejecutar TASK-067 en la URL publicada.
 
 ## Listo para probar
 
 - Flujo: Clientes + registrar compra + redimir puntos en pantalla web por zonas.
 - Ambiente: frontend publicado `https://calm-dune-075dc5c0f.7.azurestaticapps.net` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
-- Estado: aprobado por QA en TASK-065, sin P0/P1.
+- Estado: requiere ajuste visual de layout por hallazgos de PO Test; TASK-066/TASK-067 abiertas.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
