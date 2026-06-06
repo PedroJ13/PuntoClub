@@ -14,8 +14,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- PO Test puede ejecutar el flujo cliente + compra + redencion con menu/paneles en la URL publicada.
-- TASK-065: QA revalida pantalla web por zonas despues del deploy de TASK-063.
+- PO Test puede ejecutar el flujo cliente + compra + redencion en pantalla web por zonas.
 
 ### Siguiente
 
@@ -23,8 +22,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Bloqueado
 
-- TASK-064 no aprobado porque la URL publicada aun servia la UI anterior al momento de la prueba.
-- No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion con menu/paneles.
+- No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla por zonas.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
 ### Hecho
@@ -94,6 +92,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-060: QA aprobo UI publicada con menu/paneles para cliente, compra y redencion, sin P0/P1.
 - TASK-063: Web Dev rediseño localmente la pantalla web en una sola vista por zonas, sin menu.
 - TASK-064: QA no aprobo porque la URL publicada todavia no reflejaba TASK-063.
+- TASK-065: QA aprobo pantalla web por zonas publicada, sin P0/P1.
 
 ## Riesgos principales
 
@@ -104,12 +103,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Desplegar cambios de TASK-063 y repetir QA publicado para confirmar la pantalla web por zonas.
+Ejecutar PO Test del flujo cliente + compra + redencion en pantalla web por zonas.
 
 ## Listo para probar
 
-- Flujo: Clientes + registrar compra + redimir puntos con menu/paneles.
+- Flujo: Clientes + registrar compra + redimir puntos en pantalla web por zonas.
 - Ambiente: frontend publicado `https://calm-dune-075dc5c0f.7.azurestaticapps.net` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
-- Estado: aprobado por QA en TASK-060, sin P0/P1.
+- Estado: aprobado por QA en TASK-065, sin P0/P1.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
