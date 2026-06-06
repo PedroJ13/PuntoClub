@@ -64,6 +64,10 @@
 - TASK-083: Validar limpieza de mensaje persistente.
 - TASK-084: Preparar runbook de calentamiento SQL para piloto.
 - TASK-085: Revalidar limpieza P3 despues del deploy.
+- TASK-086: Preparar guion de piloto operativo.
+- TASK-087: Ejecutar smoke operativo pre-sesion.
+- TASK-088: Analizar senales post-piloto.
+- TASK-089: Preparar backlog post-piloto inmediato.
 
 ## P1 pre-lanzamiento
 

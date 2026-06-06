@@ -14,11 +14,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- MVP publicado queda listo para piloto controlado.
+- Preparacion operativa de la primera sesion piloto controlada.
 
 ### Siguiente
 
-- Ejecutar runbook de calentamiento antes de sesiones reales y procesar hallazgos de PO/piloto si aparecen.
+- Ejecutar piloto controlado, capturar hallazgos y decidir siguiente release.
 
 ### Bloqueado
 
@@ -132,6 +132,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-084: Infra / Azure preparo runbook de calentamiento SQL.
 - TASK-085: Asignada a QA para revalidar limpieza P3 despues del commit/deploy de TASK-082.
 - TASK-085: QA aprobo correccion publicada del mensaje persistente; sin P0/P1/P2/P3.
+- TASK-086: Asignada a PO Test para preparar guion de piloto operativo.
+- TASK-087: Asignada a QA para smoke operativo pre-sesion.
+- TASK-088: Asignada a Pulso para analizar senales post-piloto.
+- TASK-089: Asignada a Product / Architect / Release para preparar backlog post-piloto.
 
 ## Riesgos principales
 
@@ -142,7 +146,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar piloto controlado usando `docs/PILOT_RUNBOOK.md` antes de sesiones reales.
+Preparar guion y smoke pre-sesion; luego ejecutar piloto controlado usando `docs/PILOT_RUNBOOK.md`.
 
 ## Listo para probar
 
