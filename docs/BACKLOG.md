@@ -47,6 +47,8 @@
 - TASK-066: Ajustar layout web por zonas segun PO Test.
 - TASK-067: Validar ajuste de layout web por zonas.
 - TASK-068: Revalidar layout ajustado despues del deploy.
+- TASK-069: Quitar referencia a zona en mensaje sin resultados.
+- TASK-070: Revalidar copy sin referencia a zonas.
 
 ## P1 pre-lanzamiento
 

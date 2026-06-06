@@ -14,16 +14,16 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- TASK-066 quedo implementada localmente; Release commitea/despliega el ajuste de layout.
+- Web Dev corrige copy puntual de busqueda sin resultados para quitar referencia a `zona 2`.
 
 ### Siguiente
 
-- QA revalida la URL publicada con TASK-068 despues del deploy.
+- QA revalida copy publicado sin referencias a zonas.
 
 ### Bloqueado
 
 - No hay bloqueos de ambiente reportados para este ajuste.
-- No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla por zonas.
+- TASK-068 no aprobo por P1 de copy: mensaje sin resultados menciona `zona 2`.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
 ### Hecho
@@ -96,7 +96,9 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-065: QA aprobo pantalla web por zonas publicada, sin P0/P1.
 - TASK-066: Asignada a Web Dev para ajustar layout segun hallazgos de PO Test.
 - TASK-067: QA no aprobo porque la URL publicada todavia servia la version anterior con labels `Zona X`.
-- TASK-068: Asignada a QA para revalidar layout publicado despues del commit/deploy de TASK-066.
+- TASK-068: QA confirmo layout y flujo publicados, pero no aprobo por copy `Sin resultados. Registre el cliente en la zona 2.`
+- TASK-069: Asignada a Web Dev para quitar referencia a zonas en copy sin resultados.
+- TASK-070: Asignada a QA para revalidar copy publicado sin referencias a zonas.
 
 ## Riesgos principales
 
@@ -107,12 +109,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Completar deploy de TASK-066 y ejecutar TASK-068 en la URL publicada.
+Completar TASK-069, desplegar y ejecutar TASK-070.
 
 ## Listo para probar
 
 - Flujo: Clientes + registrar compra + redimir puntos en pantalla web por zonas.
 - Ambiente: frontend publicado `https://calm-dune-075dc5c0f.7.azurestaticapps.net` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
-- Estado: ajuste visual implementado localmente en TASK-066; pendiente revalidacion publicada TASK-068.
+- Estado: layout publicado validado en TASK-068, pendiente correccion puntual de copy por referencia a `zona 2`.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
