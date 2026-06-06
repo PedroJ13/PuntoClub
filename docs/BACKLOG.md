@@ -63,6 +63,7 @@
 - TASK-082: Limpiar mensaje persistente de duplicado.
 - TASK-083: Validar limpieza de mensaje persistente.
 - TASK-084: Preparar runbook de calentamiento SQL para piloto.
+- TASK-085: Revalidar limpieza P3 despues del deploy.
 
 ## P1 pre-lanzamiento
 

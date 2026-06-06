@@ -67,6 +67,7 @@ elements.searchForm.addEventListener("submit", (event) => {
 elements.clearSearchButton.addEventListener("click", () => {
   elements.searchInput.value = "";
   currentCustomers = [];
+  clearFormMessages();
   renderSearchPrompt();
   resetOperation();
   elements.searchInput.focus();
@@ -107,6 +108,7 @@ async function loadCustomers(search) {
   const trimmedSearch = search.trim();
 
   clearCustomerMessages();
+  clearFormMessages();
 
   if (!trimmedSearch) {
     currentCustomers = [];
@@ -398,6 +400,7 @@ async function openOperation(type, statusMessage = "") {
     return;
   }
 
+  clearFormMessages();
   clearOperationMessages();
   elements.operationEmpty.hidden = true;
   elements.selectedCustomerCard.hidden = false;

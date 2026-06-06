@@ -14,11 +14,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Web Dev corrige P3 menor de mensaje persistente e Infra / Azure prepara runbook de calentamiento SQL.
+- Release commitea/despliega correccion P3 y deja runbook de calentamiento SQL documentado.
 
 ### Siguiente
 
-- QA valida correccion P3 despues del deploy.
+- QA revalida correccion P3 publicada con TASK-085.
 
 ### Bloqueado
 
@@ -27,7 +27,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - No hay bloqueos P0/P1 abiertos para integridad SQL auditada.
 - Regla temporal SQL `tmp-task077-sql-audit-200-229-6-103` retirada en TASK-079.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
-- P3 abierto: mensaje de duplicado queda persistente al operar compra/redencion.
+- P3 de mensaje persistente corregido localmente en TASK-082; pendiente revalidacion publicada TASK-085.
 
 ### Hecho
 
@@ -127,6 +127,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-082: Asignada a Web Dev para limpiar mensaje persistente de duplicado.
 - TASK-083: Asignada a QA para validar correccion P3 publicada.
 - TASK-084: Asignada a Infra / Azure para preparar runbook de calentamiento SQL.
+- TASK-082: Web Dev corrigio localmente mensaje persistente de duplicado.
+- TASK-083: QA no aprobo porque la URL publicada todavia tenia el comportamiento anterior.
+- TASK-084: Infra / Azure preparo runbook de calentamiento SQL.
+- TASK-085: Asignada a QA para revalidar limpieza P3 despues del commit/deploy de TASK-082.
 
 ## Riesgos principales
 
@@ -137,7 +141,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Completar TASK-082 y TASK-084; ejecutar TASK-083 despues del deploy de TASK-082.
+Desplegar TASK-082 y ejecutar TASK-085.
 
 ## Listo para probar
 
@@ -148,6 +152,7 @@ Completar TASK-082 y TASK-084; ejecutar TASK-083 despues del deploy de TASK-082.
 - Auditoria SQL pre-piloto: completada por SQL DEV en TASK-078, sin P0/P1.
 - Regla temporal SQL de auditoria: retirada en TASK-079.
 - Regresion MVP publicada: aprobada por QA en TASK-081, sin P0/P1.
-- Pendiente pre-piloto: P3 de mensaje persistente TASK-082/TASK-083 y runbook SQL TASK-084.
+- Runbook SQL: documentado en `docs/PILOT_RUNBOOK.md`.
+- Pendiente pre-piloto: revalidar P3 publicado con TASK-085.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
