@@ -41,6 +41,7 @@
 - TASK-055: Preparar workflow formal de deploy API.
 - TASK-058: Reorganizar UI por menu lateral de paneles.
 - TASK-060: Revalidar UI publicada con menu lateral de paneles despues del deploy.
+- TASK-061: Ajustar copy de puntos e iconos de acciones.
 
 ## P1 pre-lanzamiento
 
@@ -65,6 +66,7 @@
 - TASK-056: Validar API estable despues del workflow de deploy API.
 - TASK-057: Validar API estable despues del primer run real del workflow API.
 - TASK-059: Validar UI publicada con menu lateral de paneles.
+- TASK-062: Validar copy de puntos e iconos de acciones.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 

@@ -15,9 +15,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Ahora
 
 - PO Test puede ejecutar el flujo cliente + compra + redencion con menu/paneles en la URL publicada.
+- TASK-061: Web Dev ajusta copy de puntos e iconografia de acciones.
 
 ### Siguiente
 
+- TASK-062: QA valida UI publicada con copy `Pts.` e iconos de accion.
 - Product / Architect / Release procesa hallazgos de PO Test si aparecen.
 
 ### Bloqueado
@@ -100,7 +102,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar PO Test del flujo cliente + compra + redencion con menu/paneles en ambiente publicado.
+Procesar hallazgo visual de PO Test: abreviar puntos a `Pts.` y reemplazar botones largos por iconos claros.
 
 ## Listo para probar
 
