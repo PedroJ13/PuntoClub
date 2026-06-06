@@ -57,6 +57,7 @@
 - TASK-076: Revalidar historial publicado despues del deploy.
 - TASK-077: Desbloquear acceso SQL para auditoria pre-piloto.
 - TASK-078: Reintentar auditoria SQL pre-piloto.
+- TASK-079: Retirar regla temporal SQL de auditoria.
 
 ## P1 pre-lanzamiento
 

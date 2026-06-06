@@ -14,18 +14,18 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Release commitea/despliega historial de cliente y coordina desbloqueo de auditoria SQL.
+- Infra / Azure retira regla temporal SQL usada para auditoria.
 
 ### Siguiente
 
-- QA revalida historial publicado con TASK-076.
-- Infra / Azure define acceso seguro para que SQL DEV reintente auditoria pre-piloto.
+- Product / Architect / Release prepara siguiente bloque pre-piloto despues de cerrar regla temporal.
 
 ### Bloqueado
 
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla web por zonas.
-- TASK-075 no aprobo porque historial no estaba desplegado en UI publicada.
-- TASK-072 quedo bloqueada por firewall de Azure SQL para IP `200.229.6.103`.
+- No hay bloqueos P0/P1 abiertos para historial publicado.
+- No hay bloqueos P0/P1 abiertos para integridad SQL auditada.
+- Pendiente operativo: retirar regla temporal SQL `tmp-task077-sql-audit-200-229-6-103`.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
 ### Hecho
@@ -114,6 +114,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-076: Asignada a QA para revalidar historial publicado despues del commit/deploy de TASK-073.
 - TASK-077: Asignada a Infra / Azure para desbloquear acceso SQL seguro/temporal.
 - TASK-078: Asignada a SQL DEV para reintentar auditoria SQL despues de TASK-077.
+- TASK-076: QA aprobo historial publicado, sin P0/P1.
+- TASK-077: Infra / Azure creo regla temporal SQL `tmp-task077-sql-audit-200-229-6-103`.
+- TASK-078: SQL DEV completo auditoria SQL pre-piloto; sin P0/P1 de integridad.
+- TASK-079: Asignada a Infra / Azure para retirar regla temporal SQL de auditoria.
 
 ## Riesgos principales
 
@@ -124,14 +128,15 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Desplegar TASK-073 y ejecutar TASK-076. En paralelo, completar TASK-077 para desbloquear TASK-078.
+Retirar regla temporal SQL de auditoria con TASK-079.
 
 ## Listo para probar
 
 - Flujo: Clientes + registrar compra + redimir puntos en pantalla web por zonas.
 - Ambiente: frontend publicado `https://calm-dune-075dc5c0f.7.azurestaticapps.net` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
 - Estado: aprobado por QA en TASK-071, sin P0/P1.
-- Historial: implementado localmente en TASK-073; pendiente revalidacion publicada TASK-076.
-- Auditoria SQL pre-piloto: pendiente por firewall SQL.
+- Historial: aprobado por QA en TASK-076, sin P0/P1.
+- Auditoria SQL pre-piloto: completada por SQL DEV en TASK-078, sin P0/P1.
+- Operacion pendiente: retirar regla temporal SQL de TASK-077.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
