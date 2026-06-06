@@ -14,18 +14,18 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Infra / Azure retira regla temporal SQL usada para auditoria.
+- QA ejecuta regresion MVP publicada e Infra / Azure evalua endurecimiento operativo SQL pre-piloto.
 
 ### Siguiente
 
-- Product / Architect / Release prepara siguiente bloque pre-piloto despues de cerrar regla temporal.
+- Product / Architect / Release decide si aplicar cambios operativos SQL antes del piloto.
 
 ### Bloqueado
 
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla web por zonas.
 - No hay bloqueos P0/P1 abiertos para historial publicado.
 - No hay bloqueos P0/P1 abiertos para integridad SQL auditada.
-- Pendiente operativo: retirar regla temporal SQL `tmp-task077-sql-audit-200-229-6-103`.
+- Regla temporal SQL `tmp-task077-sql-audit-200-229-6-103` retirada en TASK-079.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
 ### Hecho
@@ -118,6 +118,9 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-077: Infra / Azure creo regla temporal SQL `tmp-task077-sql-audit-200-229-6-103`.
 - TASK-078: SQL DEV completo auditoria SQL pre-piloto; sin P0/P1 de integridad.
 - TASK-079: Asignada a Infra / Azure para retirar regla temporal SQL de auditoria.
+- TASK-079: Infra / Azure retiro regla temporal SQL de auditoria.
+- TASK-080: Asignada a Infra / Azure para evaluar endurecimiento operativo SQL pre-piloto.
+- TASK-081: Asignada a QA para regresion MVP publicada pre-piloto.
 
 ## Riesgos principales
 
@@ -128,7 +131,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Retirar regla temporal SQL de auditoria con TASK-079.
+Ejecutar TASK-080 y TASK-081 en paralelo.
 
 ## Listo para probar
 
@@ -137,6 +140,7 @@ Retirar regla temporal SQL de auditoria con TASK-079.
 - Estado: aprobado por QA en TASK-071, sin P0/P1.
 - Historial: aprobado por QA en TASK-076, sin P0/P1.
 - Auditoria SQL pre-piloto: completada por SQL DEV en TASK-078, sin P0/P1.
-- Operacion pendiente: retirar regla temporal SQL de TASK-077.
+- Regla temporal SQL de auditoria: retirada en TASK-079.
+- Pendiente pre-piloto: regresion MVP publicada TASK-081 y decision de endurecimiento SQL TASK-080.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.

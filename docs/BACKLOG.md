@@ -58,6 +58,8 @@
 - TASK-077: Desbloquear acceso SQL para auditoria pre-piloto.
 - TASK-078: Reintentar auditoria SQL pre-piloto.
 - TASK-079: Retirar regla temporal SQL de auditoria.
+- TASK-080: Evaluar endurecimiento operativo SQL pre-piloto.
+- TASK-081: Regresion MVP publicada pre-piloto.
 
 ## P1 pre-lanzamiento
 
