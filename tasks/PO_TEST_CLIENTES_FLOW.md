@@ -4,7 +4,7 @@
 
 Listo para prueba de Product Owner en ambiente publicado.
 
-QA aprobo el flujo publicado en pantalla web por zonas en TASK-065, sin P0/P1.
+QA aprobo el flujo publicado en pantalla web por zonas en TASK-071, sin P0/P1.
 
 ## Flujo a probar
 
@@ -53,7 +53,7 @@ Confirmar con Product / Architect / Release o Backend/API que:
 
 - La URL publicada carga Punto Club, no la pagina default de Azure Static Web Apps.
 - El indicador muestra `API real`.
-- No hay P0/P1 abiertos en TASK-065.
+- No hay P0/P1 abiertos en TASK-071.
 
 ## Checklist PO
 
@@ -61,7 +61,8 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - [ ] Confirmar que la pantalla carga sin error critico.
 - [ ] Confirmar que indica fuente `API real`.
 - [ ] Confirmar que no carga clientes automaticamente al abrir.
-- [ ] Confirmar que la pantalla muestra las zonas `Buscar cliente`, `Registrar cliente`, `Resultados` y `Operacion`.
+- [ ] Confirmar que la pantalla muestra los paneles `Buscar cliente`, `Registrar cliente`, `Resultados` y `Operacion`.
+- [ ] Confirmar que no aparece ningun texto `Zona` o `zona`.
 - [ ] Confirmar que no hay menu/tabs como flujo principal.
 - [ ] Confirmar que el foco inicial esta en buscar.
 - [ ] Buscar un cliente existente.
@@ -76,6 +77,7 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - [ ] Confirmar mensaje claro de saldo insuficiente.
 - [ ] Buscar un cliente inexistente.
 - [ ] Confirmar que pasa foco/mensaje hacia registro.
+- [ ] Confirmar que el mensaje sin resultados no menciona zonas.
 - [ ] Registrar un cliente nuevo con nombre, telefono y email.
 - [ ] Confirmar que despues de registrar cliente aparece/queda seleccionado en resultados.
 - [ ] Registrar compra para ese cliente nuevo.
