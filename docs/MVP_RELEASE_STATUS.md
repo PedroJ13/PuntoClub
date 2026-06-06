@@ -14,15 +14,16 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- PO Test puede ejecutar el flujo cliente + compra + redencion en pantalla web por zonas.
+- Web Dev agrega historial resumido de cliente y SQL/Infra preparan chequeos pre-piloto.
 
 ### Siguiente
 
-- Product / Architect / Release procesa hallazgos de PO Test si aparecen.
+- QA valida historial publicado despues del deploy de TASK-073.
 
 ### Bloqueado
 
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla web por zonas.
+- Historial resumido aun no esta aprobado en UI publicada.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
 ### Hecho
@@ -100,6 +101,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-070: QA no aprobo porque la URL publicada todavia servia el copy anterior con `zona 2`.
 - TASK-071: Asignada a QA para revalidar copy publicado despues del commit/deploy de TASK-069.
 - TASK-071: QA aprobo copy publicado sin referencias a zonas y flujo sin resultado + registro + compra + redencion, sin P0/P1.
+- TASK-072: Asignada a SQL DEV para auditar integridad SQL pre-piloto.
+- TASK-073: Asignada a Web Dev para mostrar historial resumido de cliente en UI.
+- TASK-074: Asignada a Infra / Azure para checklist operativo pre-piloto.
+- TASK-075: Asignada a QA para validar historial publicado despues de TASK-073.
 
 ## Riesgos principales
 
@@ -110,7 +115,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar PO Test del flujo cliente + compra + redencion en pantalla web por zonas.
+Completar TASK-072, TASK-073 y TASK-074; luego ejecutar TASK-075 cuando el historial este desplegado.
 
 ## Listo para probar
 

@@ -50,6 +50,10 @@
 - TASK-069: Quitar referencia a zona en mensaje sin resultados.
 - TASK-070: Revalidar copy sin referencia a zonas.
 - TASK-071: Revalidar copy publicado despues del deploy.
+- TASK-072: Auditar integridad SQL pre-piloto.
+- TASK-073: Mostrar historial resumido de cliente en UI.
+- TASK-074: Checklist operativo Azure pre-piloto.
+- TASK-075: Validar historial publicado de cliente.
 
 ## P1 pre-lanzamiento
 
