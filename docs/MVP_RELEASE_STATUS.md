@@ -14,8 +14,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- PO Test puede ejecutar el flujo cliente + compra + redencion en la URL publicada.
-- TASK-060: QA revalida UI publicada con menu lateral de paneles despues del deploy de TASK-058.
+- PO Test puede ejecutar el flujo cliente + compra + redencion con menu/paneles en la URL publicada.
 
 ### Siguiente
 
@@ -23,7 +22,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Bloqueado
 
-- TASK-059 no aprobado porque la URL publicada aun servia la UI anterior al momento de la prueba.
+- No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion con menu/paneles.
 - No hay bloqueos P0/P1 abiertos para deploy API repetible.
 
 ### Hecho
@@ -90,6 +89,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-057: QA aprobo API estable despues del primer run real exitoso del workflow API.
 - TASK-058: Web Dev reorganizo UI local por menu/paneles para registrar cliente, compra y redencion.
 - TASK-059: QA no aprobo porque la URL publicada todavia no reflejaba TASK-058.
+- TASK-060: QA aprobo UI publicada con menu/paneles para cliente, compra y redencion, sin P0/P1.
 
 ## Riesgos principales
 
@@ -100,12 +100,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Desplegar cambios de TASK-058 y repetir QA publicado para confirmar menu lateral/paneles.
+Ejecutar PO Test del flujo cliente + compra + redencion con menu/paneles en ambiente publicado.
 
 ## Listo para probar
 
-- Flujo: Clientes + registrar compra + redimir puntos.
+- Flujo: Clientes + registrar compra + redimir puntos con menu/paneles.
 - Ambiente: frontend publicado `https://calm-dune-075dc5c0f.7.azurestaticapps.net` contra API estable `https://func-puntoclub-prod-br-001.azurewebsites.net/api`.
-- Estado: aprobado por QA en TASK-053, sin P0/P1.
+- Estado: aprobado por QA en TASK-060, sin P0/P1.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.

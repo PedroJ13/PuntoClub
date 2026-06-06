@@ -4,7 +4,7 @@
 
 Listo para prueba de Product Owner en ambiente publicado.
 
-QA aprobo el flujo publicado en TASK-053, sin P0/P1.
+QA aprobo el flujo publicado con menu/paneles en TASK-060, sin P0/P1.
 
 ## Flujo a probar
 
@@ -53,7 +53,7 @@ Confirmar con Product / Architect / Release o Backend/API que:
 
 - La URL publicada carga Punto Club, no la pagina default de Azure Static Web Apps.
 - El indicador muestra `API real`.
-- No hay P0/P1 abiertos en TASK-053.
+- No hay P0/P1 abiertos en TASK-060.
 
 ## Checklist PO
 
@@ -61,23 +61,26 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - [ ] Confirmar que la pantalla carga sin error critico.
 - [ ] Confirmar que indica fuente `API real`.
 - [ ] Confirmar que no carga clientes automaticamente al abrir.
+- [ ] Confirmar que el menu/tabs muestra `Registrar cliente`, `Registrar compra` y `Redimir puntos`.
+- [ ] Confirmar que el panel activo inicial es `Registrar cliente`.
 - [ ] Buscar un cliente existente.
 - [ ] Confirmar que la lista muestra nombre, telefono, email y puntos acumulados.
-- [ ] Usar `Registrar compra` en un cliente existente.
+- [ ] Cambiar a `Registrar compra` desde el menu o desde un cliente existente.
 - [ ] Registrar compra con factura, fecha y monto.
 - [ ] Confirmar mensaje de compra registrada y puntos actualizados.
-- [ ] Usar `Redimir puntos` en un cliente con saldo.
+- [ ] Usar `Ir a redimir puntos` o cambiar a `Redimir puntos` con el mismo cliente.
 - [ ] Redimir una cantidad menor o igual al saldo.
 - [ ] Confirmar mensaje de canje registrado y puntos actualizados.
 - [ ] Intentar redimir mas puntos que el saldo.
 - [ ] Confirmar mensaje claro de saldo insuficiente.
 - [ ] Registrar un cliente nuevo con nombre, telefono y email.
-- [ ] Confirmar que despues de registrar cliente se abre/permite registrar compra.
+- [ ] Confirmar que despues de registrar cliente se mantiene el panel de registro con confirmacion clara.
+- [ ] Cambiar a `Registrar compra` para ese cliente.
 - [ ] Registrar compra para ese cliente nuevo.
 - [ ] Redimir parte de los puntos del cliente nuevo.
 - [ ] Intentar registrar otro cliente con el mismo telefono.
 - [ ] Confirmar que aparece mensaje de duplicado entendible.
-- [ ] Confirmar que el duplicado abre el registro de compra del cliente existente cuando sea posible.
+- [ ] Confirmar que el duplicado cambia automaticamente al panel `Registrar compra` del cliente existente cuando sea posible.
 - [ ] Intentar registrar cliente sin nombre.
 - [ ] Intentar registrar cliente sin telefono.
 - [ ] Confirmar que los errores de campos son claros.
@@ -100,6 +103,7 @@ Confirmar con Product / Architect / Release o Backend/API que:
 - Una redencion se registra correctamente para cliente con saldo.
 - El saldo se descuenta correctamente despues de redimir.
 - Saldo insuficiente se bloquea con mensaje claro.
+- El menu/panel evita buscar formularios apilados con scroll.
 - El duplicado muestra mensaje claro y permite continuar hacia compra del existente cuando aplica.
 - Los campos requeridos muestran errores claros.
 - Los errores de compra muestran mensajes claros.
