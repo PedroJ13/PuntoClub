@@ -15,11 +15,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Ahora
 
 - PO Test puede ejecutar el flujo cliente + compra + redencion con menu/paneles en la URL publicada.
-- TASK-061: Web Dev ajusta copy de puntos e iconografia de acciones.
+- TASK-063: Web Dev rediseña la pantalla web en una sola vista por zonas, sin menu.
 
 ### Siguiente
 
-- TASK-062: QA valida UI publicada con copy `Pts.` e iconos de accion.
+- TASK-064: QA valida la pantalla web por zonas y el flujo de foco/busqueda/registro/operacion.
 - Product / Architect / Release procesa hallazgos de PO Test si aparecen.
 
 ### Bloqueado
@@ -102,7 +102,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Procesar hallazgo visual de PO Test: abreviar puntos a `Pts.` y reemplazar botones largos por iconos claros.
+Procesar cambio de diseño: descartar menu y usar una sola pantalla web con paneles por zona y foco guiado.
 
 ## Listo para probar
 

@@ -42,6 +42,7 @@
 - TASK-058: Reorganizar UI por menu lateral de paneles.
 - TASK-060: Revalidar UI publicada con menu lateral de paneles despues del deploy.
 - TASK-061: Ajustar copy de puntos e iconos de acciones.
+- TASK-063: Rediseñar pantalla web en una sola vista por zonas.
 
 ## P1 pre-lanzamiento
 
@@ -67,6 +68,7 @@
 - TASK-057: Validar API estable despues del primer run real del workflow API.
 - TASK-059: Validar UI publicada con menu lateral de paneles.
 - TASK-062: Validar copy de puntos e iconos de acciones.
+- TASK-064: Validar pantalla web por zonas.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 
