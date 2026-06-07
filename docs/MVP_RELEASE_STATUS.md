@@ -14,12 +14,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Primera sesion piloto controlada en cola de ejecucion.
+- Fase de programacion: reporte operativo basico y export CSV.
 
 ### Siguiente
 
-- Ejecutar piloto controlado, capturar hallazgos y luego activar Pulso con TASK-088.
-- Cambios de UX/colores quedan despues de validar operacion real, salvo bloqueo operativo.
+- Implementar API, UI y validacion publicada del reporte operativo.
+- UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
 
@@ -142,6 +142,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-087: QA aprobo smoke operativo pre-sesion; ambiente listo despues de calentamiento SQL.
 - TASK-090: Asignada a PO Test para ejecutar y documentar sesion piloto controlada.
 - TASK-091: Asignada a Product / Architect / Release para decidir continuidad despues del piloto.
+- TASK-092: Asignada a SQL DEV para disenar consultas de reporte operativo.
+- TASK-093: Asignada a Backend API para implementar endpoint de reporte operativo.
+- TASK-094: Asignada a Web Dev para implementar pantalla de reporte y export CSV.
+- TASK-095: Asignada a QA para validar reporte operativo publicado.
 
 ## Riesgos principales
 
@@ -152,7 +156,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar TASK-090; despues pasar hallazgos a Pulso en TASK-088 y cerrar continuidad en TASK-091.
+Ejecutar TASK-092/TASK-093/TASK-094 y luego TASK-095.
 
 ## Listo para probar
 
@@ -169,5 +173,6 @@ Ejecutar TASK-090; despues pasar hallazgos a Pulso en TASK-088 y cerrar continui
 - Backlog post-piloto: estructura preparada en `docs/POST_PILOT_BACKLOG.md`.
 - Guion piloto: preparado en TASK-086.
 - Smoke pre-sesion: aprobado por QA en TASK-087.
+- Siguiente programacion: reporte operativo basico en TASK-092 a TASK-095.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.

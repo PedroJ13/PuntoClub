@@ -70,6 +70,10 @@
 - TASK-089: Preparar backlog post-piloto inmediato.
 - TASK-090: Ejecutar y documentar sesion piloto controlada.
 - TASK-091: Decidir continuidad despues del piloto.
+- TASK-092: Disenar consultas SQL para reporte operativo.
+- TASK-093: Implementar API de reporte operativo.
+- TASK-094: Implementar pantalla de reporte operativo.
+- TASK-095: Validar reporte operativo publicado.
 
 ## P1 pre-lanzamiento
 
@@ -101,8 +105,8 @@
 
 ## P2 recomendable
 
-- Reporte simple de actividad por cliente.
-- Exportacion CSV basica.
+- Reporte simple de actividad por cliente. En progreso con TASK-092 a TASK-095.
+- Exportacion CSV basica. En progreso con TASK-094/TASK-095.
 - Auditoria simple de operaciones criticas.
 
 ## Post-MVP
