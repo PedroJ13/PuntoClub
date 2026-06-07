@@ -18,6 +18,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Nueva direccion explicita: reabrir camino a registro de empresas con menu lateral, invitacion por correo, password/acceso por empresa, logo upload y notificacion interna.
 - Menu lateral publicado aprobado por QA.
 - Infra y SQL completaron preparacion de multiempresa controlado sin crear recursos ni aplicar migracion.
+- Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 
 ### Siguiente
 
@@ -223,6 +224,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-121: SQL DEV completo migracion versionada `database/migrations/20260607_company_registration_invitations.sql`; no aplicada en Azure SQL.
 - TASK-122: Asignada a Backend API para revisar migracion SQL contra contratos API multiempresa.
 - TASK-123: Asignada a Diseno / UX para definir copy y plantillas base de invitacion/correos.
+- TASK-122: Backend API completo revision de migracion contra contratos; requiere ajustar contratos finales antes de codificar.
+- TASK-123: Diseno / UX completo copy UI y plantillas base de invitacion/notificacion interna.
+- TASK-124: Asignada a Backend API para actualizar contratos finales multiempresa controlado.
+- TASK-125: Asignada a Backend API para preparar base interna sin providers Azure reales.
+- TASK-126: Asignada a Product / Architect / Release para preparar decision de aprobaciones Azure.
 
 ## Riesgos principales
 
@@ -233,7 +239,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Revisar alineacion Backend/API contra la migracion SQL y definir copy de invitaciones/correos. No implementar endpoints reales de registro/invitacion hasta tener recursos aprobados y migracion revisada.
+Actualizar contratos finales, preparar base Backend sin providers reales y cerrar aprobaciones Azure paso a paso. No implementar endpoints productivos ni crear recursos hasta aprobacion explicita.
 
 ## Listo para probar
 

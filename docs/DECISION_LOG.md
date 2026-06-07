@@ -127,3 +127,13 @@ Impacto: Se liberan tareas para preparar Infra y SQL. La implementacion real de 
 Riesgo aceptado: Durante la transicion, la empresa piloto sigue operando con `PILOT_COMPANY_ID`. Las empresas nuevas podran modelarse como solicitudes/invitaciones, pero no deben operar datos hasta que el `companyId` efectivo salga de auth server-side y mapeo SQL.
 
 Riesgo no aceptado: Auth local con passwords propios, public blob access para logos, tokens de invitacion en texto plano o `companyId` confiado desde frontend.
+
+## 2026-06-07 - Copy y contrato ajustado para registro de empresas
+
+Decision: El flujo de registro de empresa usara copy operativo y controlado. El CTA principal sera `Crear acceso`. El contrato final debe requerir direccion de empresa (`companyAddress`), usar logo privado por blob/API, no aceptar password local y derivar identidad desde JWT de Entra External ID.
+
+Motivo: TASK-122 confirmo que la migracion SQL agrega `company_address` obligatorio, logo privado y `CompanyUsers` basado solo en Entra External ID. TASK-123 definio mensajes para solicitud, invitacion, expiracion, acceso creado y notificacion interna sin exponer detalles tecnicos.
+
+Impacto: Backend/API debe actualizar contratos antes de implementar. Web Dev y Backend/API deben usar el copy aprobado como base. La implementacion productiva sigue bloqueada hasta aprobar recursos Azure y aplicar la migracion.
+
+Riesgo aceptado: Se puede preparar base de validadores/formatters/adapters con mocks antes de recursos reales. No se acepta exponer registro/invitacion productivo sin ACS Email, Entra External ID, storage privado y QA de aislamiento.

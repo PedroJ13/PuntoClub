@@ -102,6 +102,9 @@
 - TASK-121: Preparar migracion SQL para registro de empresas e invitaciones.
 - TASK-122: Revisar migracion SQL contra contratos API multiempresa.
 - TASK-123: Definir copy de registro, invitacion y correos de empresa.
+- TASK-124: Actualizar contratos finales multiempresa controlado.
+- TASK-125: Preparar implementacion base Backend multiempresa sin providers reales.
+- TASK-126: Preparar decision de aprobaciones Azure para multiempresa.
 
 ## P1 pre-lanzamiento
 
