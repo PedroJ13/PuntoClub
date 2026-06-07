@@ -100,6 +100,8 @@
 - TASK-119: Decidir arquitectura de registro multiempresa e invitaciones.
 - TASK-120: Preparar habilitacion Azure para email, auth y logos.
 - TASK-121: Preparar migracion SQL para registro de empresas e invitaciones.
+- TASK-122: Revisar migracion SQL contra contratos API multiempresa.
+- TASK-123: Definir copy de registro, invitacion y correos de empresa.
 
 ## P1 pre-lanzamiento
 

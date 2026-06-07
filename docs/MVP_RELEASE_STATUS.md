@@ -17,6 +17,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Fase de release: configuracion de empresa piloto aprobada.
 - Nueva direccion explicita: reabrir camino a registro de empresas con menu lateral, invitacion por correo, password/acceso por empresa, logo upload y notificacion interna.
 - Menu lateral publicado aprobado por QA.
+- Infra y SQL completaron preparacion de multiempresa controlado sin crear recursos ni aplicar migracion.
 
 ### Siguiente
 
@@ -218,6 +219,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-120: Liberada a Infra / Azure para preparar habilitacion Azure de email, auth y logos sin crear recursos sin aprobacion.
 - TASK-121: Liberada a SQL DEV para preparar migracion versionada de registro/invitaciones/usuarios sin aplicarla.
 - TASK-118: QA aprobo menu lateral publicado; Operaciones, Mi empresa, Reportes, Caja, Reporte, Auditoria y responsive sin P0/P1/P2/P3 nuevos.
+- TASK-120: Infra / Azure completo preparacion de ACS Email, Entra External ID y Blob Storage privado; no creo recursos ni secretos.
+- TASK-121: SQL DEV completo migracion versionada `database/migrations/20260607_company_registration_invitations.sql`; no aplicada en Azure SQL.
+- TASK-122: Asignada a Backend API para revisar migracion SQL contra contratos API multiempresa.
+- TASK-123: Asignada a Diseno / UX para definir copy y plantillas base de invitacion/correos.
 
 ## Riesgos principales
 
@@ -228,7 +233,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Preparar habilitacion controlada de Infra/SQL para multiempresa. No implementar endpoints reales de registro/invitacion hasta tener recursos aprobados y migracion revisada.
+Revisar alineacion Backend/API contra la migracion SQL y definir copy de invitaciones/correos. No implementar endpoints reales de registro/invitacion hasta tener recursos aprobados y migracion revisada.
 
 ## Listo para probar
 
