@@ -14,20 +14,17 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Fase de correccion: publicar auditoria operativa validable.
+- Fase de release: auditoria operativa publicada aprobada.
 
 ### Siguiente
 
 - Esperar deploy de API y frontend con TASK-093/TASK-094.
-- Aplicar migracion SQL, exponer lectura API y revalidar auditoria publicada.
-- Resolver bloqueo de firewall SQL para aplicar migracion de auditoria.
-- Redeployar API con endpoint `/audit/events`.
+- Incorporar auditoria operativa al smoke publicado regular.
+- Definir siguiente fase operativa antes de volver a UX/colores.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
 
-- Auditoria operativa publicada: bloqueada porque Azure SQL no permitio aplicar migracion desde IP `200.229.6.103`.
-- QA TASK-105 no aprobo porque API publicada responde `404` para `/audit/events`.
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla web por zonas.
 - No hay bloqueos P0/P1 abiertos para historial publicado.
 - No hay bloqueos P0/P1 abiertos para integridad SQL auditada.
@@ -177,6 +174,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-104: Web Dev alineo UI con contrato final; UI de auditoria ya aparece publicada segun QA.
 - TASK-105: QA no aprobo auditoria publicada porque API estable responde `404` para `/audit/events`.
 - TASK-106: Backend API clasifico 5xx recientes como calentamiento/conectividad SQL transitoria; no requiere tarea de codigo por ahora.
+- TASK-102: SQL DEV aplico y valido migracion SQL de auditoria operativa; regla temporal de firewall retirada.
+- TASK-105: QA aprobo auditoria operativa publicada; eventos, rechazos, UI, Caja y Reporte sin P0/P1/P2/P3.
 
 ## Riesgos principales
 
@@ -187,7 +186,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Desbloquear firewall SQL para reintentar TASK-102, redeployar API con TASK-103 y reejecutar QA de TASK-105.
+Definir siguiente fase operativa; auditoria operativa ya puede formar parte del smoke regular.
 
 ## Listo para probar
 
@@ -205,5 +204,6 @@ Desbloquear firewall SQL para reintentar TASK-102, redeployar API con TASK-103 y
 - Guion piloto: preparado en TASK-086.
 - Smoke pre-sesion: aprobado por QA en TASK-087.
 - Reporte operativo basico + export CSV: aprobado publicado por QA en TASK-096.
+- Auditoria operativa publicada: aprobada por QA en TASK-105.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.

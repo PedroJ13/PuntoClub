@@ -76,15 +76,15 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Motivo |
 | --- | --- | --- | --- |
-| `TASK-102` - Aplicar migracion SQL de auditoria operativa | SQL DEV | MVP bloqueante | Firewall Azure SQL bloquea IP `200.229.6.103`; migracion no aplicada. |
-| `TASK-105` - Revalidar auditoria operativa publicada | QA | MVP bloqueante | API publicada responde `404` para `/audit/events`; requiere migracion SQL y redeploy API. |
 
 ## Done
 
 | Tarea | Equipo | Prioridad | Handoff |
 | --- | --- | --- | --- |
+| `TASK-102` - Aplicar migracion SQL de auditoria operativa | SQL DEV | MVP bloqueante | `tasks/TASK-102-HANDOFF.md` |
 | `TASK-103` - Exponer lectura API de auditoria operativa | Backend API | MVP bloqueante | `tasks/TASK-103-HANDOFF.md` |
 | `TASK-104` - Alinear UI de auditoria operativa | Web Dev | MVP bloqueante | `tasks/TASK-104-HANDOFF.md` |
+| `TASK-105` - Revalidar auditoria operativa publicada | QA | MVP bloqueante | `tasks/TASK-105-HANDOFF.md` |
 | `TASK-106` - Revisar responses 5xx recientes en Application Insights | Backend API | P1 | `tasks/TASK-106-HANDOFF.md` |
 
 ## Formato sugerido de fila

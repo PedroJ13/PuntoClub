@@ -118,8 +118,8 @@
 
 - Reporte simple de actividad por cliente. Completado en TASK-096 para reporte operativo basico.
 - Exportacion CSV basica. Completado en TASK-096.
-- Auditoria simple de operaciones criticas. En progreso con TASK-102 a TASK-105.
-- Triage de 5xx recientes. En progreso con TASK-106.
+- Auditoria simple de operaciones criticas. Completada en TASK-105.
+- Triage de 5xx recientes. Completado en TASK-106.
 
 ## Post-MVP
 

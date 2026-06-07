@@ -6,26 +6,37 @@ TASK-102 - Aplicar migracion SQL de auditoria operativa.
 
 Archivos cambiados:
 - tasks/TASK-102-HANDOFF.md
+- docs/TASK_BOARD.md
 
 Estado:
-- No aplicada.
-- Bloqueada por firewall de Azure SQL antes de poder verificar/aplicar la migracion.
+- Aplicada.
+- Validada en Azure SQL existente `sqlserver-pj13-brazil/sql-db-puntoclub`.
 
 SQL agregado o modificado:
-- Ninguno aplicado en Azure SQL.
-- No se modifico schema.
-- No se modificaron datos.
+- Aplicada migracion no destructiva:
+  - `database/migrations/20260606_operational_audit_events.sql`
+- Objetos creados/confirmados:
+  - `dbo.OperationalAuditEvents`
+  - `PK_OperationalAuditEvents`
+  - `FK_OperationalAuditEvents_Companies`
+  - `FK_OperationalAuditEvents_Customers`
+  - `CK_OperationalAuditEvents_event_type`
+  - `CK_OperationalAuditEvents_entity_type`
+  - `CK_OperationalAuditEvents_source`
+  - `CK_OperationalAuditEvents_metadata_json`
+  - `IX_OperationalAuditEvents_company_date`
+  - `IX_OperationalAuditEvents_company_customer_date`
+- No se modificaron datos de clientes, compras ni redenciones.
+- No se hizo backfill.
 - No se imprimieron ni guardaron secretos.
 
 Migracion revisada:
-- database/migrations/20260606_operational_audit_events.sql
+- `database/migrations/20260606_operational_audit_events.sql`
 
 Revision de seguridad de la migracion:
 - Es no destructiva.
 - Crea `dbo.OperationalAuditEvents` solo si no existe.
-- Crea indices solo si no existen:
-  - `IX_OperationalAuditEvents_company_date`
-  - `IX_OperationalAuditEvents_company_customer_date`
+- Crea indices solo si no existen.
 - No contiene `DROP`.
 - No contiene `DELETE`.
 - No contiene `UPDATE`.
@@ -39,36 +50,58 @@ Verificacion ejecutada:
 - Leido `database/migrations/20260606_operational_audit_events.sql`.
 - Leido `tasks/TASK-097-HANDOFF.md`.
 - Leido `tasks/TASK-099-HANDOFF.md`.
-- Intento de conexion a Azure SQL con cliente Node/mssql hacia:
-  - Servidor: `sqlserver-pj13-brazil`
-  - Base: `sql-db-puntoclub`
-- Resultado:
-  - Azure SQL rechazo la conexion por firewall.
-  - Mensaje reportado: `Client with IP address '200.229.6.103' is not allowed to access the server.`
+- Movida `TASK-102` en `docs/TASK_BOARD.md` de `Assigned` a `In Progress`.
+- Aplicada la migracion en Azure SQL usando cliente Node/mssql con credenciales locales no impresas.
+- Ejecutados 3 lotes SQL del archivo de migracion; los 3 completaron correctamente.
+- Validada estructura resultante en Azure SQL.
+- Retirada regla temporal de firewall al terminar.
+- Movida `TASK-102` en `docs/TASK_BOARD.md` de `In Progress` a `Needs Review`.
 
 Evidencia de validacion:
-- No se pudo validar en Azure SQL porque la conexion fue bloqueada antes de ejecutar consultas.
-- Tabla `dbo.OperationalAuditEvents`: no validada.
-- PK: no validada.
-- FKs: no validadas.
-- Checks: no validados.
-- Indices recomendados: no validados.
+- Tabla `dbo.OperationalAuditEvents`: FOUND.
+- Columnas validadas:
+  - `id` bigint not null
+  - `company_id` bigint not null
+  - `event_type` varchar(80) not null
+  - `entity_type` varchar(40) not null
+  - `entity_id` bigint null
+  - `customer_id` bigint null
+  - `occurred_at` datetime2 not null
+  - `actor_label` nvarchar(120) null
+  - `source` varchar(40) not null
+  - `metadata` nvarchar(max) null
+- PK:
+  - `PK_OperationalAuditEvents`: FOUND, key `id`.
+- FKs:
+  - `FK_OperationalAuditEvents_Companies`: ENABLED_TRUSTED.
+  - `FK_OperationalAuditEvents_Customers`: ENABLED_TRUSTED.
+- Checks:
+  - `CK_OperationalAuditEvents_entity_type`: ENABLED_TRUSTED.
+  - `CK_OperationalAuditEvents_event_type`: ENABLED_TRUSTED.
+  - `CK_OperationalAuditEvents_metadata_json`: ENABLED_TRUSTED.
+  - `CK_OperationalAuditEvents_source`: ENABLED_TRUSTED.
+- Indices:
+  - `IX_OperationalAuditEvents_company_date`: ENABLED, keys `company_id, occurred_at, id`.
+  - `IX_OperationalAuditEvents_company_customer_date`: ENABLED, keys `company_id, customer_id, occurred_at, id`.
+- Conteo inicial:
+  - `dbo.OperationalAuditEvents`: 0 filas.
+  - Resultado esperado porque no hubo backfill.
 
 Regla temporal usada:
-- Ninguna.
+- `tmp-task102-sql-migration-200-229-6-103`
+- Motivo: permitir aplicar la migracion desde la IP temporal indicada en el tablero.
 
 Confirmacion de retiro de regla temporal:
-- No aplica; SQL DEV no creo reglas temporales en esta tarea.
+- Retirada correctamente con Azure CLI.
+- Verificacion posterior por nombre devolvio lista vacia: `[]`.
+
+Resultado:
+Migracion de auditoria operativa aplicada y validada. La tabla existe en Azure SQL y esta lista para que Backend/API persista eventos reales de auditoria.
 
 Riesgos o pendientes:
-- P1: La migracion de auditoria operativa sigue sin aplicarse; la API puede operar en modo best-effort, pero no persistira eventos reales mientras la tabla no exista.
-- P1: QA no podra validar auditoria publicada hasta que la migracion exista en Azure SQL y la API desplegada escriba eventos.
-- P2: La IP actual `200.229.6.103` requiere acceso temporal o una ruta autorizada para ejecutar la migracion.
-
-Recomendacion concreta:
-- Infra/Release debe habilitar temporalmente la IP `200.229.6.103` para `sqlserver-pj13-brazil` o indicar un ambiente/ruta ya autorizada para ejecutar SQL.
-- Luego SQL DEV debe reintentar TASK-102 aplicando `database/migrations/20260606_operational_audit_events.sql` y validando tabla, PK, FKs, checks e indices.
-- Si se crea regla temporal, debe retirarse al finalizar y documentarse en el handoff.
+- La API publicada debe estar desplegada con la escritura de auditoria de TASK-099 para empezar a poblar eventos.
+- QA TASK-105 debe revalidar auditoria publicada despues de que Backend/API confirme endpoint/deploy de lectura y escritura.
+- La auditoria inicia desde esta migracion; no hay eventos historicos previos porque no se hizo backfill.
 
 Siguiente recomendado:
-Crear o ejecutar una tarea Infra corta para habilitar acceso temporal seguro a Azure SQL; despues reabrir TASK-102 para aplicar la migracion.
+Backend/API debe confirmar redeploy/endpoint de auditoria y QA debe reintentar TASK-105 contra ambiente publicado.
