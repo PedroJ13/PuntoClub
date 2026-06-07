@@ -75,7 +75,7 @@ Errores esperados:
 
 ### PATCH `/api/companies/{companyId}/settings`
 
-Actualiza campos editables de configuracion.
+Actualiza campos editables de configuracion de la empresa piloto. Es una actualizacion parcial: los campos omitidos conservan su valor actual. `email`, `phone` y `logoUrl` pueden enviarse como `null` o texto vacio para limpiarlos.
 
 Payload:
 
@@ -93,11 +93,32 @@ Respuesta `200`: mismo formato de `GET`.
 
 Validaciones:
 
-- `name` requerido si se envia, maximo 160 caracteres.
+- Debe enviarse al menos uno de los campos editables.
+- `companyId` debe coincidir con `PILOT_COMPANY_ID`.
+- `name` requerido/no vacio si se envia, maximo 160 caracteres.
 - `email` opcional, formato email, maximo 254 caracteres.
-- `phone` opcional, maximo 32 caracteres.
-- `logoUrl` opcional, URL valida, maximo 2048 caracteres.
+- `phone` opcional, entre 7 y 32 caracteres si se provee.
+- `logoUrl` opcional, URL `http(s)` valida, maximo 2048 caracteres.
 - `pointsPercentage` mayor que 0 y menor o igual que 100.
+
+Efectos:
+
+- `pointsPercentage` aplica solo a compras futuras; no recalcula compras historicas.
+- Si cambia al menos un campo, la API actualiza `updatedAt`.
+- La API registra auditoria best-effort `company.settings.updated` con `entityType = company`, `entityId = companyId` y metadata sin secretos:
+
+```json
+{
+  "changedFields": ["name", "pointsPercentage"],
+  "requestId": "...",
+  "affectsPurchases": "future_only"
+}
+```
+
+Errores esperados:
+
+- `404 COMPANY_NOT_FOUND` si la empresa no existe, esta inactiva o el path no coincide con `PILOT_COMPANY_ID`.
+- `400 VALIDATION_ERROR` si el payload no es JSON valido o algun campo es invalido.
 
 ## Customers
 

@@ -5,6 +5,7 @@ const {
   calculatePointsEarned,
   validateAuditEventsQuery,
   validateActivityReportQuery,
+  validateCompanySettingsPatchPayload,
   validateCustomerPayload,
   validatePurchasePayload,
   validateRedemptionPayload
@@ -36,6 +37,47 @@ test('customer payload normalizes optional email', () => {
   assert.deepEqual(
     validateCustomerPayload({ name: ' Maria ', phone: ' 8888 ', email: '' }),
     { name: 'Maria', phone: '8888', email: null }
+  );
+});
+
+test('company settings patch normalizes editable fields', () => {
+  assert.deepEqual(
+    validateCompanySettingsPatchPayload({
+      name: ' Cafe Central ',
+      email: '',
+      phone: ' +50622223333 ',
+      logoUrl: null,
+      pointsPercentage: '7.5'
+    }),
+    {
+      patch: {
+        name: 'Cafe Central',
+        email: null,
+        phone: '+50622223333',
+        logoUrl: null,
+        pointsPercentage: 7.5
+      },
+      providedFields: ['name', 'email', 'phone', 'logoUrl', 'pointsPercentage']
+    }
+  );
+});
+
+test('company settings patch validates percentage, email, phone and logo URL', () => {
+  assert.throws(
+    () => validateCompanySettingsPatchPayload({
+      email: 'invalid',
+      phone: '123',
+      logoUrl: 'ftp://example.com/logo.png',
+      pointsPercentage: 101
+    }),
+    /One or more fields are invalid/
+  );
+});
+
+test('company settings patch requires at least one editable field', () => {
+  assert.throws(
+    () => validateCompanySettingsPatchPayload({}),
+    /One or more fields are invalid/
   );
 });
 

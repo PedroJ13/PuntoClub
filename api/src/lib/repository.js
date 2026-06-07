@@ -24,6 +24,19 @@ function mapCustomer(row) {
   };
 }
 
+function mapCompanySettings(row) {
+  return {
+    id: toApiId(row.id),
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    logoUrl: row.logo_url,
+    pointsPercentage: Number(row.points_percentage),
+    status: row.status,
+    updatedAt: toIsoTimestamp(row.updated_at)
+  };
+}
+
 async function ensureActiveCompany(companyId) {
   const sql = getSql();
   const pool = await getPool();
@@ -60,16 +73,46 @@ async function getCompanySettings(companyId) {
   }
 
   const row = result.recordset[0];
-  return {
-    id: toApiId(row.id),
-    name: row.name,
-    email: row.email,
-    phone: row.phone,
-    logoUrl: row.logo_url,
-    pointsPercentage: Number(row.points_percentage),
-    status: row.status,
-    updatedAt: toIsoTimestamp(row.updated_at)
-  };
+  return mapCompanySettings(row);
+}
+
+async function updateCompanySettings(companyId, settings) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('name', sql.NVarChar(160), settings.name)
+    .input('email', sql.NVarChar(254), settings.email)
+    .input('phone', sql.NVarChar(32), settings.phone)
+    .input('logo_url', sql.NVarChar(2048), settings.logoUrl)
+    .input('points_percentage', sql.Decimal(5, 2), settings.pointsPercentage)
+    .query(`
+      UPDATE dbo.Companies
+      SET
+        name = @name,
+        email = @email,
+        phone = @phone,
+        logo_url = @logo_url,
+        points_percentage = @points_percentage,
+        updated_at = SYSUTCDATETIME()
+      OUTPUT
+        INSERTED.id,
+        INSERTED.name,
+        INSERTED.email,
+        INSERTED.phone,
+        INSERTED.logo_url,
+        INSERTED.points_percentage,
+        INSERTED.status,
+        INSERTED.updated_at
+      WHERE id = @company_id
+        AND status = 'active'
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+  }
+
+  return mapCompanySettings(result.recordset[0]);
 }
 
 async function listCustomers(companyId, search) {
@@ -336,6 +379,8 @@ module.exports = {
   getBalance,
   getCompanySettings,
   listCustomers,
+  mapCompanySettings,
   toApiId,
-  toIsoTimestamp
+  toIsoTimestamp,
+  updateCompanySettings
 };

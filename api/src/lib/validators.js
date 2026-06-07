@@ -60,6 +60,81 @@ function validateCustomerPayload(payload) {
   return { name, phone, email: email || null };
 }
 
+function validateCompanySettingsPatchPayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const allowedFields = ['name', 'email', 'phone', 'logoUrl', 'pointsPercentage'];
+  const patch = {};
+  const providedFields = allowedFields.filter((field) => Object.prototype.hasOwnProperty.call(body, field));
+
+  if (!providedFields.length) {
+    details.push({ field: 'body', message: 'At least one editable company setting must be provided.' });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, 'name')) {
+    const name = normalizeText(body.name);
+    if (!name || name.length > 160) {
+      details.push({ field: 'name', message: 'Name must be provided and be 160 characters or fewer.' });
+    } else {
+      patch.name = name;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, 'email')) {
+    const email = normalizeText(body.email);
+    if (email && (email.length > 254 || !emailPattern.test(email))) {
+      details.push({ field: 'email', message: 'Email must be valid and 254 characters or fewer.' });
+    } else {
+      patch.email = email || null;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, 'phone')) {
+    const phone = normalizeText(body.phone);
+    if (phone && (phone.length < 7 || phone.length > 32)) {
+      details.push({ field: 'phone', message: 'Phone must be between 7 and 32 characters when provided.' });
+    } else {
+      patch.phone = phone || null;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, 'logoUrl')) {
+    const logoUrl = normalizeText(body.logoUrl);
+    if (logoUrl) {
+      try {
+        const url = new URL(logoUrl);
+        if (!['http:', 'https:'].includes(url.protocol) || logoUrl.length > 2048) {
+          details.push({ field: 'logoUrl', message: 'Logo URL must be a valid http(s) URL and 2048 characters or fewer.' });
+        } else {
+          patch.logoUrl = logoUrl;
+        }
+      } catch {
+        details.push({ field: 'logoUrl', message: 'Logo URL must be a valid http(s) URL and 2048 characters or fewer.' });
+      }
+    } else {
+      patch.logoUrl = null;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, 'pointsPercentage')) {
+    const pointsPercentage = Number(body.pointsPercentage);
+    if (!Number.isFinite(pointsPercentage) || pointsPercentage <= 0 || pointsPercentage > 100) {
+      details.push({ field: 'pointsPercentage', message: 'Points percentage must be greater than 0 and less than or equal to 100.' });
+    } else {
+      patch.pointsPercentage = pointsPercentage;
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    patch,
+    providedFields
+  };
+}
+
 function validatePurchasePayload(payload) {
   const details = [];
   const invoiceNumber = normalizeText(payload && payload.invoiceNumber);
@@ -211,6 +286,7 @@ module.exports = {
   parsePositiveInteger,
   validateAuditEventsQuery,
   validateActivityReportQuery,
+  validateCompanySettingsPatchPayload,
   validateCustomerPayload,
   validatePurchasePayload,
   validateRedemptionPayload

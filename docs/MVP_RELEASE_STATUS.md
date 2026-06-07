@@ -185,6 +185,9 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Decision: auditar cambios de configuracion de empresa en esta fase.
 - TASK-108: Liberada a Backend API para implementar PATCH settings y auditoria.
 - TASK-112: Liberada a SQL DEV para ampliar constraints de auditoria para settings.
+- TASK-108: Backend API implemento `PATCH /settings`, validaciones y auditoria best-effort.
+- TASK-112: SQL DEV aplico migracion de auditoria para `company.settings.updated` y `entity_type=company`.
+- TASK-109: Liberada a Web Dev para crear pantalla de configuracion de empresa piloto.
 
 ## Riesgos principales
 
@@ -195,7 +198,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar TASK-108 y TASK-112 en paralelo; luego liberar TASK-109.
+Ejecutar TASK-109; mantener TASK-110 bloqueada hasta API/UI desplegadas.
 
 ## Listo para probar
 
