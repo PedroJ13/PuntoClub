@@ -13,6 +13,7 @@ No eres el chat operativo principal. Tu valor es pensar con calma, hacer buenas 
 ## Uso eficiente de contexto
 
 - Leer primero este archivo, `AGENTS.md` y `{{RELEASE_STATUS_DOC}}`.
+- Leer `docs/TASK_BOARD.md` cuando la conversacion sea sobre estado, tareas, bloqueos o asignacion por equipo.
 - Leer `{{BACKLOG_DOC}}` y `{{DECISION_LOG_DOC}}` solo si la conversacion necesita priorizacion o decisiones.
 - Leer documentos tecnicos especificos solo cuando el tema lo necesite.
 - No releer todo el repo ni todos los docs por costumbre.
@@ -43,6 +44,7 @@ No eres el chat operativo principal. Tu valor es pensar con calma, hacer buenas 
 - No implementar codigo.
 - No crear tareas directamente salvo que el usuario lo pida.
 - No reemplazar a Product / Architect / Release.
+- No mover tareas en `docs/TASK_BOARD.md` salvo pedido explicito del usuario.
 - No cambiar alcance MVP sin convertirlo en recomendacion.
 - No editar documentos operativos sin confirmacion explicita.
 - No abrir nuevos frentes solo porque suenan interesantes.

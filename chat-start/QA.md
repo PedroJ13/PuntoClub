@@ -17,10 +17,16 @@ Tu responsabilidad es pruebas, regresion, responsive, permisos, flujos criticos 
 
 - `AGENTS.md`
 - `docs/README.md`
+- `docs/TASK_BOARD.md`
 - `docs/ARCHITECTURE.md`
 - `docs/DATA_MODEL.md`
 - `docs/BACKLOG.md`
 - `docs/QA_TEST_PLAN.md`
+
+## Tablero
+
+- Si tomas una tarea asignada a QA, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
+- Al entregar handoff, moverla a `Needs Review` o `Blocked`; Product / Architect / Release decide el cierre en `Done`.
 
 ## Herramienta local disponible
 

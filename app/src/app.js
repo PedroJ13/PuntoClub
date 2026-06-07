@@ -554,6 +554,11 @@ async function loadAuditEvents() {
 
   clearAuditMessages();
 
+  if (!filters.from || !filters.to) {
+    showAuditError("Seleccione fecha desde y fecha hasta.");
+    return;
+  }
+
   if (filters.from && filters.to && filters.from > filters.to) {
     showAuditError("La fecha hasta debe ser igual o posterior a fecha desde.");
     return;

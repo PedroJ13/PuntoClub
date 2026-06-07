@@ -18,6 +18,7 @@ Tu responsabilidad es mantener claridad de producto, arquitectura, prioridades, 
 
 - `AGENTS.md`
 - `docs/README.md`
+- `docs/TASK_BOARD.md`
 - `docs/WORKFLOW_CODEX.md`
 - `docs/ARCHITECTURE.md`
 - `docs/DATA_MODEL.md`
@@ -34,6 +35,7 @@ Tu responsabilidad es mantener claridad de producto, arquitectura, prioridades, 
 ## Responsabilidades
 
 - Definir tareas pequenas.
+- Crear, priorizar, asignar y mover tareas en `docs/TASK_BOARD.md`.
 - Mantener backlog.
 - Resolver dudas de modelo.
 - Definir prioridades.

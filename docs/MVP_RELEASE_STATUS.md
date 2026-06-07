@@ -20,11 +20,14 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 - Esperar deploy de API y frontend con TASK-093/TASK-094.
 - Aplicar migracion SQL, exponer lectura API y revalidar auditoria publicada.
-- Revisar responses 5xx recientes antes de ampliar piloto.
+- Resolver bloqueo de firewall SQL para aplicar migracion de auditoria.
+- Redeployar API con endpoint `/audit/events`.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
 
+- Auditoria operativa publicada: bloqueada porque Azure SQL no permitio aplicar migracion desde IP `200.229.6.103`.
+- QA TASK-105 no aprobo porque API publicada responde `404` para `/audit/events`.
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla web por zonas.
 - No hay bloqueos P0/P1 abiertos para historial publicado.
 - No hay bloqueos P0/P1 abiertos para integridad SQL auditada.
@@ -169,6 +172,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-104: Asignada a Web Dev para alinear/desplegar UI de auditoria.
 - TASK-105: Asignada a QA para revalidar auditoria publicada.
 - TASK-106: Asignada a Backend API para revisar responses 5xx recientes en Application Insights.
+- TASK-102: SQL DEV no pudo aplicar migracion por firewall Azure SQL; requiere apoyo Infra/usuario para acceso temporal.
+- TASK-103: Backend API implemento endpoint de lectura `/audit/events`; pendiente redeploy publicado.
+- TASK-104: Web Dev alineo UI con contrato final; UI de auditoria ya aparece publicada segun QA.
+- TASK-105: QA no aprobo auditoria publicada porque API estable responde `404` para `/audit/events`.
+- TASK-106: Backend API clasifico 5xx recientes como calentamiento/conectividad SQL transitoria; no requiere tarea de codigo por ahora.
 
 ## Riesgos principales
 
@@ -179,7 +187,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar TASK-102 y TASK-106 en paralelo; luego TASK-103, TASK-104 y TASK-105.
+Desbloquear firewall SQL para reintentar TASK-102, redeployar API con TASK-103 y reejecutar QA de TASK-105.
 
 ## Listo para probar
 

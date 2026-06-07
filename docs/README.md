@@ -3,6 +3,7 @@
 ## Orden recomendado
 
 - `MVP_RELEASE_STATUS.md`: tablero operativo y estado diario.
+- `TASK_BOARD.md`: tablero versionado por etapa y equipo/chat.
 - `MVP_CRITERIA.md`: criterios de aceptacion del MVP.
 - `BACKLOG.md`: inventario priorizado.
 - `DECISION_LOG.md`: decisiones durables.

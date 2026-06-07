@@ -78,6 +78,14 @@ async function route(request, response) {
     return send(response, 200, report);
   }
 
+  if (request.method === 'GET' && segments.length === 4 && segments[2] === 'audit' && segments[3] === 'events') {
+    const { validateAuditEventsQuery } = require('../src/lib/validators');
+    const { listAuditEvents } = require('../src/lib/audit');
+    const filters = validateAuditEventsQuery(url.searchParams);
+    const events = await listAuditEvents(companyId, filters);
+    return send(response, 200, events);
+  }
+
   if (request.method === 'GET' && segments.length === 3 && segments[2] === 'customers') {
     const items = await repository.listCustomers(companyId, url.searchParams.get('search'));
     return send(response, 200, { items });

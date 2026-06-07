@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 
 const {
   calculatePointsEarned,
+  validateAuditEventsQuery,
   validateActivityReportQuery,
   validateCustomerPayload,
   validatePurchasePayload,
@@ -71,6 +72,37 @@ test('activity report query validates date order and max range', () => {
 
   assert.throws(
     () => validateActivityReportQuery(query({ from: '2026-06-01', to: '2026-07-02' })),
+    /One or more fields are invalid/
+  );
+});
+
+test('audit events query defaults limit to 25', () => {
+  assert.deepEqual(
+    validateAuditEventsQuery(query({ from: '2026-06-01', to: '2026-06-07' })),
+    { from: '2026-06-01', to: '2026-06-07', limit: 25 }
+  );
+});
+
+test('audit events query validates allowed limits', () => {
+  assert.deepEqual(
+    validateAuditEventsQuery(query({ from: '2026-06-01', to: '2026-06-07', limit: '10' })),
+    { from: '2026-06-01', to: '2026-06-07', limit: 10 }
+  );
+
+  assert.throws(
+    () => validateAuditEventsQuery(query({ from: '2026-06-01', to: '2026-06-07', limit: '100' })),
+    /One or more fields are invalid/
+  );
+});
+
+test('audit events query validates date order and max range', () => {
+  assert.throws(
+    () => validateAuditEventsQuery(query({ from: '2026-06-07', to: '2026-06-01' })),
+    /One or more fields are invalid/
+  );
+
+  assert.throws(
+    () => validateAuditEventsQuery(query({ from: '2026-06-01', to: '2026-07-02' })),
     /One or more fields are invalid/
   );
 });

@@ -18,11 +18,17 @@ Tu responsabilidad es modelo relacional, scripts SQL, migraciones, integridad de
 
 - `AGENTS.md`
 - `docs/README.md`
+- `docs/TASK_BOARD.md`
 - `docs/ARCHITECTURE.md`
 - `docs/DATA_MODEL.md`
 - `docs/API_CONTRACTS.md`
 - `docs/BACKLOG.md`
 - `docs/DECISION_LOG.md`
+
+## Tablero
+
+- Si tomas una tarea asignada a SQL DEV, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
+- Al entregar handoff, moverla a `Needs Review`, `QA` o `Blocked` segun resultado y enlazar el handoff.
 
 ## No tocar sin pedir confirmacion
 

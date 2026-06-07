@@ -110,12 +110,8 @@ function createHttpCustomerApi(config) {
     },
     async getAuditEvents(filters) {
       const url = new URL(auditEventsUrl, window.location.origin);
-      if (filters.from) {
-        url.searchParams.set("from", filters.from);
-      }
-      if (filters.to) {
-        url.searchParams.set("to", filters.to);
-      }
+      url.searchParams.set("from", filters.from);
+      url.searchParams.set("to", filters.to);
       url.searchParams.set("limit", filters.limit || "25");
       const response = await fetch(url);
       return parseResponse(response);
@@ -537,20 +533,28 @@ function validateAuditFilters(filters) {
   const to = String(filters.to ?? "").trim();
   const limit = Number(filters.limit || 25);
 
-  if (from && !isDateOnly(from)) {
+  if (!from) {
+    details.push({ field: "from", message: "La fecha desde es requerida." });
+  } else if (!isDateOnly(from)) {
     details.push({ field: "from", message: "La fecha desde no es valida." });
   }
 
-  if (to && !isDateOnly(to)) {
+  if (!to) {
+    details.push({ field: "to", message: "La fecha hasta es requerida." });
+  } else if (!isDateOnly(to)) {
     details.push({ field: "to", message: "La fecha hasta no es valida." });
   }
 
-  if (from && to && from > to) {
+  if (isDateOnly(from) && isDateOnly(to) && from > to) {
     details.push({ field: "to", message: "La fecha hasta debe ser igual o posterior a desde." });
   }
 
-  if (!Number.isInteger(limit) || limit <= 0 || limit > 50) {
-    details.push({ field: "limit", message: "El limite debe estar entre 1 y 50." });
+  if (isDateOnly(from) && isDateOnly(to) && getDateRangeDays(from, to) > 31) {
+    details.push({ field: "to", message: "El rango maximo es de 31 dias." });
+  }
+
+  if (!Number.isInteger(limit) || ![10, 25, 50].includes(limit)) {
+    details.push({ field: "limit", message: "El limite debe ser 10, 25 o 50." });
   }
 
   if (details.length > 0) {
@@ -631,6 +635,12 @@ function isDateOnly(value) {
 
   const date = new Date(`${value}T00:00:00`);
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+}
+
+function getDateRangeDays(from, to) {
+  const fromDate = new Date(`${from}T00:00:00`);
+  const toDate = new Date(`${to}T00:00:00`);
+  return Math.floor((toDate - fromDate) / 86400000) + 1;
 }
 
 function normalize(value) {

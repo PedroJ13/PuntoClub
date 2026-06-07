@@ -159,6 +159,45 @@ function validateActivityReportQuery(query) {
   return { from, to, type };
 }
 
+function validateAuditEventsQuery(query) {
+  const details = [];
+  const from = query.get('from');
+  const to = query.get('to');
+  const limitValue = query.get('limit') || '25';
+  const allowedLimits = new Set(['10', '25', '50']);
+  const fromDate = parseIsoDate(from);
+  const toDate = parseIsoDate(to);
+
+  if (!fromDate) {
+    details.push({ field: 'from', message: 'from is required and must use YYYY-MM-DD format.' });
+  }
+
+  if (!toDate) {
+    details.push({ field: 'to', message: 'to is required and must use YYYY-MM-DD format.' });
+  }
+
+  if (!allowedLimits.has(limitValue)) {
+    details.push({ field: 'limit', message: 'limit must be one of 10, 25, 50.' });
+  }
+
+  if (fromDate && toDate) {
+    if (fromDate > toDate) {
+      details.push({ field: 'from', message: 'from must be before or equal to to.' });
+    } else {
+      const rangeDays = ((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
+      if (rangeDays > maxReportRangeDays) {
+        details.push({ field: 'to', message: `Date range must be ${maxReportRangeDays} days or fewer.` });
+      }
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { from, to, limit: Number(limitValue) };
+}
+
 function calculatePointsEarned(amount, pointsPercentage) {
   const points = Math.round(Number(amount) * Number(pointsPercentage) / 100);
   if (!Number.isInteger(points) || points <= 0) {
@@ -170,6 +209,7 @@ function calculatePointsEarned(amount, pointsPercentage) {
 module.exports = {
   calculatePointsEarned,
   parsePositiveInteger,
+  validateAuditEventsQuery,
   validateActivityReportQuery,
   validateCustomerPayload,
   validatePurchasePayload,

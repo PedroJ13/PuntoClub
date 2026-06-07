@@ -387,6 +387,66 @@ Errores esperados:
 - `404 COMPANY_NOT_FOUND`.
 - `400 VALIDATION_ERROR`.
 
+## Operational audit
+
+### GET `/api/companies/{companyId}/audit/events?from=YYYY-MM-DD&to=YYYY-MM-DD&limit=10|25|50`
+
+Devuelve eventos recientes de auditoria operativa por rango de fecha.
+
+Query params:
+
+- `from` requerido, formato `YYYY-MM-DD`.
+- `to` requerido, formato `YYYY-MM-DD`.
+- `limit` opcional, default `25`; valores permitidos: `10`, `25`, `50`.
+- Rango maximo inicial: 31 dias.
+
+Respuesta `200`:
+
+```json
+{
+  "from": "2026-06-01",
+  "to": "2026-06-07",
+  "limit": 25,
+  "items": [
+    {
+      "id": "100",
+      "occurredAt": "2026-06-07T18:20:00Z",
+      "eventType": "purchase.registered",
+      "entityType": "purchase",
+      "entityId": "50",
+      "customerId": "10",
+      "customerName": "Maria Soto",
+      "actorLabel": null,
+      "source": "api",
+      "metadata": {
+        "invoiceNumber": "FAC-1001",
+        "purchaseDate": "2026-06-07",
+        "amount": 25000,
+        "pointsEarned": 1250
+      }
+    }
+  ]
+}
+```
+
+Campos:
+
+- `entityId` y `customerId` pueden ser `null` en eventos de rechazo.
+- `customerName` puede ser `null` si no hay cliente asociado o no se puede resolver.
+- `metadata` es JSON parseado o `null`; no debe contener secretos.
+
+Validaciones:
+
+- `companyId` debe coincidir con `PILOT_COMPANY_ID`.
+- `from <= to`.
+- `from` y `to` deben ser fechas reales en formato `YYYY-MM-DD`.
+- `limit` debe ser `10`, `25` o `50`.
+
+Errores esperados:
+
+- `404 COMPANY_NOT_FOUND`.
+- `400 VALIDATION_ERROR`.
+
 ## Validaciones que dependen de SQL
 
 - Empresa autorizada para MVP: `companyId` del path coincide con `PILOT_COMPANY_ID` configurado server-side.
