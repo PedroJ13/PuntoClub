@@ -14,11 +14,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Preparacion operativa de la primera sesion piloto controlada.
+- Primera sesion piloto controlada lista para ejecutarse.
 
 ### Siguiente
 
-- Ejecutar piloto controlado, capturar hallazgos y decidir siguiente release.
+- Ejecutar piloto controlado, capturar hallazgos y luego activar Pulso con TASK-088.
 
 ### Bloqueado
 
@@ -137,6 +137,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-088: Asignada a Pulso para analizar senales post-piloto.
 - TASK-089: Asignada a Product / Architect / Release para preparar backlog post-piloto.
 - TASK-089: Product / Architect / Release preparo estructura de backlog post-piloto inmediato.
+- TASK-086: PO Test preparo guion de piloto operativo.
+- TASK-087: QA aprobo smoke operativo pre-sesion; ambiente listo despues de calentamiento SQL.
 
 ## Riesgos principales
 
@@ -147,7 +149,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Preparar guion y smoke pre-sesion; luego ejecutar piloto controlado usando `docs/PILOT_RUNBOOK.md`.
+Ejecutar piloto controlado usando `docs/PILOT_RUNBOOK.md` 10 a 15 minutos antes de la sesion.
 
 ## Listo para probar
 
@@ -162,5 +164,7 @@ Preparar guion y smoke pre-sesion; luego ejecutar piloto controlado usando `docs
 - Correccion P3 mensaje duplicado: aprobada por QA en TASK-085.
 - Estado pre-piloto: listo para piloto controlado.
 - Backlog post-piloto: estructura preparada en `docs/POST_PILOT_BACKLOG.md`.
+- Guion piloto: preparado en TASK-086.
+- Smoke pre-sesion: aprobado por QA en TASK-087.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
