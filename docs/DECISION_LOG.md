@@ -85,3 +85,13 @@ Motivo: TASK-081 aprobo la regresion MVP sin P0/P1 y TASK-078 no encontro proble
 Impacto: Infra / Azure debe preparar un runbook operativo de calentamiento. Si el piloto requiere mayor postura de seguridad o menor latencia inicial, se abrira tarea separada para allowlist de IPs outbound de Function App, ajuste de auto-pause o cambio temporal a provisioned.
 
 Riesgo aceptado: `AllowAllWindowsAzureIps` mantiene una superficie de red amplia y SQL serverless puede tener latencia de reanudacion. Se acepta temporalmente para piloto pequeno/controlado, con monitoreo y runbook.
+
+## 2026-06-07 - Siguiente fase sera configuracion de empresa piloto
+
+Decision: La siguiente fase de Punto Club sera Opcion A: configuracion de empresa piloto. Se preparara el camino hacia multiempresa controlado, pero no se implementara todavia Opcion B ni Opcion C.
+
+Motivo: El flujo operativo principal ya esta aprobado, incluyendo caja, historial, reporte y auditoria. Configuracion de empresa aporta valor operativo inmediato con bajo riesgo, sin introducir auth, registro publico, invitaciones o aislamiento multiempresa completo antes de validar mas uso real.
+
+Impacto: Product / Architect / Release libera primero tareas para revisar modelo SQL y luego API/UI/QA de configuracion. El sistema sigue usando `PILOT_COMPANY_ID` como fuente confiable de empresa. El frontend no puede elegir empresa operativa.
+
+Riesgo aceptado: El producto sigue sin multiempresa real/autoservicio. Esa decision se revisara despues de validar configuracion de empresa en TASK-111.

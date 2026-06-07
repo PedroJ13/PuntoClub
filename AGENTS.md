@@ -48,6 +48,9 @@ Fase 1 sera un uso real piloto, no solo una demo visual. El MVP debe cuidar pers
 - Product / Architect / Release es owner del tablero.
 - Los equipos/chats pueden mover solo tareas asignadas a su equipo y deben dejar nota breve cuando bloquean o liberan una tarea.
 - Las etapas son `Inbox`, `Ready`, `Assigned`, `In Progress`, `Needs Review`, `QA`, `Blocked` y `Done`.
+- Product / Architect / Release libera tareas por ronda moviendolas a `Ready` o `Assigned`.
+- Los chats solo toman tareas de su equipo que esten en `Ready` o `Assigned` y no tengan dependencias pendientes en `Depende de`.
+- Las tareas de rondas futuras o con dependencias pendientes deben quedarse en `Blocked`.
 
 ## Seguridad
 

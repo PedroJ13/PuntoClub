@@ -25,7 +25,8 @@ Tu responsabilidad es endpoints, validaciones, seguridad basica, contratos API, 
 
 ## Tablero
 
-- Si tomas una tarea asignada a Backend/API, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
+- Solo tomes tareas en `Ready` o `Assigned`, asignadas a Backend/API y sin dependencias pendientes en `Depende de`.
+- Si tomas una tarea valida, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
 - Al entregar handoff, moverla a `Needs Review`, `QA` o `Blocked` segun resultado y enlazar el handoff.
 
 ## Herramienta local disponible

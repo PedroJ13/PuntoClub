@@ -14,13 +14,13 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Fase de release: auditoria operativa publicada aprobada.
+- Fase de producto: configuracion de empresa piloto.
 
 ### Siguiente
 
 - Esperar deploy de API y frontend con TASK-093/TASK-094.
-- Incorporar auditoria operativa al smoke publicado regular.
-- Definir siguiente fase operativa antes de volver a UX/colores.
+- Opcion A elegida: configuracion de empresa piloto.
+- Preparar ajustes de empresa sin activar multiempresa controlado ni SaaS completo.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -176,6 +176,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-106: Backend API clasifico 5xx recientes como calentamiento/conectividad SQL transitoria; no requiere tarea de codigo por ahora.
 - TASK-102: SQL DEV aplico y valido migracion SQL de auditoria operativa; regla temporal de firewall retirada.
 - TASK-105: QA aprobo auditoria operativa publicada; eventos, rechazos, UI, Caja y Reporte sin P0/P1/P2/P3.
+- TASK-107: Asignada a SQL DEV para revisar modelo SQL de configuracion de empresa piloto.
+- TASK-108: Bloqueada hasta TASK-107; Backend API implementara settings editables.
+- TASK-109: Bloqueada hasta TASK-108; Web Dev creara pantalla de configuracion.
+- TASK-110: Bloqueada hasta TASK-108/TASK-109; QA validara publicado.
+- TASK-111: Bloqueada hasta TASK-110; Product / Architect / Release decidira si avanzar a multiempresa controlado.
 
 ## Riesgos principales
 
@@ -186,7 +191,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Definir siguiente fase operativa; auditoria operativa ya puede formar parte del smoke regular.
+Ejecutar TASK-107 y liberar rondas posteriores segun dependencias.
 
 ## Listo para probar
 

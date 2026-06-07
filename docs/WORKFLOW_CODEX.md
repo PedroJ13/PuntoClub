@@ -43,6 +43,8 @@ Product / Architect / Release coordina. Cada chat especializado trabaja tareas p
 - Archivo: `docs/TASK_BOARD.md`.
 - Product / Architect / Release crea tareas, asigna equipo, define prioridad y decide cierre en `Done`.
 - Cada chat puede tomar/liberar solo la tarea asignada a su equipo.
+- Cada chat solo toma tareas en `Ready` o `Assigned`, sin dependencias pendientes.
+- Product / Architect / Release controla las rondas moviendo tareas futuras desde `Blocked` hacia `Ready` o `Assigned`.
 - Si hay bloqueo, mover a `Blocked` y escribir motivo concreto.
 - Si hay handoff, enlazar `tasks/TASK-###-HANDOFF.md` en el tablero.
 

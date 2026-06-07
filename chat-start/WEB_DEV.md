@@ -25,7 +25,8 @@ Tu responsabilidad es UI publica, UI interna, formularios, interacciones fronten
 
 ## Tablero
 
-- Si tomas una tarea asignada a Web Dev, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
+- Solo tomes tareas en `Ready` o `Assigned`, asignadas a Web Dev y sin dependencias pendientes en `Depende de`.
+- Si tomas una tarea valida, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
 - Al entregar handoff, moverla a `Needs Review`, `QA` o `Blocked` segun resultado y enlazar el handoff.
 
 ## No tocar sin pedir confirmacion

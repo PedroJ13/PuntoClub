@@ -25,7 +25,8 @@ Tu responsabilidad es experiencia de usuario, claridad de flujos, jerarquia visu
 
 ## Tablero
 
-- Si tomas una tarea asignada a Diseno / UX, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
+- Solo tomes tareas en `Ready` o `Assigned`, asignadas a Diseno / UX y sin dependencias pendientes en `Depende de`.
+- Si tomas una tarea valida, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
 - Al entregar handoff, moverla a `Needs Review`, `QA` o `Blocked` segun resultado y enlazar el handoff.
 
 ## No hacer

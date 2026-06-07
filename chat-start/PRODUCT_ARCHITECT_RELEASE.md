@@ -36,6 +36,8 @@ Tu responsabilidad es mantener claridad de producto, arquitectura, prioridades, 
 
 - Definir tareas pequenas.
 - Crear, priorizar, asignar y mover tareas en `docs/TASK_BOARD.md`.
+- Liberar tareas por ronda moviendolas a `Ready` o `Assigned`.
+- Mantener `Round` y `Depende de` en `docs/TASK_BOARD.md` para evitar que chats tomen tareas antes de tiempo.
 - Mantener backlog.
 - Resolver dudas de modelo.
 - Definir prioridades.

@@ -85,6 +85,11 @@
 - TASK-104: Alinear y desplegar UI de auditoria operativa.
 - TASK-105: Revalidar auditoria operativa publicada.
 - TASK-106: Revisar responses 5xx recientes en Application Insights.
+- TASK-107: Revisar modelo SQL de configuracion de empresa piloto.
+- TASK-108: Implementar API de configuracion de empresa piloto.
+- TASK-109: Crear pantalla de configuracion de empresa piloto.
+- TASK-110: Validar configuracion de empresa publicada.
+- TASK-111: Decidir entrada a multiempresa controlado.
 
 ## P1 pre-lanzamiento
 
@@ -113,6 +118,8 @@
 - TASK-064: Validar pantalla web por zonas.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
+- Configuracion editable de empresa piloto. En progreso con TASK-107 a TASK-110.
+- Decision de entrada a multiempresa controlado. Pendiente TASK-111.
 
 ## P2 recomendable
 

@@ -25,7 +25,8 @@ Tu responsabilidad es pruebas, regresion, responsive, permisos, flujos criticos 
 
 ## Tablero
 
-- Si tomas una tarea asignada a QA, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
+- Solo tomes tareas en `Ready`, `Assigned` o `QA`, asignadas a QA y sin dependencias pendientes en `Depende de`.
+- Si tomas una tarea valida, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
 - Al entregar handoff, moverla a `Needs Review` o `Blocked`; Product / Architect / Release decide el cierre en `Done`.
 
 ## Herramienta local disponible

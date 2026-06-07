@@ -25,7 +25,10 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 - Cada tarea debe existir como `tasks/TASK-###.md` o `tasks/TASK-###-assignment.md`.
 - Una tarea debe aparecer una sola vez en el tablero.
 - Product / Architect / Release crea y prioriza tareas.
+- Product / Architect / Release libera tareas por ronda moviendolas a `Ready` o `Assigned`.
 - El chat responsable puede mover solo su tarea asignada, respetando el alcance.
+- Un chat solo puede tomar tareas en `Ready` o `Assigned` si estan asignadas a su equipo y no tienen dependencias pendientes.
+- Las tareas con dependencias pendientes deben quedarse en `Blocked` hasta que Product / Architect / Release las libere.
 - Si una tarea se bloquea, moverla a `Blocked` y escribir el motivo corto.
 - Al terminar, crear o actualizar `tasks/TASK-###-HANDOFF.md` y mover a `Needs Review` o `QA`, segun corresponda.
 - Product / Architect / Release decide cuando una tarea pasa a `Done`.
@@ -42,53 +45,66 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 - `Blocked`: no puede avanzar sin decision, acceso, secreto, ambiente o tarea previa.
 - `Done`: cerrada por Product / Architect / Release.
 
+## Rondas y dependencias
+
+- `Round` indica la ronda de trabajo sugerida.
+- `Depende de` indica tareas o condiciones que deben terminar antes.
+- Una automatizacion de chat debe ignorar tareas con `Depende de` pendiente.
+- Product / Architect / Release es quien mueve tareas de rondas futuras desde `Blocked` hacia `Ready` o `Assigned`.
+- El numero de ronda no autoriza por si solo tomar una tarea; manda el estado del tablero.
+
 ## Inbox
 
-| Tarea | Equipo | Prioridad | Nota |
-| --- | --- | --- | --- |
+| Tarea | Equipo | Prioridad | Round | Depende de | Nota |
+| --- | --- | --- | --- | --- | --- |
 
 ## Ready
 
-| Tarea | Equipo | Prioridad | Nota |
-| --- | --- | --- | --- |
+| Tarea | Equipo | Prioridad | Round | Depende de | Nota |
+| --- | --- | --- | --- | --- | --- |
+| `TASK-107` - Revisar modelo SQL de configuracion de empresa piloto | SQL DEV | P1 | Round 1 | - | Opcion A: preparar settings de empresa piloto. |
 
 ## Assigned
 
-| Tarea | Equipo | Prioridad | Nota |
-| --- | --- | --- | --- |
+| Tarea | Equipo | Prioridad | Round | Depende de | Nota |
+| --- | --- | --- | --- | --- | --- |
 
 ## In Progress
 
-| Tarea | Equipo | Prioridad | Nota |
-| --- | --- | --- | --- |
+| Tarea | Equipo | Prioridad | Round | Depende de | Nota |
+| --- | --- | --- | --- | --- | --- |
 
 ## Needs Review
 
-| Tarea | Equipo | Prioridad | Handoff |
-| --- | --- | --- | --- |
+| Tarea | Equipo | Prioridad | Round | Depende de | Handoff |
+| --- | --- | --- | --- | --- | --- |
 
 ## QA
 
-| Tarea | Equipo | Prioridad | Nota |
-| --- | --- | --- | --- |
+| Tarea | Equipo | Prioridad | Round | Depende de | Nota |
+| --- | --- | --- | --- | --- | --- |
 
 ## Blocked
 
-| Tarea | Equipo | Prioridad | Motivo |
-| --- | --- | --- | --- |
+| Tarea | Equipo | Prioridad | Round | Depende de | Motivo |
+| --- | --- | --- | --- | --- | --- |
+| `TASK-108` - Implementar API de configuracion de empresa piloto | Backend API | P1 | Round 2 | `TASK-107` | Espera confirmacion de modelo SQL/settings. |
+| `TASK-109` - Crear pantalla de configuracion de empresa piloto | Web Dev | P1 | Round 3 | `TASK-108` | Espera contrato final de API settings. |
+| `TASK-110` - Validar configuracion de empresa publicada | QA | P1 | Round 4 | `TASK-108`, `TASK-109` | Espera API y UI desplegadas. |
+| `TASK-111` - Decidir entrada a multiempresa controlado | Product / Architect / Release | P1 | Round 5 | `TASK-110` | Espera validacion de configuracion de empresa. |
 
 ## Done
 
-| Tarea | Equipo | Prioridad | Handoff |
-| --- | --- | --- | --- |
-| `TASK-102` - Aplicar migracion SQL de auditoria operativa | SQL DEV | MVP bloqueante | `tasks/TASK-102-HANDOFF.md` |
-| `TASK-103` - Exponer lectura API de auditoria operativa | Backend API | MVP bloqueante | `tasks/TASK-103-HANDOFF.md` |
-| `TASK-104` - Alinear UI de auditoria operativa | Web Dev | MVP bloqueante | `tasks/TASK-104-HANDOFF.md` |
-| `TASK-105` - Revalidar auditoria operativa publicada | QA | MVP bloqueante | `tasks/TASK-105-HANDOFF.md` |
-| `TASK-106` - Revisar responses 5xx recientes en Application Insights | Backend API | P1 | `tasks/TASK-106-HANDOFF.md` |
+| Tarea | Equipo | Prioridad | Round | Depende de | Handoff |
+| --- | --- | --- | --- | --- | --- |
+| `TASK-102` - Aplicar migracion SQL de auditoria operativa | SQL DEV | MVP bloqueante | - | - | `tasks/TASK-102-HANDOFF.md` |
+| `TASK-103` - Exponer lectura API de auditoria operativa | Backend API | MVP bloqueante | - | - | `tasks/TASK-103-HANDOFF.md` |
+| `TASK-104` - Alinear UI de auditoria operativa | Web Dev | MVP bloqueante | - | - | `tasks/TASK-104-HANDOFF.md` |
+| `TASK-105` - Revalidar auditoria operativa publicada | QA | MVP bloqueante | - | - | `tasks/TASK-105-HANDOFF.md` |
+| `TASK-106` - Revisar responses 5xx recientes en Application Insights | Backend API | P1 | - | - | `tasks/TASK-106-HANDOFF.md` |
 
 ## Formato sugerido de fila
 
 ```md
-| `TASK-###` - Titulo corto | Equipo/chat | MVP bloqueante/P1/P2/post-MVP | Nota breve o link a handoff |
+| `TASK-###` - Titulo corto | Equipo/chat | MVP bloqueante/P1/P2/post-MVP | Round 1 | - | Nota breve o link a handoff |
 ```
