@@ -119,8 +119,8 @@
 - TASK-064: Validar pantalla web por zonas.
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
-- Configuracion editable de empresa piloto. En progreso con TASK-107 a TASK-110.
-- Decision de entrada a multiempresa controlado. Pendiente TASK-111.
+- Configuracion editable de empresa piloto. Completada en TASK-110.
+- Decision de entrada a multiempresa controlado. Diferida en TASK-111 hasta segunda empresa real o decision explicita.
 
 ## P2 recomendable
 

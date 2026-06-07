@@ -95,3 +95,13 @@ Motivo: El flujo operativo principal ya esta aprobado, incluyendo caja, historia
 Impacto: Product / Architect / Release libera primero tareas para revisar modelo SQL y luego API/UI/QA de configuracion. El sistema sigue usando `PILOT_COMPANY_ID` como fuente confiable de empresa. El frontend no puede elegir empresa operativa.
 
 Riesgo aceptado: El producto sigue sin multiempresa real/autoservicio. Esa decision se revisara despues de validar configuracion de empresa en TASK-111.
+
+## 2026-06-07 - Multiempresa controlado queda diferido
+
+Decision: Despues de aprobar configuracion de empresa piloto en TASK-110, Punto Club no avanzara todavia a Opcion B: multiempresa controlado. Se mantiene empresa piloto unica con `PILOT_COMPANY_ID` como fuente confiable server-side.
+
+Motivo: La configuracion editable ya aporta el valor operativo inmediato. Multiempresa controlado requiere resolver aislamiento con dos empresas, fuente confiable de empresa activa, acceso/auth por empresa y una matriz QA mas amplia. Sin segunda empresa real o decision comercial explicita, activar esa fase ahora agregaria complejidad antes de tiempo.
+
+Impacto: No se crean tareas nuevas de multiempresa en este momento. La siguiente operacion recomendada es ejecutar uso real/piloto con empresa unica y configuracion aprobada. Opcion B se reabre cuando exista segunda empresa real lista para prueba, o Product decida que ampliar empresas es el siguiente objetivo.
+
+Riesgo aceptado: El producto sigue limitado a una empresa operativa. Se acepta para proteger foco del piloto y evitar un cambio de seguridad/acceso sin necesidad confirmada.

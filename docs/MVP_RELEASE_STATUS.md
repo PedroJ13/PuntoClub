@@ -14,13 +14,13 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Fase de producto: configuracion de empresa piloto.
+- Fase de release: configuracion de empresa piloto aprobada.
 
 ### Siguiente
 
 - Esperar deploy de API y frontend con TASK-093/TASK-094.
-- Opcion A elegida: configuracion de empresa piloto.
-- Preparar ajustes de empresa sin activar multiempresa controlado ni SaaS completo.
+- Opcion A completada: configuracion de empresa piloto publicada y aprobada.
+- Opcion B multiempresa controlado queda diferida hasta tener segunda empresa real o decision explicita.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -192,6 +192,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-110: Liberada a QA para validar configuracion publicada despues de deploy.
 - TASK-110: QA aprobo configuracion de empresa publicada; settings editables, validaciones, compras futuras, historicos, auditoria, Caja y Reporte sin P0/P1.
 - TASK-111: Liberada a Product / Architect / Release para decidir si avanzar a multiempresa controlado.
+- TASK-111: Product / Architect / Release decidio no avanzar todavia a multiempresa controlado; mantener empresa piloto unica y usar evidencia de piloto para decidir Opcion B.
 
 ## Riesgos principales
 
@@ -202,7 +203,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar TASK-111 para decidir entrada a multiempresa controlado.
+Ejecutar uso real/piloto con empresa unica y configuracion aprobada; reabrir multiempresa controlado cuando haya segunda empresa real o decision explicita.
 
 ## Listo para probar
 
