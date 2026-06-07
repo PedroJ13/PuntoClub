@@ -105,3 +105,13 @@ Motivo: La configuracion editable ya aporta el valor operativo inmediato. Multie
 Impacto: No se crean tareas nuevas de multiempresa en este momento. La siguiente operacion recomendada es ejecutar uso real/piloto con empresa unica y configuracion aprobada. Opcion B se reabre cuando exista segunda empresa real lista para prueba, o Product decida que ampliar empresas es el siguiente objetivo.
 
 Riesgo aceptado: El producto sigue limitado a una empresa operativa. Se acepta para proteger foco del piloto y evitar un cambio de seguridad/acceso sin necesidad confirmada.
+
+## 2026-06-07 - Reabrir registro multiempresa con invitaciones como fase de diseno
+
+Decision: Se reabre el camino a multiempresa por decision explicita del Product Owner, empezando por una fase de diseno/arquitectura para menu lateral, registro de empresa, invitacion por correo, creacion de password/acceso, logo upload y notificacion interna a `pj13eros_business@outlook.com`.
+
+Motivo: El Product Owner pidio que la aplicacion tenga secciones `Operaciones`, `Mi empresa` y `Reportes`, y que una empresa pueda registrarse, recibir invite, crear password con su correo como usuario y entrar a su panel.
+
+Impacto: La decision de TASK-111 queda superada parcialmente. No se implementa todavia registro multiempresa real. Primero se liberan tareas de Round 1 para UX, Infra y SQL; luego Backend/API define contratos y Web reorganiza UI; finalmente Product / Architect / Release decide arquitectura antes de implementar email/auth/logo/multiempresa.
+
+Riesgo aceptado: Este cambio introduce seguridad, correo transaccional, manejo de password y storage de imagenes. Se controla el riesgo bloqueando implementacion hasta cerrar decisiones de auth, proveedor de email, almacenamiento de logos, modelo SQL y contratos API.

@@ -15,16 +15,27 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Ahora
 
 - Fase de release: configuracion de empresa piloto aprobada.
+- Nueva direccion explicita: reabrir camino a registro de empresas con menu lateral, invitacion por correo, password/acceso por empresa, logo upload y notificacion interna.
 
 ### Siguiente
 
-- Esperar deploy de API y frontend con TASK-093/TASK-094.
 - Opcion A completada: configuracion de empresa piloto publicada y aprobada.
-- Opcion B multiempresa controlado queda diferida hasta tener segunda empresa real o decision explicita.
+- Opcion B/multiempresa se reabre por decision explicita del Product Owner, pero primero como fase de diseno/arquitectura.
+- Round 1 liberado:
+  - TASK-113: Diseno / UX define menu lateral y flujo empresa/invitacion.
+  - TASK-114: Infra / Azure evalua email, auth y logo upload.
+  - TASK-115: SQL DEV disena modelo para registro de empresas e invitaciones.
+- Round 2 queda bloqueado hasta insumos de Round 1:
+  - TASK-116: Backend API define contratos.
+  - TASK-117: Web Dev reorganiza UI con menu lateral.
+- Round 3 queda bloqueado hasta implementacion/contratos:
+  - TASK-118: QA valida menu lateral publicado.
+  - TASK-119: Product / Architect / Release decide arquitectura multiempresa/invitaciones.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
 
+- Implementacion real de registro empresa/invitacion/password/logo queda bloqueada hasta decision de arquitectura en TASK-119.
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla web por zonas.
 - No hay bloqueos P0/P1 abiertos para historial publicado.
 - No hay bloqueos P0/P1 abiertos para integridad SQL auditada.
@@ -193,17 +204,18 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-110: QA aprobo configuracion de empresa publicada; settings editables, validaciones, compras futuras, historicos, auditoria, Caja y Reporte sin P0/P1.
 - TASK-111: Liberada a Product / Architect / Release para decidir si avanzar a multiempresa controlado.
 - TASK-111: Product / Architect / Release decidio no avanzar todavia a multiempresa controlado; mantener empresa piloto unica y usar evidencia de piloto para decidir Opcion B.
+- Cambio posterior: Product Owner pidio reabrir multiempresa con registro/invite/password/logo/menu lateral. Se crean TASK-113 a TASK-119 para diseno y decision antes de implementar.
 
 ## Riesgos principales
 
 - Tratar el piloto como demo visual y dejar fuera integridad de datos.
-- Disenar multiempresa autoservicio completo demasiado pronto.
+- Disenar multiempresa autoservicio completo demasiado pronto sin cerrar auth/email/storage.
 - No definir reglas SQL antes de contratos API.
 - No estimar costos minimos de Azure SQL, Functions y Static Web Apps.
 
 ## Siguiente paso recomendado
 
-Ejecutar uso real/piloto con empresa unica y configuracion aprobada; reabrir multiempresa controlado cuando haya segunda empresa real o decision explicita.
+Ejecutar Round 1 de la nueva fase: UX, Infra y SQL en paralelo. No implementar registro multiempresa real hasta decidir email, auth, storage de logos y contratos API.
 
 ## Listo para probar
 

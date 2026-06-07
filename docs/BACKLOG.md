@@ -91,6 +91,13 @@
 - TASK-110: Validar configuracion de empresa publicada.
 - TASK-111: Decidir entrada a multiempresa controlado.
 - TASK-112: Ampliar auditoria para cambios de configuracion de empresa.
+- TASK-113: Disenar navegacion lateral y flujo empresa/invitacion.
+- TASK-114: Evaluar email, auth y subida de logo para empresas.
+- TASK-115: Disenar modelo SQL para registro de empresas e invitaciones.
+- TASK-116: Definir contratos API para registro e invitacion de empresas.
+- TASK-117: Reorganizar UI con menu lateral por secciones.
+- TASK-118: Validar menu lateral publicado.
+- TASK-119: Decidir arquitectura de registro multiempresa e invitaciones.
 
 ## P1 pre-lanzamiento
 
@@ -120,7 +127,7 @@
 - Definir estrategia de logos de empresa.
 - Definir ambiente staging si se requiere validacion separada.
 - Configuracion editable de empresa piloto. Completada en TASK-110.
-- Decision de entrada a multiempresa controlado. Diferida en TASK-111 hasta segunda empresa real o decision explicita.
+- Decision de entrada a multiempresa controlado. Diferida en TASK-111, reabierta por decision explicita del Product Owner en TASK-113 a TASK-119.
 
 ## P2 recomendable
 
@@ -131,8 +138,8 @@
 
 ## Post-MVP
 
-- Registro publico de empresas.
+- Registro publico/controlado de empresas. En exploracion P1 con TASK-113 a TASK-119.
 - Aprobacion administrativa.
-- Invitaciones.
+- Invitaciones. En exploracion P1 con TASK-113 a TASK-119.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.

@@ -67,6 +67,9 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Nota |
 | --- | --- | --- | --- | --- | --- |
+| `TASK-113` - Disenar navegacion lateral y flujo empresa/invitacion | Diseno / UX | P1 | Round 1 | - | `tasks/TASK-113-assignment.md` |
+| `TASK-114` - Evaluar email, auth y subida de logo para empresas | Infra / Azure | P1 | Round 1 | - | `tasks/TASK-114-assignment.md` |
+| `TASK-115` - Disenar modelo SQL para registro de empresas e invitaciones | SQL DEV | P1 | Round 1 | - | `tasks/TASK-115-assignment.md` |
 
 ## In Progress
 
@@ -87,6 +90,10 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Motivo |
 | --- | --- | --- | --- | --- | --- |
+| `TASK-116` - Definir contratos API para registro e invitacion de empresas | Backend API | P1 | Round 2 | `TASK-113`, `TASK-114`, `TASK-115` | Espera UX, Infra y modelo SQL. |
+| `TASK-117` - Reorganizar UI con menu lateral por secciones | Web Dev | P1 | Round 2 | `TASK-113` | Espera flujo UX aprobado. |
+| `TASK-118` - Validar menu lateral publicado | QA | P1 | Round 3 | `TASK-117` | Espera implementacion Web publicada. |
+| `TASK-119` - Decidir arquitectura de registro multiempresa e invitaciones | Product / Architect / Release | P1 | Round 3 | `TASK-113`, `TASK-114`, `TASK-115`, `TASK-116` | Espera handoffs de diseno, infra, SQL y contratos API. |
 
 ## Done
 
