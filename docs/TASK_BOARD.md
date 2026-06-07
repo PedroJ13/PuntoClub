@@ -67,9 +67,8 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Nota |
 | --- | --- | --- | --- | --- | --- |
-| `TASK-113` - Disenar navegacion lateral y flujo empresa/invitacion | Diseno / UX | P1 | Round 1 | - | `tasks/TASK-113-assignment.md` |
-| `TASK-114` - Evaluar email, auth y subida de logo para empresas | Infra / Azure | P1 | Round 1 | - | `tasks/TASK-114-assignment.md` |
-| `TASK-115` - Disenar modelo SQL para registro de empresas e invitaciones | SQL DEV | P1 | Round 1 | - | `tasks/TASK-115-assignment.md` |
+| `TASK-116` - Definir contratos API para registro e invitacion de empresas | Backend API | P1 | Round 2 | `TASK-113`, `TASK-114`, `TASK-115` | `tasks/TASK-116-assignment.md` |
+| `TASK-117` - Reorganizar UI con menu lateral por secciones | Web Dev | P1 | Round 2 | `TASK-113` | `tasks/TASK-117-assignment.md` |
 
 ## In Progress
 
@@ -90,8 +89,6 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Motivo |
 | --- | --- | --- | --- | --- | --- |
-| `TASK-116` - Definir contratos API para registro e invitacion de empresas | Backend API | P1 | Round 2 | `TASK-113`, `TASK-114`, `TASK-115` | Espera UX, Infra y modelo SQL. |
-| `TASK-117` - Reorganizar UI con menu lateral por secciones | Web Dev | P1 | Round 2 | `TASK-113` | Espera flujo UX aprobado. |
 | `TASK-118` - Validar menu lateral publicado | QA | P1 | Round 3 | `TASK-117` | Espera implementacion Web publicada. |
 | `TASK-119` - Decidir arquitectura de registro multiempresa e invitaciones | Product / Architect / Release | P1 | Round 3 | `TASK-113`, `TASK-114`, `TASK-115`, `TASK-116` | Espera handoffs de diseno, infra, SQL y contratos API. |
 
@@ -110,6 +107,9 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 | `TASK-110` - Validar configuracion de empresa publicada | QA | P1 | Round 4 | `TASK-108`, `TASK-109`, `TASK-112` | `tasks/TASK-110-HANDOFF.md` |
 | `TASK-111` - Decidir entrada a multiempresa controlado | Product / Architect / Release | P1 | Round 5 | `TASK-110` | `tasks/TASK-111-HANDOFF.md` |
 | `TASK-112` - Ampliar auditoria para cambios de configuracion de empresa | SQL DEV | P1 | Round 2 | `TASK-107` | `tasks/TASK-112-HANDOFF.md` |
+| `TASK-113` - Disenar navegacion lateral y flujo empresa/invitacion | Diseno / UX | P1 | Round 1 | - | `tasks/TASK-113-HANDOFF.md` |
+| `TASK-114` - Evaluar email, auth y subida de logo para empresas | Infra / Azure | P1 | Round 1 | - | `tasks/TASK-114-HANDOFF.md` |
+| `TASK-115` - Disenar modelo SQL para registro de empresas e invitaciones | SQL DEV | P1 | Round 1 | - | `tasks/TASK-115-HANDOFF.md` |
 
 ## Formato sugerido de fila
 

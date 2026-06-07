@@ -205,6 +205,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-111: Liberada a Product / Architect / Release para decidir si avanzar a multiempresa controlado.
 - TASK-111: Product / Architect / Release decidio no avanzar todavia a multiempresa controlado; mantener empresa piloto unica y usar evidencia de piloto para decidir Opcion B.
 - Cambio posterior: Product Owner pidio reabrir multiempresa con registro/invite/password/logo/menu lateral. Se crean TASK-113 a TASK-119 para diseno y decision antes de implementar.
+- TASK-113: Diseno / UX completo propuesta de menu lateral y flujo empresa/invitacion.
+- TASK-114: Infra / Azure completo recomendacion de email, auth y storage/logo sin crear recursos.
+- TASK-115: SQL DEV completo modelo propuesto para registro de empresas e invitaciones sin aplicar migracion.
+- TASK-116: Liberada a Backend API para definir contratos API de registro/invitacion/acceso.
+- TASK-117: Liberada a Web Dev para reorganizar UI con menu lateral por secciones.
 
 ## Riesgos principales
 
