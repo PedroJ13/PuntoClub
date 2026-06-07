@@ -190,6 +190,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-109: Liberada a Web Dev para crear pantalla de configuracion de empresa piloto.
 - TASK-109: Web Dev implemento pantalla local de configuracion de empresa piloto.
 - TASK-110: Liberada a QA para validar configuracion publicada despues de deploy.
+- TASK-110: QA aprobo configuracion de empresa publicada; settings editables, validaciones, compras futuras, historicos, auditoria, Caja y Reporte sin P0/P1.
+- TASK-111: Liberada a Product / Architect / Release para decidir si avanzar a multiempresa controlado.
 
 ## Riesgos principales
 
@@ -200,7 +202,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar TASK-110 despues de deploy API/UI de configuracion de empresa.
+Ejecutar TASK-111 para decidir entrada a multiempresa controlado.
 
 ## Listo para probar
 
@@ -219,5 +221,6 @@ Ejecutar TASK-110 despues de deploy API/UI de configuracion de empresa.
 - Smoke pre-sesion: aprobado por QA en TASK-087.
 - Reporte operativo basico + export CSV: aprobado publicado por QA en TASK-096.
 - Auditoria operativa publicada: aprobada por QA en TASK-105.
+- Configuracion de empresa piloto: aprobada por QA en TASK-110.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
