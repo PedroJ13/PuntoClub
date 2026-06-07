@@ -67,8 +67,9 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Nota |
 | --- | --- | --- | --- | --- | --- |
-| `TASK-116` - Definir contratos API para registro e invitacion de empresas | Backend API | P1 | Round 2 | `TASK-113`, `TASK-114`, `TASK-115` | `tasks/TASK-116-assignment.md` |
-| `TASK-117` - Reorganizar UI con menu lateral por secciones | Web Dev | P1 | Round 2 | `TASK-113` | `tasks/TASK-117-assignment.md` |
+| `TASK-118` - Validar menu lateral publicado | QA | P1 | Round 3 | `TASK-117` | `tasks/TASK-118-assignment.md` |
+| `TASK-120` - Preparar habilitacion Azure para email, auth y logos | Infra / Azure | P1 | Round 4 | `TASK-119` | `tasks/TASK-120-assignment.md` |
+| `TASK-121` - Preparar migracion SQL para registro de empresas e invitaciones | SQL DEV | P1 | Round 4 | `TASK-119` | `tasks/TASK-121-assignment.md` |
 
 ## In Progress
 
@@ -89,8 +90,6 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Motivo |
 | --- | --- | --- | --- | --- | --- |
-| `TASK-118` - Validar menu lateral publicado | QA | P1 | Round 3 | `TASK-117` | Espera implementacion Web publicada. |
-| `TASK-119` - Decidir arquitectura de registro multiempresa e invitaciones | Product / Architect / Release | P1 | Round 3 | `TASK-113`, `TASK-114`, `TASK-115`, `TASK-116` | Espera handoffs de diseno, infra, SQL y contratos API. |
 
 ## Done
 
@@ -110,6 +109,9 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 | `TASK-113` - Disenar navegacion lateral y flujo empresa/invitacion | Diseno / UX | P1 | Round 1 | - | `tasks/TASK-113-HANDOFF.md` |
 | `TASK-114` - Evaluar email, auth y subida de logo para empresas | Infra / Azure | P1 | Round 1 | - | `tasks/TASK-114-HANDOFF.md` |
 | `TASK-115` - Disenar modelo SQL para registro de empresas e invitaciones | SQL DEV | P1 | Round 1 | - | `tasks/TASK-115-HANDOFF.md` |
+| `TASK-116` - Definir contratos API para registro e invitacion de empresas | Backend API | P1 | Round 2 | `TASK-113`, `TASK-114`, `TASK-115` | `tasks/TASK-116-HANDOFF.md` |
+| `TASK-117` - Reorganizar UI con menu lateral por secciones | Web Dev | P1 | Round 2 | `TASK-113` | `tasks/TASK-117-HANDOFF.md` |
+| `TASK-119` - Decidir arquitectura de registro multiempresa e invitaciones | Product / Architect / Release | P1 | Round 3 | `TASK-113`, `TASK-114`, `TASK-115`, `TASK-116` | `tasks/TASK-119-HANDOFF.md` |
 
 ## Formato sugerido de fila
 

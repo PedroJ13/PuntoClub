@@ -156,18 +156,88 @@ textarea:focus {
   background: var(--surface-strong);
 }
 
+.app-body {
+  display: grid;
+  grid-template-columns: 210px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.side-nav {
+  position: sticky;
+  top: 14px;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  padding: 10px;
+}
+
+.nav-button {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+}
+
+.nav-button:hover,
+.nav-button.is-active {
+  border-color: var(--line);
+  background: var(--surface-strong);
+}
+
+.nav-button.is-active {
+  color: var(--accent-strong);
+}
+
 .workspace {
+  min-width: 0;
+}
+
+.workspace-section {
   display: grid;
   grid-template-columns: minmax(420px, 1fr) minmax(300px, 0.58fr);
+  gap: 14px;
+  align-items: start;
+}
+
+.operations-section {
   grid-template-areas:
     "search register"
     "results register"
-    "operation operation"
-    "company company"
-    "report report"
-    "audit audit";
-  gap: 14px;
-  align-items: start;
+    "operation operation";
+}
+
+.workspace-section[hidden] {
+  display: none;
+}
+
+.company-section,
+.reports-section {
+  grid-template-columns: 1fr;
+  grid-template-areas: none;
+}
+
+.company-section .company-panel,
+.reports-section .report-panel,
+.reports-section .audit-panel {
+  grid-area: auto;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 
 .search-panel {
@@ -560,6 +630,37 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
+.company-future {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.company-future div {
+  min-width: 0;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.company-future span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.company-future strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  font-size: 0.92rem;
+  overflow-wrap: anywhere;
+}
+
 .report-controls {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(180px, 0.48fr);
 }
@@ -681,16 +782,26 @@ textarea:focus {
     justify-content: flex-start;
   }
 
-  .workspace {
+  .app-body {
+    grid-template-columns: 1fr;
+  }
+
+  .side-nav {
+    position: static;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .nav-button {
+    text-align: center;
+  }
+
+  .workspace-section {
     grid-template-columns: 1fr;
     grid-template-areas:
       "search"
       "results"
       "register"
-      "operation"
-      "company"
-      "report"
-      "audit";
+      "operation";
   }
 
   .customers-list {
@@ -731,6 +842,7 @@ textarea:focus {
   .history-summary,
   .company-current,
   .company-controls,
+  .company-future,
   .report-controls,
   .audit-controls,
   .report-summary,

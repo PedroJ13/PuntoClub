@@ -115,3 +115,15 @@ Motivo: El Product Owner pidio que la aplicacion tenga secciones `Operaciones`, 
 Impacto: La decision de TASK-111 queda superada parcialmente. No se implementa todavia registro multiempresa real. Primero se liberan tareas de Round 1 para UX, Infra y SQL; luego Backend/API define contratos y Web reorganiza UI; finalmente Product / Architect / Release decide arquitectura antes de implementar email/auth/logo/multiempresa.
 
 Riesgo aceptado: Este cambio introduce seguridad, correo transaccional, manejo de password y storage de imagenes. Se controla el riesgo bloqueando implementacion hasta cerrar decisiones de auth, proveedor de email, almacenamiento de logos, modelo SQL y contratos API.
+
+## 2026-06-07 - Arquitectura objetivo para multiempresa controlado
+
+Decision: Punto Club avanzara a multiempresa controlado, no a SaaS multiempresa completo todavia. La arquitectura objetivo sera Azure Communication Services Email para invitaciones/notificaciones, Microsoft Entra External ID para acceso/password y Azure Blob Storage privado para logos.
+
+Motivo: Los handoffs de UX, Infra, SQL y Backend/API muestran que el registro de empresas agrega valor, pero tambien introduce seguridad, correo, identidad, storage y aislamiento de datos. El enfoque controlado permite avanzar sin abrir operacion automatica a empresas no aprobadas.
+
+Impacto: Se liberan tareas para preparar Infra y SQL. La implementacion real de endpoints, auth, invitaciones, upload y operacion multiempresa queda bloqueada hasta aprobar recursos Azure, revisar migracion SQL y mantener validacion QA del flujo operativo actual.
+
+Riesgo aceptado: Durante la transicion, la empresa piloto sigue operando con `PILOT_COMPANY_ID`. Las empresas nuevas podran modelarse como solicitudes/invitaciones, pero no deben operar datos hasta que el `companyId` efectivo salga de auth server-side y mapeo SQL.
+
+Riesgo no aceptado: Auth local con passwords propios, public blob access para logos, tokens de invitacion en texto plano o `companyId` confiado desde frontend.

@@ -14,356 +14,418 @@
           <h1>Punto Club</h1>
         </div>
         <div class="topbar-actions">
-          <a class="secondary-link" href="#company-title">Empresa</a>
-          <a class="secondary-link" href="#report-title">Reporte</a>
-          <a class="secondary-link" href="#audit-title">Auditoria</a>
           <div class="status-pill" id="data-source-status">Mock local</div>
         </div>
       </header>
 
-      <main class="workspace" aria-live="polite">
-        <section class="search-panel zone-card" aria-labelledby="search-title">
-          <div class="section-header">
-            <div>
-              <h2 id="search-title">Buscar cliente</h2>
-            </div>
-            <button class="secondary-button" id="clear-search-button" type="button">Limpiar</button>
-          </div>
+      <div class="app-body">
+        <aside class="side-nav" aria-label="Secciones principales">
+          <button class="nav-button is-active" type="button" data-section-target="operations">
+            Operaciones
+          </button>
+          <button class="nav-button" type="button" data-section-target="company">
+            Mi empresa
+          </button>
+          <button class="nav-button" type="button" data-section-target="reports">
+            Reportes
+          </button>
+        </aside>
 
-          <form class="search-form" id="customer-search-form">
-            <label for="customer-search">Telefono, nombre o email</label>
-            <div class="search-row">
-              <input
-                id="customer-search"
-                name="search"
-                type="search"
-                autocomplete="off"
-                placeholder="Ej. 8888, Maria, cliente@correo.com"
-              />
-              <button type="submit">Buscar</button>
-            </div>
-          </form>
-        </section>
+        <main class="workspace" aria-live="polite">
+          <section
+            class="workspace-section operations-section"
+            data-section="operations"
+            aria-labelledby="operations-section-title"
+          >
+            <h2 id="operations-section-title" class="sr-only">Operaciones</h2>
 
-        <section class="form-panel zone-card" aria-labelledby="new-customer-title">
-          <div class="section-header">
-            <div>
-              <h2 id="new-customer-title">Registrar cliente</h2>
-            </div>
-          </div>
-
-          <div id="success-message" class="success-message" hidden></div>
-
-          <form id="new-customer-form" class="customer-form" novalidate>
-            <div class="field-grid">
-              <div class="field">
-                <label for="customer-name">Nombre</label>
-                <input id="customer-name" name="name" maxlength="160" autocomplete="name" />
-                <p class="field-error" id="customer-name-error"></p>
+            <section class="search-panel zone-card" aria-labelledby="search-title">
+              <div class="section-header">
+                <div>
+                  <h2 id="search-title">Buscar cliente</h2>
+                </div>
+                <button class="secondary-button" id="clear-search-button" type="button">Limpiar</button>
               </div>
 
-              <div class="field">
-                <label for="customer-phone">Telefono</label>
-                <input id="customer-phone" name="phone" maxlength="32" autocomplete="tel" />
-                <p class="field-error" id="customer-phone-error"></p>
+              <form class="search-form" id="customer-search-form">
+                <label for="customer-search">Telefono, nombre o email</label>
+                <div class="search-row">
+                  <input
+                    id="customer-search"
+                    name="search"
+                    type="search"
+                    autocomplete="off"
+                    placeholder="Ej. 8888, Maria, cliente@correo.com"
+                  />
+                  <button type="submit">Buscar</button>
+                </div>
+              </form>
+            </section>
+
+            <section class="form-panel zone-card" aria-labelledby="new-customer-title">
+              <div class="section-header">
+                <div>
+                  <h2 id="new-customer-title">Registrar cliente</h2>
+                </div>
               </div>
-            </div>
 
-            <div class="field">
-              <label for="customer-email">Email</label>
-              <input id="customer-email" name="email" maxlength="254" autocomplete="email" />
-              <p class="field-error" id="customer-email-error"></p>
-            </div>
+              <div id="success-message" class="success-message" hidden></div>
 
-            <div id="form-error" class="form-error" hidden></div>
+              <form id="new-customer-form" class="customer-form" novalidate>
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="customer-name">Nombre</label>
+                    <input id="customer-name" name="name" maxlength="160" autocomplete="name" />
+                    <p class="field-error" id="customer-name-error"></p>
+                  </div>
 
-            <div class="form-actions">
-              <button class="secondary-button" id="reset-form-button" type="button">Vaciar</button>
-              <button id="save-customer-button" type="submit">Registrar cliente</button>
-            </div>
-          </form>
-        </section>
+                  <div class="field">
+                    <label for="customer-phone">Telefono</label>
+                    <input id="customer-phone" name="phone" maxlength="32" autocomplete="tel" />
+                    <p class="field-error" id="customer-phone-error"></p>
+                  </div>
+                </div>
 
-        <section class="results-panel zone-card" aria-labelledby="customers-title">
-          <div class="section-header">
-            <div>
-              <h2 id="customers-title">Resultados</h2>
-            </div>
-          </div>
+                <div class="field">
+                  <label for="customer-email">Email</label>
+                  <input id="customer-email" name="email" maxlength="254" autocomplete="email" />
+                  <p class="field-error" id="customer-email-error"></p>
+                </div>
 
-          <div id="customers-feedback" class="feedback" hidden></div>
-          <div id="customers-list" class="customers-list"></div>
-        </section>
+                <div id="form-error" class="form-error" hidden></div>
 
-        <section class="operation-panel zone-card" aria-labelledby="operation-title">
-          <div class="section-header">
-            <div>
-              <h2 id="operation-title">Operacion</h2>
-            </div>
-          </div>
+                <div class="form-actions">
+                  <button class="secondary-button" id="reset-form-button" type="button">Vaciar</button>
+                  <button id="save-customer-button" type="submit">Registrar cliente</button>
+                </div>
+              </form>
+            </section>
 
-          <div id="operation-status" class="success-message" hidden></div>
-          <div id="operation-empty" class="empty-state">
-            Seleccione una accion de un cliente para registrar compra o redimir puntos.
-          </div>
+            <section class="results-panel zone-card" aria-labelledby="customers-title">
+              <div class="section-header">
+                <div>
+                  <h2 id="customers-title">Resultados</h2>
+                </div>
+              </div>
 
-          <div id="selected-customer-card" class="selected-customer-card" hidden></div>
+              <div id="customers-feedback" class="feedback" hidden></div>
+              <div id="customers-list" class="customers-list"></div>
+            </section>
 
-          <section id="history-panel" class="history-panel" hidden aria-label="Historial del cliente">
-            <div id="history-error" class="form-error" hidden></div>
-            <div id="history-summary" class="history-summary"></div>
-            <div id="history-list" class="history-list"></div>
+            <section class="operation-panel zone-card" aria-labelledby="operation-title">
+              <div class="section-header">
+                <div>
+                  <h2 id="operation-title">Operacion</h2>
+                </div>
+              </div>
+
+              <div id="operation-status" class="success-message" hidden></div>
+              <div id="operation-empty" class="empty-state">
+                Seleccione una accion de un cliente para registrar compra o redimir puntos.
+              </div>
+
+              <div id="selected-customer-card" class="selected-customer-card" hidden></div>
+
+              <section id="history-panel" class="history-panel" hidden aria-label="Historial del cliente">
+                <div id="history-error" class="form-error" hidden></div>
+                <div id="history-summary" class="history-summary"></div>
+                <div id="history-list" class="history-list"></div>
+              </section>
+
+              <form id="purchase-form" class="purchase-form" hidden novalidate>
+                <div class="field">
+                  <label for="purchase-invoice-number">Factura o comprobante</label>
+                  <input id="purchase-invoice-number" name="invoiceNumber" maxlength="80" autocomplete="off" />
+                  <p class="field-error" id="purchase-invoice-number-error"></p>
+                </div>
+
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="purchase-date">Fecha</label>
+                    <input id="purchase-date" name="purchaseDate" type="date" />
+                    <p class="field-error" id="purchase-date-error"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="purchase-amount">Monto</label>
+                    <input
+                      id="purchase-amount"
+                      name="amount"
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      inputmode="decimal"
+                    />
+                    <p class="field-error" id="purchase-amount-error"></p>
+                  </div>
+                </div>
+
+                <div id="purchase-error" class="form-error" hidden></div>
+
+                <div class="form-actions">
+                  <button class="secondary-button" id="reset-purchase-button" type="button">Vaciar compra</button>
+                  <button id="save-purchase-button" type="submit">Confirmar compra</button>
+                </div>
+              </form>
+
+              <form id="redemption-form" class="redemption-form" hidden novalidate>
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="redemption-date">Fecha</label>
+                    <input id="redemption-date" name="redemptionDate" type="date" />
+                    <p class="field-error" id="redemption-date-error"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="redemption-points">Puntos a redimir</label>
+                    <input
+                      id="redemption-points"
+                      name="pointsRedeemed"
+                      type="number"
+                      min="1"
+                      step="1"
+                      inputmode="numeric"
+                    />
+                    <p class="field-error" id="redemption-points-error"></p>
+                  </div>
+                </div>
+
+                <div class="field">
+                  <label for="redemption-note">Nota opcional</label>
+                  <textarea id="redemption-note" name="note" maxlength="500" rows="3"></textarea>
+                  <p class="field-error" id="redemption-note-error"></p>
+                </div>
+
+                <div id="redemption-error" class="form-error" hidden></div>
+
+                <div class="form-actions">
+                  <button class="secondary-button" id="reset-redemption-button" type="button">Vaciar canje</button>
+                  <button id="save-redemption-button" type="submit">Confirmar canje</button>
+                </div>
+              </form>
+            </section>
           </section>
 
-          <form id="purchase-form" class="purchase-form" hidden novalidate>
-            <div class="field">
-              <label for="purchase-invoice-number">Factura o comprobante</label>
-              <input id="purchase-invoice-number" name="invoiceNumber" maxlength="80" autocomplete="off" />
-              <p class="field-error" id="purchase-invoice-number-error"></p>
-            </div>
+          <section
+            class="workspace-section company-section"
+            data-section="company"
+            aria-labelledby="company-section-title"
+            hidden
+          >
+            <h2 id="company-section-title" class="sr-only">Mi empresa</h2>
 
-            <div class="field-grid">
-              <div class="field">
-                <label for="purchase-date">Fecha</label>
-                <input id="purchase-date" name="purchaseDate" type="date" />
-                <p class="field-error" id="purchase-date-error"></p>
+            <section id="company-panel" class="company-panel zone-card" aria-labelledby="company-title">
+              <div class="section-header">
+                <div>
+                  <h2 id="company-title">Mi empresa</h2>
+                </div>
+                <button class="secondary-button" id="reload-company-button" type="button">Recargar</button>
               </div>
 
-              <div class="field">
-                <label for="purchase-amount">Monto</label>
-                <input id="purchase-amount" name="amount" type="number" min="0.01" step="0.01" inputmode="decimal" />
-                <p class="field-error" id="purchase-amount-error"></p>
-              </div>
-            </div>
+              <div id="company-status" class="success-message" hidden></div>
+              <div id="company-error" class="form-error" hidden></div>
+              <div id="company-empty" class="empty-state">Cargando configuracion...</div>
 
-            <div id="purchase-error" class="form-error" hidden></div>
+              <form id="company-form" class="company-form" novalidate hidden>
+                <div class="company-current">
+                  <div>
+                    <span>Estado</span>
+                    <strong id="company-current-status">No disponible</strong>
+                  </div>
+                  <div>
+                    <span>Actualizado</span>
+                    <strong id="company-current-updated">No disponible</strong>
+                  </div>
+                  <div>
+                    <span>Logo</span>
+                    <strong id="company-current-logo">Sin logo</strong>
+                  </div>
+                </div>
 
-            <div class="form-actions">
-              <button class="secondary-button" id="reset-purchase-button" type="button">Vaciar compra</button>
-              <button id="save-purchase-button" type="submit">Confirmar compra</button>
-            </div>
-          </form>
+                <div class="field-grid company-controls">
+                  <div class="field">
+                    <label for="company-name">Nombre</label>
+                    <input id="company-name" name="name" maxlength="160" autocomplete="organization" />
+                    <p class="field-error" id="company-name-error"></p>
+                  </div>
 
-          <form id="redemption-form" class="redemption-form" hidden novalidate>
-            <div class="field-grid">
-              <div class="field">
-                <label for="redemption-date">Fecha</label>
-                <input id="redemption-date" name="redemptionDate" type="date" />
-                <p class="field-error" id="redemption-date-error"></p>
-              </div>
+                  <div class="field">
+                    <label for="company-email">Email</label>
+                    <input id="company-email" name="email" maxlength="254" autocomplete="email" />
+                    <p class="field-error" id="company-email-error"></p>
+                  </div>
 
-              <div class="field">
-                <label for="redemption-points">Puntos a redimir</label>
-                <input id="redemption-points" name="pointsRedeemed" type="number" min="1" step="1" inputmode="numeric" />
-                <p class="field-error" id="redemption-points-error"></p>
-              </div>
-            </div>
+                  <div class="field">
+                    <label for="company-phone">Telefono</label>
+                    <input id="company-phone" name="phone" maxlength="32" autocomplete="tel" />
+                    <p class="field-error" id="company-phone-error"></p>
+                  </div>
 
-            <div class="field">
-              <label for="redemption-note">Nota opcional</label>
-              <textarea id="redemption-note" name="note" maxlength="500" rows="3"></textarea>
-              <p class="field-error" id="redemption-note-error"></p>
-            </div>
+                  <div class="field">
+                    <label for="company-points-percentage">Porcentaje de puntos</label>
+                    <input
+                      id="company-points-percentage"
+                      name="pointsPercentage"
+                      type="number"
+                      min="0.01"
+                      max="100"
+                      step="0.01"
+                      inputmode="decimal"
+                    />
+                    <p class="field-error" id="company-points-percentage-error"></p>
+                  </div>
+                </div>
 
-            <div id="redemption-error" class="form-error" hidden></div>
+                <div class="field">
+                  <label for="company-logo-url">Logo URL</label>
+                  <input id="company-logo-url" name="logoUrl" maxlength="2048" autocomplete="url" />
+                  <p class="field-error" id="company-logo-url-error"></p>
+                </div>
 
-            <div class="form-actions">
-              <button class="secondary-button" id="reset-redemption-button" type="button">Vaciar canje</button>
-              <button id="save-redemption-button" type="submit">Confirmar canje</button>
-            </div>
-          </form>
-        </section>
+                <div class="company-future">
+                  <div>
+                    <span>Acceso</span>
+                    <strong>Invitacion por correo pendiente de arquitectura.</strong>
+                  </div>
+                  <div>
+                    <span>Logo</span>
+                    <strong>Upload a storage queda fuera de esta fase.</strong>
+                  </div>
+                </div>
 
-        <section id="company-panel" class="company-panel zone-card" aria-labelledby="company-title">
-          <div class="section-header">
-            <div>
-              <h2 id="company-title">Empresa piloto</h2>
-            </div>
-            <button class="secondary-button" id="reload-company-button" type="button">Recargar</button>
-          </div>
+                <div class="form-actions">
+                  <button id="save-company-button" type="submit">Guardar configuracion</button>
+                </div>
+              </form>
+            </section>
+          </section>
 
-          <div id="company-status" class="success-message" hidden></div>
-          <div id="company-error" class="form-error" hidden></div>
-          <div id="company-empty" class="empty-state">Cargando configuracion...</div>
+          <section
+            class="workspace-section reports-section"
+            data-section="reports"
+            aria-labelledby="reports-section-title"
+            hidden
+          >
+            <h2 id="reports-section-title" class="sr-only">Reportes</h2>
 
-          <form id="company-form" class="company-form" novalidate hidden>
-            <div class="company-current">
-              <div>
-                <span>Estado</span>
-                <strong id="company-current-status">No disponible</strong>
-              </div>
-              <div>
-                <span>Actualizado</span>
-                <strong id="company-current-updated">No disponible</strong>
-              </div>
-              <div>
-                <span>Logo</span>
-                <strong id="company-current-logo">Sin logo</strong>
-              </div>
-            </div>
-
-            <div class="field-grid company-controls">
-              <div class="field">
-                <label for="company-name">Nombre</label>
-                <input id="company-name" name="name" maxlength="160" autocomplete="organization" />
-                <p class="field-error" id="company-name-error"></p>
-              </div>
-
-              <div class="field">
-                <label for="company-email">Email</label>
-                <input id="company-email" name="email" maxlength="254" autocomplete="email" />
-                <p class="field-error" id="company-email-error"></p>
-              </div>
-
-              <div class="field">
-                <label for="company-phone">Telefono</label>
-                <input id="company-phone" name="phone" maxlength="32" autocomplete="tel" />
-                <p class="field-error" id="company-phone-error"></p>
-              </div>
-
-              <div class="field">
-                <label for="company-points-percentage">Porcentaje de puntos</label>
-                <input
-                  id="company-points-percentage"
-                  name="pointsPercentage"
-                  type="number"
-                  min="0.01"
-                  max="100"
-                  step="0.01"
-                  inputmode="decimal"
-                />
-                <p class="field-error" id="company-points-percentage-error"></p>
-              </div>
-            </div>
-
-            <div class="field">
-              <label for="company-logo-url">Logo URL</label>
-              <input id="company-logo-url" name="logoUrl" maxlength="2048" autocomplete="url" />
-              <p class="field-error" id="company-logo-url-error"></p>
-            </div>
-
-            <div class="form-actions">
-              <button id="save-company-button" type="submit">Guardar configuracion</button>
-            </div>
-          </form>
-        </section>
-
-        <section id="report-panel" class="report-panel zone-card" aria-labelledby="report-title">
-          <div class="section-header">
-            <div>
-              <h2 id="report-title">Reporte de actividad</h2>
-            </div>
-          </div>
-
-          <form id="report-form" class="report-form" novalidate>
-            <div class="field-grid report-controls">
-              <div class="field">
-                <label for="report-from">Fecha desde</label>
-                <input id="report-from" name="from" type="date" />
+            <section id="report-panel" class="report-panel zone-card" aria-labelledby="report-title">
+              <div class="section-header">
+                <div>
+                  <h2 id="report-title">Reporte de actividad</h2>
+                </div>
               </div>
 
-              <div class="field">
-                <label for="report-to">Fecha hasta</label>
-                <input id="report-to" name="to" type="date" />
+              <form id="report-form" class="report-form" novalidate>
+                <div class="field-grid report-controls">
+                  <div class="field">
+                    <label for="report-from">Fecha desde</label>
+                    <input id="report-from" name="from" type="date" />
+                  </div>
+
+                  <div class="field">
+                    <label for="report-to">Fecha hasta</label>
+                    <input id="report-to" name="to" type="date" />
+                  </div>
+
+                  <div class="field">
+                    <label for="report-type">Tipo</label>
+                    <select id="report-type" name="type">
+                      <option value="all">Todas</option>
+                      <option value="purchase">Compras</option>
+                      <option value="redemption">Redenciones</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div id="report-error" class="form-error" hidden></div>
+
+                <div class="form-actions">
+                  <button class="secondary-button" id="export-report-button" type="button" disabled>
+                    Exportar CSV
+                  </button>
+                  <button id="load-report-button" type="submit">Consultar</button>
+                </div>
+              </form>
+
+              <div id="report-status" class="success-message" hidden></div>
+              <div id="report-summary" class="report-summary" hidden></div>
+              <div id="report-empty" class="empty-state">
+                Consulte un rango de fechas para ver la actividad.
+              </div>
+              <div id="report-table-wrap" class="report-table-wrap" hidden>
+                <table class="report-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Tipo</th>
+                      <th>Cliente</th>
+                      <th>Detalle</th>
+                      <th>Puntos</th>
+                    </tr>
+                  </thead>
+                  <tbody id="report-table-body"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="audit-panel" class="audit-panel zone-card" aria-labelledby="audit-title">
+              <div class="section-header">
+                <div>
+                  <h2 id="audit-title">Auditoria operativa</h2>
+                </div>
               </div>
 
-              <div class="field">
-                <label for="report-type">Tipo</label>
-                <select id="report-type" name="type">
-                  <option value="all">Todas</option>
-                  <option value="purchase">Compras</option>
-                  <option value="redemption">Redenciones</option>
-                </select>
+              <form id="audit-form" class="audit-form" novalidate>
+                <div class="field-grid audit-controls">
+                  <div class="field">
+                    <label for="audit-from">Fecha desde</label>
+                    <input id="audit-from" name="from" type="date" />
+                  </div>
+
+                  <div class="field">
+                    <label for="audit-to">Fecha hasta</label>
+                    <input id="audit-to" name="to" type="date" />
+                  </div>
+
+                  <div class="field">
+                    <label for="audit-limit">Ultimos eventos</label>
+                    <select id="audit-limit" name="limit">
+                      <option value="10">10</option>
+                      <option value="25" selected>25</option>
+                      <option value="50">50</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div id="audit-error" class="form-error" hidden></div>
+
+                <div class="form-actions">
+                  <button id="load-audit-button" type="submit">Consultar auditoria</button>
+                </div>
+              </form>
+
+              <div id="audit-status" class="success-message" hidden></div>
+              <div id="audit-empty" class="empty-state">
+                Consulte un rango de fechas para ver eventos recientes.
               </div>
-            </div>
-
-            <div id="report-error" class="form-error" hidden></div>
-
-            <div class="form-actions">
-              <button class="secondary-button" id="export-report-button" type="button" disabled>
-                Exportar CSV
-              </button>
-              <button id="load-report-button" type="submit">Consultar</button>
-            </div>
-          </form>
-
-          <div id="report-status" class="success-message" hidden></div>
-          <div id="report-summary" class="report-summary" hidden></div>
-          <div id="report-empty" class="empty-state">
-            Consulte un rango de fechas para ver la actividad.
-          </div>
-          <div id="report-table-wrap" class="report-table-wrap" hidden>
-            <table class="report-table">
-              <thead>
-                <tr>
-                  <th>Fecha</th>
-                  <th>Tipo</th>
-                  <th>Cliente</th>
-                  <th>Detalle</th>
-                  <th>Puntos</th>
-                </tr>
-              </thead>
-              <tbody id="report-table-body"></tbody>
-            </table>
-          </div>
-        </section>
-
-        <section id="audit-panel" class="audit-panel zone-card" aria-labelledby="audit-title">
-          <div class="section-header">
-            <div>
-              <h2 id="audit-title">Auditoria operativa</h2>
-            </div>
-          </div>
-
-          <form id="audit-form" class="audit-form" novalidate>
-            <div class="field-grid audit-controls">
-              <div class="field">
-                <label for="audit-from">Fecha desde</label>
-                <input id="audit-from" name="from" type="date" />
+              <div id="audit-table-wrap" class="audit-table-wrap" hidden>
+                <table class="audit-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha/hora</th>
+                      <th>Evento</th>
+                      <th>Cliente</th>
+                      <th>Entidad</th>
+                      <th>Resumen</th>
+                    </tr>
+                  </thead>
+                  <tbody id="audit-table-body"></tbody>
+                </table>
               </div>
-
-              <div class="field">
-                <label for="audit-to">Fecha hasta</label>
-                <input id="audit-to" name="to" type="date" />
-              </div>
-
-              <div class="field">
-                <label for="audit-limit">Ultimos eventos</label>
-                <select id="audit-limit" name="limit">
-                  <option value="10">10</option>
-                  <option value="25" selected>25</option>
-                  <option value="50">50</option>
-                </select>
-              </div>
-            </div>
-
-            <div id="audit-error" class="form-error" hidden></div>
-
-            <div class="form-actions">
-              <button id="load-audit-button" type="submit">Consultar auditoria</button>
-            </div>
-          </form>
-
-          <div id="audit-status" class="success-message" hidden></div>
-          <div id="audit-empty" class="empty-state">
-            Consulte un rango de fechas para ver eventos recientes.
-          </div>
-          <div id="audit-table-wrap" class="audit-table-wrap" hidden>
-            <table class="audit-table">
-              <thead>
-                <tr>
-                  <th>Fecha/hora</th>
-                  <th>Evento</th>
-                  <th>Cliente</th>
-                  <th>Entidad</th>
-                  <th>Resumen</th>
-                </tr>
-              </thead>
-              <tbody id="audit-table-body"></tbody>
-            </table>
-          </div>
-        </section>
-      </main>
+            </section>
+          </section>
+        </main>
+      </div>
     </div>
 
     <script src="./app-config.js"></script>

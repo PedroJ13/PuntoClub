@@ -5,6 +5,8 @@ const api = createCustomerApi(config);
 
 const elements = {
   dataSourceStatus: document.querySelector("#data-source-status"),
+  navButtons: [...document.querySelectorAll("[data-section-target]")],
+  sectionPanels: [...document.querySelectorAll("[data-section]")],
   searchForm: document.querySelector("#customer-search-form"),
   searchInput: document.querySelector("#customer-search"),
   clearSearchButton: document.querySelector("#clear-search-button"),
@@ -96,6 +98,7 @@ let currentCustomers = [];
 let selectedCustomer = null;
 let currentReport = null;
 let currentCompanySettings = null;
+let activeSection = "operations";
 const customerBalances = new Map();
 
 elements.dataSourceStatus.textContent = api.sourceLabel;
@@ -170,12 +173,50 @@ elements.reloadCompanyButton.addEventListener("click", async () => {
   await loadCompanySettings();
 });
 
+elements.navButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setActiveSection(button.dataset.sectionTarget);
+  });
+});
+
+setActiveSection(activeSection, { focus: false });
 renderSearchPrompt();
 resetOperation();
 renderReportPrompt();
 renderAuditPrompt();
 loadCompanySettings();
 elements.searchInput.focus();
+
+function setActiveSection(section, options = {}) {
+  const nextSection = ["operations", "company", "reports"].includes(section)
+    ? section
+    : "operations";
+  activeSection = nextSection;
+
+  elements.sectionPanels.forEach((panel) => {
+    panel.hidden = panel.dataset.section !== nextSection;
+  });
+
+  elements.navButtons.forEach((button) => {
+    const isActive = button.dataset.sectionTarget === nextSection;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-current", isActive ? "page" : "false");
+  });
+
+  if (options.focus === false) {
+    return;
+  }
+
+  const focusTarget = {
+    operations: elements.searchInput,
+    company: elements.companyNameInput,
+    reports: elements.reportFromInput,
+  }[nextSection];
+
+  window.requestAnimationFrame(() => {
+    focusTarget?.focus();
+  });
+}
 
 async function loadCustomers(search) {
   const trimmedSearch = search.trim();

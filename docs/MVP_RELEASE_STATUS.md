@@ -210,6 +210,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-115: SQL DEV completo modelo propuesto para registro de empresas e invitaciones sin aplicar migracion.
 - TASK-116: Liberada a Backend API para definir contratos API de registro/invitacion/acceso.
 - TASK-117: Liberada a Web Dev para reorganizar UI con menu lateral por secciones.
+- TASK-116: Backend API completo contratos API propuestos para registro/invitacion/acceso/logo.
+- TASK-117: Web Dev completo reorganizacion local de UI con menu lateral por secciones; pendiente QA publicado.
+- TASK-118: Liberada a QA para validar menu lateral publicado.
+- TASK-119: Product / Architect / Release decidio avanzar a multiempresa controlado con ACS Email, Entra External ID y Blob Storage privado; SaaS completo sigue diferido.
+- TASK-120: Liberada a Infra / Azure para preparar habilitacion Azure de email, auth y logos sin crear recursos sin aprobacion.
+- TASK-121: Liberada a SQL DEV para preparar migracion versionada de registro/invitaciones/usuarios sin aplicarla.
 
 ## Riesgos principales
 
@@ -220,7 +226,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar Round 1 de la nueva fase: UX, Infra y SQL en paralelo. No implementar registro multiempresa real hasta decidir email, auth, storage de logos y contratos API.
+Validar menu lateral publicado con QA y preparar habilitacion controlada de Infra/SQL para multiempresa. No implementar endpoints reales de registro/invitacion hasta tener recursos aprobados y migracion revisada.
 
 ## Listo para probar
 
