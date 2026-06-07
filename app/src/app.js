@@ -71,11 +71,31 @@ const elements = {
   auditTableWrap: document.querySelector("#audit-table-wrap"),
   auditTableBody: document.querySelector("#audit-table-body"),
   loadAuditButton: document.querySelector("#load-audit-button"),
+  companyForm: document.querySelector("#company-form"),
+  companyNameInput: document.querySelector("#company-name"),
+  companyEmailInput: document.querySelector("#company-email"),
+  companyPhoneInput: document.querySelector("#company-phone"),
+  companyLogoUrlInput: document.querySelector("#company-logo-url"),
+  companyPointsPercentageInput: document.querySelector("#company-points-percentage"),
+  companyNameError: document.querySelector("#company-name-error"),
+  companyEmailError: document.querySelector("#company-email-error"),
+  companyPhoneError: document.querySelector("#company-phone-error"),
+  companyLogoUrlError: document.querySelector("#company-logo-url-error"),
+  companyPointsPercentageError: document.querySelector("#company-points-percentage-error"),
+  companyStatus: document.querySelector("#company-status"),
+  companyError: document.querySelector("#company-error"),
+  companyEmpty: document.querySelector("#company-empty"),
+  companyCurrentStatus: document.querySelector("#company-current-status"),
+  companyCurrentUpdated: document.querySelector("#company-current-updated"),
+  companyCurrentLogo: document.querySelector("#company-current-logo"),
+  reloadCompanyButton: document.querySelector("#reload-company-button"),
+  saveCompanyButton: document.querySelector("#save-company-button"),
 };
 
 let currentCustomers = [];
 let selectedCustomer = null;
 let currentReport = null;
+let currentCompanySettings = null;
 const customerBalances = new Map();
 
 elements.dataSourceStatus.textContent = api.sourceLabel;
@@ -141,10 +161,20 @@ elements.auditForm.addEventListener("submit", async (event) => {
   await loadAuditEvents();
 });
 
+elements.companyForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitCompanySettings();
+});
+
+elements.reloadCompanyButton.addEventListener("click", async () => {
+  await loadCompanySettings();
+});
+
 renderSearchPrompt();
 resetOperation();
 renderReportPrompt();
 renderAuditPrompt();
+loadCompanySettings();
 elements.searchInput.focus();
 
 async function loadCustomers(search) {
@@ -577,6 +607,47 @@ async function loadAuditEvents() {
   }
 }
 
+async function loadCompanySettings() {
+  clearCompanyMessages();
+  renderCompanyLoading();
+  setCompanyLoading(true);
+
+  try {
+    const settings = await api.getCompanySettings();
+    currentCompanySettings = settings;
+    renderCompanySettings(settings);
+  } catch (error) {
+    currentCompanySettings = null;
+    renderCompanySettingsError(error);
+  } finally {
+    setCompanyLoading(false);
+  }
+}
+
+async function submitCompanySettings() {
+  clearCompanyMessages();
+  setCompanySubmitting(true);
+
+  const payload = {
+    name: elements.companyNameInput.value,
+    email: elements.companyEmailInput.value.trim() || null,
+    phone: elements.companyPhoneInput.value.trim() || null,
+    logoUrl: elements.companyLogoUrlInput.value.trim() || null,
+    pointsPercentage: elements.companyPointsPercentageInput.value,
+  };
+
+  try {
+    const settings = await api.updateCompanySettings(payload);
+    currentCompanySettings = settings;
+    renderCompanySettings(settings);
+    showCompanyStatus("Configuracion guardada.");
+  } catch (error) {
+    renderCompanySettingsError(error);
+  } finally {
+    setCompanySubmitting(false);
+  }
+}
+
 function renderSelectedCustomer() {
   if (!selectedCustomer) {
     elements.selectedCustomerCard.hidden = true;
@@ -835,6 +906,65 @@ function renderAuditError(error) {
   );
 }
 
+function renderCompanyLoading() {
+  elements.companyForm.hidden = true;
+  elements.companyEmpty.hidden = false;
+  elements.companyEmpty.textContent = "Cargando configuracion...";
+}
+
+function renderCompanySettings(settings) {
+  elements.companyEmpty.hidden = true;
+  elements.companyForm.hidden = false;
+  elements.companyNameInput.value = settings.name ?? "";
+  elements.companyEmailInput.value = settings.email ?? "";
+  elements.companyPhoneInput.value = settings.phone ?? "";
+  elements.companyLogoUrlInput.value = settings.logoUrl ?? "";
+  elements.companyPointsPercentageInput.value = settings.pointsPercentage ?? "";
+  elements.companyCurrentStatus.textContent = getCompanyStatusLabel(settings.status);
+  elements.companyCurrentUpdated.textContent = settings.updatedAt
+    ? formatDateTime(settings.updatedAt)
+    : "No disponible";
+  const logoUrl = getSafeHttpUrl(settings.logoUrl);
+  elements.companyCurrentLogo.innerHTML = logoUrl
+    ? `<a href="${escapeHtml(logoUrl)}" target="_blank" rel="noreferrer">Ver logo</a>`
+    : "Sin logo";
+}
+
+function renderCompanySettingsError(error) {
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    error.details.forEach((detail) => {
+      const target = {
+        name: elements.companyNameError,
+        email: elements.companyEmailError,
+        phone: elements.companyPhoneError,
+        logoUrl: elements.companyLogoUrlError,
+        pointsPercentage: elements.companyPointsPercentageError,
+      }[detail.field];
+
+      if (target) {
+        target.textContent = getCompanyValidationMessage(detail);
+      }
+    });
+    showCompanyError("Revise los campos marcados.");
+    return;
+  }
+
+  if (currentCompanySettings) {
+    renderCompanySettings(currentCompanySettings);
+  } else {
+    elements.companyForm.hidden = true;
+    elements.companyEmpty.hidden = false;
+    elements.companyEmpty.textContent = "No hay configuracion cargada.";
+  }
+
+  if (error instanceof ApiError && error.code === "COMPANY_NOT_FOUND") {
+    showCompanyError("La empresa piloto no esta disponible.");
+    return;
+  }
+
+  showCompanyError("No se pudo cargar o guardar la configuracion. Intente de nuevo.");
+}
+
 function renderCustomersError(error) {
   const message =
     error instanceof ApiError && error.code === "INTERNAL_ERROR"
@@ -961,6 +1091,18 @@ function getRedemptionValidationMessage(detail) {
   return messagesByField[detail.field] ?? detail.message;
 }
 
+function getCompanyValidationMessage(detail) {
+  const messagesByField = {
+    name: "El nombre es requerido y debe tener 160 caracteres o menos.",
+    email: "El email debe tener un formato valido y 254 caracteres o menos.",
+    phone: "El telefono debe tener entre 7 y 32 caracteres.",
+    logoUrl: "El logo URL debe ser una URL http(s) valida.",
+    pointsPercentage: "El porcentaje debe ser mayor que 0 y menor o igual que 100.",
+  };
+
+  return messagesByField[detail.field] ?? detail.message;
+}
+
 function clearCustomerMessages() {
   setCustomersFeedback("");
 }
@@ -1013,6 +1155,16 @@ function showAuditStatus(message) {
 function showAuditError(message) {
   elements.auditError.hidden = false;
   elements.auditError.textContent = message;
+}
+
+function showCompanyStatus(message) {
+  elements.companyStatus.hidden = false;
+  elements.companyStatus.textContent = message;
+}
+
+function showCompanyError(message) {
+  elements.companyError.hidden = false;
+  elements.companyError.textContent = message;
 }
 
 function clearForm(options = {}) {
@@ -1087,6 +1239,18 @@ function clearAuditMessages() {
   elements.auditStatus.textContent = "";
 }
 
+function clearCompanyMessages() {
+  elements.companyNameError.textContent = "";
+  elements.companyEmailError.textContent = "";
+  elements.companyPhoneError.textContent = "";
+  elements.companyLogoUrlError.textContent = "";
+  elements.companyPointsPercentageError.textContent = "";
+  elements.companyError.hidden = true;
+  elements.companyError.textContent = "";
+  elements.companyStatus.hidden = true;
+  elements.companyStatus.textContent = "";
+}
+
 function setSubmitting(isSubmitting) {
   elements.saveButton.disabled = isSubmitting;
   elements.saveButton.textContent = isSubmitting ? "Registrando..." : "Registrar cliente";
@@ -1110,6 +1274,18 @@ function setReportSubmitting(isSubmitting) {
 function setAuditSubmitting(isSubmitting) {
   elements.loadAuditButton.disabled = isSubmitting;
   elements.loadAuditButton.textContent = isSubmitting ? "Consultando..." : "Consultar auditoria";
+}
+
+function setCompanyLoading(isLoading) {
+  elements.reloadCompanyButton.disabled = isLoading;
+  elements.reloadCompanyButton.textContent = isLoading ? "Cargando..." : "Recargar";
+}
+
+function setCompanySubmitting(isSubmitting) {
+  elements.saveCompanyButton.disabled = isSubmitting;
+  elements.saveCompanyButton.textContent = isSubmitting
+    ? "Guardando..."
+    : "Guardar configuracion";
 }
 
 function getBalanceValue(balance) {
@@ -1240,6 +1416,7 @@ function getAuditEventLabel(eventType) {
     "customer.rejected_duplicate": "Cliente duplicado",
     "purchase.rejected_duplicate_invoice": "Factura duplicada",
     "redemption.rejected_insufficient_points": "Saldo insuficiente",
+    "company.settings.updated": "Configuracion actualizada",
   };
 
   return labels[eventType] ?? (eventType || "Evento");
@@ -1250,9 +1427,28 @@ function getAuditEntityLabel(entityType) {
     customer: "Cliente",
     purchase: "Compra",
     redemption: "Canje",
+    company: "Empresa",
   };
 
   return labels[entityType] ?? (entityType || "Entidad");
+}
+
+function getCompanyStatusLabel(status) {
+  const labels = {
+    active: "Activa",
+    inactive: "Inactiva",
+  };
+
+  return labels[status] ?? (status || "No disponible");
+}
+
+function getSafeHttpUrl(value) {
+  try {
+    const url = new URL(String(value ?? ""));
+    return url.protocol === "http:" || url.protocol === "https:" ? url.href : "";
+  } catch (error) {
+    return "";
+  }
 }
 
 function getAuditSummary(item, eventType) {
@@ -1273,6 +1469,11 @@ function getAuditSummary(item, eventType) {
   if (eventType === "redemption.registered") {
     const points = metadata.pointsRedeemed ? ` ${metadata.pointsRedeemed} pts.` : "";
     return `Canje registrado.${points}`;
+  }
+
+  if (eventType === "company.settings.updated") {
+    const fields = Array.isArray(metadata.changedFields) ? metadata.changedFields.join(", ") : "";
+    return fields ? `Configuracion actualizada: ${fields}.` : "Configuracion actualizada.";
   }
 
   return getAuditEventLabel(eventType);

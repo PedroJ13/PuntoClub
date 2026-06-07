@@ -62,7 +62,6 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Nota |
 | --- | --- | --- | --- | --- | --- |
-| `TASK-109` - Crear pantalla de configuracion de empresa piloto | Web Dev | P1 | Round 3 | `TASK-108`, `TASK-112` | API settings y auditoria de settings listas. |
 
 ## Assigned
 
@@ -83,12 +82,12 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Nota |
 | --- | --- | --- | --- | --- | --- |
+| `TASK-110` - Validar configuracion de empresa publicada | QA | P1 | Round 4 | `TASK-108`, `TASK-109`, `TASK-112` | Validar despues de deploy API/UI. |
 
 ## Blocked
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Motivo |
 | --- | --- | --- | --- | --- | --- |
-| `TASK-110` - Validar configuracion de empresa publicada | QA | P1 | Round 4 | `TASK-108`, `TASK-109`, `TASK-112` | Espera API, UI y auditoria de settings desplegadas. |
 | `TASK-111` - Decidir entrada a multiempresa controlado | Product / Architect / Release | P1 | Round 5 | `TASK-110` | Espera validacion de configuracion de empresa. |
 
 ## Done
@@ -102,6 +101,7 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 | `TASK-106` - Revisar responses 5xx recientes en Application Insights | Backend API | P1 | - | - | `tasks/TASK-106-HANDOFF.md` |
 | `TASK-107` - Revisar modelo SQL de configuracion de empresa piloto | SQL DEV | P1 | Round 1 | - | `tasks/TASK-107-HANDOFF.md` |
 | `TASK-108` - Implementar API de configuracion de empresa piloto | Backend API | P1 | Round 2 | `TASK-107` | `tasks/TASK-108-HANDOFF.md` |
+| `TASK-109` - Crear pantalla de configuracion de empresa piloto | Web Dev | P1 | Round 3 | `TASK-108`, `TASK-112` | `tasks/TASK-109-HANDOFF.md` |
 | `TASK-112` - Ampliar auditoria para cambios de configuracion de empresa | SQL DEV | P1 | Round 2 | `TASK-107` | `tasks/TASK-112-HANDOFF.md` |
 
 ## Formato sugerido de fila

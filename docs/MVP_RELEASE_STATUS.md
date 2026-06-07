@@ -188,6 +188,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-108: Backend API implemento `PATCH /settings`, validaciones y auditoria best-effort.
 - TASK-112: SQL DEV aplico migracion de auditoria para `company.settings.updated` y `entity_type=company`.
 - TASK-109: Liberada a Web Dev para crear pantalla de configuracion de empresa piloto.
+- TASK-109: Web Dev implemento pantalla local de configuracion de empresa piloto.
+- TASK-110: Liberada a QA para validar configuracion publicada despues de deploy.
 
 ## Riesgos principales
 
@@ -198,7 +200,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar TASK-109; mantener TASK-110 bloqueada hasta API/UI desplegadas.
+Ejecutar TASK-110 despues de deploy API/UI de configuracion de empresa.
 
 ## Listo para probar
 

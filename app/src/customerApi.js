@@ -32,6 +32,16 @@ let mockBalances = new Map(
 let mockActivity = new Map(initialCustomers.map((customer) => [String(customer.id), []]));
 let mockAuditEvents = [];
 let mockInvoices = new Set();
+let mockCompanySettings = {
+  id: "1",
+  name: "Cafe Central",
+  email: "hola@cafecentral.test",
+  phone: "+50622223333",
+  logoUrl: "",
+  pointsPercentage: 5,
+  status: "active",
+  updatedAt: "2026-06-02T15:20:00Z",
+};
 let nextCustomerId = 12;
 let nextPurchaseId = 50;
 let nextRedemptionId = 70;
@@ -63,9 +73,23 @@ function createHttpCustomerApi(config) {
     `/api/companies/${config.companyId}/reports/activity`,
   );
   const auditEventsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/audit/events`);
+  const settingsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/settings`);
 
   return {
     sourceLabel: "API real",
+    async getCompanySettings() {
+      const response = await fetch(settingsUrl);
+      return parseResponse(response);
+    },
+    async updateCompanySettings(payload) {
+      const response = await fetch(settingsUrl, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      return parseResponse(response);
+    },
     async searchCustomers(search) {
       const url = new URL(customersUrl, window.location.origin);
       if (search) {
@@ -145,6 +169,35 @@ function buildApiUrl(config, path) {
 function createMockCustomerApi() {
   return {
     sourceLabel: "Mock local",
+    async getCompanySettings() {
+      await wait(250);
+      return { ...mockCompanySettings };
+    },
+    async updateCompanySettings(payload) {
+      await wait(450);
+      validateCompanySettings(payload);
+
+      const nextSettings = normalizeCompanySettingsPayload(payload);
+      const changedFields = Object.entries(nextSettings)
+        .filter(([field, value]) => String(mockCompanySettings[field] ?? "") !== String(value ?? ""))
+        .map(([field]) => field);
+
+      if (changedFields.length > 0) {
+        mockCompanySettings = {
+          ...mockCompanySettings,
+          ...nextSettings,
+          updatedAt: new Date().toISOString(),
+        };
+        recordMockAuditEvent({
+          eventType: "company.settings.updated",
+          entityType: "company",
+          entityId: mockCompanySettings.id,
+          summary: `Configuracion actualizada: ${changedFields.join(", ")}.`,
+        });
+      }
+
+      return { ...mockCompanySettings };
+    },
     async searchCustomers(search) {
       await wait(450);
 
@@ -252,7 +305,7 @@ function createMockCustomerApi() {
 
       mockInvoices.add(normalize(payload.invoiceNumber));
       const amount = Number(payload.amount);
-      const pointsEarned = Math.round(amount * 0.05);
+      const pointsEarned = Math.round(amount * (Number(mockCompanySettings.pointsPercentage) / 100));
       const currentBalance = mockBalances.get(String(customer.id));
       const balance = {
         customerId: String(customer.id),
@@ -450,6 +503,63 @@ function validateCustomer(payload) {
   }
 }
 
+function validateCompanySettings(payload) {
+  const details = [];
+  const editableFields = ["name", "email", "phone", "logoUrl", "pointsPercentage"];
+  const hasEditableField = editableFields.some((field) => hasOwn(payload, field));
+  const name = String(payload.name ?? "").trim();
+  const email = String(payload.email ?? "").trim();
+  const phone = String(payload.phone ?? "").trim();
+  const logoUrl = String(payload.logoUrl ?? "").trim();
+  const pointsPercentage = Number(payload.pointsPercentage);
+
+  if (!hasEditableField) {
+    details.push({ field: "body", message: "Envie al menos un campo editable." });
+  }
+
+  if (hasOwn(payload, "name") && (!name || name.length > 160)) {
+    details.push({ field: "name", message: "El nombre es requerido y debe tener 160 caracteres o menos." });
+  }
+
+  if (hasOwn(payload, "email") && email && (!isEmail(email) || email.length > 254)) {
+    details.push({ field: "email", message: "El email no tiene un formato valido." });
+  }
+
+  if (hasOwn(payload, "phone") && phone && (phone.length < 7 || phone.length > 32)) {
+    details.push({ field: "phone", message: "El telefono debe tener entre 7 y 32 caracteres." });
+  }
+
+  if (hasOwn(payload, "logoUrl") && logoUrl && !isHttpUrl(logoUrl)) {
+    details.push({ field: "logoUrl", message: "El logo URL debe ser http(s)." });
+  }
+
+  if (
+    hasOwn(payload, "pointsPercentage") &&
+    (!Number.isFinite(pointsPercentage) || pointsPercentage <= 0 || pointsPercentage > 100)
+  ) {
+    details.push({ field: "pointsPercentage", message: "El porcentaje debe ser mayor que 0 y menor o igual que 100." });
+  }
+
+  if (details.length > 0) {
+    throw new ApiError("VALIDATION_ERROR", "Revise la configuracion de empresa.", details);
+  }
+}
+
+function normalizeCompanySettingsPayload(payload) {
+  return {
+    name: String(payload.name ?? "").trim(),
+    email: normalizeNullableText(payload.email),
+    phone: normalizeNullableText(payload.phone),
+    logoUrl: normalizeNullableText(payload.logoUrl),
+    pointsPercentage: Number(payload.pointsPercentage),
+  };
+}
+
+function normalizeNullableText(value) {
+  const text = String(value ?? "").trim();
+  return text || null;
+}
+
 function validatePurchase(payload) {
   const details = [];
 
@@ -637,6 +747,19 @@ function isDateOnly(value) {
   return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
+function isEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value));
+}
+
+function isHttpUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === "http:" || url.protocol === "https:";
+  } catch (error) {
+    return false;
+  }
+}
+
 function getDateRangeDays(from, to) {
   const fromDate = new Date(`${from}T00:00:00`);
   const toDate = new Date(`${to}T00:00:00`);
@@ -647,6 +770,10 @@ function normalize(value) {
   return String(value ?? "")
     .trim()
     .toLowerCase();
+}
+
+function hasOwn(object, property) {
+  return Object.prototype.hasOwnProperty.call(object, property);
 }
 
 function wait(ms) {

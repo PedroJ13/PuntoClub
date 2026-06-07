@@ -14,6 +14,7 @@
           <h1>Punto Club</h1>
         </div>
         <div class="topbar-actions">
+          <a class="secondary-link" href="#company-title">Empresa</a>
           <a class="secondary-link" href="#report-title">Reporte</a>
           <a class="secondary-link" href="#audit-title">Auditoria</a>
           <div class="status-pill" id="data-source-status">Mock local</div>
@@ -169,6 +170,80 @@
             <div class="form-actions">
               <button class="secondary-button" id="reset-redemption-button" type="button">Vaciar canje</button>
               <button id="save-redemption-button" type="submit">Confirmar canje</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="company-panel" class="company-panel zone-card" aria-labelledby="company-title">
+          <div class="section-header">
+            <div>
+              <h2 id="company-title">Empresa piloto</h2>
+            </div>
+            <button class="secondary-button" id="reload-company-button" type="button">Recargar</button>
+          </div>
+
+          <div id="company-status" class="success-message" hidden></div>
+          <div id="company-error" class="form-error" hidden></div>
+          <div id="company-empty" class="empty-state">Cargando configuracion...</div>
+
+          <form id="company-form" class="company-form" novalidate hidden>
+            <div class="company-current">
+              <div>
+                <span>Estado</span>
+                <strong id="company-current-status">No disponible</strong>
+              </div>
+              <div>
+                <span>Actualizado</span>
+                <strong id="company-current-updated">No disponible</strong>
+              </div>
+              <div>
+                <span>Logo</span>
+                <strong id="company-current-logo">Sin logo</strong>
+              </div>
+            </div>
+
+            <div class="field-grid company-controls">
+              <div class="field">
+                <label for="company-name">Nombre</label>
+                <input id="company-name" name="name" maxlength="160" autocomplete="organization" />
+                <p class="field-error" id="company-name-error"></p>
+              </div>
+
+              <div class="field">
+                <label for="company-email">Email</label>
+                <input id="company-email" name="email" maxlength="254" autocomplete="email" />
+                <p class="field-error" id="company-email-error"></p>
+              </div>
+
+              <div class="field">
+                <label for="company-phone">Telefono</label>
+                <input id="company-phone" name="phone" maxlength="32" autocomplete="tel" />
+                <p class="field-error" id="company-phone-error"></p>
+              </div>
+
+              <div class="field">
+                <label for="company-points-percentage">Porcentaje de puntos</label>
+                <input
+                  id="company-points-percentage"
+                  name="pointsPercentage"
+                  type="number"
+                  min="0.01"
+                  max="100"
+                  step="0.01"
+                  inputmode="decimal"
+                />
+                <p class="field-error" id="company-points-percentage-error"></p>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="company-logo-url">Logo URL</label>
+              <input id="company-logo-url" name="logoUrl" maxlength="2048" autocomplete="url" />
+              <p class="field-error" id="company-logo-url-error"></p>
+            </div>
+
+            <div class="form-actions">
+              <button id="save-company-button" type="submit">Guardar configuracion</button>
             </div>
           </form>
         </section>
