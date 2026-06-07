@@ -14,11 +14,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Primera sesion piloto controlada lista para ejecutarse.
+- Primera sesion piloto controlada en cola de ejecucion.
 
 ### Siguiente
 
 - Ejecutar piloto controlado, capturar hallazgos y luego activar Pulso con TASK-088.
+- Cambios de UX/colores quedan despues de validar operacion real, salvo bloqueo operativo.
 
 ### Bloqueado
 
@@ -139,6 +140,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-089: Product / Architect / Release preparo estructura de backlog post-piloto inmediato.
 - TASK-086: PO Test preparo guion de piloto operativo.
 - TASK-087: QA aprobo smoke operativo pre-sesion; ambiente listo despues de calentamiento SQL.
+- TASK-090: Asignada a PO Test para ejecutar y documentar sesion piloto controlada.
+- TASK-091: Asignada a Product / Architect / Release para decidir continuidad despues del piloto.
 
 ## Riesgos principales
 
@@ -149,7 +152,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar piloto controlado usando `docs/PILOT_RUNBOOK.md` 10 a 15 minutos antes de la sesion.
+Ejecutar TASK-090; despues pasar hallazgos a Pulso en TASK-088 y cerrar continuidad en TASK-091.
 
 ## Listo para probar
 

@@ -68,6 +68,8 @@
 - TASK-087: Ejecutar smoke operativo pre-sesion.
 - TASK-088: Analizar senales post-piloto.
 - TASK-089: Preparar backlog post-piloto inmediato.
+- TASK-090: Ejecutar y documentar sesion piloto controlada.
+- TASK-091: Decidir continuidad despues del piloto.
 
 ## P1 pre-lanzamiento
 
