@@ -61,6 +61,16 @@ const elements = {
   reportTableBody: document.querySelector("#report-table-body"),
   loadReportButton: document.querySelector("#load-report-button"),
   exportReportButton: document.querySelector("#export-report-button"),
+  auditForm: document.querySelector("#audit-form"),
+  auditFromInput: document.querySelector("#audit-from"),
+  auditToInput: document.querySelector("#audit-to"),
+  auditLimitInput: document.querySelector("#audit-limit"),
+  auditError: document.querySelector("#audit-error"),
+  auditStatus: document.querySelector("#audit-status"),
+  auditEmpty: document.querySelector("#audit-empty"),
+  auditTableWrap: document.querySelector("#audit-table-wrap"),
+  auditTableBody: document.querySelector("#audit-table-body"),
+  loadAuditButton: document.querySelector("#load-audit-button"),
 };
 
 let currentCustomers = [];
@@ -73,6 +83,8 @@ elements.purchaseDateInput.value = getToday();
 elements.redemptionDateInput.value = getToday();
 elements.reportFromInput.value = getToday();
 elements.reportToInput.value = getToday();
+elements.auditFromInput.value = getToday();
+elements.auditToInput.value = getToday();
 
 elements.searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -124,9 +136,15 @@ elements.exportReportButton.addEventListener("click", () => {
   exportReportCsv();
 });
 
+elements.auditForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await loadAuditEvents();
+});
+
 renderSearchPrompt();
 resetOperation();
 renderReportPrompt();
+renderAuditPrompt();
 elements.searchInput.focus();
 
 async function loadCustomers(search) {
@@ -527,6 +545,33 @@ async function loadActivityReport() {
   }
 }
 
+async function loadAuditEvents() {
+  const filters = {
+    from: elements.auditFromInput.value,
+    to: elements.auditToInput.value,
+    limit: elements.auditLimitInput.value,
+  };
+
+  clearAuditMessages();
+
+  if (filters.from && filters.to && filters.from > filters.to) {
+    showAuditError("La fecha hasta debe ser igual o posterior a fecha desde.");
+    return;
+  }
+
+  setAuditSubmitting(true);
+  renderAuditLoading();
+
+  try {
+    const result = await api.getAuditEvents(filters);
+    renderAuditEvents(result);
+  } catch (error) {
+    renderAuditError(error);
+  } finally {
+    setAuditSubmitting(false);
+  }
+}
+
 function renderSelectedCustomer() {
   if (!selectedCustomer) {
     elements.selectedCustomerCard.hidden = true;
@@ -718,6 +763,73 @@ function renderReportError(error) {
   showReportError("No se pudo cargar el reporte. Intente de nuevo.");
 }
 
+function renderAuditPrompt() {
+  elements.auditTableWrap.hidden = true;
+  elements.auditTableBody.innerHTML = "";
+  elements.auditEmpty.hidden = false;
+  elements.auditEmpty.textContent = "Consulte un rango de fechas para ver eventos recientes.";
+}
+
+function renderAuditLoading() {
+  elements.auditTableWrap.hidden = true;
+  elements.auditEmpty.hidden = false;
+  elements.auditEmpty.textContent = "Cargando auditoria...";
+}
+
+function renderAuditEvents(result) {
+  const items = Array.isArray(result.items) ? result.items : [];
+
+  if (items.length === 0) {
+    elements.auditTableWrap.hidden = true;
+    elements.auditTableBody.innerHTML = "";
+    elements.auditEmpty.hidden = false;
+    elements.auditEmpty.textContent = "Sin eventos para el rango seleccionado.";
+    return;
+  }
+
+  elements.auditEmpty.hidden = true;
+  elements.auditTableWrap.hidden = false;
+  elements.auditTableBody.innerHTML = items.map((item) => renderAuditRow(item)).join("");
+  showAuditStatus(`Auditoria cargada: ${formatReportNumber(items.length)} eventos.`);
+}
+
+function renderAuditRow(item) {
+  const eventType = item.eventType || item.event_type || "";
+  const entityType = item.entityType || item.entity_type || "";
+  const entityId = item.entityId || item.entity_id || "";
+  const customerName = item.customerName || item.customer_name || "";
+  const customerId = item.customerId || item.customer_id || "";
+
+  return `
+    <tr>
+      <td>${formatDateTime(item.occurredAt || item.occurred_at)}</td>
+      <td>${escapeHtml(getAuditEventLabel(eventType))}</td>
+      <td>${escapeHtml(customerName || (customerId ? `Cliente ${customerId}` : "No aplica"))}</td>
+      <td>
+        <strong>${escapeHtml(getAuditEntityLabel(entityType))}</strong>
+        <span>${escapeHtml(entityId ? `ID ${entityId}` : "Sin ID")}</span>
+      </td>
+      <td>${escapeHtml(getAuditSummary(item, eventType))}</td>
+    </tr>
+  `;
+}
+
+function renderAuditError(error) {
+  elements.auditTableWrap.hidden = true;
+  elements.auditTableBody.innerHTML = "";
+  elements.auditEmpty.hidden = false;
+  elements.auditEmpty.textContent = "No hay auditoria cargada.";
+
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    showAuditError("Revise el rango de fechas y el limite de eventos.");
+    return;
+  }
+
+  showAuditError(
+    "No se pudo consultar auditoria. Si el endpoint aun no esta disponible, intente despues del deploy.",
+  );
+}
+
 function renderCustomersError(error) {
   const message =
     error instanceof ApiError && error.code === "INTERNAL_ERROR"
@@ -888,6 +1000,16 @@ function showReportError(message) {
   elements.reportError.textContent = message;
 }
 
+function showAuditStatus(message) {
+  elements.auditStatus.hidden = false;
+  elements.auditStatus.textContent = message;
+}
+
+function showAuditError(message) {
+  elements.auditError.hidden = false;
+  elements.auditError.textContent = message;
+}
+
 function clearForm(options = {}) {
   elements.form.reset();
   clearFormMessages(options);
@@ -953,6 +1075,13 @@ function clearReportMessages() {
   elements.reportStatus.textContent = "";
 }
 
+function clearAuditMessages() {
+  elements.auditError.hidden = true;
+  elements.auditError.textContent = "";
+  elements.auditStatus.hidden = true;
+  elements.auditStatus.textContent = "";
+}
+
 function setSubmitting(isSubmitting) {
   elements.saveButton.disabled = isSubmitting;
   elements.saveButton.textContent = isSubmitting ? "Registrando..." : "Registrar cliente";
@@ -971,6 +1100,11 @@ function setRedemptionSubmitting(isSubmitting) {
 function setReportSubmitting(isSubmitting) {
   elements.loadReportButton.disabled = isSubmitting;
   elements.loadReportButton.textContent = isSubmitting ? "Consultando..." : "Consultar";
+}
+
+function setAuditSubmitting(isSubmitting) {
+  elements.loadAuditButton.disabled = isSubmitting;
+  elements.loadAuditButton.textContent = isSubmitting ? "Consultando..." : "Consultar auditoria";
 }
 
 function getBalanceValue(balance) {
@@ -1060,6 +1194,25 @@ function formatDate(value) {
   }).format(date);
 }
 
+function formatDateTime(value) {
+  if (!value) {
+    return "Fecha no disponible";
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+
+  return new Intl.DateTimeFormat("es-CR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
 function getOperationTitle(type) {
   const titles = {
     purchase: "Registrar compra",
@@ -1072,6 +1225,68 @@ function getOperationTitle(type) {
 
 function getReportTypeLabel(type) {
   return type === "purchase" ? "Compra" : "Redencion";
+}
+
+function getAuditEventLabel(eventType) {
+  const labels = {
+    "customer.created": "Cliente creado",
+    "purchase.registered": "Compra registrada",
+    "redemption.registered": "Canje registrado",
+    "customer.rejected_duplicate": "Cliente duplicado",
+    "purchase.rejected_duplicate_invoice": "Factura duplicada",
+    "redemption.rejected_insufficient_points": "Saldo insuficiente",
+  };
+
+  return labels[eventType] ?? (eventType || "Evento");
+}
+
+function getAuditEntityLabel(entityType) {
+  const labels = {
+    customer: "Cliente",
+    purchase: "Compra",
+    redemption: "Canje",
+  };
+
+  return labels[entityType] ?? (entityType || "Entidad");
+}
+
+function getAuditSummary(item, eventType) {
+  if (item.summary) {
+    return item.summary;
+  }
+
+  const metadata = parseAuditMetadata(item.metadata);
+  if (metadata.summary) {
+    return metadata.summary;
+  }
+
+  if (eventType === "purchase.registered") {
+    const invoice = metadata.invoiceNumber ? ` Factura ${metadata.invoiceNumber}.` : "";
+    return `Compra registrada.${invoice}`;
+  }
+
+  if (eventType === "redemption.registered") {
+    const points = metadata.pointsRedeemed ? ` ${metadata.pointsRedeemed} pts.` : "";
+    return `Canje registrado.${points}`;
+  }
+
+  return getAuditEventLabel(eventType);
+}
+
+function parseAuditMetadata(metadata) {
+  if (!metadata) {
+    return {};
+  }
+
+  if (typeof metadata === "object") {
+    return metadata;
+  }
+
+  try {
+    return JSON.parse(metadata);
+  } catch (error) {
+    return {};
+  }
 }
 
 function exportReportCsv() {

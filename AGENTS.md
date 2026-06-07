@@ -34,6 +34,12 @@ Fase 1 sera un uso real piloto, no solo una demo visual. El MVP debe cuidar pers
 4. El chat responsable crea `tasks/TASK-###-HANDOFF.md`.
 5. Product / Architect / Release procesa el handoff y actualiza docs si corresponde.
 
+## Herramientas locales
+
+- Azure Functions Core Tools (`func`) esta disponible para ejecutar y validar la API localmente.
+- Backend/API e Infra pueden usar `func start` dentro de `api/` cuando una tarea requiera prueba local de Azure Functions.
+- QA puede usar la API local levantada con `func` solo cuando la tarea indique validar ambiente local.
+
 ## Seguridad
 
 - No guardar tokens, passwords, connection strings ni secretos en archivos.

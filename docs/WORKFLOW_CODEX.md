@@ -41,3 +41,9 @@ Product / Architect / Release coordina. Cada chat especializado trabaja tareas p
 - Ramas de trabajo: `codex/<tema-corto>` cuando aplique.
 - Commits pequenos y descriptivos.
 - Revisar `git status` y `git diff --stat` antes de cerrar.
+
+## Herramientas locales
+
+- Azure Functions Core Tools (`func`) esta disponible para API local.
+- Cuando una tarea toque API local, Backend/API o Infra pueden levantar `api/` con `func start`.
+- QA puede validar contra `http://localhost:7071/api` si la tarea pide ambiente local y la API fue levantada con `func`.

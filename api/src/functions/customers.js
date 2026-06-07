@@ -1,6 +1,7 @@
 const { app } = require('@azure/functions');
 const { getCompanyId, handle, ok, created, readJson } = require('../lib/http');
-const { ApiError } = require('../lib/errors');
+const { ApiError, mapSqlError } = require('../lib/errors');
+const { auditBestEffort } = require('../lib/audit');
 const { validateCustomerPayload } = require('../lib/validators');
 const repository = require('../lib/repository');
 
@@ -20,11 +21,35 @@ app.http('createCustomer', {
   methods: ['POST'],
   authLevel: 'anonymous',
   route: 'companies/{companyId}/customers',
-  handler: handle(async (request) => {
+  handler: handle(async (request, context) => {
     const companyId = getCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const payload = validateCustomerPayload(await readJson(request));
-    const customer = await repository.createCustomer(companyId, payload);
+    let customer;
+    try {
+      customer = await repository.createCustomer(companyId, payload);
+    } catch (error) {
+      const mapped = mapSqlError(error);
+      if (mapped.code === 'DUPLICATE_CUSTOMER') {
+        await auditBestEffort(context, {
+          companyId,
+          eventType: 'customer.rejected_duplicate',
+          entityType: 'customer',
+          metadata: { reason: 'duplicate_customer' }
+        });
+      }
+      throw error;
+    }
+
+    await auditBestEffort(context, {
+      companyId,
+      eventType: 'customer.created',
+      entityType: 'customer',
+      entityId: customer.id,
+      customerId: customer.id,
+      metadata: { emailProvided: Boolean(customer.email) }
+    });
+
     return created(customer);
   })
 });

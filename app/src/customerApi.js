@@ -30,10 +30,12 @@ let mockBalances = new Map(
   ]),
 );
 let mockActivity = new Map(initialCustomers.map((customer) => [String(customer.id), []]));
+let mockAuditEvents = [];
 let mockInvoices = new Set();
 let nextCustomerId = 12;
 let nextPurchaseId = 50;
 let nextRedemptionId = 70;
+let nextAuditEventId = 1;
 
 export class ApiError extends Error {
   constructor(code, message, details = []) {
@@ -60,6 +62,7 @@ function createHttpCustomerApi(config) {
     config,
     `/api/companies/${config.companyId}/reports/activity`,
   );
+  const auditEventsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/audit/events`);
 
   return {
     sourceLabel: "API real",
@@ -102,6 +105,18 @@ function createHttpCustomerApi(config) {
       url.searchParams.set("from", filters.from);
       url.searchParams.set("to", filters.to);
       url.searchParams.set("type", filters.type || "all");
+      const response = await fetch(url);
+      return parseResponse(response);
+    },
+    async getAuditEvents(filters) {
+      const url = new URL(auditEventsUrl, window.location.origin);
+      if (filters.from) {
+        url.searchParams.set("from", filters.from);
+      }
+      if (filters.to) {
+        url.searchParams.set("to", filters.to);
+      }
+      url.searchParams.set("limit", filters.limit || "25");
       const response = await fetch(url);
       return parseResponse(response);
     },
@@ -164,6 +179,17 @@ function createMockCustomerApi() {
         mockCustomers.some((customer) => normalize(customer.email) === normalize(payload.email));
 
       if (phoneExists || emailExists) {
+        const existingCustomer = mockCustomers.find(
+          (customer) =>
+            normalize(customer.phone) === normalize(payload.phone) ||
+            (payload.email && normalize(customer.email) === normalize(payload.email)),
+        );
+        recordMockAuditEvent({
+          eventType: "customer.rejected_duplicate",
+          entityType: "customer",
+          customer: existingCustomer,
+          summary: "Cliente rechazado por telefono o email duplicado.",
+        });
         throw new ApiError(
           "DUPLICATE_CUSTOMER",
           "Ya existe un cliente con ese telefono o email.",
@@ -189,6 +215,13 @@ function createMockCustomerApi() {
         pointsBalance: 0,
       });
       mockActivity.set(String(customer.id), []);
+      recordMockAuditEvent({
+        eventType: "customer.created",
+        entityType: "customer",
+        entityId: customer.id,
+        customer,
+        summary: "Cliente registrado.",
+      });
       return customer;
     },
     async getCustomerBalance(customerId) {
@@ -212,6 +245,12 @@ function createMockCustomerApi() {
       }
 
       if (mockInvoices.has(normalize(payload.invoiceNumber))) {
+        recordMockAuditEvent({
+          eventType: "purchase.rejected_duplicate_invoice",
+          entityType: "purchase",
+          customer,
+          summary: `Compra rechazada por factura duplicada ${payload.invoiceNumber.trim()}.`,
+        });
         throw new ApiError("DUPLICATE_INVOICE", "La factura ya existe para esta empresa.");
       }
 
@@ -247,6 +286,13 @@ function createMockCustomerApi() {
         },
         ...(mockActivity.get(String(customer.id)) ?? []),
       ]);
+      recordMockAuditEvent({
+        eventType: "purchase.registered",
+        entityType: "purchase",
+        entityId: purchase.id,
+        customer,
+        summary: `Compra registrada por ${formatMockAmount(amount)}. Factura ${purchase.invoiceNumber}.`,
+      });
       nextPurchaseId += 1;
       return purchase;
     },
@@ -264,6 +310,12 @@ function createMockCustomerApi() {
       const pointsRedeemed = Number(payload.pointsRedeemed);
 
       if (pointsRedeemed > currentBalance.pointsBalance) {
+        recordMockAuditEvent({
+          eventType: "redemption.rejected_insufficient_points",
+          entityType: "redemption",
+          customer,
+          summary: `Canje rechazado por saldo insuficiente. Solicitud ${pointsRedeemed} pts.`,
+        });
         throw new ApiError("INSUFFICIENT_POINTS", "El cliente no tiene puntos suficientes.");
       }
 
@@ -294,6 +346,13 @@ function createMockCustomerApi() {
         },
         ...(mockActivity.get(String(customer.id)) ?? []),
       ]);
+      recordMockAuditEvent({
+        eventType: "redemption.registered",
+        entityType: "redemption",
+        entityId: redemption.id,
+        customer,
+        summary: `Canje registrado por ${redemption.pointsRedeemed} pts.`,
+      });
       nextRedemptionId += 1;
       return redemption;
     },
@@ -338,6 +397,23 @@ function createMockCustomerApi() {
         type,
         summary: buildReportSummary(filteredItems),
         items: filteredItems,
+      };
+    },
+    async getAuditEvents(filters) {
+      await wait(300);
+      validateAuditFilters(filters);
+
+      const limit = Number(filters.limit || 25);
+      const items = mockAuditEvents
+        .filter((event) => !filters.from || event.occurredAt.slice(0, 10) >= filters.from)
+        .filter((event) => !filters.to || event.occurredAt.slice(0, 10) <= filters.to)
+        .slice(0, limit);
+
+      return {
+        from: filters.from || null,
+        to: filters.to || null,
+        limit,
+        items,
       };
     },
   };
@@ -453,6 +529,59 @@ function validateReportFilters(filters) {
   if (details.length > 0) {
     throw new ApiError("VALIDATION_ERROR", "Revise los filtros del reporte.", details);
   }
+}
+
+function validateAuditFilters(filters) {
+  const details = [];
+  const from = String(filters.from ?? "").trim();
+  const to = String(filters.to ?? "").trim();
+  const limit = Number(filters.limit || 25);
+
+  if (from && !isDateOnly(from)) {
+    details.push({ field: "from", message: "La fecha desde no es valida." });
+  }
+
+  if (to && !isDateOnly(to)) {
+    details.push({ field: "to", message: "La fecha hasta no es valida." });
+  }
+
+  if (from && to && from > to) {
+    details.push({ field: "to", message: "La fecha hasta debe ser igual o posterior a desde." });
+  }
+
+  if (!Number.isInteger(limit) || limit <= 0 || limit > 50) {
+    details.push({ field: "limit", message: "El limite debe estar entre 1 y 50." });
+  }
+
+  if (details.length > 0) {
+    throw new ApiError("VALIDATION_ERROR", "Revise los filtros de auditoria.", details);
+  }
+}
+
+function recordMockAuditEvent({ eventType, entityType, entityId = null, customer = null, summary }) {
+  const event = {
+    id: String(nextAuditEventId),
+    occurredAt: new Date().toISOString(),
+    eventType,
+    entityType,
+    entityId: entityId == null ? null : String(entityId),
+    customerId: customer ? String(customer.id) : null,
+    customerName: customer?.name ?? null,
+    actorLabel: null,
+    source: "api",
+    summary,
+  };
+
+  nextAuditEventId += 1;
+  mockAuditEvents = [event, ...mockAuditEvents];
+}
+
+function formatMockAmount(value) {
+  return new Intl.NumberFormat("es-CR", {
+    style: "currency",
+    currency: "CRC",
+    maximumFractionDigits: 2,
+  }).format(Number(value));
 }
 
 function normalizeReportItem(customer, item) {

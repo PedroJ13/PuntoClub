@@ -15,6 +15,7 @@
         </div>
         <div class="topbar-actions">
           <a class="secondary-link" href="#report-title">Reporte</a>
+          <a class="secondary-link" href="#audit-title">Auditoria</a>
           <div class="status-pill" id="data-source-status">Mock local</div>
         </div>
       </header>
@@ -228,6 +229,62 @@
                 </tr>
               </thead>
               <tbody id="report-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="audit-panel" class="audit-panel zone-card" aria-labelledby="audit-title">
+          <div class="section-header">
+            <div>
+              <h2 id="audit-title">Auditoria operativa</h2>
+            </div>
+          </div>
+
+          <form id="audit-form" class="audit-form" novalidate>
+            <div class="field-grid audit-controls">
+              <div class="field">
+                <label for="audit-from">Fecha desde</label>
+                <input id="audit-from" name="from" type="date" />
+              </div>
+
+              <div class="field">
+                <label for="audit-to">Fecha hasta</label>
+                <input id="audit-to" name="to" type="date" />
+              </div>
+
+              <div class="field">
+                <label for="audit-limit">Ultimos eventos</label>
+                <select id="audit-limit" name="limit">
+                  <option value="10">10</option>
+                  <option value="25" selected>25</option>
+                  <option value="50">50</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="audit-error" class="form-error" hidden></div>
+
+            <div class="form-actions">
+              <button id="load-audit-button" type="submit">Consultar auditoria</button>
+            </div>
+          </form>
+
+          <div id="audit-status" class="success-message" hidden></div>
+          <div id="audit-empty" class="empty-state">
+            Consulte un rango de fechas para ver eventos recientes.
+          </div>
+          <div id="audit-table-wrap" class="audit-table-wrap" hidden>
+            <table class="audit-table">
+              <thead>
+                <tr>
+                  <th>Fecha/hora</th>
+                  <th>Evento</th>
+                  <th>Cliente</th>
+                  <th>Entidad</th>
+                  <th>Resumen</th>
+                </tr>
+              </thead>
+              <tbody id="audit-table-body"></tbody>
             </table>
           </div>
         </section>

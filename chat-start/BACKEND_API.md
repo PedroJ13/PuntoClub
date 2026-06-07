@@ -22,6 +22,11 @@ Tu responsabilidad es endpoints, validaciones, seguridad basica, contratos API, 
 - `docs/API_CONTRACTS.md`
 - `docs/BACKLOG.md`
 
+## Herramienta local disponible
+
+- Azure Functions Core Tools (`func`) esta disponible.
+- Si la tarea requiere ejecutar la API local como Azure Functions, usar `func start` desde `api/` y validar contra `http://localhost:7071/api`.
+
 ## No tocar sin pedir confirmacion
 
 - No cambiar UI publica.

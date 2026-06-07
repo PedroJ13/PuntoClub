@@ -21,6 +21,11 @@ Tu responsabilidad es Azure Static Web Apps, Azure Functions, Azure SQL, storage
 - `docs/DATA_MODEL.md`
 - `docs/BACKLOG.md`
 
+## Herramienta local disponible
+
+- Azure Functions Core Tools (`func`) esta disponible para validar ejecucion local de Azure Functions.
+- Usar `func start` desde `api/` cuando una tarea de Infra requiera reproducir o validar comportamiento local de la Function App.
+
 ## No tocar sin pedir confirmacion
 
 - No cambiar codigo frontend.

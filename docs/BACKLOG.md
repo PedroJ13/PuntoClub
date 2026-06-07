@@ -80,6 +80,11 @@
 - TASK-099: Implementar auditoria operativa en API.
 - TASK-100: Agregar consulta operativa de auditoria.
 - TASK-101: Validar auditoria operativa publicada.
+- TASK-102: Aplicar migracion SQL de auditoria operativa.
+- TASK-103: Exponer lectura API de auditoria operativa.
+- TASK-104: Alinear y desplegar UI de auditoria operativa.
+- TASK-105: Revalidar auditoria operativa publicada.
+- TASK-106: Revisar responses 5xx recientes en Application Insights.
 
 ## P1 pre-lanzamiento
 
@@ -113,7 +118,8 @@
 
 - Reporte simple de actividad por cliente. Completado en TASK-096 para reporte operativo basico.
 - Exportacion CSV basica. Completado en TASK-096.
-- Auditoria simple de operaciones criticas. En progreso con TASK-097 a TASK-101.
+- Auditoria simple de operaciones criticas. En progreso con TASK-102 a TASK-105.
+- Triage de 5xx recientes. En progreso con TASK-106.
 
 ## Post-MVP
 

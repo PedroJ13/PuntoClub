@@ -14,12 +14,13 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Fase de programacion: auditoria operativa minima y observabilidad de piloto.
+- Fase de correccion: publicar auditoria operativa validable.
 
 ### Siguiente
 
 - Esperar deploy de API y frontend con TASK-093/TASK-094.
-- Completar trazabilidad minima de operaciones criticas.
+- Aplicar migracion SQL, exponer lectura API y revalidar auditoria publicada.
+- Revisar responses 5xx recientes antes de ampliar piloto.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -158,6 +159,16 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-099: Asignada a Backend API para implementar auditoria operativa.
 - TASK-100: Asignada a Web Dev para agregar consulta operativa de auditoria.
 - TASK-101: Asignada a QA para validar auditoria operativa publicada.
+- TASK-097: SQL DEV diseno auditoria operativa minima.
+- TASK-098: Infra / Azure reviso observabilidad; detecto 6 responses 5xx recientes y recomendo triage.
+- TASK-099: Backend API implemento escritura best-effort de auditoria y migracion SQL; migracion no aplicada.
+- TASK-100: Web Dev preparo UI local de auditoria; pendiente endpoint/contracto publicado.
+- TASK-101: QA no aprobo porque UI publicada no tenia auditoria y `/audit/events` respondia 404.
+- TASK-102: Asignada a SQL DEV para aplicar migracion SQL de auditoria.
+- TASK-103: Asignada a Backend API para exponer lectura API de auditoria.
+- TASK-104: Asignada a Web Dev para alinear/desplegar UI de auditoria.
+- TASK-105: Asignada a QA para revalidar auditoria publicada.
+- TASK-106: Asignada a Backend API para revisar responses 5xx recientes en Application Insights.
 
 ## Riesgos principales
 
@@ -168,7 +179,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar TASK-097 y TASK-098 en paralelo; luego TASK-099, TASK-100 y TASK-101.
+Ejecutar TASK-102 y TASK-106 en paralelo; luego TASK-103, TASK-104 y TASK-105.
 
 ## Listo para probar
 

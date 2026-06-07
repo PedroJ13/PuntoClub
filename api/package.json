@@ -8,7 +8,7 @@
     "serve:local": "node scripts/local-api-server.js",
     "start": "func start",
     "smoke": "node scripts/smoke-test.js",
-    "test": "node --test test/errors.test.js test/repository-formatters.test.js test/validators.test.js"
+    "test": "node --test test/audit.test.js test/errors.test.js test/repository-formatters.test.js test/validators.test.js"
   },
   "dependencies": {
     "@azure/functions": "^4.6.0",

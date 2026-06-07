@@ -22,6 +22,11 @@ Tu responsabilidad es pruebas, regresion, responsive, permisos, flujos criticos 
 - `docs/BACKLOG.md`
 - `docs/QA_TEST_PLAN.md`
 
+## Herramienta local disponible
+
+- Azure Functions Core Tools (`func`) esta disponible.
+- QA puede validar contra `http://localhost:7071/api` cuando la tarea indique ambiente local y Backend/API o Infra hayan levantado la API con `func start`.
+
 ## No hacer
 
 - No cambiar codigo salvo que la tarea sea explicitamente corregir test o bug menor.

@@ -19,7 +19,7 @@
 
 ## Ambientes
 
-- Local: desarrollo.
+- Local: desarrollo. La API puede ejecutarse con Azure Functions Core Tools (`func start`) desde `api/` cuando se necesite validar comportamiento local de Azure Functions.
 - Production: piloto inicial.
 - Staging: opcional, pendiente de recomendacion Infra.
 
