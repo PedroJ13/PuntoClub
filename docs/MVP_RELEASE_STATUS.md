@@ -181,6 +181,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-109: Bloqueada hasta TASK-108; Web Dev creara pantalla de configuracion.
 - TASK-110: Bloqueada hasta TASK-108/TASK-109; QA validara publicado.
 - TASK-111: Bloqueada hasta TASK-110; Product / Architect / Release decidira si avanzar a multiempresa controlado.
+- TASK-107: SQL DEV confirmo que `dbo.Companies` soporta settings basicos sin migracion; recomendo ampliar auditoria si se registra `company.settings.updated`.
+- Decision: auditar cambios de configuracion de empresa en esta fase.
+- TASK-108: Liberada a Backend API para implementar PATCH settings y auditoria.
+- TASK-112: Liberada a SQL DEV para ampliar constraints de auditoria para settings.
 
 ## Riesgos principales
 
@@ -191,7 +195,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar TASK-107 y liberar rondas posteriores segun dependencias.
+Ejecutar TASK-108 y TASK-112 en paralelo; luego liberar TASK-109.
 
 ## Listo para probar
 

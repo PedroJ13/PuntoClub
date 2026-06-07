@@ -62,7 +62,8 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Nota |
 | --- | --- | --- | --- | --- | --- |
-| `TASK-107` - Revisar modelo SQL de configuracion de empresa piloto | SQL DEV | P1 | Round 1 | - | Opcion A: preparar settings de empresa piloto. |
+| `TASK-108` - Implementar API de configuracion de empresa piloto | Backend API | P1 | Round 2 | `TASK-107` | Modelo SQL confirmado; auditar `company.settings.updated`. |
+| `TASK-112` - Ampliar auditoria para cambios de configuracion de empresa | SQL DEV | P1 | Round 2 | `TASK-107` | Habilitar `company.settings.updated` y `entity_type=company`. |
 
 ## Assigned
 
@@ -88,9 +89,8 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Motivo |
 | --- | --- | --- | --- | --- | --- |
-| `TASK-108` - Implementar API de configuracion de empresa piloto | Backend API | P1 | Round 2 | `TASK-107` | Espera confirmacion de modelo SQL/settings. |
-| `TASK-109` - Crear pantalla de configuracion de empresa piloto | Web Dev | P1 | Round 3 | `TASK-108` | Espera contrato final de API settings. |
-| `TASK-110` - Validar configuracion de empresa publicada | QA | P1 | Round 4 | `TASK-108`, `TASK-109` | Espera API y UI desplegadas. |
+| `TASK-109` - Crear pantalla de configuracion de empresa piloto | Web Dev | P1 | Round 3 | `TASK-108`, `TASK-112` | Espera contrato final de API settings y auditoria lista. |
+| `TASK-110` - Validar configuracion de empresa publicada | QA | P1 | Round 4 | `TASK-108`, `TASK-109`, `TASK-112` | Espera API, UI y auditoria de settings desplegadas. |
 | `TASK-111` - Decidir entrada a multiempresa controlado | Product / Architect / Release | P1 | Round 5 | `TASK-110` | Espera validacion de configuracion de empresa. |
 
 ## Done
@@ -102,6 +102,7 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 | `TASK-104` - Alinear UI de auditoria operativa | Web Dev | MVP bloqueante | - | - | `tasks/TASK-104-HANDOFF.md` |
 | `TASK-105` - Revalidar auditoria operativa publicada | QA | MVP bloqueante | - | - | `tasks/TASK-105-HANDOFF.md` |
 | `TASK-106` - Revisar responses 5xx recientes en Application Insights | Backend API | P1 | - | - | `tasks/TASK-106-HANDOFF.md` |
+| `TASK-107` - Revisar modelo SQL de configuracion de empresa piloto | SQL DEV | P1 | Round 1 | - | `tasks/TASK-107-HANDOFF.md` |
 
 ## Formato sugerido de fila
 

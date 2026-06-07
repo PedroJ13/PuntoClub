@@ -90,6 +90,7 @@
 - TASK-109: Crear pantalla de configuracion de empresa piloto.
 - TASK-110: Validar configuracion de empresa publicada.
 - TASK-111: Decidir entrada a multiempresa controlado.
+- TASK-112: Ampliar auditoria para cambios de configuracion de empresa.
 
 ## P1 pre-lanzamiento
 
