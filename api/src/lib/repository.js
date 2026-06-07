@@ -183,6 +183,224 @@ async function updateCompanySettings(companyId, settings) {
   return mapCompanySettings(result.recordset[0]);
 }
 
+async function createCompanyRegistrationRequest(payload) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_name', sql.NVarChar(160), payload.companyName)
+    .input('company_email', sql.NVarChar(254), payload.companyEmail)
+    .input('company_phone', sql.NVarChar(32), payload.companyPhone)
+    .input('company_address', sql.NVarChar(300), payload.companyAddress)
+    .input('contact_name', sql.NVarChar(160), payload.contactName)
+    .input('contact_email', sql.NVarChar(254), payload.contactEmail)
+    .input('contact_phone', sql.NVarChar(32), payload.contactPhone)
+    .query(`
+      INSERT INTO dbo.CompanyRegistrationRequests (
+        company_name,
+        company_email,
+        company_phone,
+        company_address,
+        contact_name,
+        contact_email,
+        contact_phone
+      )
+      OUTPUT
+        INSERTED.id,
+        INSERTED.company_name,
+        INSERTED.company_email,
+        INSERTED.company_phone,
+        INSERTED.company_address,
+        INSERTED.contact_name,
+        INSERTED.contact_email,
+        INSERTED.contact_phone,
+        INSERTED.status,
+        INSERTED.reviewed_at,
+        INSERTED.reviewed_by_label,
+        INSERTED.review_note,
+        INSERTED.approved_company_id,
+        INSERTED.created_at,
+        INSERTED.updated_at
+      VALUES (
+        @company_name,
+        @company_email,
+        @company_phone,
+        @company_address,
+        @contact_name,
+        @contact_email,
+        @contact_phone
+      )
+    `);
+
+  return mapCompanyRegistrationRequest(result.recordset[0]);
+}
+
+async function approveCompanyRegistrationRequest(requestId, payload, options = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+  const actorLabel = options.actorLabel || 'internal';
+  const pointsPercentage = payload.pointsPercentage == null ? 5 : payload.pointsPercentage;
+
+  await transaction.begin();
+
+  try {
+    const requestResult = await new sql.Request(transaction)
+      .input('request_id', sql.BigInt, requestId)
+      .query(`
+        SELECT TOP (1)
+          id,
+          company_name,
+          company_email,
+          company_phone,
+          company_address,
+          contact_name,
+          contact_email,
+          contact_phone
+        FROM dbo.CompanyRegistrationRequests WITH (UPDLOCK, HOLDLOCK)
+        WHERE id = @request_id
+          AND status = 'pending'
+      `);
+
+    if (!requestResult.recordset.length) {
+      throw new ApiError(404, 'COMPANY_REGISTRATION_REQUEST_NOT_FOUND', 'Company registration request was not found.');
+    }
+
+    const request = requestResult.recordset[0];
+    const companyResult = await new sql.Request(transaction)
+      .input('name', sql.NVarChar(160), request.company_name)
+      .input('email', sql.NVarChar(254), request.company_email)
+      .input('phone', sql.NVarChar(32), request.company_phone)
+      .input('address', sql.NVarChar(300), request.company_address)
+      .input('points_percentage', sql.Decimal(5, 2), pointsPercentage)
+      .query(`
+        INSERT INTO dbo.Companies (
+          name,
+          email,
+          phone,
+          address,
+          points_percentage,
+          status
+        )
+        OUTPUT
+          INSERTED.id,
+          INSERTED.name,
+          INSERTED.email,
+          INSERTED.phone,
+          INSERTED.address,
+          INSERTED.points_percentage,
+          INSERTED.status,
+          INSERTED.updated_at
+        VALUES (
+          @name,
+          @email,
+          @phone,
+          @address,
+          @points_percentage,
+          'pending_activation'
+        )
+      `);
+
+    const reviewResult = await new sql.Request(transaction)
+      .input('request_id', sql.BigInt, requestId)
+      .input('reviewed_by_label', sql.NVarChar(120), actorLabel)
+      .input('review_note', sql.NVarChar(500), payload.reviewNote)
+      .input('approved_company_id', sql.BigInt, companyResult.recordset[0].id)
+      .query(`
+        UPDATE dbo.CompanyRegistrationRequests
+        SET
+          status = 'approved',
+          reviewed_at = SYSUTCDATETIME(),
+          reviewed_by_label = @reviewed_by_label,
+          review_note = @review_note,
+          approved_company_id = @approved_company_id,
+          updated_at = SYSUTCDATETIME()
+        OUTPUT
+          INSERTED.id,
+          INSERTED.company_name,
+          INSERTED.company_email,
+          INSERTED.company_phone,
+          INSERTED.company_address,
+          INSERTED.contact_name,
+          INSERTED.contact_email,
+          INSERTED.contact_phone,
+          INSERTED.status,
+          INSERTED.reviewed_at,
+          INSERTED.reviewed_by_label,
+          INSERTED.review_note,
+          INSERTED.approved_company_id,
+          INSERTED.created_at,
+          INSERTED.updated_at
+        WHERE id = @request_id
+      `);
+
+    await transaction.commit();
+
+    const company = companyResult.recordset[0];
+    return {
+      ...mapCompanyRegistrationRequest(reviewResult.recordset[0]),
+      company: {
+        id: toApiId(company.id),
+        name: company.name,
+        email: company.email,
+        phone: company.phone,
+        address: company.address,
+        status: company.status,
+        pointsPercentage: Number(company.points_percentage)
+      }
+    };
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch {
+      // Preserve the original failure; rollback errors are secondary here.
+    }
+    throw error;
+  }
+}
+
+async function rejectCompanyRegistrationRequest(requestId, payload, options = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const actorLabel = options.actorLabel || 'internal';
+  const result = await pool.request()
+    .input('request_id', sql.BigInt, requestId)
+    .input('reviewed_by_label', sql.NVarChar(120), actorLabel)
+    .input('review_note', sql.NVarChar(500), payload.reviewNote)
+    .query(`
+      UPDATE dbo.CompanyRegistrationRequests
+      SET
+        status = 'rejected',
+        reviewed_at = SYSUTCDATETIME(),
+        reviewed_by_label = @reviewed_by_label,
+        review_note = @review_note,
+        updated_at = SYSUTCDATETIME()
+      OUTPUT
+        INSERTED.id,
+        INSERTED.company_name,
+        INSERTED.company_email,
+        INSERTED.company_phone,
+        INSERTED.company_address,
+        INSERTED.contact_name,
+        INSERTED.contact_email,
+        INSERTED.contact_phone,
+        INSERTED.status,
+        INSERTED.reviewed_at,
+        INSERTED.reviewed_by_label,
+        INSERTED.review_note,
+        INSERTED.approved_company_id,
+        INSERTED.created_at,
+        INSERTED.updated_at
+      WHERE id = @request_id
+        AND status = 'pending'
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'COMPANY_REGISTRATION_REQUEST_NOT_FOUND', 'Company registration request was not found.');
+  }
+
+  return mapCompanyRegistrationRequest(result.recordset[0]);
+}
+
 async function listCustomers(companyId, search) {
   const sql = getSql();
   const pool = await getPool();
@@ -437,6 +655,8 @@ async function createRedemption(companyId, payload) {
 }
 
 module.exports = {
+  approveCompanyRegistrationRequest,
+  createCompanyRegistrationRequest,
   createCustomer,
   createPurchase,
   createRedemption,
@@ -452,6 +672,7 @@ module.exports = {
   mapCompanySettings,
   mapCompanyUser,
   mapMyCompany,
+  rejectCompanyRegistrationRequest,
   toApiId,
   toIsoTimestamp,
   updateCompanySettings

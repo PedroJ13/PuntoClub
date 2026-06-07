@@ -108,6 +108,10 @@
 - TASK-127: Crear recursos Azure aprobados para multiempresa piloto.
 - TASK-128: Aplicar migracion SQL de registro de empresas e invitaciones.
 - TASK-129: Implementar endpoints base de solicitudes de empresa.
+- TASK-130: Configurar Microsoft Entra External ID para Punto Club.
+- TASK-131: Conectar solicitudes de empresa con email real ACS.
+- TASK-132: Implementar invitaciones internas con token hash.
+- TASK-133: Validar endpoints base de solicitudes de empresa publicados.
 
 ## P1 pre-lanzamiento
 

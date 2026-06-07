@@ -20,6 +20,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Infra y SQL completaron preparacion de multiempresa controlado sin crear recursos ni aplicar migracion.
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
+- ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
 
 ### Siguiente
 
@@ -236,6 +237,13 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-127: Asignada a Infra / Azure para crear recursos Azure aprobados de email/auth/logos.
 - TASK-128: Asignada a SQL DEV para aplicar migracion SQL de registro/invitaciones/usuarios.
 - TASK-129: Asignada a Backend API para implementar endpoints base de solicitudes de empresa.
+- TASK-127: Infra / Azure completo ACS Email y storage privado de logos; Entra External ID queda pendiente/manual.
+- TASK-128: SQL DEV aplico migracion de registro/invitaciones/usuarios en Azure SQL real con prevalidaciones; regla temporal retirada.
+- TASK-129: Backend API implemento endpoints base de solicitudes de empresa y revision interna con feature flag; 45 tests pasaron.
+- TASK-130: Asignada a Infra / Azure para configurar Microsoft Entra External ID.
+- TASK-131: Asignada a Backend API para conectar solicitudes de empresa con email real ACS.
+- TASK-132: Asignada a Backend API para implementar invitaciones internas con token hash.
+- TASK-133: Asignada a QA para validar endpoints base de solicitudes de empresa publicados.
 
 ## Riesgos principales
 
@@ -246,7 +254,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Crear/configurar recursos Azure aprobados, aplicar migracion SQL con prevalidaciones e implementar endpoints base de solicitudes de empresa. Mantener invitaciones/login/logo productivos fuera hasta que Infra/SQL confirmen entorno listo.
+Configurar Entra External ID, conectar email real ACS, implementar invitaciones internas y validar endpoints base publicados. Mantener accept/login/logo productivos fuera hasta que auth quede listo.
 
 ## Listo para probar
 
