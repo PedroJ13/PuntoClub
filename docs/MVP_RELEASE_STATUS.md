@@ -14,12 +14,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Fase de release: consolidar y desplegar reporte operativo basico + export CSV.
+- Fase de programacion: auditoria operativa minima y observabilidad de piloto.
 
 ### Siguiente
 
 - Esperar deploy de API y frontend con TASK-093/TASK-094.
-- Continuar con la siguiente fase operativa despues de reporte basico aprobado.
+- Completar trazabilidad minima de operaciones criticas.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -153,6 +153,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-095: QA no aprobo porque API/frontend publicados aun no tenian reporte.
 - TASK-096: Asignada a QA para revalidar reporte operativo publicado despues del deploy.
 - TASK-096: QA aprobo reporte operativo publicado, export CSV, validaciones API, responsive y regresion de caja; sin P0/P1.
+- TASK-097: Asignada a SQL DEV para disenar auditoria operativa minima.
+- TASK-098: Asignada a Infra / Azure para revisar observabilidad operativa.
+- TASK-099: Asignada a Backend API para implementar auditoria operativa.
+- TASK-100: Asignada a Web Dev para agregar consulta operativa de auditoria.
+- TASK-101: Asignada a QA para validar auditoria operativa publicada.
 
 ## Riesgos principales
 
@@ -163,7 +168,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Definir siguiente fase operativa; UX/colores siguen diferidos hasta cerrar funcionamiento base.
+Ejecutar TASK-097 y TASK-098 en paralelo; luego TASK-099, TASK-100 y TASK-101.
 
 ## Listo para probar
 
