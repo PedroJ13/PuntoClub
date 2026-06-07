@@ -136,6 +136,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-087: Asignada a QA para smoke operativo pre-sesion.
 - TASK-088: Asignada a Pulso para analizar senales post-piloto.
 - TASK-089: Asignada a Product / Architect / Release para preparar backlog post-piloto.
+- TASK-089: Product / Architect / Release preparo estructura de backlog post-piloto inmediato.
 
 ## Riesgos principales
 
@@ -160,5 +161,6 @@ Preparar guion y smoke pre-sesion; luego ejecutar piloto controlado usando `docs
 - Runbook SQL: documentado en `docs/PILOT_RUNBOOK.md`.
 - Correccion P3 mensaje duplicado: aprobada por QA en TASK-085.
 - Estado pre-piloto: listo para piloto controlado.
+- Backlog post-piloto: estructura preparada en `docs/POST_PILOT_BACKLOG.md`.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
