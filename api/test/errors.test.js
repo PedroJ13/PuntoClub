@@ -20,3 +20,31 @@ test('maps RegisterRedemption insufficient balance to conflict', () => {
   assert.equal(error.status, 409);
   assert.equal(error.code, 'INSUFFICIENT_POINTS');
 });
+
+test('maps company email duplicate to company conflict', () => {
+  const error = mapSqlError({ number: 2601, message: 'Cannot insert duplicate key row with unique index UX_Companies_email.' });
+  assert.equal(error.status, 409);
+  assert.equal(error.code, 'COMPANY_ALREADY_EXISTS');
+});
+
+test('maps pending registration duplicate to pending conflict', () => {
+  const error = mapSqlError({ number: 2601, message: 'Cannot insert duplicate key row with unique index UX_CompanyRegistrationRequests_pending_company_email.' });
+  assert.equal(error.status, 409);
+  assert.equal(error.code, 'REGISTRATION_ALREADY_PENDING');
+});
+
+test('maps pending invitation duplicate to pending conflict', () => {
+  const error = mapSqlError({ number: 2627, message: 'Violation of UNIQUE KEY constraint UX_CompanyInvitations_pending_company_email.' });
+  assert.equal(error.status, 409);
+  assert.equal(error.code, 'INVITATION_ALREADY_PENDING');
+});
+
+test('maps company user duplicates to user conflict', () => {
+  const byEmail = mapSqlError({ number: 2601, message: 'Cannot insert duplicate key row with unique index UX_CompanyUsers_company_email.' });
+  assert.equal(byEmail.status, 409);
+  assert.equal(byEmail.code, 'COMPANY_USER_ALREADY_EXISTS');
+
+  const bySubject = mapSqlError({ number: 2627, message: 'Violation of UNIQUE KEY constraint UX_CompanyUsers_auth_subject.' });
+  assert.equal(bySubject.status, 409);
+  assert.equal(bySubject.code, 'COMPANY_USER_ALREADY_EXISTS');
+});

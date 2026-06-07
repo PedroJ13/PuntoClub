@@ -137,3 +137,13 @@ Motivo: TASK-122 confirmo que la migracion SQL agrega `company_address` obligato
 Impacto: Backend/API debe actualizar contratos antes de implementar. Web Dev y Backend/API deben usar el copy aprobado como base. La implementacion productiva sigue bloqueada hasta aprobar recursos Azure y aplicar la migracion.
 
 Riesgo aceptado: Se puede preparar base de validadores/formatters/adapters con mocks antes de recursos reales. No se acepta exponer registro/invitacion productivo sin ACS Email, Entra External ID, storage privado y QA de aislamiento.
+
+## 2026-06-07 - Aprobacion piloto para recursos Azure multiempresa
+
+Decision: Se aprueba avanzar para piloto con Azure Managed Domain, remitente visible `Punto Club`, acuse automatico al solicitante, notificaciones internas a `pj13eros_business@outlook.com`, Microsoft Entra External ID, storage dedicado `stpuntoclublogosbr001`, logos de 1 MB en PNG/JPG/WebP sin SVG, CTA `Crear acceso` y recursos pay-as-you-go.
+
+Motivo: TASK-126 consolido las recomendaciones de Infra y UX en una aprobacion concreta para desbloquear la preparacion real de email, auth y logos sin disenar SaaS completo.
+
+Impacto: Infra / Azure puede crear/configurar recursos aprobados en TASK-127. SQL DEV puede aplicar la migracion en TASK-128 con prevalidaciones. Backend/API puede implementar endpoints base de solicitud de empresa en TASK-129, manteniendo invitaciones/login/logo productivos bloqueados hasta que recursos y SQL esten listos.
+
+Riesgo aceptado: Azure Managed Domain es suficiente para piloto pero puede verse menos profesional que dominio propio. Se revisara dominio propio antes de escalar uso comercial.

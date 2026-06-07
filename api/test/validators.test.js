@@ -3,10 +3,22 @@ const assert = require('node:assert/strict');
 
 const {
   calculatePointsEarned,
+  isAllowedCompanyStatus,
+  isAllowedCompanyUserStatus,
+  isAllowedInvitationStatus,
+  isAllowedRegistrationRequestStatus,
+  normalizeEmail,
   validateAuditEventsQuery,
   validateActivityReportQuery,
+  validateCompanyInvitationPayload,
+  validateCompanyRegistrationRequestPayload,
+  validateCompanyRegistrationReviewPayload,
+  validateCompanyRole,
   validateCompanySettingsPatchPayload,
   validateCustomerPayload,
+  validateInvitationAcceptPayload,
+  validateLogoFileMetadata,
+  validateMyCompanyPatchPayload,
   validatePurchasePayload,
   validateRedemptionPayload
 } = require('../src/lib/validators');
@@ -37,6 +49,148 @@ test('customer payload normalizes optional email', () => {
   assert.deepEqual(
     validateCustomerPayload({ name: ' Maria ', phone: ' 8888 ', email: '' }),
     { name: 'Maria', phone: '8888', email: null }
+  );
+});
+
+test('normalizeEmail trims and lowercases email values', () => {
+  assert.equal(normalizeEmail('  HOLA@CafeCentral.TEST '), 'hola@cafecentral.test');
+  assert.equal(normalizeEmail(''), '');
+});
+
+test('company registration request requires address and normalizes emails', () => {
+  assert.deepEqual(
+    validateCompanyRegistrationRequestPayload({
+      companyName: ' Cafe Central ',
+      companyEmail: ' HOLA@CafeCentral.TEST ',
+      companyPhone: ' +50622223333 ',
+      companyAddress: ' San Jose ',
+      contactName: ' Maria ',
+      contactEmail: ' MARIA@CafeCentral.TEST ',
+      contactPhone: ''
+    }),
+    {
+      companyName: 'Cafe Central',
+      companyEmail: 'hola@cafecentral.test',
+      companyPhone: '+50622223333',
+      companyAddress: 'San Jose',
+      contactName: 'Maria',
+      contactEmail: 'maria@cafecentral.test',
+      contactPhone: null
+    }
+  );
+});
+
+test('company registration request rejects forbidden fields', () => {
+  assert.throws(
+    () => validateCompanyRegistrationRequestPayload({
+      companyName: 'Cafe Central',
+      companyEmail: 'hola@cafecentral.test',
+      companyAddress: 'San Jose',
+      contactEmail: 'maria@cafecentral.test',
+      requestedLogoUrl: 'https://example.com/logo.png',
+      companyId: '1',
+      password: 'secret'
+    }),
+    /One or more fields are invalid/
+  );
+});
+
+test('company registration review validates approve and reject payloads', () => {
+  assert.deepEqual(
+    validateCompanyRegistrationReviewPayload({ reviewNote: ' ok ', pointsPercentage: '6.5' }, 'approve'),
+    { reviewNote: 'ok', pointsPercentage: 6.5 }
+  );
+
+  assert.throws(
+    () => validateCompanyRegistrationReviewPayload({}, 'reject'),
+    /One or more fields are invalid/
+  );
+});
+
+test('company invitation payload validates role and normalizes email', () => {
+  assert.deepEqual(
+    validateCompanyInvitationPayload({
+      companyId: '10',
+      registrationRequestId: '200',
+      email: ' OWNER@CafeCentral.TEST ',
+      role: 'owner'
+    }),
+    {
+      companyId: 10,
+      registrationRequestId: 200,
+      email: 'owner@cafecentral.test',
+      role: 'owner'
+    }
+  );
+
+  assert.throws(
+    () => validateCompanyInvitationPayload({ companyId: 10, email: 'owner@example.com', role: 'superadmin' }),
+    /One or more fields are invalid/
+  );
+});
+
+test('company role and status helpers constrain known values', () => {
+  assert.equal(validateCompanyRole(undefined), 'owner');
+  assert.equal(validateCompanyRole('staff'), 'staff');
+  assert.throws(() => validateCompanyRole('superadmin'), /One or more fields are invalid/);
+  assert.equal(isAllowedCompanyStatus('pending_activation'), true);
+  assert.equal(isAllowedCompanyStatus('deleted'), false);
+  assert.equal(isAllowedRegistrationRequestStatus('approved'), true);
+  assert.equal(isAllowedInvitationStatus('revoked'), true);
+  assert.equal(isAllowedCompanyUserStatus('disabled'), true);
+});
+
+test('invitation accept payload rejects password and externalSubject from frontend', () => {
+  assert.deepEqual(
+    validateInvitationAcceptPayload({ token: 'abc123', displayName: ' Maria ' }),
+    { token: 'abc123', displayName: 'Maria' }
+  );
+
+  assert.throws(
+    () => validateInvitationAcceptPayload({ token: 'abc123', password: 'secret', externalSubject: 'sub' }),
+    /One or more fields are invalid/
+  );
+});
+
+test('my-company patch validates editable fields and rejects controlled fields', () => {
+  assert.deepEqual(
+    validateMyCompanyPatchPayload({
+      name: ' Cafe Central ',
+      phone: '',
+      address: ' San Jose ',
+      pointsPercentage: '8'
+    }),
+    {
+      patch: {
+        name: 'Cafe Central',
+        phone: null,
+        address: 'San Jose',
+        pointsPercentage: 8
+      },
+      providedFields: ['name', 'phone', 'address', 'pointsPercentage']
+    }
+  );
+
+  assert.throws(
+    () => validateMyCompanyPatchPayload({ email: 'new@example.com', logoUrl: 'https://example.com/logo.png' }),
+    /One or more fields are invalid/
+  );
+});
+
+test('logo metadata validator accepts safe images and rejects svg or oversized files', () => {
+  assert.deepEqual(
+    validateLogoFileMetadata({ contentType: 'image/png', size: 512, filename: 'logo.png' }, { maxBytes: 1024 }),
+    { contentType: 'image/png', size: 512, filename: 'logo.png' }
+  );
+
+  assert.throws(
+    () => validateLogoFileMetadata({ contentType: 'image/svg+xml', size: 512, filename: 'logo.svg' }, { maxBytes: 1024 }),
+    /One or more fields are invalid/
+  );
+
+  assert.throws(
+    () => validateLogoFileMetadata({ contentType: 'image/jpeg', size: 2048, filename: 'logo.jpg' }, { maxBytes: 1024 }),
+    /One or more fields are invalid/
   );
 });
 

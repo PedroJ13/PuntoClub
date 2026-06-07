@@ -37,6 +37,74 @@ function mapCompanySettings(row) {
   };
 }
 
+function mapCompanyRegistrationRequest(row) {
+  return {
+    id: toApiId(row.id),
+    companyName: row.company_name,
+    companyEmail: row.company_email,
+    companyPhone: row.company_phone,
+    companyAddress: row.company_address,
+    contactName: row.contact_name,
+    contactEmail: row.contact_email,
+    contactPhone: row.contact_phone,
+    status: row.status,
+    reviewedAt: toIsoTimestamp(row.reviewed_at),
+    reviewedByLabel: row.reviewed_by_label,
+    reviewNote: row.review_note,
+    approvedCompanyId: toApiId(row.approved_company_id),
+    createdAt: toIsoTimestamp(row.created_at),
+    updatedAt: toIsoTimestamp(row.updated_at)
+  };
+}
+
+function mapCompanyInvitation(row) {
+  return {
+    id: toApiId(row.id),
+    companyId: toApiId(row.company_id),
+    registrationRequestId: toApiId(row.registration_request_id),
+    email: row.email,
+    role: row.role,
+    status: row.status,
+    expiresAt: toIsoTimestamp(row.expires_at),
+    acceptedAt: toIsoTimestamp(row.accepted_at),
+    revokedAt: toIsoTimestamp(row.revoked_at),
+    createdAt: toIsoTimestamp(row.created_at),
+    createdByLabel: row.created_by_label
+  };
+}
+
+function mapCompanyUser(row) {
+  return {
+    id: toApiId(row.id),
+    companyId: toApiId(row.company_id),
+    email: row.email,
+    displayName: row.display_name,
+    role: row.role,
+    status: row.status,
+    authProvider: row.auth_provider,
+    lastLoginAt: toIsoTimestamp(row.last_login_at),
+    createdAt: toIsoTimestamp(row.created_at),
+    updatedAt: toIsoTimestamp(row.updated_at)
+  };
+}
+
+function mapMyCompany(row) {
+  const hasLogo = Boolean(row.logo_blob_path);
+  return {
+    id: toApiId(row.id),
+    name: row.name,
+    email: row.email,
+    phone: row.phone,
+    address: row.address,
+    logoUrl: hasLogo ? '/api/my-company/logo' : null,
+    logoContentType: row.logo_content_type,
+    logoUpdatedAt: toIsoTimestamp(row.logo_updated_at),
+    pointsPercentage: Number(row.points_percentage),
+    status: row.status,
+    updatedAt: toIsoTimestamp(row.updated_at)
+  };
+}
+
 async function ensureActiveCompany(companyId) {
   const sql = getSql();
   const pool = await getPool();
@@ -379,7 +447,11 @@ module.exports = {
   getBalance,
   getCompanySettings,
   listCustomers,
+  mapCompanyInvitation,
+  mapCompanyRegistrationRequest,
   mapCompanySettings,
+  mapCompanyUser,
+  mapMyCompany,
   toApiId,
   toIsoTimestamp,
   updateCompanySettings

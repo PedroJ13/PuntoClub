@@ -31,6 +31,25 @@ function mapSqlError(error) {
     return new ApiError(409, 'DUPLICATE_CUSTOMER', 'Customer phone or email already exists for this company.');
   }
 
+  if ((number === 2601 || number === 2627) && message.includes('UX_Companies_email')) {
+    return new ApiError(409, 'COMPANY_ALREADY_EXISTS', 'Company email already exists.');
+  }
+
+  if ((number === 2601 || number === 2627) && message.includes('UX_CompanyRegistrationRequests_pending_company_email')) {
+    return new ApiError(409, 'REGISTRATION_ALREADY_PENDING', 'A company registration request is already pending for this email.');
+  }
+
+  if ((number === 2601 || number === 2627) && message.includes('UX_CompanyInvitations_pending_company_email')) {
+    return new ApiError(409, 'INVITATION_ALREADY_PENDING', 'A company invitation is already pending for this email.');
+  }
+
+  if ((number === 2601 || number === 2627) && (
+    message.includes('UX_CompanyUsers_company_email') ||
+    message.includes('UX_CompanyUsers_auth_subject')
+  )) {
+    return new ApiError(409, 'COMPANY_USER_ALREADY_EXISTS', 'Company user already exists.');
+  }
+
   if (number === 50001) {
     return validationError([{ field: 'pointsRedeemed', message: 'Points redeemed must be greater than 0.' }]);
   }

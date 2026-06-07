@@ -19,6 +19,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Menu lateral publicado aprobado por QA.
 - Infra y SQL completaron preparacion de multiempresa controlado sin crear recursos ni aplicar migracion.
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
+- Contratos finales y base interna Backend/API multiempresa preparados.
 
 ### Siguiente
 
@@ -229,6 +230,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-124: Asignada a Backend API para actualizar contratos finales multiempresa controlado.
 - TASK-125: Asignada a Backend API para preparar base interna sin providers Azure reales.
 - TASK-126: Asignada a Product / Architect / Release para preparar decision de aprobaciones Azure.
+- TASK-124: Backend API completo contratos finales multiempresa en `docs/API_CONTRACTS.md`.
+- TASK-125: Backend API completo validadores, formatters y errores internos multiempresa; 40/40 tests pasaron.
+- TASK-126: Product / Architect / Release preparo decision de aprobacion Azure para piloto.
+- TASK-127: Asignada a Infra / Azure para crear recursos Azure aprobados de email/auth/logos.
+- TASK-128: Asignada a SQL DEV para aplicar migracion SQL de registro/invitaciones/usuarios.
+- TASK-129: Asignada a Backend API para implementar endpoints base de solicitudes de empresa.
 
 ## Riesgos principales
 
@@ -239,7 +246,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Actualizar contratos finales, preparar base Backend sin providers reales y cerrar aprobaciones Azure paso a paso. No implementar endpoints productivos ni crear recursos hasta aprobacion explicita.
+Crear/configurar recursos Azure aprobados, aplicar migracion SQL con prevalidaciones e implementar endpoints base de solicitudes de empresa. Mantener invitaciones/login/logo productivos fuera hasta que Infra/SQL confirmen entorno listo.
 
 ## Listo para probar
 

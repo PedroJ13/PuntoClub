@@ -105,6 +105,9 @@
 - TASK-124: Actualizar contratos finales multiempresa controlado.
 - TASK-125: Preparar implementacion base Backend multiempresa sin providers reales.
 - TASK-126: Preparar decision de aprobaciones Azure para multiempresa.
+- TASK-127: Crear recursos Azure aprobados para multiempresa piloto.
+- TASK-128: Aplicar migracion SQL de registro de empresas e invitaciones.
+- TASK-129: Implementar endpoints base de solicitudes de empresa.
 
 ## P1 pre-lanzamiento
 

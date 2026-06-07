@@ -3,6 +3,12 @@ const { validationError } = require('./errors');
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 const maxReportRangeDays = 31;
+const allowedCompanyRoles = new Set(['owner', 'admin', 'staff']);
+const allowedCompanyStatuses = new Set(['pending_activation', 'active', 'inactive']);
+const allowedRegistrationRequestStatuses = new Set(['pending', 'approved', 'rejected', 'cancelled']);
+const allowedInvitationStatuses = new Set(['pending', 'accepted', 'revoked', 'expired']);
+const allowedCompanyUserStatuses = new Set(['invited', 'active', 'disabled']);
+const allowedLogoContentTypes = new Set(['image/png', 'image/jpeg', 'image/webp']);
 
 function parsePositiveInteger(value, field) {
   const number = Number(value);
@@ -14,6 +20,35 @@ function parsePositiveInteger(value, field) {
 
 function normalizeText(value) {
   return typeof value === 'string' ? value.trim() : value;
+}
+
+function normalizeEmail(value) {
+  const email = normalizeText(value);
+  return email ? email.toLowerCase() : email;
+}
+
+function validateOptionalText(value, field, maxLength, details) {
+  const text = normalizeText(value);
+  if (text && text.length > maxLength) {
+    details.push({ field, message: `${field} must be ${maxLength} characters or fewer.` });
+  }
+  return text || null;
+}
+
+function validateRequiredText(value, field, maxLength, details) {
+  const text = normalizeText(value);
+  if (!text || text.length > maxLength) {
+    details.push({ field, message: `${field} is required and must be ${maxLength} characters or fewer.` });
+  }
+  return text;
+}
+
+function validateEmailField(value, field, details, { required = true } = {}) {
+  const email = normalizeEmail(value);
+  if ((!email && required) || (email && (email.length > 254 || !emailPattern.test(email)))) {
+    details.push({ field, message: `${field} must be a valid email and 254 characters or fewer.` });
+  }
+  return email || null;
 }
 
 function validateDate(value, field, details) {
@@ -133,6 +168,223 @@ function validateCompanySettingsPatchPayload(payload) {
     patch,
     providedFields
   };
+}
+
+function validateCompanyRegistrationRequestPayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const companyName = validateRequiredText(body.companyName, 'companyName', 160, details);
+  const companyEmail = validateEmailField(body.companyEmail, 'companyEmail', details);
+  const companyAddress = validateRequiredText(body.companyAddress, 'companyAddress', 300, details);
+  const companyPhone = validateOptionalText(body.companyPhone, 'companyPhone', 32, details);
+  const contactName = validateOptionalText(body.contactName, 'contactName', 160, details);
+  const contactEmail = validateEmailField(body.contactEmail, 'contactEmail', details);
+  const contactPhone = validateOptionalText(body.contactPhone, 'contactPhone', 32, details);
+
+  for (const forbiddenField of ['requestedLogoUrl', 'companyId', 'password']) {
+    if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
+      details.push({ field: forbiddenField, message: `${forbiddenField} is not accepted for company registration.` });
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    companyName,
+    companyEmail,
+    companyPhone,
+    companyAddress,
+    contactName,
+    contactEmail,
+    contactPhone
+  };
+}
+
+function validateCompanyRegistrationReviewPayload(payload, action) {
+  const details = [];
+  const body = payload || {};
+  const reviewNote = validateOptionalText(body.reviewNote, 'reviewNote', 500, details);
+  const pointsPercentageProvided = Object.prototype.hasOwnProperty.call(body, 'pointsPercentage');
+  const pointsPercentage = pointsPercentageProvided ? Number(body.pointsPercentage) : undefined;
+
+  if (action === 'reject' && !reviewNote) {
+    details.push({ field: 'reviewNote', message: 'reviewNote is required when rejecting a company registration request.' });
+  }
+
+  if (pointsPercentageProvided && (!Number.isFinite(pointsPercentage) || pointsPercentage <= 0 || pointsPercentage > 100)) {
+    details.push({ field: 'pointsPercentage', message: 'pointsPercentage must be greater than 0 and less than or equal to 100.' });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    reviewNote,
+    pointsPercentage: pointsPercentageProvided ? pointsPercentage : undefined
+  };
+}
+
+function validateCompanyRole(value, field = 'role') {
+  const role = normalizeText(value || 'owner');
+  if (!allowedCompanyRoles.has(role)) {
+    throw validationError([{ field, message: `${field} must be one of owner, admin, staff.` }]);
+  }
+  return role;
+}
+
+function validateCompanyInvitationPayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const companyId = Number(body.companyId);
+  const registrationRequestId = Object.prototype.hasOwnProperty.call(body, 'registrationRequestId')
+    ? Number(body.registrationRequestId)
+    : null;
+  const email = validateEmailField(body.email, 'email', details);
+  const role = normalizeText(body.role || 'owner');
+
+  if (!Number.isInteger(companyId) || companyId <= 0) {
+    details.push({ field: 'companyId', message: 'companyId must be a positive integer.' });
+  }
+
+  if (registrationRequestId != null && (!Number.isInteger(registrationRequestId) || registrationRequestId <= 0)) {
+    details.push({ field: 'registrationRequestId', message: 'registrationRequestId must be a positive integer.' });
+  }
+
+  if (!allowedCompanyRoles.has(role)) {
+    details.push({ field: 'role', message: 'role must be one of owner, admin, staff.' });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    companyId,
+    registrationRequestId,
+    email,
+    role
+  };
+}
+
+function validateInvitationAcceptPayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const token = validateRequiredText(body.token, 'token', 2048, details);
+  const displayName = validateOptionalText(body.displayName, 'displayName', 160, details);
+
+  for (const forbiddenField of ['password', 'externalSubject']) {
+    if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
+      details.push({ field: forbiddenField, message: `${forbiddenField} must not be sent by the frontend.` });
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    token,
+    displayName
+  };
+}
+
+function validateMyCompanyPatchPayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const allowedFields = ['name', 'phone', 'address', 'pointsPercentage'];
+  const patch = {};
+  const providedFields = allowedFields.filter((field) => Object.prototype.hasOwnProperty.call(body, field));
+
+  if (!providedFields.length) {
+    details.push({ field: 'body', message: 'At least one editable company field must be provided.' });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, 'name')) {
+    patch.name = validateRequiredText(body.name, 'name', 160, details);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, 'phone')) {
+    patch.phone = validateOptionalText(body.phone, 'phone', 32, details);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, 'address')) {
+    patch.address = validateRequiredText(body.address, 'address', 300, details);
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, 'pointsPercentage')) {
+    const pointsPercentage = Number(body.pointsPercentage);
+    if (!Number.isFinite(pointsPercentage) || pointsPercentage <= 0 || pointsPercentage > 100) {
+      details.push({ field: 'pointsPercentage', message: 'pointsPercentage must be greater than 0 and less than or equal to 100.' });
+    } else {
+      patch.pointsPercentage = pointsPercentage;
+    }
+  }
+
+  for (const forbiddenField of ['email', 'status', 'logoUrl', 'logoBlobPath', 'companyId']) {
+    if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
+      details.push({ field: forbiddenField, message: `${forbiddenField} is not editable through my-company.` });
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    patch,
+    providedFields
+  };
+}
+
+function validateLogoFileMetadata(file, options = {}) {
+  const details = [];
+  const maxBytes = Number(options.maxBytes || process.env.LOGO_MAX_BYTES || 1048576);
+  const contentType = normalizeText(file && file.contentType);
+  const size = Number(file && file.size);
+  const filename = normalizeText(file && file.filename);
+
+  if (!contentType || !allowedLogoContentTypes.has(contentType)) {
+    details.push({ field: 'file', message: 'Logo must be a PNG, JPEG, or WebP image.' });
+  }
+
+  if (!Number.isInteger(size) || size <= 0) {
+    details.push({ field: 'file', message: 'Logo file size must be provided.' });
+  } else if (Number.isFinite(maxBytes) && size > maxBytes) {
+    details.push({ field: 'file', message: 'Logo file exceeds the allowed size.' });
+  }
+
+  if (filename && filename.toLowerCase().endsWith('.svg')) {
+    details.push({ field: 'file', message: 'SVG logos are not allowed.' });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    contentType,
+    size,
+    filename: filename || null
+  };
+}
+
+function isAllowedCompanyStatus(status) {
+  return allowedCompanyStatuses.has(status);
+}
+
+function isAllowedRegistrationRequestStatus(status) {
+  return allowedRegistrationRequestStatuses.has(status);
+}
+
+function isAllowedInvitationStatus(status) {
+  return allowedInvitationStatuses.has(status);
+}
+
+function isAllowedCompanyUserStatus(status) {
+  return allowedCompanyUserStatuses.has(status);
 }
 
 function validatePurchasePayload(payload) {
@@ -283,11 +535,23 @@ function calculatePointsEarned(amount, pointsPercentage) {
 
 module.exports = {
   calculatePointsEarned,
+  isAllowedCompanyStatus,
+  isAllowedCompanyUserStatus,
+  isAllowedInvitationStatus,
+  isAllowedRegistrationRequestStatus,
+  normalizeEmail,
   parsePositiveInteger,
   validateAuditEventsQuery,
   validateActivityReportQuery,
   validateCompanySettingsPatchPayload,
+  validateCompanyInvitationPayload,
+  validateCompanyRegistrationRequestPayload,
+  validateCompanyRegistrationReviewPayload,
+  validateCompanyRole,
   validateCustomerPayload,
+  validateInvitationAcceptPayload,
+  validateLogoFileMetadata,
+  validateMyCompanyPatchPayload,
   validatePurchasePayload,
   validateRedemptionPayload
 };
