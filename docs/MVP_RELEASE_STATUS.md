@@ -16,6 +16,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 - Fase de release: configuracion de empresa piloto aprobada.
 - Nueva direccion explicita: reabrir camino a registro de empresas con menu lateral, invitacion por correo, password/acceso por empresa, logo upload y notificacion interna.
+- Menu lateral publicado aprobado por QA.
 
 ### Siguiente
 
@@ -216,6 +217,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-119: Product / Architect / Release decidio avanzar a multiempresa controlado con ACS Email, Entra External ID y Blob Storage privado; SaaS completo sigue diferido.
 - TASK-120: Liberada a Infra / Azure para preparar habilitacion Azure de email, auth y logos sin crear recursos sin aprobacion.
 - TASK-121: Liberada a SQL DEV para preparar migracion versionada de registro/invitaciones/usuarios sin aplicarla.
+- TASK-118: QA aprobo menu lateral publicado; Operaciones, Mi empresa, Reportes, Caja, Reporte, Auditoria y responsive sin P0/P1/P2/P3 nuevos.
 
 ## Riesgos principales
 
@@ -226,7 +228,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Validar menu lateral publicado con QA y preparar habilitacion controlada de Infra/SQL para multiempresa. No implementar endpoints reales de registro/invitacion hasta tener recursos aprobados y migracion revisada.
+Preparar habilitacion controlada de Infra/SQL para multiempresa. No implementar endpoints reales de registro/invitacion hasta tener recursos aprobados y migracion revisada.
 
 ## Listo para probar
 
@@ -246,5 +248,6 @@ Validar menu lateral publicado con QA y preparar habilitacion controlada de Infr
 - Reporte operativo basico + export CSV: aprobado publicado por QA en TASK-096.
 - Auditoria operativa publicada: aprobada por QA en TASK-105.
 - Configuracion de empresa piloto: aprobada por QA en TASK-110.
+- Menu lateral publicado con Operaciones, Mi empresa y Reportes: aprobado por QA en TASK-118.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
