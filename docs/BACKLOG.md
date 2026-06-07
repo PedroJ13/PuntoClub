@@ -106,8 +106,8 @@
 
 ## P2 recomendable
 
-- Reporte simple de actividad por cliente. En progreso con TASK-096.
-- Exportacion CSV basica. En progreso con TASK-096.
+- Reporte simple de actividad por cliente. Completado en TASK-096 para reporte operativo basico.
+- Exportacion CSV basica. Completado en TASK-096.
 - Auditoria simple de operaciones criticas.
 
 ## Post-MVP

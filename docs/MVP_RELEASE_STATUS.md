@@ -19,7 +19,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Siguiente
 
 - Esperar deploy de API y frontend con TASK-093/TASK-094.
-- Revalidar reporte operativo publicado con TASK-096.
+- Continuar con la siguiente fase operativa despues de reporte basico aprobado.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -152,6 +152,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-094: Web Dev implemento pantalla de reporte y export CSV localmente; pendiente deploy publicado.
 - TASK-095: QA no aprobo porque API/frontend publicados aun no tenian reporte.
 - TASK-096: Asignada a QA para revalidar reporte operativo publicado despues del deploy.
+- TASK-096: QA aprobo reporte operativo publicado, export CSV, validaciones API, responsive y regresion de caja; sin P0/P1.
 
 ## Riesgos principales
 
@@ -162,7 +163,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Desplegar cambios de TASK-093/TASK-094 y ejecutar TASK-096.
+Definir siguiente fase operativa; UX/colores siguen diferidos hasta cerrar funcionamiento base.
 
 ## Listo para probar
 
@@ -179,6 +180,6 @@ Desplegar cambios de TASK-093/TASK-094 y ejecutar TASK-096.
 - Backlog post-piloto: estructura preparada en `docs/POST_PILOT_BACKLOG.md`.
 - Guion piloto: preparado en TASK-086.
 - Smoke pre-sesion: aprobado por QA en TASK-087.
-- Siguiente programacion: reporte operativo basico implementado localmente en TASK-092 a TASK-094; pendiente revalidacion publicada en TASK-096.
+- Reporte operativo basico + export CSV: aprobado publicado por QA en TASK-096.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
