@@ -2,6 +2,7 @@ const { validationError } = require('./errors');
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
+const maxReportRangeDays = 31;
 
 function parsePositiveInteger(value, field) {
   const number = Number(value);
@@ -19,6 +20,19 @@ function validateDate(value, field, details) {
   if (typeof value !== 'string' || !isoDatePattern.test(value)) {
     details.push({ field, message: `${field} must use YYYY-MM-DD format.` });
   }
+}
+
+function parseIsoDate(value) {
+  if (typeof value !== 'string' || !isoDatePattern.test(value)) {
+    return null;
+  }
+
+  const date = new Date(`${value}T00:00:00Z`);
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+    return null;
+  }
+
+  return date;
 }
 
 function validateCustomerPayload(payload) {
@@ -106,6 +120,45 @@ function validateRedemptionPayload(payload) {
   return { customerId, redemptionDate, pointsRedeemed, note: note || null };
 }
 
+function validateActivityReportQuery(query) {
+  const details = [];
+  const from = query.get('from');
+  const to = query.get('to');
+  const type = query.get('type') || 'all';
+  const allowedTypes = new Set(['all', 'purchase', 'redemption']);
+  const fromDate = parseIsoDate(from);
+  const toDate = parseIsoDate(to);
+
+  if (!fromDate) {
+    details.push({ field: 'from', message: 'from is required and must use YYYY-MM-DD format.' });
+  }
+
+  if (!toDate) {
+    details.push({ field: 'to', message: 'to is required and must use YYYY-MM-DD format.' });
+  }
+
+  if (!allowedTypes.has(type)) {
+    details.push({ field: 'type', message: 'type must be one of all, purchase, redemption.' });
+  }
+
+  if (fromDate && toDate) {
+    if (fromDate > toDate) {
+      details.push({ field: 'from', message: 'from must be before or equal to to.' });
+    } else {
+      const rangeDays = ((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
+      if (rangeDays > maxReportRangeDays) {
+        details.push({ field: 'to', message: `Date range must be ${maxReportRangeDays} days or fewer.` });
+      }
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { from, to, type };
+}
+
 function calculatePointsEarned(amount, pointsPercentage) {
   const points = Math.round(Number(amount) * Number(pointsPercentage) / 100);
   if (!Number.isInteger(points) || points <= 0) {
@@ -117,6 +170,7 @@ function calculatePointsEarned(amount, pointsPercentage) {
 module.exports = {
   calculatePointsEarned,
   parsePositiveInteger,
+  validateActivityReportQuery,
   validateCustomerPayload,
   validatePurchasePayload,
   validateRedemptionPayload

@@ -71,6 +71,13 @@ async function route(request, response) {
     return send(response, 200, settings);
   }
 
+  if (request.method === 'GET' && segments.length === 4 && segments[2] === 'reports' && segments[3] === 'activity') {
+    const { validateActivityReportQuery } = require('../src/lib/validators');
+    const filters = validateActivityReportQuery(url.searchParams);
+    const report = await repository.getActivityReport(companyId, filters);
+    return send(response, 200, report);
+  }
+
   if (request.method === 'GET' && segments.length === 3 && segments[2] === 'customers') {
     const items = await repository.listCustomers(companyId, url.searchParams.get('search'));
     return send(response, 200, { items });

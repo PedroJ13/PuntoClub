@@ -3,10 +3,15 @@ const assert = require('node:assert/strict');
 
 const {
   calculatePointsEarned,
+  validateActivityReportQuery,
   validateCustomerPayload,
   validatePurchasePayload,
   validateRedemptionPayload
 } = require('../src/lib/validators');
+
+function query(values) {
+  return new URLSearchParams(values);
+}
 
 test('calculatePointsEarned rounds server-side', () => {
   assert.equal(calculatePointsEarned(25000, 5), 1250);
@@ -40,6 +45,32 @@ test('redemption payload requires positive integer points', () => {
       redemptionDate: '2026-06-02',
       pointsRedeemed: 0
     }),
+    /One or more fields are invalid/
+  );
+});
+
+test('activity report query defaults type to all', () => {
+  assert.deepEqual(
+    validateActivityReportQuery(query({ from: '2026-06-01', to: '2026-06-07' })),
+    { from: '2026-06-01', to: '2026-06-07', type: 'all' }
+  );
+});
+
+test('activity report query validates type', () => {
+  assert.throws(
+    () => validateActivityReportQuery(query({ from: '2026-06-01', to: '2026-06-07', type: 'refund' })),
+    /One or more fields are invalid/
+  );
+});
+
+test('activity report query validates date order and max range', () => {
+  assert.throws(
+    () => validateActivityReportQuery(query({ from: '2026-06-07', to: '2026-06-01' })),
+    /One or more fields are invalid/
+  );
+
+  assert.throws(
+    () => validateActivityReportQuery(query({ from: '2026-06-01', to: '2026-07-02' })),
     /One or more fields are invalid/
   );
 });

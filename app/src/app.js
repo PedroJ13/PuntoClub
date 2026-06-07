@@ -49,15 +49,30 @@ const elements = {
   redemptionError: document.querySelector("#redemption-error"),
   saveRedemptionButton: document.querySelector("#save-redemption-button"),
   resetRedemptionButton: document.querySelector("#reset-redemption-button"),
+  reportForm: document.querySelector("#report-form"),
+  reportFromInput: document.querySelector("#report-from"),
+  reportToInput: document.querySelector("#report-to"),
+  reportTypeInput: document.querySelector("#report-type"),
+  reportError: document.querySelector("#report-error"),
+  reportStatus: document.querySelector("#report-status"),
+  reportSummary: document.querySelector("#report-summary"),
+  reportEmpty: document.querySelector("#report-empty"),
+  reportTableWrap: document.querySelector("#report-table-wrap"),
+  reportTableBody: document.querySelector("#report-table-body"),
+  loadReportButton: document.querySelector("#load-report-button"),
+  exportReportButton: document.querySelector("#export-report-button"),
 };
 
 let currentCustomers = [];
 let selectedCustomer = null;
+let currentReport = null;
 const customerBalances = new Map();
 
 elements.dataSourceStatus.textContent = api.sourceLabel;
 elements.purchaseDateInput.value = getToday();
 elements.redemptionDateInput.value = getToday();
+elements.reportFromInput.value = getToday();
+elements.reportToInput.value = getToday();
 
 elements.searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -100,8 +115,18 @@ elements.resetRedemptionButton.addEventListener("click", () => {
   clearRedemptionForm({ keepStatus: true });
 });
 
+elements.reportForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await loadActivityReport();
+});
+
+elements.exportReportButton.addEventListener("click", () => {
+  exportReportCsv();
+});
+
 renderSearchPrompt();
 resetOperation();
+renderReportPrompt();
 elements.searchInput.focus();
 
 async function loadCustomers(search) {
@@ -468,6 +493,40 @@ async function loadCustomerActivity() {
   }
 }
 
+async function loadActivityReport() {
+  const filters = {
+    from: elements.reportFromInput.value,
+    to: elements.reportToInput.value,
+    type: elements.reportTypeInput.value,
+  };
+
+  clearReportMessages();
+
+  if (!filters.from || !filters.to) {
+    showReportError("Seleccione fecha desde y fecha hasta.");
+    return;
+  }
+
+  if (filters.from > filters.to) {
+    showReportError("La fecha hasta debe ser igual o posterior a fecha desde.");
+    return;
+  }
+
+  setReportSubmitting(true);
+  renderReportLoading();
+
+  try {
+    const report = await api.getActivityReport(filters);
+    currentReport = report;
+    renderReport(report);
+  } catch (error) {
+    currentReport = null;
+    renderReportError(error);
+  } finally {
+    setReportSubmitting(false);
+  }
+}
+
 function renderSelectedCustomer() {
   if (!selectedCustomer) {
     elements.selectedCustomerCard.hidden = true;
@@ -548,6 +607,115 @@ function renderHistoryError(error) {
   elements.historyList.innerHTML = "";
   elements.historyError.hidden = false;
   elements.historyError.textContent = message;
+}
+
+function renderReportPrompt() {
+  currentReport = null;
+  elements.reportSummary.hidden = true;
+  elements.reportSummary.innerHTML = "";
+  elements.reportTableWrap.hidden = true;
+  elements.reportTableBody.innerHTML = "";
+  elements.reportEmpty.hidden = false;
+  elements.reportEmpty.textContent = "Consulte un rango de fechas para ver la actividad.";
+  elements.exportReportButton.disabled = true;
+}
+
+function renderReportLoading() {
+  elements.reportSummary.hidden = true;
+  elements.reportTableWrap.hidden = true;
+  elements.reportEmpty.hidden = false;
+  elements.reportEmpty.textContent = "Cargando reporte...";
+  elements.exportReportButton.disabled = true;
+}
+
+function renderReport(report) {
+  const items = Array.isArray(report.items) ? report.items : [];
+  const summary = report.summary ?? {};
+
+  elements.reportSummary.hidden = false;
+  elements.reportSummary.innerHTML = `
+    <div>
+      <span>Compras</span>
+      <strong>${formatReportNumber(summary.purchaseCount)}</strong>
+    </div>
+    <div>
+      <span>Monto total</span>
+      <strong>${formatMoney(summary.purchaseAmountTotal)}</strong>
+    </div>
+    <div>
+      <span>Pts. ganados</span>
+      <strong>${formatReportNumber(summary.pointsEarnedTotal)}</strong>
+    </div>
+    <div>
+      <span>Redenciones</span>
+      <strong>${formatReportNumber(summary.redemptionCount)}</strong>
+    </div>
+    <div>
+      <span>Pts. redimidos</span>
+      <strong>${formatReportNumber(summary.pointsRedeemedTotal)}</strong>
+    </div>
+    <div>
+      <span>Clientes activos</span>
+      <strong>${formatReportNumber(summary.activeCustomerCount)}</strong>
+    </div>
+  `;
+
+  if (items.length === 0) {
+    elements.reportEmpty.hidden = false;
+    elements.reportEmpty.textContent = "Sin movimientos para el rango seleccionado.";
+    elements.reportTableWrap.hidden = true;
+    elements.reportTableBody.innerHTML = "";
+    elements.exportReportButton.disabled = true;
+    return;
+  }
+
+  elements.reportEmpty.hidden = true;
+  elements.reportTableWrap.hidden = false;
+  elements.reportTableBody.innerHTML = items.map((item) => renderReportRow(item)).join("");
+  elements.exportReportButton.disabled = false;
+  showReportStatus(`Reporte cargado: ${formatReportNumber(items.length)} movimientos.`);
+}
+
+function renderReportRow(item) {
+  return `
+    <tr>
+      <td>${formatDate(item.date)}</td>
+      <td>${getReportTypeLabel(item.type)}</td>
+      <td>
+        <strong>${escapeHtml(item.customerName || "Cliente sin nombre")}</strong>
+        <span>${escapeHtml(item.customerPhone || item.customerEmail || "Sin contacto")}</span>
+      </td>
+      <td>${renderReportDetail(item)}</td>
+      <td class="${Number(item.points ?? 0) >= 0 ? "points-positive" : "points-negative"}">
+        ${formatSignedPoints(item.points ?? 0)}
+      </td>
+    </tr>
+  `;
+}
+
+function renderReportDetail(item) {
+  if (item.type === "purchase") {
+    const invoice = item.invoiceNumber ? `Factura ${item.invoiceNumber}` : "Compra sin comprobante";
+    return `${escapeHtml(invoice)}<span>${formatMoney(item.amount)}</span>`;
+  }
+
+  return escapeHtml(item.note || "Sin nota");
+}
+
+function renderReportError(error) {
+  elements.reportSummary.hidden = true;
+  elements.reportTableWrap.hidden = true;
+  elements.reportTableBody.innerHTML = "";
+  elements.reportEmpty.hidden = false;
+  elements.reportEmpty.textContent = "No hay reporte cargado.";
+  elements.exportReportButton.disabled = true;
+
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    showReportError("Revise el rango de fechas y el tipo de reporte.");
+    return;
+  }
+
+  showReportError("No se pudo cargar el reporte. Intente de nuevo.");
 }
 
 function renderCustomersError(error) {
@@ -710,6 +878,16 @@ function showOperationStatus(message) {
   elements.operationStatus.textContent = message;
 }
 
+function showReportStatus(message) {
+  elements.reportStatus.hidden = false;
+  elements.reportStatus.textContent = message;
+}
+
+function showReportError(message) {
+  elements.reportError.hidden = false;
+  elements.reportError.textContent = message;
+}
+
 function clearForm(options = {}) {
   elements.form.reset();
   clearFormMessages(options);
@@ -768,6 +946,13 @@ function clearOperationMessages() {
   clearHistoryMessages();
 }
 
+function clearReportMessages() {
+  elements.reportError.hidden = true;
+  elements.reportError.textContent = "";
+  elements.reportStatus.hidden = true;
+  elements.reportStatus.textContent = "";
+}
+
 function setSubmitting(isSubmitting) {
   elements.saveButton.disabled = isSubmitting;
   elements.saveButton.textContent = isSubmitting ? "Registrando..." : "Registrar cliente";
@@ -781,6 +966,11 @@ function setPurchaseSubmitting(isSubmitting) {
 function setRedemptionSubmitting(isSubmitting) {
   elements.saveRedemptionButton.disabled = isSubmitting;
   elements.saveRedemptionButton.textContent = isSubmitting ? "Redimiendo..." : "Confirmar canje";
+}
+
+function setReportSubmitting(isSubmitting) {
+  elements.loadReportButton.disabled = isSubmitting;
+  elements.loadReportButton.textContent = isSubmitting ? "Consultando..." : "Consultar";
 }
 
 function getBalanceValue(balance) {
@@ -821,6 +1011,14 @@ function formatBalancePart(balance, key) {
   }
 
   return formatPoints(balance[key]);
+}
+
+function formatReportNumber(value) {
+  if (value == null || !Number.isFinite(Number(value))) {
+    return "0";
+  }
+
+  return formatPoints(value);
 }
 
 function formatPoints(value) {
@@ -870,6 +1068,60 @@ function getOperationTitle(type) {
   };
 
   return titles[type] ?? "Operacion";
+}
+
+function getReportTypeLabel(type) {
+  return type === "purchase" ? "Compra" : "Redencion";
+}
+
+function exportReportCsv() {
+  if (!currentReport || !Array.isArray(currentReport.items) || currentReport.items.length === 0) {
+    showReportError("Consulte un reporte con movimientos antes de exportar.");
+    return;
+  }
+
+  const csv = buildReportCsv(currentReport);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `punto-club-reporte-${currentReport.from}-${currentReport.to}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showReportStatus("CSV exportado desde los datos cargados.");
+}
+
+function buildReportCsv(report) {
+  const rows = [
+    ["fecha", "tipo", "cliente", "telefono", "email", "detalle", "monto", "puntos"],
+    ...report.items.map((item) => [
+      item.date || "",
+      getReportTypeLabel(item.type),
+      item.customerName || "",
+      item.customerPhone || "",
+      item.customerEmail || "",
+      getReportCsvDetail(item),
+      item.type === "purchase" ? Number(item.amount ?? 0) : "",
+      Number(item.points ?? 0),
+    ]),
+  ];
+
+  return rows.map((row) => row.map(escapeCsvValue).join(",")).join("\r\n");
+}
+
+function getReportCsvDetail(item) {
+  if (item.type === "purchase") {
+    return item.invoiceNumber ? `Factura ${item.invoiceNumber}` : "Compra sin comprobante";
+  }
+
+  return item.note || "Sin nota";
+}
+
+function escapeCsvValue(value) {
+  const text = String(value ?? "");
+  return `"${text.replaceAll('"', '""')}"`;
 }
 
 function clearHistoryMessages() {

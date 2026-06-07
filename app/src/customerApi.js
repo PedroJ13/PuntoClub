@@ -56,6 +56,10 @@ function createHttpCustomerApi(config) {
   const customersUrl = buildApiUrl(config, `/api/companies/${config.companyId}/customers`);
   const purchasesUrl = buildApiUrl(config, `/api/companies/${config.companyId}/purchases`);
   const redemptionsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/redemptions`);
+  const reportsActivityUrl = buildApiUrl(
+    config,
+    `/api/companies/${config.companyId}/reports/activity`,
+  );
 
   return {
     sourceLabel: "API real",
@@ -90,6 +94,14 @@ function createHttpCustomerApi(config) {
         config,
         `/api/companies/${config.companyId}/customers/${customerId}/activity`,
       );
+      const response = await fetch(url);
+      return parseResponse(response);
+    },
+    async getActivityReport(filters) {
+      const url = new URL(reportsActivityUrl, window.location.origin);
+      url.searchParams.set("from", filters.from);
+      url.searchParams.set("to", filters.to);
+      url.searchParams.set("type", filters.type || "all");
       const response = await fetch(url);
       return parseResponse(response);
     },
@@ -299,6 +311,35 @@ function createMockCustomerApi() {
         items: mockActivity.get(String(customerId)) ?? [],
       };
     },
+    async getActivityReport(filters) {
+      await wait(350);
+      validateReportFilters(filters);
+
+      const type = filters.type || "all";
+      const items = mockCustomers.flatMap((customer) =>
+        (mockActivity.get(String(customer.id)) ?? []).map((item) =>
+          normalizeReportItem(customer, item),
+        ),
+      );
+      const filteredItems = items
+        .filter((item) => item.date >= filters.from && item.date <= filters.to)
+        .filter((item) => type === "all" || item.type === type)
+        .sort((left, right) => {
+          if (left.date === right.date) {
+            return Number(right.id) - Number(left.id);
+          }
+
+          return right.date.localeCompare(left.date);
+        });
+
+      return {
+        from: filters.from,
+        to: filters.to,
+        type,
+        summary: buildReportSummary(filteredItems),
+        items: filteredItems,
+      };
+    },
   };
 }
 
@@ -385,6 +426,82 @@ function validateRedemption(payload) {
   if (details.length > 0) {
     throw new ApiError("VALIDATION_ERROR", "Revise los campos marcados.", details);
   }
+}
+
+function validateReportFilters(filters) {
+  const details = [];
+  const from = String(filters.from ?? "").trim();
+  const to = String(filters.to ?? "").trim();
+  const type = String(filters.type ?? "all").trim();
+
+  if (!isDateOnly(from)) {
+    details.push({ field: "from", message: "La fecha desde es requerida." });
+  }
+
+  if (!isDateOnly(to)) {
+    details.push({ field: "to", message: "La fecha hasta es requerida." });
+  }
+
+  if (from && to && from > to) {
+    details.push({ field: "to", message: "La fecha hasta debe ser igual o posterior a desde." });
+  }
+
+  if (!["all", "purchase", "redemption"].includes(type)) {
+    details.push({ field: "type", message: "El tipo de reporte no es valido." });
+  }
+
+  if (details.length > 0) {
+    throw new ApiError("VALIDATION_ERROR", "Revise los filtros del reporte.", details);
+  }
+}
+
+function normalizeReportItem(customer, item) {
+  return {
+    ...item,
+    customerId: String(customer.id),
+    customerName: customer.name,
+    customerPhone: customer.phone,
+    customerEmail: customer.email,
+  };
+}
+
+function buildReportSummary(items) {
+  const activeCustomers = new Set(items.map((item) => String(item.customerId)));
+
+  return items.reduce(
+    (summary, item) => {
+      if (item.type === "purchase") {
+        summary.purchaseCount += 1;
+        summary.purchaseAmountTotal += Number(item.amount ?? 0);
+        summary.pointsEarnedTotal += Number(item.points ?? 0);
+      }
+
+      if (item.type === "redemption") {
+        summary.redemptionCount += 1;
+        summary.pointsRedeemedTotal += Math.abs(Number(item.points ?? 0));
+      }
+
+      summary.activeCustomerCount = activeCustomers.size;
+      return summary;
+    },
+    {
+      purchaseCount: 0,
+      purchaseAmountTotal: 0,
+      pointsEarnedTotal: 0,
+      redemptionCount: 0,
+      pointsRedeemedTotal: 0,
+      activeCustomerCount: 0,
+    },
+  );
+}
+
+function isDateOnly(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    return false;
+  }
+
+  const date = new Date(`${value}T00:00:00`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
 }
 
 function normalize(value) {

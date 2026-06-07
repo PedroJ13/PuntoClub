@@ -320,6 +320,73 @@ Validaciones:
 - No mezclar actividad entre empresas.
 - Orden sugerido: fecha descendente y luego `createdAt`/`id` descendente.
 
+## Operational reports
+
+### GET `/api/companies/{companyId}/reports/activity?from=YYYY-MM-DD&to=YYYY-MM-DD&type=all|purchase|redemption`
+
+Devuelve reporte operativo de compras/redenciones por rango de fechas.
+
+Query params:
+
+- `from` requerido, formato `YYYY-MM-DD`.
+- `to` requerido, formato `YYYY-MM-DD`.
+- `type` opcional, default `all`; valores permitidos: `all`, `purchase`, `redemption`.
+- Rango maximo inicial: 31 dias.
+
+Respuesta `200`:
+
+```json
+{
+  "from": "2026-06-01",
+  "to": "2026-06-07",
+  "type": "all",
+  "summary": {
+    "purchaseCount": 10,
+    "purchaseAmountTotal": 50000,
+    "pointsEarnedTotal": 2500,
+    "redemptionCount": 4,
+    "pointsRedeemedTotal": 600,
+    "activeCustomerCount": 8
+  },
+  "items": [
+    {
+      "type": "purchase",
+      "id": "50",
+      "date": "2026-06-06",
+      "customerId": "10",
+      "customerName": "Maria Soto",
+      "customerPhone": "+50688887777",
+      "customerEmail": "maria@example.com",
+      "invoiceNumber": "FAC-1001",
+      "amount": 25000,
+      "points": 1250
+    },
+    {
+      "type": "redemption",
+      "id": "70",
+      "date": "2026-06-06",
+      "customerId": "10",
+      "customerName": "Maria Soto",
+      "customerPhone": "+50688887777",
+      "customerEmail": "maria@example.com",
+      "points": -500
+    }
+  ]
+}
+```
+
+Validaciones:
+
+- `companyId` debe coincidir con `PILOT_COMPANY_ID`.
+- `from <= to`.
+- `from` y `to` deben ser fechas reales en formato `YYYY-MM-DD`.
+- `type` debe ser `all`, `purchase` o `redemption`.
+
+Errores esperados:
+
+- `404 COMPANY_NOT_FOUND`.
+- `400 VALIDATION_ERROR`.
+
 ## Validaciones que dependen de SQL
 
 - Empresa autorizada para MVP: `companyId` del path coincide con `PILOT_COMPANY_ID` configurado server-side.

@@ -31,6 +31,7 @@ body {
 
 button,
 input,
+select,
 textarea {
   font: inherit;
 }
@@ -56,6 +57,7 @@ button:disabled {
 }
 
 input,
+select,
 textarea {
   width: 100%;
   border: 1px solid var(--line);
@@ -69,12 +71,17 @@ input {
   min-height: 40px;
 }
 
+select {
+  min-height: 40px;
+}
+
 textarea {
   min-height: 76px;
   resize: vertical;
 }
 
 input:focus,
+select:focus,
 textarea:focus {
   outline: 3px solid rgba(15, 118, 110, 0.18);
   border-color: var(--accent);
@@ -92,6 +99,12 @@ textarea:focus {
   justify-content: space-between;
   gap: 16px;
   padding: 4px 0 14px;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .topbar h1,
@@ -124,13 +137,32 @@ textarea:focus {
   font-weight: 800;
 }
 
+.secondary-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 11px;
+  background: #ffffff;
+  color: var(--text);
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.secondary-link:hover {
+  background: var(--surface-strong);
+}
+
 .workspace {
   display: grid;
   grid-template-columns: minmax(420px, 1fr) minmax(300px, 0.58fr);
   grid-template-areas:
     "search register"
     "results register"
-    "operation operation";
+    "operation operation"
+    "report report";
   gap: 14px;
   align-items: start;
 }
@@ -152,7 +184,12 @@ textarea:focus {
   grid-area: operation;
 }
 
+.report-panel {
+  grid-area: report;
+}
+
 .zone-card {
+  min-width: 0;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: var(--surface);
@@ -225,7 +262,8 @@ textarea:focus {
 
 .customer-form,
 .purchase-form,
-.redemption-form {
+.redemption-form,
+.report-form {
   display: grid;
   gap: 12px;
 }
@@ -237,7 +275,9 @@ textarea:focus {
 .success-message[hidden],
 .form-error[hidden],
 .feedback[hidden],
-.empty-state[hidden] {
+.empty-state[hidden],
+.report-summary[hidden],
+.report-table-wrap[hidden] {
   display: none;
 }
 
@@ -469,6 +509,92 @@ textarea:focus {
   color: var(--error);
 }
 
+.report-controls {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(180px, 0.48fr);
+}
+
+.report-summary {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.report-summary div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--surface-strong);
+}
+
+.report-summary span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.report-summary strong {
+  display: block;
+  margin-top: 2px;
+  font-size: 1rem;
+}
+
+.report-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.report-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.report-table th,
+.report-table td {
+  border-bottom: 1px solid var(--line);
+  padding: 10px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.report-table th {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.report-table td {
+  font-size: 0.9rem;
+}
+
+.report-table td strong,
+.report-table td span {
+  display: block;
+}
+
+.report-table td span {
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+.points-positive {
+  color: var(--success);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.points-negative {
+  color: var(--error);
+  font-weight: 900;
+  white-space: nowrap;
+}
+
 .empty-state,
 .loading-state {
   color: var(--muted);
@@ -486,13 +612,19 @@ textarea:focus {
     flex-direction: column;
   }
 
+  .topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
   .workspace {
     grid-template-columns: 1fr;
     grid-template-areas:
       "search"
       "results"
       "register"
-      "operation";
+      "operation"
+      "report";
   }
 
   .customers-list {
@@ -531,6 +663,8 @@ textarea:focus {
   }
 
   .history-summary,
+  .report-controls,
+  .report-summary,
   .history-row {
     grid-template-columns: 1fr;
   }

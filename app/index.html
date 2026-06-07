@@ -13,7 +13,10 @@
           <p class="eyebrow">Empresa piloto</p>
           <h1>Punto Club</h1>
         </div>
-        <div class="status-pill" id="data-source-status">Mock local</div>
+        <div class="topbar-actions">
+          <a class="secondary-link" href="#report-title">Reporte</a>
+          <div class="status-pill" id="data-source-status">Mock local</div>
+        </div>
       </header>
 
       <main class="workspace" aria-live="polite">
@@ -167,6 +170,66 @@
               <button id="save-redemption-button" type="submit">Confirmar canje</button>
             </div>
           </form>
+        </section>
+
+        <section id="report-panel" class="report-panel zone-card" aria-labelledby="report-title">
+          <div class="section-header">
+            <div>
+              <h2 id="report-title">Reporte de actividad</h2>
+            </div>
+          </div>
+
+          <form id="report-form" class="report-form" novalidate>
+            <div class="field-grid report-controls">
+              <div class="field">
+                <label for="report-from">Fecha desde</label>
+                <input id="report-from" name="from" type="date" />
+              </div>
+
+              <div class="field">
+                <label for="report-to">Fecha hasta</label>
+                <input id="report-to" name="to" type="date" />
+              </div>
+
+              <div class="field">
+                <label for="report-type">Tipo</label>
+                <select id="report-type" name="type">
+                  <option value="all">Todas</option>
+                  <option value="purchase">Compras</option>
+                  <option value="redemption">Redenciones</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="report-error" class="form-error" hidden></div>
+
+            <div class="form-actions">
+              <button class="secondary-button" id="export-report-button" type="button" disabled>
+                Exportar CSV
+              </button>
+              <button id="load-report-button" type="submit">Consultar</button>
+            </div>
+          </form>
+
+          <div id="report-status" class="success-message" hidden></div>
+          <div id="report-summary" class="report-summary" hidden></div>
+          <div id="report-empty" class="empty-state">
+            Consulte un rango de fechas para ver la actividad.
+          </div>
+          <div id="report-table-wrap" class="report-table-wrap" hidden>
+            <table class="report-table">
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Tipo</th>
+                  <th>Cliente</th>
+                  <th>Detalle</th>
+                  <th>Puntos</th>
+                </tr>
+              </thead>
+              <tbody id="report-table-body"></tbody>
+            </table>
+          </div>
         </section>
       </main>
     </div>

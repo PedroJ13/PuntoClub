@@ -14,11 +14,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Ahora
 
-- Fase de programacion: reporte operativo basico y export CSV.
+- Fase de release: consolidar y desplegar reporte operativo basico + export CSV.
 
 ### Siguiente
 
-- Implementar API, UI y validacion publicada del reporte operativo.
+- Esperar deploy de API y frontend con TASK-093/TASK-094.
+- Revalidar reporte operativo publicado con TASK-096.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -146,6 +147,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-093: Asignada a Backend API para implementar endpoint de reporte operativo.
 - TASK-094: Asignada a Web Dev para implementar pantalla de reporte y export CSV.
 - TASK-095: Asignada a QA para validar reporte operativo publicado.
+- TASK-092: SQL DEV diseno consultas de reporte operativo; sin cambios SQL.
+- TASK-093: Backend API implemento endpoint de reporte operativo localmente y lo probo contra Azure SQL real; pendiente deploy publicado.
+- TASK-094: Web Dev implemento pantalla de reporte y export CSV localmente; pendiente deploy publicado.
+- TASK-095: QA no aprobo porque API/frontend publicados aun no tenian reporte.
+- TASK-096: Asignada a QA para revalidar reporte operativo publicado despues del deploy.
 
 ## Riesgos principales
 
@@ -156,7 +162,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Ejecutar TASK-092/TASK-093/TASK-094 y luego TASK-095.
+Desplegar cambios de TASK-093/TASK-094 y ejecutar TASK-096.
 
 ## Listo para probar
 
@@ -173,6 +179,6 @@ Ejecutar TASK-092/TASK-093/TASK-094 y luego TASK-095.
 - Backlog post-piloto: estructura preparada en `docs/POST_PILOT_BACKLOG.md`.
 - Guion piloto: preparado en TASK-086.
 - Smoke pre-sesion: aprobado por QA en TASK-087.
-- Siguiente programacion: reporte operativo basico en TASK-092 a TASK-095.
+- Siguiente programacion: reporte operativo basico implementado localmente en TASK-092 a TASK-094; pendiente revalidacion publicada en TASK-096.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.

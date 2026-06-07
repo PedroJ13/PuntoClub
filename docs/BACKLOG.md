@@ -74,6 +74,7 @@
 - TASK-093: Implementar API de reporte operativo.
 - TASK-094: Implementar pantalla de reporte operativo.
 - TASK-095: Validar reporte operativo publicado.
+- TASK-096: Revalidar reporte operativo publicado despues del deploy.
 
 ## P1 pre-lanzamiento
 
@@ -105,8 +106,8 @@
 
 ## P2 recomendable
 
-- Reporte simple de actividad por cliente. En progreso con TASK-092 a TASK-095.
-- Exportacion CSV basica. En progreso con TASK-094/TASK-095.
+- Reporte simple de actividad por cliente. En progreso con TASK-096.
+- Exportacion CSV basica. En progreso con TASK-096.
 - Auditoria simple de operaciones criticas.
 
 ## Post-MVP

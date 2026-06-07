@@ -68,13 +68,20 @@ async function main() {
 
   const activity = await request('GET', `/companies/${companyId}/customers/${customer.id}/activity`, null, 200);
   const balanceAfter = await request('GET', `/companies/${companyId}/customers/${customer.id}/balance`, null, 200);
+  const report = await request('GET', `/companies/${companyId}/reports/activity?from=2026-06-01&to=2026-06-07&type=all`, null, 200);
+  assert(report.summary.purchaseCount >= 1, 'Activity report must include purchases in range.');
+  assert(report.summary.redemptionCount >= 1, 'Activity report must include redemptions in range.');
+  assert(report.summary.activeCustomerCount >= 1, 'Activity report must include active customers in range.');
+  assert(report.items.some((item) => item.customerId === customer.id && item.type === 'purchase'), 'Activity report must include smoke purchase.');
+  assert(report.items.some((item) => item.customerId === customer.id && item.type === 'redemption'), 'Activity report must include smoke redemption.');
 
   console.log(JSON.stringify({
     ok: true,
     customerId: customer.id,
     balanceBefore,
     balanceAfter,
-    activityItems: activity.items.length
+    activityItems: activity.items.length,
+    reportItems: report.items.length
   }, null, 2));
 }
 

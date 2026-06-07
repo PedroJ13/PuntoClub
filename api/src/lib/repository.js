@@ -216,6 +216,75 @@ async function getActivity(companyId, customerId) {
   }));
 }
 
+async function getActivityReport(companyId, filters) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('from', sql.Date, filters.from)
+    .input('to', sql.Date, filters.to)
+    .input('type', sql.VarChar(20), filters.type)
+    .query(`
+      SELECT 'purchase' AS type, p.id, p.purchase_date AS activity_date,
+             p.customer_id, c.name AS customer_name, c.phone AS customer_phone, c.email AS customer_email,
+             p.invoice_number, p.amount, p.points_earned AS points
+      FROM dbo.Purchases AS p
+      INNER JOIN dbo.Customers AS c
+        ON c.company_id = p.company_id
+       AND c.id = p.customer_id
+      WHERE p.company_id = @company_id
+        AND p.purchase_date >= @from
+        AND p.purchase_date <= @to
+        AND @type IN ('all', 'purchase')
+      UNION ALL
+      SELECT 'redemption' AS type, r.id, r.redemption_date AS activity_date,
+             r.customer_id, c.name AS customer_name, c.phone AS customer_phone, c.email AS customer_email,
+             CAST(NULL AS nvarchar(80)) AS invoice_number, CAST(NULL AS decimal(18,2)) AS amount,
+             -r.points_redeemed AS points
+      FROM dbo.Redemptions AS r
+      INNER JOIN dbo.Customers AS c
+        ON c.company_id = r.company_id
+       AND c.id = r.customer_id
+      WHERE r.company_id = @company_id
+        AND r.redemption_date >= @from
+        AND r.redemption_date <= @to
+        AND @type IN ('all', 'redemption')
+      ORDER BY activity_date DESC, id DESC
+    `);
+
+  const items = result.recordset.map((row) => ({
+    type: row.type,
+    id: toApiId(row.id),
+    date: toIsoDate(row.activity_date),
+    customerId: toApiId(row.customer_id),
+    customerName: row.customer_name,
+    customerPhone: row.customer_phone,
+    customerEmail: row.customer_email,
+    invoiceNumber: row.invoice_number || undefined,
+    amount: row.amount == null ? undefined : Number(row.amount),
+    points: row.points
+  }));
+
+  const activeCustomerIds = new Set(items.map((item) => item.customerId));
+  const purchases = items.filter((item) => item.type === 'purchase');
+  const redemptions = items.filter((item) => item.type === 'redemption');
+
+  return {
+    from: filters.from,
+    to: filters.to,
+    type: filters.type,
+    summary: {
+      purchaseCount: purchases.length,
+      purchaseAmountTotal: purchases.reduce((total, item) => total + (item.amount || 0), 0),
+      pointsEarnedTotal: purchases.reduce((total, item) => total + item.points, 0),
+      redemptionCount: redemptions.length,
+      pointsRedeemedTotal: redemptions.reduce((total, item) => total + Math.abs(item.points), 0),
+      activeCustomerCount: activeCustomerIds.size
+    },
+    items
+  };
+}
+
 async function createRedemption(companyId, payload) {
   const sql = getSql();
   const pool = await getPool();
@@ -263,6 +332,7 @@ module.exports = {
   customerExists,
   ensureActiveCompany,
   getActivity,
+  getActivityReport,
   getBalance,
   getCompanySettings,
   listCustomers,
