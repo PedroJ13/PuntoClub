@@ -157,3 +157,15 @@ Motivo: Los endpoints de aprobacion, rechazo, creacion y reenvio de invitaciones
 Impacto: Infra / Azure debe configurar `INTERNAL_ADMIN_TOKEN`, `COMPANY_REGISTRATION_REVIEW_ENABLED` y `COMPANY_INVITATION_MANAGEMENT_ENABLED` como app settings sin imprimir secretos. QA puede validar que sin token los endpoints responden 403. Este mecanismo no debe exponerse al frontend ni guardarse en repo.
 
 Riesgo aceptado: Es una proteccion temporal de secreto compartido. Debe reemplazarse por auth/roles reales con Entra External ID antes de abrir operacion administrativa a terceros.
+
+## 2026-06-08 - Auth propia MVP para piloto multiempresa controlado
+
+Decision: Para el piloto multiempresa controlado, Punto Club pausara Microsoft Entra External ID y usara auth propia MVP con password hash y sesiones server-side. Entra External ID queda diferido para una fase posterior si el producto escala o requiere CIAM administrado.
+
+Motivo: TASK-156 confirmo que no hay external tenant de clientes accesible y que solo esta visible `Default Directory`. El Product Owner comparo con otro proyecto multiempresa ya resuelto sin tenants separados, usando aislamiento logico por empresa, usuario owner por empresa, password hash y sesion server-side. Este enfoque desbloquea el piloto sin crear configuracion CIAM prematura.
+
+Impacto: El flujo de invitacion cambiara de `Crear acceso con Entra` a `Crear password en Punto Club`. Backend/API debe validar el token de invitacion, crear usuario owner con password hash, marcar invitacion como aceptada, activar la empresa si corresponde y crear una sesion server-side con cookie `HttpOnly`, `Secure`, `SameSite=Lax`. El frontend no debe leer tokens de sesion ni enviar `companyId` como autoridad. Los endpoints privados deben derivar la empresa desde la sesion validada en backend.
+
+Riesgo aceptado: Punto Club asume temporalmente seguridad de password, hash, sesiones, expiracion, logout y hardening basico. Para piloto controlado esto es aceptable si se usan hashes fuertes, cookies seguras, no se guardan passwords planos y se mantiene rate limiting/hardening como pendiente P1/P2.
+
+Riesgo no aceptado: Password plano, tokens de sesion en localStorage, `companyId` confiado desde frontend, sesiones sin expiracion, logs con password/token/cookies, o reutilizar el token de invitacion como acceso permanente.

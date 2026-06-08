@@ -62,15 +62,15 @@ Estado:
 
 - Contrato final propuesto para la fase multiempresa controlado.
 - No reemplaza automaticamente el modo piloto actual.
-- No implementar como flujo productivo hasta que existan migracion SQL aplicada, Entra External ID, ACS Email y Blob Storage privado aprobados/configurados.
+- No implementar como flujo productivo hasta que existan migracion SQL aplicada, ACS Email, Blob Storage privado y auth propia MVP aprobada/configurada.
 
 Convenciones:
 
 - El email se normaliza server-side con `trim` y lowercase antes de persistir.
-- No se acepta password local; el password/acceso lo gestiona Microsoft Entra External ID.
-- `external_subject` se deriva de JWT validado por Backend/API, nunca de un campo enviado por frontend.
+- Para piloto, se acepta password solo en activacion/login de empresa y se guarda como hash fuerte server-side; nunca password plano.
+- La identidad de empresa se deriva de una sesion server-side validada por Backend/API, nunca de `companyId` enviado por frontend.
 - El logo se administra por Blob Storage privado y rutas/API controladas, no por URL externa editable.
-- El `companyId` efectivo para endpoints autenticados sale del JWT validado + `CompanyUsers`, no del frontend.
+- El `companyId` efectivo para endpoints autenticados sale de `CompanySessions` + `CompanyUsers`, no del frontend.
 - Los endpoints operativos existentes con `{companyId}` deben validar que el path coincide con la empresa autorizada cuando multiempresa este activo.
 
 Estados:
@@ -380,18 +380,19 @@ Errores esperados:
 
 ### POST `/api/company-invitations/accept`
 
-Acepta una invitacion y crea/vincula el usuario de empresa con Entra External ID.
+Acepta una invitacion y crea el usuario de empresa con password propio MVP.
 
 Auth:
 
-- Requiere JWT valido de Entra External ID.
+- Publico con token de invitacion vigente. No requiere sesion previa.
 
 Payload:
 
 ```json
 {
   "token": "raw-invite-token",
-  "displayName": "Maria Soto"
+  "displayName": "Maria Soto",
+  "password": "new-password"
 }
 ```
 
@@ -410,10 +411,10 @@ Respuesta `201`:
 
 Reglas:
 
-- No acepta password.
-- `external_subject`, email autenticado y claims se derivan del JWT validado.
-- El email del JWT debe coincidir con el email de invitacion, salvo decision futura explicita.
-- Crea `CompanyUsers.auth_provider = entra_external_id`.
+- Acepta password solo en esta activacion inicial.
+- Valida fortaleza minima de password server-side.
+- Normaliza email desde la invitacion, no desde frontend.
+- Crea `CompanyUsers.auth_provider = local_password` con `password_hash` y metadatos de algoritmo/salt segun diseno SQL.
 - Marca invitacion como `accepted` y setea `accepted_at`.
 - Puede activar `Companies.status = active` al aceptar invitacion owner.
 - Operacion debe ser transaccional.
@@ -424,7 +425,7 @@ Validaciones:
 - `token` requerido.
 - `displayName` opcional, maximo 160 caracteres.
 - Invitacion debe estar pendiente y no expirada.
-- Usuario no debe existir para misma empresa/email ni mismo `external_subject`.
+- Usuario no debe existir para la misma empresa/email.
 
 Errores esperados:
 
@@ -436,13 +437,18 @@ Errores esperados:
 - `409 INVITATION_EXPIRED`.
 - `409 COMPANY_USER_ALREADY_EXISTS`.
 
-### GET `/api/me`
+### POST `/api/company-auth/login`
 
-Devuelve identidad efectiva y empresa autorizada para el JWT actual.
+Inicia sesion para usuario de empresa con email y password.
 
-Auth:
+Payload:
 
-- Requiere JWT valido de Entra External ID.
+```json
+{
+  "email": "hola@cafecentral.test",
+  "password": "password"
+}
+```
 
 Respuesta `200`:
 
@@ -465,7 +471,53 @@ Respuesta `200`:
 
 Reglas:
 
-- Resolver usuario por `CompanyUsers.auth_provider = entra_external_id` y `external_subject` del JWT.
+- Validar password en Backend/API contra hash fuerte.
+- Crear sesion server-side en `CompanySessions` con token aleatorio y guardar solo hash.
+- Enviar cookie `HttpOnly`, `Secure`, `SameSite=Lax`.
+- Frontend no debe leer ni persistir el token de sesion.
+- No devolver password hash ni token raw.
+
+Errores esperados:
+
+- `400 VALIDATION_ERROR`.
+- `401 UNAUTHORIZED`.
+- `403 FORBIDDEN`.
+- `429 RATE_LIMITED`.
+
+### POST `/api/company-auth/logout`
+
+Cierra la sesion actual invalidando la sesion server-side y limpiando cookie.
+
+### GET `/api/me`
+
+Devuelve identidad efectiva y empresa autorizada para la sesion actual.
+
+Auth:
+
+- Requiere cookie de sesion valida.
+
+Respuesta `200`:
+
+```json
+{
+  "user": {
+    "id": "400",
+    "email": "hola@cafecentral.test",
+    "displayName": "Maria Soto",
+    "role": "owner",
+    "status": "active"
+  },
+  "company": {
+    "id": "10",
+    "name": "Cafe Central",
+    "status": "active"
+  }
+}
+```
+
+Reglas:
+
+- Resolver sesion por cookie, buscar `CompanySessions.token_hash`, validar expiracion/estado y luego resolver `CompanyUsers` por `company_user_id`.
 - Rechazar usuario ausente, `disabled` o empresa no activa para operacion.
 
 Errores esperados:
@@ -479,7 +531,7 @@ Consulta la empresa asociada al usuario autenticado.
 
 Auth:
 
-- Requiere usuario activo.
+- Requiere usuario activo con sesion valida.
 
 Respuesta `200`:
 
@@ -653,7 +705,7 @@ Entidades permitidas:
 Reglas:
 
 - No auditar `company.invitation.resent` hasta que exista migracion para ese evento.
-- Metadata no debe contener token raw, password, JWT, SAS, connection strings ni secretos.
+- Metadata no debe contener token raw, password, password hash, cookie, JWT, SAS, connection strings ni secretos.
 - Preferir `emailDomain`, `emailHash`, ids internos y `changedFields` antes que PII completa.
 
 ## Company settings
@@ -1098,3 +1150,5 @@ Errores esperados:
 ## Pendientes de decision
 
 - Paginacion para listados e historial si el piloto supera volumen basico.
+
+

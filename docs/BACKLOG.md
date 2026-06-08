@@ -137,6 +137,10 @@
 - TASK-156: Completar configuracion Microsoft Entra External ID.
 - TASK-157: Preparar integracion Backend API con Entra External ID.
 - TASK-158: Conectar Web con flujo Crear acceso y login.
+- TASK-159: Preparar SQL para auth propia MVP de empresas.
+- TASK-160: Implementar Backend auth propia MVP de empresas.
+- TASK-161: Activar Web Crear acceso/login con auth propia MVP.
+- TASK-162: Validar flujo auth propia publicado.
 
 ## P1 pre-lanzamiento
 
@@ -182,5 +186,6 @@
 - Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
+
 
 

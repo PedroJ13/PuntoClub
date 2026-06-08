@@ -21,7 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
-- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. La aprobacion controlada ya genera invitacion real; QA aprobo la evidencia de invitacion valida en TASK-154 e Infra roto/reemitio el token expuesto en TASK-155. Entra External ID sigue pendiente/manual: TASK-156 confirma que solo esta visible `Default Directory`, por lo que Crear acceso/login/password productivos siguen bloqueados hasta crear o seleccionar un external tenant de clientes.
+- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. La aprobacion controlada ya genera invitacion real; QA aprobo la evidencia de invitacion valida en TASK-154 e Infra roto/reemitio el token expuesto en TASK-155. Decision nueva: Entra External ID queda pausado para el piloto y se avanza con auth propia MVP basada en password hash y sesiones server-side.
 
 ### Siguiente
 
@@ -41,7 +41,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Bloqueado
 
-- Crear acceso/login/password productivos quedan bloqueados hasta completar Microsoft Entra External ID. Registro de empresa, email real, invitacion y pantalla publica ya estan validados.
+- Crear acceso/login/password productivos se desbloquean por nueva decision de auth propia MVP. Registro de empresa, email real, invitacion y pantalla publica ya estan validados; falta implementar password hash, sesiones server-side y endpoints privados que deriven companyId desde sesion.
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla web por zonas.
 - No hay bloqueos P0/P1 abiertos para historial publicado.
 - No hay bloqueos P0/P1 abiertos para integridad SQL auditada.
@@ -297,6 +297,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-156: Infra / Azure quedo bloqueado porque no hay external tenant accesible/confirmado; no creo apps en Default Directory.
 - TASK-157: Backend API quedo bloqueado hasta recibir valores reales de Entra External ID; no implemento JWT con datos inferidos.
 - TASK-158: Web Dev quedo bloqueado hasta Entra + Backend; mantuvo Crear acceso deshabilitado de forma segura.
+- Decision posterior: Product Owner aprueba pausar Entra External ID para piloto y avanzar con auth propia MVP, siguiendo patron multiempresa logico probado en otro proyecto.
+- TASK-159: Asignada a SQL DEV para preparar migracion SQL de password hash y sesiones server-side.
+- TASK-160: Asignada a Backend API para implementar auth propia MVP de empresa.
+- TASK-161: Asignada a Web Dev para activar Crear acceso/login con auth propia MVP.
+- TASK-162: Asignada a QA para validar invitacion -> crear password -> login -> panel empresa.
 
 ## Riesgos principales
 
@@ -307,7 +312,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Product Owner debe crear o seleccionar el external tenant de clientes en Microsoft Entra External ID y devolver los valores publicos indicados en `tasks/TASK-156-HANDOFF.md`. Backend API y Web Dev deben esperar esos valores antes de conectar Crear acceso/login/password.
+Avanzar con auth propia MVP: SQL DEV debe preparar soporte de password hash y sesiones, Backend API debe implementar activacion/login/sesion y Web Dev debe activar Crear acceso/login cuando el contrato este listo. Entra External ID queda diferido.
 
 ## Listo para probar
 
@@ -332,6 +337,7 @@ Product Owner debe crear o seleccionar el external tenant de clientes en Microso
 - Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
+
 
 
 
