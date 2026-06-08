@@ -21,7 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
-- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. La aprobacion controlada ya genera invitacion real, pero la validacion del link real sigue bloqueada por entrega/canal seguro del correo. Entra External ID sigue pendiente/manual.
+- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. La aprobacion controlada ya genera invitacion real, pero la validacion del link real sigue bloqueada por acceso al link/canal seguro. Entra External ID sigue pendiente/manual.
 
 ### Siguiente
 
@@ -283,6 +283,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-149: QA quedo bloqueado porque no recibio el link real por canal seguro; rutas publicas `/` y `/company-invitations/accept` siguen respondiendo 200.
 - TASK-150: Asignada a Infra / Azure para diagnosticar entregabilidad ACS y coordinar un mailbox confirmado para invitacion QA.
 - TASK-151: Asignada a QA para reintentar validacion de invitacion real solo despues de link seguro confirmado.
+- TASK-150: Infra / Azure confirmo señales ACS agregadas de `SendMail 202` y `Delivered/Success`; no hay evidencia de error API/ACS, pero el link no fue entregado a QA.
+- TASK-151: QA quedo bloqueado; vio evidencia/capturas de correo y pantalla en `Validando invitacion...`, pero no evidencia final de invitacion valida sin token visible.
+- TASK-152: Asignada a PO Test para abrir el ultimo link desde el mailbox real y documentar evidencia redaccionada sin token.
+- TASK-153: Asignada a QA para revisar evidencia de PO Test y cerrar o mantener bloqueo de invitacion real.
 
 ## Riesgos principales
 
@@ -293,7 +297,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Diagnosticar entregabilidad ACS y coordinar un mailbox confirmado para obtener link real por canal seguro. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
+PO Test debe abrir el ultimo link real desde el mailbox y entregar evidencia redaccionada del estado final de la pantalla. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
 
 ## Listo para probar
 

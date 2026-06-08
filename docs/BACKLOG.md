@@ -130,6 +130,8 @@
 - TASK-149: Reintentar validacion de invitacion real con link seguro.
 - TASK-150: Diagnosticar entregabilidad ACS y coordinar mailbox confirmado.
 - TASK-151: Reintentar validacion de invitacion real con link confirmado.
+- TASK-152: PO Test valida invitacion real desde mailbox con evidencia redaccionada.
+- TASK-153: QA revisa evidencia redaccionada de invitacion real.
 
 ## P1 pre-lanzamiento
 
