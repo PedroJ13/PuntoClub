@@ -147,6 +147,9 @@
 - TASK-166: Revalidar auth propia publicada end-to-end.
 - TASK-167: Reemitir invitacion fresca para QA auth propia.
 - TASK-168: Reintentar QA E2E auth propia con invitacion fresca.
+- TASK-169: Diagnosticar fallo publicado en Crear acceso auth propia.
+- TASK-170: Ajustar Web auth propia si el fallo es CORS/cookie/UX.
+- TASK-171: Revalidar Crear acceso despues del diagnostico.
 
 ## P1 pre-lanzamiento
 
@@ -192,6 +195,7 @@
 - Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
+
 
 
 

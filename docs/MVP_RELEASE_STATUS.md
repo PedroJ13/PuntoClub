@@ -318,6 +318,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-168: Asignada a QA para reintentar E2E auth propia con invitacion fresca.
 - TASK-167: Infra / Azure reemitio invitacion fresca, ACS mostro delivery success y no expuso token/link.
 - TASK-168: QA sigue bloqueado porque no recibio el link fresco por canal seguro; checks negativos publicados siguen OK.
+- Hallazgo Product Owner: con invitacion fresca, la pantalla muestra Invitacion valida y formulario de Crear acceso, pero submit muestra No se pudo crear el acceso. Intente de nuevo. sin exponer token/password.
+- TASK-169: Asignada a Backend API para diagnosticar fallo publicado de Crear acceso.
+- TASK-170: Asignada a Web Dev, condicionada a TASK-169, para ajustar frontend si el fallo es CORS/cookie/UX.
+- TASK-171: Asignada a QA para revalidar Crear acceso despues del diagnostico/fix.
 
 ## Riesgos principales
 
@@ -328,7 +332,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Product Owner debe abrir el ultimo correo posterior a `2026-06-08T22:13:46.829Z` y ejecutar o compartir por canal seguro el link fresco sin exponer token. Reintentar QA E2E de auth propia publicada cuando QA tenga ese link. Entra External ID queda diferido.
+Diagnosticar el fallo publicado de Crear acceso con Backend/API usando App Insights y logs seguros. No pedir ni registrar token/password. Luego revalidar E2E con QA. Entra External ID queda diferido.
 
 ## Listo para probar
 
@@ -353,6 +357,7 @@ Product Owner debe abrir el ultimo correo posterior a `2026-06-08T22:13:46.829Z`
 - Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
+
 
 
 
