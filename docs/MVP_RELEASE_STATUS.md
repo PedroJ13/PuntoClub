@@ -21,7 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
-- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. La aprobacion controlada ya genera invitacion real y Product Owner aporto evidencia visual de invitacion valida publicada. Como la captura expuso el token en la barra de direccion, se debe rotar/reemitir la invitacion antes de uso posterior. Entra External ID sigue pendiente/manual.
+- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. La aprobacion controlada ya genera invitacion real; QA aprobo la evidencia de invitacion valida en TASK-154 e Infra roto/reemitio el token expuesto en TASK-155. Entra External ID sigue pendiente/manual y bloquea Crear acceso/login/password productivos.
 
 ### Siguiente
 
@@ -41,7 +41,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Bloqueado
 
-- Implementacion real de registro empresa/invitacion/password/logo queda bloqueada hasta decision de arquitectura en TASK-119.
+- Crear acceso/login/password productivos quedan bloqueados hasta completar Microsoft Entra External ID. Registro de empresa, email real, invitacion y pantalla publica ya estan validados.
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla web por zonas.
 - No hay bloqueos P0/P1 abiertos para historial publicado.
 - No hay bloqueos P0/P1 abiertos para integridad SQL auditada.
@@ -289,6 +289,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-153: Asignada a QA para revisar evidencia de PO Test y cerrar o mantener bloqueo de invitacion real.
 - TASK-154: Asignada a QA para cerrar validacion de invitacion real con evidencia del Product Owner, sin reproducir token.
 - TASK-155: Asignada a Infra / Azure para rotar/reemitir la invitacion cuyo token quedo expuesto en captura.
+- TASK-154: QA aprobo la pantalla publica de invitacion real con evidencia redaccionada; sin P0/P1 para invitacion.
+- TASK-155: Infra / Azure roto/reemitio la invitacion expuesta via resend seguro; no expuso token ni link.
+- TASK-156: Asignada a Infra / Azure para completar Microsoft Entra External ID y entregar valores publicos seguros.
+- TASK-157: Asignada a Backend API; bloqueada hasta TASK-156 para preparar integracion con Entra.
+- TASK-158: Asignada a Web Dev; bloqueada hasta TASK-156/TASK-157 para conectar Crear acceso/login.
 
 ## Riesgos principales
 
@@ -299,7 +304,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-QA debe cerrar la evidencia de invitacion valida publicada y luego Infra / Azure debe rotar/reemitir la invitacion porque el token quedo expuesto en una captura. Mantener create access/login/password productivos bloqueados hasta que Entra External ID quede configurado.
+Completar Microsoft Entra External ID con Infra / Azure. Backend API y Web Dev deben esperar valores publicos seguros de Entra antes de conectar Crear acceso/login/password.
 
 ## Listo para probar
 
@@ -321,7 +326,8 @@ QA debe cerrar la evidencia de invitacion valida publicada y luego Infra / Azure
 - Configuracion de empresa piloto: aprobada por QA en TASK-110.
 - Menu lateral publicado con Operaciones, Mi empresa y Reportes: aprobado por QA en TASK-118.
 - Solicitud publica de empresa y endpoints internos cerrados sin token: aprobado por QA en TASK-138.
-- Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Evidencia PO posterior confirma invitacion real valida; pendiente QA formal TASK-154 y rotacion de token expuesto TASK-155.
+- Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
+
 
