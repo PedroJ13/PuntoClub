@@ -118,6 +118,9 @@
 - TASK-137: Configurar app settings de autorizacion temporal interna.
 - TASK-138: Validar UI publicada de solicitud de empresa y seguridad interna.
 - TASK-139: Acompanar configuracion manual de Entra External ID.
+- TASK-140: Conectar aprobacion de solicitud con invitacion owner.
+- TASK-141: Crear pantalla publica de invitacion y validacion de token.
+- TASK-142: Validar flujo publicado solicitud aprobada e invitacion.
 
 ## P1 pre-lanzamiento
 
@@ -159,7 +162,7 @@
 ## Post-MVP
 
 - Registro publico/controlado de empresas. En exploracion P1 con TASK-113 a TASK-119.
-- Aprobacion administrativa.
-- Invitaciones. En exploracion P1 con TASK-113 a TASK-119.
+- Aprobacion administrativa. En avance controlado con TASK-134, TASK-137 y TASK-140.
+- Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.

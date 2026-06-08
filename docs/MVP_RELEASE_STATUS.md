@@ -21,7 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
-- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos y UI de solicitud de empresa avanzaron; Entra External ID sigue pendiente/manual.
+- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos y UI de solicitud de empresa quedaron validados; Entra External ID sigue pendiente/manual.
 
 ### Siguiente
 
@@ -258,6 +258,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-137: Asignada a Infra / Azure para configurar app settings de autorizacion temporal interna.
 - TASK-138: Asignada a QA para validar UI publicada de solicitud de empresa y endpoints internos cerrados.
 - TASK-139: Asignada a Infra / Azure para acompanar configuracion manual de Entra External ID y entregar valores publicos seguros.
+- TASK-137: Infra / Azure configuro `INTERNAL_ADMIN_TOKEN` y flags internos en Azure Functions; endpoints internos sin header responden 403.
+- TASK-138: QA aprobo UI publicada de solicitud de empresa, seguridad interna sin token y regresion operativa; sin P0/P1/P2 abiertos, con P3 de latencia perceptible en submit.
+- TASK-139: Infra / Azure marco Entra External ID bloqueado por intervencion manual del Product Owner; no crear apps en `Default Directory`.
+- TASK-140: Asignada a Backend API para conectar aprobacion de solicitud con creacion/envio de invitacion owner.
+- TASK-141: Asignada a Web Dev para crear pantalla publica de invitacion con validacion de token y estados.
+- TASK-142: Asignada a QA para validar flujo publicado solicitud aprobada + invitacion despues de TASK-140/TASK-141.
 
 ## Riesgos principales
 
@@ -268,7 +274,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Configurar app settings seguros para la proteccion temporal interna, validar UI publicada de solicitud de empresa y acompanar la configuracion manual de Entra External ID. Mantener accept/login/logo productivos fuera hasta que auth quede listo.
+Conectar aprobacion de solicitud con invitacion owner y agregar pantalla publica de invitacion. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
 
 ## Listo para probar
 
@@ -289,5 +295,6 @@ Configurar app settings seguros para la proteccion temporal interna, validar UI 
 - Auditoria operativa publicada: aprobada por QA en TASK-105.
 - Configuracion de empresa piloto: aprobada por QA en TASK-110.
 - Menu lateral publicado con Operaciones, Mi empresa y Reportes: aprobado por QA en TASK-118.
+- Solicitud publica de empresa y endpoints internos cerrados sin token: aprobado por QA en TASK-138.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
