@@ -21,7 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
-- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. La aprobacion controlada ya genera invitacion real; QA aprobo la evidencia de invitacion valida en TASK-154 e Infra roto/reemitio el token expuesto en TASK-155. Entra External ID sigue pendiente/manual y bloquea Crear acceso/login/password productivos.
+- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. La aprobacion controlada ya genera invitacion real; QA aprobo la evidencia de invitacion valida en TASK-154 e Infra roto/reemitio el token expuesto en TASK-155. Entra External ID sigue pendiente/manual: TASK-156 confirma que solo esta visible `Default Directory`, por lo que Crear acceso/login/password productivos siguen bloqueados hasta crear o seleccionar un external tenant de clientes.
 
 ### Siguiente
 
@@ -294,6 +294,9 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-156: Asignada a Infra / Azure para completar Microsoft Entra External ID y entregar valores publicos seguros.
 - TASK-157: Asignada a Backend API; bloqueada hasta TASK-156 para preparar integracion con Entra.
 - TASK-158: Asignada a Web Dev; bloqueada hasta TASK-156/TASK-157 para conectar Crear acceso/login.
+- TASK-156: Infra / Azure quedo bloqueado porque no hay external tenant accesible/confirmado; no creo apps en Default Directory.
+- TASK-157: Backend API quedo bloqueado hasta recibir valores reales de Entra External ID; no implemento JWT con datos inferidos.
+- TASK-158: Web Dev quedo bloqueado hasta Entra + Backend; mantuvo Crear acceso deshabilitado de forma segura.
 
 ## Riesgos principales
 
@@ -304,7 +307,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Completar Microsoft Entra External ID con Infra / Azure. Backend API y Web Dev deben esperar valores publicos seguros de Entra antes de conectar Crear acceso/login/password.
+Product Owner debe crear o seleccionar el external tenant de clientes en Microsoft Entra External ID y devolver los valores publicos indicados en `tasks/TASK-156-HANDOFF.md`. Backend API y Web Dev deben esperar esos valores antes de conectar Crear acceso/login/password.
 
 ## Listo para probar
 
@@ -329,5 +332,6 @@ Completar Microsoft Entra External ID con Infra / Azure. Backend API y Web Dev d
 - Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
+
 
 
