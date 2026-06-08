@@ -8,6 +8,14 @@ function json(status, body) {
   };
 }
 
+function jsonWithHeaders(status, body, headers) {
+  return {
+    status,
+    jsonBody: body,
+    headers
+  };
+}
+
 function created(body) {
   return json(201, body);
 }
@@ -68,6 +76,7 @@ module.exports = {
   created,
   getCompanyId,
   handle,
+  jsonWithHeaders,
   ok,
   readJson
 };

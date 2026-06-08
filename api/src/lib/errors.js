@@ -45,7 +45,8 @@ function mapSqlError(error) {
 
   if ((number === 2601 || number === 2627) && (
     message.includes('UX_CompanyUsers_company_email') ||
-    message.includes('UX_CompanyUsers_auth_subject')
+    message.includes('UX_CompanyUsers_auth_subject') ||
+    message.includes('UX_CompanyUsers_local_password_email')
   )) {
     return new ApiError(409, 'COMPANY_USER_ALREADY_EXISTS', 'Company user already exists.');
   }

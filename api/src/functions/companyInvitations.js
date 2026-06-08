@@ -12,9 +12,10 @@ const {
   hashInvitationToken,
   validateInvitationToken
 } = require('../lib/companyInvitations');
+const { formatInvitationAcceptedResponse: formatAcceptedAuthResponse, hashPassword: createPasswordHash } = require('../lib/companyAuth');
 const { created, handle, ok, readJson } = require('../lib/http');
 const { assertInternalAdminAuthorized } = require('../lib/internalAdmin');
-const { parsePositiveInteger, validateCompanyInvitationPayload } = require('../lib/validators');
+const { parsePositiveInteger, validateCompanyInvitationPayload, validateInvitationAcceptPayload } = require('../lib/validators');
 const notifier = require('../lib/notifier');
 const repository = require('../lib/repository');
 
@@ -67,5 +68,46 @@ app.http('resendCompanyInvitation', {
     await notifier.notifyCompanyInvitationCreated(invitation, token, context);
 
     return ok(formatCompanyInvitationResentResponse(invitation));
+  })
+});
+
+app.http('acceptCompanyInvitation', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  route: 'company-invitations/accept',
+  handler: handle(async (request, context) => {
+    const payload = validateInvitationAcceptPayload(await readJson(request));
+    const result = await repository.acceptCompanyInvitationWithPassword(
+      hashInvitationToken(payload.token),
+      payload,
+      createPasswordHash(payload.password)
+    );
+
+    await auditBestEffort(context, {
+      companyId: result.company.id,
+      eventType: 'company.invitation.accepted',
+      entityType: 'company_invitation',
+      entityId: result.invitation.id,
+      actorLabel: result.user.email,
+      metadata: {
+        role: result.user.role,
+        requestId: context && context.invocationId ? context.invocationId : null
+      }
+    });
+
+    await auditBestEffort(context, {
+      companyId: result.company.id,
+      eventType: 'company.user.created',
+      entityType: 'company_user',
+      entityId: result.user.id,
+      actorLabel: result.user.email,
+      metadata: {
+        role: result.user.role,
+        authProvider: 'local_password',
+        requestId: context && context.invocationId ? context.invocationId : null
+      }
+    });
+
+    return created(formatAcceptedAuthResponse(result));
   })
 });

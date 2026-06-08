@@ -95,6 +95,17 @@ function mapCompanyUser(row) {
   };
 }
 
+function mapAuthIdentity(row) {
+  return {
+    user: mapCompanyUser(row),
+    company: {
+      id: toApiId(row.company_id),
+      name: row.company_name,
+      status: row.company_status
+    }
+  };
+}
+
 function mapMyCompany(row) {
   const hasLogo = Boolean(row.logo_blob_path);
   return {
@@ -665,6 +676,290 @@ async function rotateCompanyInvitationToken(invitationId, tokenHash) {
   return getCompanyInvitationById(invitationId);
 }
 
+async function acceptCompanyInvitationWithPassword(tokenHash, payload, passwordCredentials) {
+  const sql = getSql();
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+
+  await transaction.begin();
+
+  try {
+    const invitationResult = await new sql.Request(transaction)
+      .input('token_hash', sql.VarBinary(32), tokenHash)
+      .query(`
+        SELECT TOP (1)
+          invitations.id,
+          invitations.company_id,
+          invitations.email,
+          invitations.role,
+          invitations.status,
+          invitations.expires_at,
+          companies.name AS company_name,
+          companies.status AS company_status
+        FROM dbo.CompanyInvitations AS invitations WITH (UPDLOCK, HOLDLOCK)
+        INNER JOIN dbo.Companies AS companies WITH (UPDLOCK, HOLDLOCK)
+          ON companies.id = invitations.company_id
+        WHERE invitations.token_hash = @token_hash
+      `);
+
+    if (!invitationResult.recordset.length) {
+      throw new ApiError(404, 'INVITATION_NOT_FOUND', 'Company invitation was not found.');
+    }
+
+    const invitation = invitationResult.recordset[0];
+    if (invitation.status === 'accepted') {
+      throw new ApiError(409, 'INVITATION_ALREADY_ACCEPTED', 'Company invitation was already accepted.');
+    }
+
+    if (invitation.status !== 'pending') {
+      throw new ApiError(404, 'INVITATION_NOT_FOUND', 'Company invitation was not found.');
+    }
+
+    if (invitation.expires_at < new Date()) {
+      throw new ApiError(409, 'INVITATION_EXPIRED', 'Company invitation is expired.');
+    }
+
+    if (!['pending_activation', 'active'].includes(invitation.company_status)) {
+      throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+    }
+
+    const userResult = await new sql.Request(transaction)
+      .input('company_id', sql.BigInt, invitation.company_id)
+      .input('email', sql.NVarChar(254), invitation.email)
+      .input('display_name', sql.NVarChar(160), payload.displayName)
+      .input('role', sql.VarChar(30), invitation.role)
+      .input('password_hash', sql.NVarChar(512), passwordCredentials.passwordHash)
+      .input('password_algorithm', sql.VarChar(40), passwordCredentials.passwordAlgorithm)
+      .input('password_params', sql.NVarChar(300), passwordCredentials.passwordParams)
+      .query(`
+        INSERT INTO dbo.CompanyUsers (
+          company_id,
+          email,
+          display_name,
+          role,
+          status,
+          auth_provider,
+          password_hash,
+          password_algorithm,
+          password_params,
+          password_updated_at
+        )
+        OUTPUT
+          INSERTED.id,
+          INSERTED.company_id,
+          INSERTED.email,
+          INSERTED.display_name,
+          INSERTED.role,
+          INSERTED.status,
+          INSERTED.auth_provider,
+          INSERTED.last_login_at,
+          INSERTED.created_at,
+          INSERTED.updated_at
+        VALUES (
+          @company_id,
+          @email,
+          @display_name,
+          @role,
+          'active',
+          'local_password',
+          @password_hash,
+          @password_algorithm,
+          @password_params,
+          SYSUTCDATETIME()
+        )
+      `);
+
+    await new sql.Request(transaction)
+      .input('invitation_id', sql.BigInt, invitation.id)
+      .query(`
+        UPDATE dbo.CompanyInvitations
+        SET
+          status = 'accepted',
+          accepted_at = SYSUTCDATETIME()
+        WHERE id = @invitation_id
+          AND status = 'pending'
+      `);
+
+    let companyStatus = invitation.company_status;
+    if (invitation.role === 'owner' && invitation.company_status === 'pending_activation') {
+      const companyResult = await new sql.Request(transaction)
+        .input('company_id', sql.BigInt, invitation.company_id)
+        .query(`
+          UPDATE dbo.Companies
+          SET
+            status = 'active',
+            updated_at = SYSUTCDATETIME()
+          OUTPUT INSERTED.status
+          WHERE id = @company_id
+            AND status = 'pending_activation'
+        `);
+
+      if (companyResult.recordset.length) {
+        companyStatus = companyResult.recordset[0].status;
+      }
+    }
+
+    await transaction.commit();
+
+    const user = mapCompanyUser(userResult.recordset[0]);
+    return {
+      user,
+      company: {
+        id: toApiId(invitation.company_id),
+        name: invitation.company_name,
+        status: companyStatus
+      },
+      invitation: {
+        id: toApiId(invitation.id),
+        companyId: toApiId(invitation.company_id),
+        role: invitation.role
+      }
+    };
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch {
+      // Preserve the original failure; rollback errors are secondary here.
+    }
+    throw error;
+  }
+}
+
+async function getLocalPasswordUserByEmail(email) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('email', sql.NVarChar(254), email)
+    .query(`
+      SELECT TOP (1)
+        users.id,
+        users.company_id,
+        users.email,
+        users.display_name,
+        users.role,
+        users.status,
+        users.auth_provider,
+        users.password_hash,
+        users.password_algorithm,
+        users.password_params,
+        users.password_locked_until,
+        users.last_login_at,
+        users.created_at,
+        users.updated_at,
+        companies.name AS company_name,
+        companies.status AS company_status
+      FROM dbo.CompanyUsers AS users
+      INNER JOIN dbo.Companies AS companies
+        ON companies.id = users.company_id
+      WHERE users.email = @email
+        AND users.auth_provider = 'local_password'
+    `);
+
+  return result.recordset.length ? result.recordset[0] : null;
+}
+
+async function createCompanySession(companyId, companyUserId, tokenHash, expiresAt) {
+  const sql = getSql();
+  const pool = await getPool();
+  await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('company_user_id', sql.BigInt, companyUserId)
+    .input('token_hash', sql.VarBinary(32), tokenHash)
+    .input('expires_at', sql.DateTime2, expiresAt)
+    .query(`
+      INSERT INTO dbo.CompanySessions (
+        company_id,
+        company_user_id,
+        token_hash,
+        expires_at
+      )
+      VALUES (
+        @company_id,
+        @company_user_id,
+        @token_hash,
+        @expires_at
+      )
+    `);
+
+  await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('company_user_id', sql.BigInt, companyUserId)
+    .query(`
+      UPDATE dbo.CompanyUsers
+      SET
+        last_login_at = SYSUTCDATETIME(),
+        updated_at = SYSUTCDATETIME()
+      WHERE company_id = @company_id
+        AND id = @company_user_id
+    `);
+}
+
+async function getAuthIdentityBySessionTokenHash(tokenHash) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('token_hash', sql.VarBinary(32), tokenHash)
+    .query(`
+      SELECT TOP (1)
+        users.id,
+        users.company_id,
+        users.email,
+        users.display_name,
+        users.role,
+        users.status,
+        users.auth_provider,
+        users.last_login_at,
+        users.created_at,
+        users.updated_at,
+        companies.name AS company_name,
+        companies.status AS company_status
+      FROM dbo.CompanySessions AS sessions
+      INNER JOIN dbo.CompanyUsers AS users
+        ON users.company_id = sessions.company_id
+       AND users.id = sessions.company_user_id
+      INNER JOIN dbo.Companies AS companies
+        ON companies.id = sessions.company_id
+      WHERE sessions.token_hash = @token_hash
+        AND sessions.status = 'active'
+        AND sessions.expires_at > SYSUTCDATETIME()
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(401, 'UNAUTHORIZED', 'Authentication is required.');
+  }
+
+  const row = result.recordset[0];
+  if (row.status !== 'active' || row.company_status !== 'active') {
+    throw new ApiError(403, 'FORBIDDEN', 'Company user is not allowed to operate.');
+  }
+
+  await pool.request()
+    .input('token_hash', sql.VarBinary(32), tokenHash)
+    .query(`
+      UPDATE dbo.CompanySessions
+      SET last_seen_at = SYSUTCDATETIME()
+      WHERE token_hash = @token_hash
+        AND status = 'active'
+    `);
+
+  return mapAuthIdentity(row);
+}
+
+async function revokeCompanySession(tokenHash) {
+  const sql = getSql();
+  const pool = await getPool();
+  await pool.request()
+    .input('token_hash', sql.VarBinary(32), tokenHash)
+    .query(`
+      UPDATE dbo.CompanySessions
+      SET
+        status = 'revoked',
+        revoked_at = SYSUTCDATETIME()
+      WHERE token_hash = @token_hash
+        AND status = 'active'
+    `);
+}
+
 async function listCustomers(companyId, search) {
   const sql = getSql();
   const pool = await getPool();
@@ -919,7 +1214,9 @@ async function createRedemption(companyId, payload) {
 }
 
 module.exports = {
+  acceptCompanyInvitationWithPassword,
   approveCompanyRegistrationRequest,
+  createCompanySession,
   createCompanyInvitation,
   createCompanyRegistrationRequest,
   createCustomer,
@@ -929,10 +1226,12 @@ module.exports = {
   ensureActiveCompany,
   getActivity,
   getActivityReport,
+  getAuthIdentityBySessionTokenHash,
   getBalance,
   getCompanyInvitationById,
   getCompanyInvitationByTokenHash,
   getCompanySettings,
+  getLocalPasswordUserByEmail,
   listCustomers,
   mapCompanyInvitation,
   mapCompanyInvitationWithCompany,
@@ -941,6 +1240,7 @@ module.exports = {
   mapCompanyUser,
   mapMyCompany,
   rejectCompanyRegistrationRequest,
+  revokeCompanySession,
   rotateCompanyInvitationToken,
   toApiId,
   toIsoTimestamp,

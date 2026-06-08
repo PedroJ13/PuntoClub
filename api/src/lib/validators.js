@@ -274,8 +274,9 @@ function validateInvitationAcceptPayload(payload) {
   const body = payload || {};
   const token = validateRequiredText(body.token, 'token', 2048, details);
   const displayName = validateOptionalText(body.displayName, 'displayName', 160, details);
+  const password = validatePassword(body.password, 'password', details);
 
-  for (const forbiddenField of ['password', 'externalSubject']) {
+  for (const forbiddenField of ['externalSubject', 'companyId', 'email']) {
     if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
       details.push({ field: forbiddenField, message: `${forbiddenField} must not be sent by the frontend.` });
     }
@@ -287,7 +288,41 @@ function validateInvitationAcceptPayload(payload) {
 
   return {
     token,
-    displayName
+    displayName,
+    password
+  };
+}
+
+function validatePassword(value, field, details) {
+  const password = typeof value === 'string' ? value : '';
+  if (
+    password.length < 10 ||
+    password.length > 128 ||
+    !/[A-Za-z]/.test(password) ||
+    !/[0-9]/.test(password)
+  ) {
+    details.push({ field, message: `${field} must be 10 to 128 characters and include letters and numbers.` });
+  }
+  return password;
+}
+
+function validateCompanyAuthLoginPayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const email = validateEmailField(body.email, 'email', details);
+  const password = typeof body.password === 'string' ? body.password : '';
+
+  if (!password || password.length > 128) {
+    details.push({ field: 'password', message: 'password is required and must be 128 characters or fewer.' });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    email,
+    password
   };
 }
 
@@ -544,6 +579,7 @@ module.exports = {
   validateAuditEventsQuery,
   validateActivityReportQuery,
   validateCompanySettingsPatchPayload,
+  validateCompanyAuthLoginPayload,
   validateCompanyInvitationPayload,
   validateCompanyRegistrationRequestPayload,
   validateCompanyRegistrationReviewPayload,

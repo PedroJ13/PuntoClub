@@ -141,6 +141,10 @@
 - TASK-160: Implementar Backend auth propia MVP de empresas.
 - TASK-161: Activar Web Crear acceso/login con auth propia MVP.
 - TASK-162: Validar flujo auth propia publicado.
+- TASK-163: Aplicar migracion SQL de auth propia en Azure SQL.
+- TASK-164: Confirmar deploy publicado de Backend auth propia.
+- TASK-165: Confirmar deploy publicado de Web auth propia.
+- TASK-166: Revalidar auth propia publicada end-to-end.
 
 ## P1 pre-lanzamiento
 
@@ -186,6 +190,7 @@
 - Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
+
 
 
 

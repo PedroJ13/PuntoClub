@@ -15,6 +15,7 @@ const {
   validateCompanyRegistrationReviewPayload,
   validateCompanyRole,
   validateCompanySettingsPatchPayload,
+  validateCompanyAuthLoginPayload,
   validateCustomerPayload,
   validateInvitationAcceptPayload,
   validateLogoFileMetadata,
@@ -140,14 +141,26 @@ test('company role and status helpers constrain known values', () => {
   assert.equal(isAllowedCompanyUserStatus('disabled'), true);
 });
 
-test('invitation accept payload rejects password and externalSubject from frontend', () => {
+test('invitation accept payload requires password and rejects frontend authority fields', () => {
   assert.deepEqual(
-    validateInvitationAcceptPayload({ token: 'abc123', displayName: ' Maria ' }),
-    { token: 'abc123', displayName: 'Maria' }
+    validateInvitationAcceptPayload({ token: 'abc123', displayName: ' Maria ', password: 'Password123' }),
+    { token: 'abc123', displayName: 'Maria', password: 'Password123' }
   );
 
   assert.throws(
-    () => validateInvitationAcceptPayload({ token: 'abc123', password: 'secret', externalSubject: 'sub' }),
+    () => validateInvitationAcceptPayload({ token: 'abc123', password: 'short', externalSubject: 'sub', companyId: '10' }),
+    /One or more fields are invalid/
+  );
+});
+
+test('company auth login payload normalizes email and keeps password opaque', () => {
+  assert.deepEqual(
+    validateCompanyAuthLoginPayload({ email: ' OWNER@CafeCentral.TEST ', password: 'Password123' }),
+    { email: 'owner@cafecentral.test', password: 'Password123' }
+  );
+
+  assert.throws(
+    () => validateCompanyAuthLoginPayload({ email: 'bad', password: '' }),
     /One or more fields are invalid/
   );
 });

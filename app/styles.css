@@ -219,7 +219,8 @@ textarea:focus {
 }
 
 .app-body[hidden],
-.invitation-page[hidden] {
+.invitation-page[hidden],
+.auth-page[hidden] {
   display: none;
 }
 
@@ -284,8 +285,20 @@ textarea:focus {
   padding-top: 22px;
 }
 
+.auth-page {
+  display: grid;
+  min-height: calc(100vh - 112px);
+  align-items: start;
+  padding-top: 22px;
+}
+
 .invitation-card {
   width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.auth-card {
+  width: min(520px, 100%);
   margin: 0 auto;
 }
 
@@ -378,6 +391,7 @@ textarea:focus {
 .redemption-form,
 .company-form,
 .company-registration-form,
+.auth-form,
 .report-form,
 .audit-form {
   display: grid;
@@ -392,6 +406,7 @@ textarea:focus {
 #invitation-loading[hidden],
 #invitation-valid[hidden],
 #invitation-unavailable[hidden],
+#auth-page[hidden],
 .success-message[hidden],
 .form-error[hidden],
 .feedback[hidden],

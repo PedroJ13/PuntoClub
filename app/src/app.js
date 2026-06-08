@@ -5,7 +5,19 @@ const api = createCustomerApi(config);
 
 const elements = {
   dataSourceStatus: document.querySelector("#data-source-status"),
+  authStatus: document.querySelector("#auth-status"),
+  loginButton: document.querySelector("#login-button"),
+  logoutButton: document.querySelector("#logout-button"),
   appBody: document.querySelector(".app-body"),
+  authPage: document.querySelector("#auth-page"),
+  loginForm: document.querySelector("#login-form"),
+  loginEmailInput: document.querySelector("#login-email"),
+  loginPasswordInput: document.querySelector("#login-password"),
+  loginEmailError: document.querySelector("#login-email-error"),
+  loginPasswordError: document.querySelector("#login-password-error"),
+  loginError: document.querySelector("#login-error"),
+  loginStatus: document.querySelector("#login-status"),
+  submitLoginButton: document.querySelector("#submit-login-button"),
   invitationPage: document.querySelector("#invitation-page"),
   invitationLoading: document.querySelector("#invitation-loading"),
   invitationError: document.querySelector("#invitation-error"),
@@ -15,6 +27,16 @@ const elements = {
   invitationEmail: document.querySelector("#invitation-email"),
   invitationRole: document.querySelector("#invitation-role"),
   invitationExpiresAt: document.querySelector("#invitation-expires-at"),
+  createAccessForm: document.querySelector("#create-access-form"),
+  accessDisplayNameInput: document.querySelector("#access-display-name"),
+  accessPasswordInput: document.querySelector("#access-password"),
+  accessPasswordConfirmationInput: document.querySelector("#access-password-confirmation"),
+  accessDisplayNameError: document.querySelector("#access-display-name-error"),
+  accessPasswordError: document.querySelector("#access-password-error"),
+  accessPasswordConfirmationError: document.querySelector("#access-password-confirmation-error"),
+  accessError: document.querySelector("#access-error"),
+  accessStatus: document.querySelector("#access-status"),
+  createAccessButton: document.querySelector("#create-access-button"),
   navButtons: [...document.querySelectorAll("[data-section-target]")],
   sectionPanels: [...document.querySelectorAll("[data-section]")],
   searchForm: document.querySelector("#customer-search-form"),
@@ -128,10 +150,13 @@ let currentCustomers = [];
 let selectedCustomer = null;
 let currentReport = null;
 let currentCompanySettings = null;
+let currentAuthIdentity = null;
+let currentInvitation = null;
 let activeSection = "operations";
 const customerBalances = new Map();
 const invitationToken = getInvitationTokenFromUrl();
 const isInvitationPage = isCompanyInvitationRoute();
+const isLoginPage = isCompanyLoginRoute();
 
 elements.dataSourceStatus.textContent = api.sourceLabel;
 elements.purchaseDateInput.value = getToday();
@@ -196,6 +221,24 @@ elements.auditForm.addEventListener("submit", async (event) => {
   await loadAuditEvents();
 });
 
+elements.loginForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitCompanyLogin();
+});
+
+elements.loginButton.addEventListener("click", () => {
+  window.location.href = "/login";
+});
+
+elements.logoutButton.addEventListener("click", async () => {
+  await logoutCompany();
+});
+
+elements.createAccessForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitCreateAccess();
+});
+
 elements.companyForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   await submitCompanySettings();
@@ -229,8 +272,12 @@ renderAuditPrompt();
 if (isInvitationPage) {
   showInvitationPage();
   validateCompanyInvitation(invitationToken);
+} else if (isLoginPage) {
+  showLoginPage();
+  refreshAuthIdentity({ silent: true });
 } else {
   loadCompanySettings();
+  refreshAuthIdentity({ silent: true });
   elements.searchInput.focus();
 }
 
@@ -772,6 +819,7 @@ async function validateCompanyInvitation(token) {
     const result = await api.validateCompanyInvitation(token);
 
     if (result.valid) {
+      currentInvitation = result;
       renderInvitationValid(result);
       return;
     }
@@ -779,6 +827,83 @@ async function validateCompanyInvitation(token) {
     renderInvitationUnavailable(result.reason || "invalid");
   } catch (error) {
     renderInvitationServiceError(error);
+  }
+}
+
+async function submitCreateAccess() {
+  clearCreateAccessMessages();
+
+  if (!currentInvitation || !invitationToken) {
+    renderInvitationUnavailable("invalid");
+    return;
+  }
+
+  if (!validateCreateAccessForm()) {
+    return;
+  }
+
+  setCreateAccessSubmitting(true);
+
+  try {
+    const result = await api.acceptCompanyInvitation({
+      token: invitationToken,
+      displayName: elements.accessDisplayNameInput.value.trim() || null,
+      password: elements.accessPasswordInput.value,
+    });
+    renderAccessCreated(result);
+  } catch (error) {
+    renderCreateAccessError(error);
+  } finally {
+    setCreateAccessSubmitting(false);
+  }
+}
+
+async function submitCompanyLogin() {
+  clearLoginMessages();
+  setLoginSubmitting(true);
+
+  try {
+    const identity = await api.loginCompany({
+      email: elements.loginEmailInput.value,
+      password: elements.loginPasswordInput.value,
+    });
+    currentAuthIdentity = identity;
+    renderAuthIdentity(identity);
+    showLoginStatus("Sesion iniciada.");
+    elements.loginPasswordInput.value = "";
+  } catch (error) {
+    renderLoginError(error);
+  } finally {
+    setLoginSubmitting(false);
+  }
+}
+
+async function refreshAuthIdentity(options = {}) {
+  try {
+    const identity = await api.getCurrentCompanyUser();
+    currentAuthIdentity = identity;
+    renderAuthIdentity(identity);
+  } catch (error) {
+    currentAuthIdentity = null;
+    renderSignedOut();
+
+    if (!options.silent && error instanceof ApiError && error.code === "UNAUTHORIZED") {
+      showLoginError("La sesion expiro. Inicie sesion de nuevo.");
+    }
+  }
+}
+
+async function logoutCompany() {
+  try {
+    await api.logoutCompany();
+  } catch (error) {
+    // Even if the server cannot revoke, clear only the visible client state.
+  }
+
+  currentAuthIdentity = null;
+  renderSignedOut();
+  if (isLoginPage) {
+    showLoginStatus("Sesion cerrada.");
   }
 }
 
@@ -1173,6 +1298,7 @@ function renderCompanyRegistrationError(error) {
 }
 
 function renderInvitationLoading() {
+  currentInvitation = null;
   elements.invitationLoading.hidden = false;
   elements.invitationLoading.textContent = "Validando invitacion...";
   elements.invitationError.hidden = true;
@@ -1191,6 +1317,10 @@ function renderInvitationValid(invitation) {
   elements.invitationEmail.textContent = invitation.email || "No disponible";
   elements.invitationRole.textContent = getInvitationRoleLabel(invitation.role);
   elements.invitationExpiresAt.textContent = formatDateTime(invitation.expiresAt);
+  elements.accessDisplayNameInput.value = "";
+  elements.accessPasswordInput.value = "";
+  elements.accessPasswordConfirmationInput.value = "";
+  clearCreateAccessMessages();
 }
 
 function renderInvitationUnavailable(reason) {
@@ -1217,6 +1347,91 @@ function renderInvitationServiceError(error) {
 
   elements.invitationError.hidden = false;
   elements.invitationError.textContent = "El servicio no esta disponible en este momento. Intente mas tarde.";
+}
+
+function renderAccessCreated(result) {
+  elements.createAccessForm.hidden = true;
+  elements.accessStatus.hidden = false;
+  elements.accessStatus.textContent =
+    "Acceso creado. Ya puede iniciar sesion con el correo de la invitacion.";
+  elements.loginEmailInput.value = result.email || currentInvitation?.email || "";
+}
+
+function renderCreateAccessError(error) {
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    error.details.forEach((detail) => {
+      const target = {
+        displayName: elements.accessDisplayNameError,
+        password: elements.accessPasswordError,
+      }[detail.field];
+
+      if (target) {
+        target.textContent = getCreateAccessValidationMessage(detail);
+      }
+    });
+    showAccessError("Revise los campos marcados.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "INVITATION_EXPIRED") {
+    renderInvitationUnavailable("expired");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "INVITATION_ALREADY_ACCEPTED") {
+    renderInvitationUnavailable("accepted");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "COMPANY_USER_ALREADY_EXISTS") {
+    showAccessError("Ya existe un acceso para ese correo. Inicie sesion.");
+    return;
+  }
+
+  showAccessError("No se pudo crear el acceso. Intente de nuevo.");
+}
+
+function renderLoginError(error) {
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    error.details.forEach((detail) => {
+      const target = {
+        email: elements.loginEmailError,
+        password: elements.loginPasswordError,
+      }[detail.field];
+
+      if (target) {
+        target.textContent = getLoginValidationMessage(detail);
+      }
+    });
+    showLoginError("Revise los campos marcados.");
+    return;
+  }
+
+  if (error instanceof ApiError && ["UNAUTHORIZED", "FORBIDDEN"].includes(error.code)) {
+    showLoginError("Correo o password incorrecto.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "RATE_LIMITED") {
+    showLoginError("Hay demasiados intentos recientes. Espere unos minutos e intente de nuevo.");
+    return;
+  }
+
+  showLoginError("No se pudo iniciar sesion. Intente de nuevo.");
+}
+
+function renderAuthIdentity(identity) {
+  const companyName = identity?.company?.name || "Empresa";
+  const email = identity?.user?.email || "Sesion iniciada";
+  elements.authStatus.textContent = `${companyName} - ${email}`;
+  elements.loginButton.hidden = true;
+  elements.logoutButton.hidden = false;
+}
+
+function renderSignedOut() {
+  elements.authStatus.textContent = "Sesion no iniciada";
+  elements.loginButton.hidden = false;
+  elements.logoutButton.hidden = true;
 }
 
 function renderCustomersError(error) {
@@ -1371,6 +1586,24 @@ function getCompanyRegistrationValidationMessage(detail) {
   return messagesByField[detail.field] ?? detail.message;
 }
 
+function getCreateAccessValidationMessage(detail) {
+  const messagesByField = {
+    displayName: "El nombre debe tener 160 caracteres o menos.",
+    password: "Use 10 a 128 caracteres, con letras y numeros.",
+  };
+
+  return messagesByField[detail.field] ?? detail.message;
+}
+
+function getLoginValidationMessage(detail) {
+  const messagesByField = {
+    email: "Ingrese un correo valido.",
+    password: "Ingrese el password.",
+  };
+
+  return messagesByField[detail.field] ?? detail.message;
+}
+
 function clearCustomerMessages() {
   setCustomersFeedback("");
 }
@@ -1438,6 +1671,21 @@ function showCompanyError(message) {
 function showCompanyRegistrationError(message) {
   elements.registrationError.hidden = false;
   elements.registrationError.textContent = message;
+}
+
+function showAccessError(message) {
+  elements.accessError.hidden = false;
+  elements.accessError.textContent = message;
+}
+
+function showLoginError(message) {
+  elements.loginError.hidden = false;
+  elements.loginError.textContent = message;
+}
+
+function showLoginStatus(message) {
+  elements.loginStatus.hidden = false;
+  elements.loginStatus.textContent = message;
 }
 
 function clearForm(options = {}) {
@@ -1549,6 +1797,25 @@ function clearCompanyRegistrationMessages() {
   elements.registrationResult.innerHTML = "";
 }
 
+function clearCreateAccessMessages() {
+  elements.accessDisplayNameError.textContent = "";
+  elements.accessPasswordError.textContent = "";
+  elements.accessPasswordConfirmationError.textContent = "";
+  elements.accessError.hidden = true;
+  elements.accessError.textContent = "";
+  elements.accessStatus.hidden = true;
+  elements.accessStatus.textContent = "";
+}
+
+function clearLoginMessages() {
+  elements.loginEmailError.textContent = "";
+  elements.loginPasswordError.textContent = "";
+  elements.loginError.hidden = true;
+  elements.loginError.textContent = "";
+  elements.loginStatus.hidden = true;
+  elements.loginStatus.textContent = "";
+}
+
 function setSubmitting(isSubmitting) {
   elements.saveButton.disabled = isSubmitting;
   elements.saveButton.textContent = isSubmitting ? "Registrando..." : "Registrar cliente";
@@ -1592,9 +1859,51 @@ function setCompanyRegistrationSubmitting(isSubmitting) {
   elements.submitRegistrationButton.textContent = isSubmitting ? "Enviando..." : "Enviar solicitud";
 }
 
+function setCreateAccessSubmitting(isSubmitting) {
+  elements.createAccessButton.disabled = isSubmitting;
+  elements.createAccessButton.textContent = isSubmitting ? "Creando..." : "Crear acceso";
+}
+
+function setLoginSubmitting(isSubmitting) {
+  elements.submitLoginButton.disabled = isSubmitting;
+  elements.submitLoginButton.textContent = isSubmitting ? "Entrando..." : "Entrar";
+}
+
 function showInvitationPage() {
   elements.appBody.hidden = true;
+  elements.authPage.hidden = true;
   elements.invitationPage.hidden = false;
+}
+
+function showLoginPage() {
+  elements.appBody.hidden = true;
+  elements.invitationPage.hidden = true;
+  elements.authPage.hidden = false;
+  window.requestAnimationFrame(() => {
+    elements.loginEmailInput.focus();
+  });
+}
+
+function validateCreateAccessForm() {
+  const password = elements.accessPasswordInput.value;
+  const confirmation = elements.accessPasswordConfirmationInput.value;
+  let isValid = true;
+
+  if (!isStrongPassword(password)) {
+    elements.accessPasswordError.textContent = "Use 10 a 128 caracteres, con letras y numeros.";
+    isValid = false;
+  }
+
+  if (password !== confirmation) {
+    elements.accessPasswordConfirmationError.textContent = "Los passwords no coinciden.";
+    isValid = false;
+  }
+
+  if (!isValid) {
+    showAccessError("Revise los campos marcados.");
+  }
+
+  return isValid;
 }
 
 function getBalanceValue(balance) {
@@ -1790,8 +2099,21 @@ function isCompanyInvitationRoute() {
   return window.location.pathname.replace(/\/$/, "") === "/company-invitations/accept";
 }
 
+function isCompanyLoginRoute() {
+  return window.location.pathname.replace(/\/$/, "") === "/login";
+}
+
 function getInvitationTokenFromUrl() {
   return new URLSearchParams(window.location.search).get("token") || "";
+}
+
+function isStrongPassword(password) {
+  return (
+    password.length >= 10 &&
+    password.length <= 128 &&
+    /[A-Za-z]/.test(password) &&
+    /[0-9]/.test(password)
+  );
 }
 
 function getSafeHttpUrl(value) {

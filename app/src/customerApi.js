@@ -43,11 +43,29 @@ let mockCompanySettings = {
   updatedAt: "2026-06-02T15:20:00Z",
 };
 let mockCompanyRegistrationRequests = [];
+let mockAcceptedInvitationTokens = new Set();
+let mockLocalCompanyUsers = [
+  {
+    id: "399",
+    email: "owner@mock.test",
+    displayName: "Owner Mock",
+    role: "owner",
+    status: "active",
+    password: "Password123",
+    company: {
+      id: "9",
+      name: "Empresa Mock",
+      status: "active",
+    },
+  },
+];
+let mockAuthIdentity = null;
 let nextCustomerId = 12;
 let nextPurchaseId = 50;
 let nextRedemptionId = 70;
 let nextAuditEventId = 1;
 let nextCompanyRegistrationRequestId = 200;
+let nextCompanyUserId = 400;
 
 export class ApiError extends Error {
   constructor(code, message, details = []) {
@@ -78,9 +96,48 @@ function createHttpCustomerApi(config) {
   const settingsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/settings`);
   const companyRegistrationRequestsUrl = buildApiUrl(config, "/api/company-registration-requests");
   const companyInvitationsValidateUrl = buildApiUrl(config, "/api/company-invitations/validate");
+  const companyInvitationsAcceptUrl = buildApiUrl(config, "/api/company-invitations/accept");
+  const companyAuthLoginUrl = buildApiUrl(config, "/api/company-auth/login");
+  const companyAuthLogoutUrl = buildApiUrl(config, "/api/company-auth/logout");
+  const meUrl = buildApiUrl(config, "/api/me");
 
   return {
     sourceLabel: "API real",
+    async acceptCompanyInvitation(payload) {
+      const response = await fetch(companyInvitationsAcceptUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      return parseResponse(response);
+    },
+    async loginCompany(payload) {
+      const response = await fetch(companyAuthLoginUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      return parseResponse(response);
+    },
+    async logoutCompany() {
+      const response = await fetch(companyAuthLogoutUrl, {
+        method: "POST",
+        credentials: "include",
+      });
+
+      return parseResponse(response);
+    },
+    async getCurrentCompanyUser() {
+      const response = await fetch(meUrl, {
+        credentials: "include",
+      });
+
+      return parseResponse(response);
+    },
     async validateCompanyInvitation(token) {
       const url = new URL(companyInvitationsValidateUrl, window.location.origin);
       url.searchParams.set("token", token);
@@ -188,6 +245,27 @@ function buildApiUrl(config, path) {
 function createMockCustomerApi() {
   return {
     sourceLabel: "Mock local",
+    async acceptCompanyInvitation(payload) {
+      await wait(450);
+      return acceptMockCompanyInvitation(payload);
+    },
+    async loginCompany(payload) {
+      await wait(350);
+      return loginMockCompany(payload);
+    },
+    async logoutCompany() {
+      await wait(200);
+      mockAuthIdentity = null;
+      return { ok: true };
+    },
+    async getCurrentCompanyUser() {
+      await wait(200);
+      if (!mockAuthIdentity) {
+        throw new ApiError("UNAUTHORIZED", "Authentication is required.");
+      }
+
+      return mockAuthIdentity;
+    },
     async validateCompanyInvitation(token) {
       await wait(350);
       return validateMockCompanyInvitation(token);
@@ -710,6 +788,10 @@ function validateMockCompanyInvitation(token) {
     return { valid: false, reason: "revoked" };
   }
 
+  if (mockAcceptedInvitationTokens.has(normalizedToken)) {
+    return { valid: false, reason: "accepted" };
+  }
+
   if (!validTokens.has(normalizedToken)) {
     return { valid: false, reason: "invalid" };
   }
@@ -723,6 +805,147 @@ function validateMockCompanyInvitation(token) {
     role: "owner",
     expiresAt: "2026-06-14T19:00:00Z",
   };
+}
+
+function acceptMockCompanyInvitation(payload) {
+  validateInvitationAcceptPayload(payload);
+  const normalizedToken = normalize(payload.token);
+  const invitation = validateMockCompanyInvitation(normalizedToken);
+
+  if (!invitation.valid) {
+    throwInvitationStateError(invitation.reason);
+  }
+
+  const email = normalize(invitation.email);
+  const existingUser = mockLocalCompanyUsers.find((user) => normalize(user.email) === email);
+  if (existingUser) {
+    throw new ApiError("COMPANY_USER_ALREADY_EXISTS", "Ya existe un usuario para esa invitacion.");
+  }
+
+  const now = new Date().toISOString();
+  const user = {
+    id: String(nextCompanyUserId),
+    email: invitation.email,
+    displayName: String(payload.displayName || "").trim() || invitation.companyName,
+    role: invitation.role,
+    status: "active",
+    password: payload.password,
+  };
+  const company = {
+    id: String(invitation.companyId),
+    name: invitation.companyName,
+    status: "active",
+  };
+
+  nextCompanyUserId += 1;
+  mockLocalCompanyUsers = [{ ...user, company }, ...mockLocalCompanyUsers];
+  mockAcceptedInvitationTokens.add(normalizedToken);
+
+  return {
+    companyId: company.id,
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+    companyStatus: company.status,
+    createdAt: now,
+  };
+}
+
+function loginMockCompany(payload) {
+  validateCompanyAuthLoginPayload(payload);
+  const email = normalize(payload.email);
+  const user = mockLocalCompanyUsers.find((item) => normalize(item.email) === email);
+
+  if (!user || user.password !== payload.password) {
+    throw new ApiError("UNAUTHORIZED", "Invalid email or password.");
+  }
+
+  mockAuthIdentity = {
+    user: {
+      id: user.id,
+      email: user.email,
+      displayName: user.displayName,
+      role: user.role,
+      status: user.status,
+    },
+    company: {
+      id: user.company.id,
+      name: user.company.name,
+      status: user.company.status,
+    },
+  };
+
+  return mockAuthIdentity;
+}
+
+function validateInvitationAcceptPayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const password = String(body.password || "");
+
+  if (!String(body.token || "").trim()) {
+    details.push({ field: "token", message: "La invitacion no esta disponible." });
+  }
+
+  if (String(body.displayName || "").trim().length > 160) {
+    details.push({ field: "displayName", message: "El nombre debe tener 160 caracteres o menos." });
+  }
+
+  if (!isStrongPassword(password)) {
+    details.push({
+      field: "password",
+      message: "El password debe tener 10 a 128 caracteres e incluir letras y numeros.",
+    });
+  }
+
+  ["companyId", "email", "externalSubject"].forEach((field) => {
+    if (hasOwn(body, field)) {
+      details.push({ field, message: "El campo no debe enviarse desde el frontend." });
+    }
+  });
+
+  if (details.length > 0) {
+    throw new ApiError("VALIDATION_ERROR", "Revise los campos marcados.", details);
+  }
+}
+
+function validateCompanyAuthLoginPayload(payload) {
+  const details = [];
+  const email = String(payload?.email || "").trim();
+  const password = String(payload?.password || "");
+
+  if (!email || !isEmail(email)) {
+    details.push({ field: "email", message: "Ingrese un correo valido." });
+  }
+
+  if (!password || password.length > 128) {
+    details.push({ field: "password", message: "Ingrese el password." });
+  }
+
+  if (details.length > 0) {
+    throw new ApiError("VALIDATION_ERROR", "Revise los campos marcados.", details);
+  }
+}
+
+function throwInvitationStateError(reason) {
+  if (reason === "expired") {
+    throw new ApiError("INVITATION_EXPIRED", "La invitacion expiro.");
+  }
+
+  if (reason === "accepted") {
+    throw new ApiError("INVITATION_ALREADY_ACCEPTED", "La invitacion ya fue aceptada.");
+  }
+
+  throw new ApiError("INVITATION_NOT_FOUND", "La invitacion no esta disponible.");
+}
+
+function isStrongPassword(password) {
+  return (
+    password.length >= 10 &&
+    password.length <= 128 &&
+    /[A-Za-z]/.test(password) &&
+    /[0-9]/.test(password)
+  );
 }
 
 function normalizeNullableText(value) {

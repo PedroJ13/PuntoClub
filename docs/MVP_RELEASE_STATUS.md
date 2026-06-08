@@ -41,7 +41,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Bloqueado
 
-- Crear acceso/login/password productivos se desbloquean por nueva decision de auth propia MVP. Registro de empresa, email real, invitacion y pantalla publica ya estan validados; falta implementar password hash, sesiones server-side y endpoints privados que deriven companyId desde sesion.
+- Crear acceso/login/password productivos avanzan con auth propia MVP. SQL, Backend y Web ya prepararon migracion/codigo local en TASK-159/TASK-160/TASK-161, pero QA no aprobo publicado en TASK-162 porque falta aplicar migracion Azure SQL y desplegar API/Web.
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla web por zonas.
 - No hay bloqueos P0/P1 abiertos para historial publicado.
 - No hay bloqueos P0/P1 abiertos para integridad SQL auditada.
@@ -302,6 +302,14 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-160: Asignada a Backend API para implementar auth propia MVP de empresa.
 - TASK-161: Asignada a Web Dev para activar Crear acceso/login con auth propia MVP.
 - TASK-162: Asignada a QA para validar invitacion -> crear password -> login -> panel empresa.
+- TASK-159: SQL DEV preparo migracion 20260608_company_local_auth_sessions.sql; no aplicada en Azure SQL.
+- TASK-160: Backend API implemento auth propia MVP localmente; 79 tests pasaron, pendiente deploy/migracion.
+- TASK-161: Web Dev implemento Crear acceso/login localmente; pendiente deploy publicado.
+- TASK-162: QA no aprobo publicado por endpoints 404, web anterior y migracion SQL pendiente.
+- TASK-163: Asignada a SQL DEV para aplicar migracion SQL de auth propia en Azure SQL.
+- TASK-164: Asignada a Backend API para confirmar deploy publicado de endpoints auth propia.
+- TASK-165: Asignada a Web Dev para confirmar deploy publicado de Web auth propia.
+- TASK-166: Asignada a QA para revalidar auth propia publicada end-to-end.
 
 ## Riesgos principales
 
@@ -312,7 +320,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Avanzar con auth propia MVP: SQL DEV debe preparar soporte de password hash y sesiones, Backend API debe implementar activacion/login/sesion y Web Dev debe activar Crear acceso/login cuando el contrato este listo. Entra External ID queda diferido.
+Aplicar la migracion SQL de auth propia, desplegar API/Web con los cambios locales y reintentar QA publicado. Entra External ID queda diferido.
 
 ## Listo para probar
 
@@ -337,6 +345,7 @@ Avanzar con auth propia MVP: SQL DEV debe preparar soporte de password hash y se
 - Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
+
 
 
 

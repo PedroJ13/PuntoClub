@@ -15,6 +15,9 @@
           <h1>Punto Club</h1>
         </div>
         <div class="topbar-actions">
+          <div class="status-pill" id="auth-status">Sesion no iniciada</div>
+          <button class="secondary-button" id="login-button" type="button">Iniciar sesion</button>
+          <button class="secondary-button" id="logout-button" type="button" hidden>Cerrar sesion</button>
           <div class="status-pill" id="data-source-status">Mock local</div>
         </div>
       </header>
@@ -58,12 +61,71 @@
             </div>
 
             <div class="invitation-actions">
-              <button id="create-access-button" type="button" disabled>Crear acceso</button>
-              <p>La creacion de acceso se habilitara cuando el login este listo.</p>
+              <form id="create-access-form" class="auth-form" novalidate>
+                <div class="field">
+                  <label for="access-display-name">Nombre de contacto</label>
+                  <input id="access-display-name" name="displayName" maxlength="160" autocomplete="name" />
+                  <p class="field-error" id="access-display-name-error"></p>
+                </div>
+
+                <div class="field-grid">
+                  <div class="field">
+                    <label for="access-password">Password</label>
+                    <input id="access-password" name="password" type="password" maxlength="128" autocomplete="new-password" />
+                    <p class="field-help">Use 10 a 128 caracteres, con letras y numeros.</p>
+                    <p class="field-error" id="access-password-error"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="access-password-confirmation">Confirmar password</label>
+                    <input
+                      id="access-password-confirmation"
+                      name="passwordConfirmation"
+                      type="password"
+                      maxlength="128"
+                      autocomplete="new-password"
+                    />
+                    <p class="field-error" id="access-password-confirmation-error"></p>
+                  </div>
+                </div>
+
+                <div id="access-error" class="form-error" hidden></div>
+                <div id="access-status" class="success-message" hidden></div>
+
+                <button id="create-access-button" type="submit">Crear acceso</button>
+              </form>
             </div>
           </div>
 
           <div id="invitation-unavailable" class="invitation-result is-unavailable" hidden></div>
+        </div>
+      </section>
+
+      <section id="auth-page" class="auth-page" aria-labelledby="login-title" hidden>
+        <div class="auth-card zone-card">
+          <p class="eyebrow">Acceso de empresa</p>
+          <h2 id="login-title">Iniciar sesion</h2>
+
+          <div id="login-status" class="success-message" hidden></div>
+          <div id="login-error" class="form-error" hidden></div>
+
+          <form id="login-form" class="auth-form" novalidate>
+            <div class="field">
+              <label for="login-email">Correo</label>
+              <input id="login-email" name="email" maxlength="254" autocomplete="email" inputmode="email" />
+              <p class="field-error" id="login-email-error"></p>
+            </div>
+
+            <div class="field">
+              <label for="login-password">Password</label>
+              <input id="login-password" name="password" type="password" maxlength="128" autocomplete="current-password" />
+              <p class="field-error" id="login-password-error"></p>
+            </div>
+
+            <div class="form-actions">
+              <button id="submit-login-button" type="submit">Entrar</button>
+            </div>
+          </form>
         </div>
       </section>
 
