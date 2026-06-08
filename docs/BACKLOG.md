@@ -145,6 +145,8 @@
 - TASK-164: Confirmar deploy publicado de Backend auth propia.
 - TASK-165: Confirmar deploy publicado de Web auth propia.
 - TASK-166: Revalidar auth propia publicada end-to-end.
+- TASK-167: Reemitir invitacion fresca para QA auth propia.
+- TASK-168: Reintentar QA E2E auth propia con invitacion fresca.
 
 ## P1 pre-lanzamiento
 
@@ -190,6 +192,7 @@
 - Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
+
 
 
 

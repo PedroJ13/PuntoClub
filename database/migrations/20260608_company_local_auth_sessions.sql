@@ -81,6 +81,7 @@ AND EXISTS (
 )
 BEGIN
     DECLARE @defaultConstraintName sysname;
+    DECLARE @dropDefaultSql nvarchar(max);
 
     SELECT @defaultConstraintName = dc.name
     FROM sys.default_constraints AS dc
@@ -90,7 +91,8 @@ BEGIN
     WHERE dc.parent_object_id = OBJECT_ID('dbo.CompanyUsers')
       AND c.name = 'auth_provider';
 
-    EXEC('ALTER TABLE dbo.CompanyUsers DROP CONSTRAINT ' + QUOTENAME(@defaultConstraintName));
+    SET @dropDefaultSql = N'ALTER TABLE dbo.CompanyUsers DROP CONSTRAINT ' + QUOTENAME(@defaultConstraintName);
+    EXEC sp_executesql @dropDefaultSql;
 END;
 GO
 

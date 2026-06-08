@@ -310,6 +310,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-164: Asignada a Backend API para confirmar deploy publicado de endpoints auth propia.
 - TASK-165: Asignada a Web Dev para confirmar deploy publicado de Web auth propia.
 - TASK-166: Asignada a QA para revalidar auth propia publicada end-to-end.
+- TASK-163: SQL DEV aplico y valido migracion de auth propia en Azure SQL; regla temporal retirada.
+- TASK-164: Backend API confirmo deploy publicado de endpoints auth propia; ya no responden 404.
+- TASK-165: Web Dev confirmo deploy publicado de Crear acceso/login auth propia.
+- TASK-166: QA valido negativos y publicacion, pero no aprobo E2E por falta de invitacion fresca segura; token real visto en captura se considera comprometido.
+- TASK-167: Asignada a Infra / Azure para reemitir invitacion fresca sin exponer token.
+- TASK-168: Asignada a QA para reintentar E2E auth propia con invitacion fresca.
 
 ## Riesgos principales
 
@@ -320,7 +326,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Aplicar la migracion SQL de auth propia, desplegar API/Web con los cambios locales y reintentar QA publicado. Entra External ID queda diferido.
+Reemitir una invitacion fresca sin exponer token y reintentar QA E2E de auth propia publicada. Entra External ID queda diferido.
 
 ## Listo para probar
 
@@ -345,6 +351,7 @@ Aplicar la migracion SQL de auth propia, desplegar API/Web con los cambios local
 - Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
+
 
 
 
