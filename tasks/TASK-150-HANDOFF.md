@@ -10,6 +10,13 @@ Fecha/hora:
 
 - `2026-06-08 11:13 -06:00`
 
+Re-ejecucion:
+
+- `2026-06-08 11:39 -06:00`
+- La asignacion `tasks/TASK-150-assignment.md` fue releida y no cambio.
+- No se recibio un mailbox directo nuevo confirmado por Product Owner.
+- No se hizo resend adicional ni se creo una invitacion nueva, para evitar rotar el link o generar invitaciones pendientes sin destino confirmado.
+
 ## Invitacion revisada
 
 Datos no sensibles:

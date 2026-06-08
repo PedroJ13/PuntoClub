@@ -132,6 +132,8 @@
 - TASK-151: Reintentar validacion de invitacion real con link confirmado.
 - TASK-152: PO Test valida invitacion real desde mailbox con evidencia redaccionada.
 - TASK-153: QA revisa evidencia redaccionada de invitacion real.
+- TASK-154: Cerrar validacion de invitacion real con evidencia PO.
+- TASK-155: Rotar invitacion expuesta y reenviar sin publicar token.
 
 ## P1 pre-lanzamiento
 
@@ -177,3 +179,4 @@
 - Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
+
