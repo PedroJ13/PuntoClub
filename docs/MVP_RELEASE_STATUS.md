@@ -21,7 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
-- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos y UI de solicitud de empresa quedaron validados; Entra External ID sigue pendiente/manual. La pantalla publica de invitacion y fallback existen localmente, pendiente revalidacion publicada despues de commit/deploy.
+- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. Entra External ID sigue pendiente/manual.
 
 ### Siguiente
 
@@ -272,6 +272,9 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-143: Web Dev agrego `app/staticwebapp.config.json` con `navigationFallback.rewrite` a `/index.html`; validado localmente con SWA CLI.
 - TASK-144: QA no aprobo porque el fallback aun no estaba efectivo en el ambiente publicado; pendiente revalidar despues de commit/deploy del config.
 - TASK-145: Asignada a QA para revalidar fallback publicado despues de subir `app/staticwebapp.config.json`.
+- TASK-145: QA aprobo fallback publicado; `/company-invitations/accept` ya renderiza Punto Club y muestra estados controlados sin P0/P1/P2/P3.
+- TASK-146: Asignada a Infra / Azure para ejecutar aprobacion controlada y generar invitacion real sin exponer secretos.
+- TASK-147: Asignada a QA para validar invitacion real publicada si recibe link seguro fuera del repo.
 
 ## Riesgos principales
 
@@ -282,7 +285,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Revalidar fallback/rewrite publicado de Static Web Apps despues del commit/deploy de `app/staticwebapp.config.json`. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
+Validar una invitacion real de punta a punta hasta pantalla publica, usando token admin/link por canal seguro y sin documentar secretos. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
 
 ## Listo para probar
 
@@ -304,5 +307,6 @@ Revalidar fallback/rewrite publicado de Static Web Apps despues del commit/deplo
 - Configuracion de empresa piloto: aprobada por QA en TASK-110.
 - Menu lateral publicado con Operaciones, Mi empresa y Reportes: aprobado por QA en TASK-118.
 - Solicitud publica de empresa y endpoints internos cerrados sin token: aprobado por QA en TASK-138.
+- Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
