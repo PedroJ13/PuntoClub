@@ -214,6 +214,117 @@
           >
             <h2 id="company-section-title" class="sr-only">Mi empresa</h2>
 
+            <section
+              id="company-registration-panel"
+              class="company-registration-panel zone-card"
+              aria-labelledby="company-registration-title"
+            >
+              <div class="section-header">
+                <div>
+                  <h2 id="company-registration-title">Registrar empresa</h2>
+                  <p class="section-support">
+                    Complete los datos de la empresa. Revisaremos la solicitud y enviaremos una invitacion al correo
+                    indicado para crear el acceso.
+                  </p>
+                </div>
+              </div>
+
+              <div id="registration-status" class="success-message" hidden></div>
+              <div id="registration-error" class="form-error" hidden></div>
+              <div id="registration-result" class="registration-result" hidden></div>
+
+              <form id="company-registration-form" class="company-registration-form" novalidate>
+                <div class="field-grid company-registration-controls">
+                  <div class="field">
+                    <label for="registration-company-name">Nombre de empresa</label>
+                    <input
+                      id="registration-company-name"
+                      name="companyName"
+                      maxlength="160"
+                      autocomplete="organization"
+                    />
+                    <p class="field-error" id="registration-company-name-error"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="registration-company-email">Correo de empresa</label>
+                    <input
+                      id="registration-company-email"
+                      name="companyEmail"
+                      maxlength="254"
+                      autocomplete="email"
+                      inputmode="email"
+                    />
+                    <p class="field-help">Este correo sera el usuario principal para entrar a Punto Club.</p>
+                    <p class="field-error" id="registration-company-email-error"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="registration-company-address">Direccion</label>
+                    <textarea
+                      id="registration-company-address"
+                      name="companyAddress"
+                      maxlength="300"
+                      rows="3"
+                      autocomplete="street-address"
+                    ></textarea>
+                    <p class="field-help">Use la direccion principal de la empresa.</p>
+                    <p class="field-error" id="registration-company-address-error"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="registration-company-phone">Telefono de empresa</label>
+                    <input
+                      id="registration-company-phone"
+                      name="companyPhone"
+                      maxlength="32"
+                      autocomplete="tel"
+                    />
+                    <p class="field-error" id="registration-company-phone-error"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="registration-contact-name">Nombre de contacto</label>
+                    <input
+                      id="registration-contact-name"
+                      name="contactName"
+                      maxlength="160"
+                      autocomplete="name"
+                    />
+                    <p class="field-error" id="registration-contact-name-error"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="registration-contact-email">Correo de contacto</label>
+                    <input
+                      id="registration-contact-email"
+                      name="contactEmail"
+                      maxlength="254"
+                      autocomplete="email"
+                      inputmode="email"
+                    />
+                    <p class="field-error" id="registration-contact-email-error"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="registration-contact-phone">Telefono de contacto</label>
+                    <input
+                      id="registration-contact-phone"
+                      name="contactPhone"
+                      maxlength="32"
+                      autocomplete="tel"
+                    />
+                    <p class="field-error" id="registration-contact-phone-error"></p>
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button class="secondary-button" id="reset-registration-button" type="button">Limpiar</button>
+                  <button id="submit-registration-button" type="submit">Enviar solicitud</button>
+                </div>
+              </form>
+            </section>
+
             <section id="company-panel" class="company-panel zone-card" aria-labelledby="company-title">
               <div class="section-header">
                 <div>

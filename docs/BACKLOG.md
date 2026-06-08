@@ -115,6 +115,9 @@
 - TASK-134: Proteger endpoints internos de empresa con autorizacion temporal.
 - TASK-135: Guiar configuracion manual de Entra External ID.
 - TASK-136: Crear UI de solicitud de empresa.
+- TASK-137: Configurar app settings de autorizacion temporal interna.
+- TASK-138: Validar UI publicada de solicitud de empresa y seguridad interna.
+- TASK-139: Acompanar configuracion manual de Entra External ID.
 
 ## P1 pre-lanzamiento
 

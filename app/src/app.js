@@ -92,6 +92,26 @@ const elements = {
   companyCurrentLogo: document.querySelector("#company-current-logo"),
   reloadCompanyButton: document.querySelector("#reload-company-button"),
   saveCompanyButton: document.querySelector("#save-company-button"),
+  companyRegistrationForm: document.querySelector("#company-registration-form"),
+  registrationCompanyNameInput: document.querySelector("#registration-company-name"),
+  registrationCompanyEmailInput: document.querySelector("#registration-company-email"),
+  registrationCompanyAddressInput: document.querySelector("#registration-company-address"),
+  registrationCompanyPhoneInput: document.querySelector("#registration-company-phone"),
+  registrationContactNameInput: document.querySelector("#registration-contact-name"),
+  registrationContactEmailInput: document.querySelector("#registration-contact-email"),
+  registrationContactPhoneInput: document.querySelector("#registration-contact-phone"),
+  registrationCompanyNameError: document.querySelector("#registration-company-name-error"),
+  registrationCompanyEmailError: document.querySelector("#registration-company-email-error"),
+  registrationCompanyAddressError: document.querySelector("#registration-company-address-error"),
+  registrationCompanyPhoneError: document.querySelector("#registration-company-phone-error"),
+  registrationContactNameError: document.querySelector("#registration-contact-name-error"),
+  registrationContactEmailError: document.querySelector("#registration-contact-email-error"),
+  registrationContactPhoneError: document.querySelector("#registration-contact-phone-error"),
+  registrationStatus: document.querySelector("#registration-status"),
+  registrationError: document.querySelector("#registration-error"),
+  registrationResult: document.querySelector("#registration-result"),
+  resetRegistrationButton: document.querySelector("#reset-registration-button"),
+  submitRegistrationButton: document.querySelector("#submit-registration-button"),
 };
 
 let currentCustomers = [];
@@ -169,6 +189,15 @@ elements.companyForm.addEventListener("submit", async (event) => {
   await submitCompanySettings();
 });
 
+elements.companyRegistrationForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitCompanyRegistrationRequest();
+});
+
+elements.resetRegistrationButton.addEventListener("click", () => {
+  clearCompanyRegistrationForm();
+});
+
 elements.reloadCompanyButton.addEventListener("click", async () => {
   await loadCompanySettings();
 });
@@ -209,7 +238,7 @@ function setActiveSection(section, options = {}) {
 
   const focusTarget = {
     operations: elements.searchInput,
-    company: elements.companyNameInput,
+    company: elements.registrationCompanyNameInput,
     reports: elements.reportFromInput,
   }[nextSection];
 
@@ -689,6 +718,30 @@ async function submitCompanySettings() {
   }
 }
 
+async function submitCompanyRegistrationRequest() {
+  clearCompanyRegistrationMessages();
+  setCompanyRegistrationSubmitting(true);
+
+  const payload = {
+    companyName: elements.registrationCompanyNameInput.value,
+    companyEmail: elements.registrationCompanyEmailInput.value,
+    companyAddress: elements.registrationCompanyAddressInput.value,
+    companyPhone: elements.registrationCompanyPhoneInput.value.trim() || null,
+    contactName: elements.registrationContactNameInput.value.trim() || null,
+    contactEmail: elements.registrationContactEmailInput.value,
+    contactPhone: elements.registrationContactPhoneInput.value.trim() || null,
+  };
+
+  try {
+    const result = await api.createCompanyRegistrationRequest(payload);
+    renderCompanyRegistrationSuccess(result);
+  } catch (error) {
+    renderCompanyRegistrationError(error);
+  } finally {
+    setCompanyRegistrationSubmitting(false);
+  }
+}
+
 function renderSelectedCustomer() {
   if (!selectedCustomer) {
     elements.selectedCustomerCard.hidden = true;
@@ -1006,6 +1059,79 @@ function renderCompanySettingsError(error) {
   showCompanyError("No se pudo cargar o guardar la configuracion. Intente de nuevo.");
 }
 
+function renderCompanyRegistrationSuccess(result) {
+  const companyName = result.companyName || elements.registrationCompanyNameInput.value.trim();
+  const companyEmail = result.companyEmail || elements.registrationCompanyEmailInput.value.trim();
+
+  elements.registrationStatus.hidden = false;
+  elements.registrationStatus.textContent = "Solicitud recibida";
+  elements.registrationResult.hidden = false;
+  elements.registrationResult.innerHTML = `
+    <h3>Solicitud recibida</h3>
+    <p>
+      Recibimos la solicitud de ${escapeHtml(companyName)}. Revisaremos los datos y enviaremos la invitacion al
+      correo ${escapeHtml(companyEmail)} cuando quede aprobada.
+    </p>
+    <p>Tambien notificamos internamente al equipo de Punto Club para dar seguimiento.</p>
+  `;
+  elements.companyRegistrationForm.reset();
+}
+
+function renderCompanyRegistrationError(error) {
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    error.details.forEach((detail) => {
+      const target = {
+        companyName: elements.registrationCompanyNameError,
+        companyEmail: elements.registrationCompanyEmailError,
+        companyAddress: elements.registrationCompanyAddressError,
+        companyPhone: elements.registrationCompanyPhoneError,
+        contactName: elements.registrationContactNameError,
+        contactEmail: elements.registrationContactEmailError,
+        contactPhone: elements.registrationContactPhoneError,
+      }[detail.field];
+
+      if (target) {
+        target.textContent = getCompanyRegistrationValidationMessage(detail);
+      }
+    });
+    showCompanyRegistrationError("Revise los campos marcados antes de enviar la solicitud.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "COMPANY_ALREADY_EXISTS") {
+    showCompanyRegistrationError(
+      "Ya existe una empresa registrada con ese correo. Inicie sesion o contacte al equipo de Punto Club si necesita recuperar el acceso.",
+    );
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "REGISTRATION_ALREADY_PENDING") {
+    showCompanyRegistrationError(
+      "Ya hay una solicitud pendiente para ese correo. Revisaremos la solicitud y enviaremos la invitacion cuando quede aprobada.",
+    );
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "INVITATION_ALREADY_PENDING") {
+    showCompanyRegistrationError(
+      "Ya hay una invitacion pendiente para ese correo. Revise la bandeja de entrada o solicite un reenvio si Product lo habilita.",
+    );
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "RATE_LIMITED") {
+    showCompanyRegistrationError("Hay demasiados intentos recientes. Espere unos minutos e intente de nuevo.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "SERVICE_UNAVAILABLE") {
+    showCompanyRegistrationError("El servicio no esta disponible en este momento. Intente mas tarde.");
+    return;
+  }
+
+  showCompanyRegistrationError("No se pudo enviar la solicitud. Intente de nuevo.");
+}
+
 function renderCustomersError(error) {
   const message =
     error instanceof ApiError && error.code === "INTERNAL_ERROR"
@@ -1144,6 +1270,20 @@ function getCompanyValidationMessage(detail) {
   return messagesByField[detail.field] ?? detail.message;
 }
 
+function getCompanyRegistrationValidationMessage(detail) {
+  const messagesByField = {
+    companyName: "Ingrese el nombre de la empresa.",
+    companyEmail: "Ingrese un correo de empresa valido.",
+    companyAddress: "Ingrese la direccion de la empresa.",
+    companyPhone: "El telefono de empresa debe tener 32 caracteres o menos.",
+    contactName: "El nombre de contacto debe tener 160 caracteres o menos.",
+    contactEmail: "Ingrese un correo de contacto valido.",
+    contactPhone: "El telefono de contacto debe tener 32 caracteres o menos.",
+  };
+
+  return messagesByField[detail.field] ?? detail.message;
+}
+
 function clearCustomerMessages() {
   setCustomersFeedback("");
 }
@@ -1206,6 +1346,11 @@ function showCompanyStatus(message) {
 function showCompanyError(message) {
   elements.companyError.hidden = false;
   elements.companyError.textContent = message;
+}
+
+function showCompanyRegistrationError(message) {
+  elements.registrationError.hidden = false;
+  elements.registrationError.textContent = message;
 }
 
 function clearForm(options = {}) {
@@ -1292,6 +1437,31 @@ function clearCompanyMessages() {
   elements.companyStatus.textContent = "";
 }
 
+function clearCompanyRegistrationForm(options = {}) {
+  elements.companyRegistrationForm.reset();
+  clearCompanyRegistrationMessages();
+
+  if (options.focus !== false) {
+    elements.registrationCompanyNameInput.focus();
+  }
+}
+
+function clearCompanyRegistrationMessages() {
+  elements.registrationCompanyNameError.textContent = "";
+  elements.registrationCompanyEmailError.textContent = "";
+  elements.registrationCompanyAddressError.textContent = "";
+  elements.registrationCompanyPhoneError.textContent = "";
+  elements.registrationContactNameError.textContent = "";
+  elements.registrationContactEmailError.textContent = "";
+  elements.registrationContactPhoneError.textContent = "";
+  elements.registrationError.hidden = true;
+  elements.registrationError.textContent = "";
+  elements.registrationStatus.hidden = true;
+  elements.registrationStatus.textContent = "";
+  elements.registrationResult.hidden = true;
+  elements.registrationResult.innerHTML = "";
+}
+
 function setSubmitting(isSubmitting) {
   elements.saveButton.disabled = isSubmitting;
   elements.saveButton.textContent = isSubmitting ? "Registrando..." : "Registrar cliente";
@@ -1327,6 +1497,12 @@ function setCompanySubmitting(isSubmitting) {
   elements.saveCompanyButton.textContent = isSubmitting
     ? "Guardando..."
     : "Guardar configuracion";
+}
+
+function setCompanyRegistrationSubmitting(isSubmitting) {
+  elements.submitRegistrationButton.disabled = isSubmitting;
+  elements.resetRegistrationButton.disabled = isSubmitting;
+  elements.submitRegistrationButton.textContent = isSubmitting ? "Enviando..." : "Enviar solicitud";
 }
 
 function getBalanceValue(balance) {

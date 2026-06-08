@@ -147,3 +147,13 @@ Motivo: TASK-126 consolido las recomendaciones de Infra y UX en una aprobacion c
 Impacto: Infra / Azure puede crear/configurar recursos aprobados en TASK-127. SQL DEV puede aplicar la migracion en TASK-128 con prevalidaciones. Backend/API puede implementar endpoints base de solicitud de empresa en TASK-129, manteniendo invitaciones/login/logo productivos bloqueados hasta que recursos y SQL esten listos.
 
 Riesgo aceptado: Azure Managed Domain es suficiente para piloto pero puede verse menos profesional que dominio propio. Se revisara dominio propio antes de escalar uso comercial.
+
+## 2026-06-07 - Autorizacion temporal para endpoints internos
+
+Decision: Mientras Microsoft Entra External ID y roles admin reales siguen pendientes, los endpoints internos de revision de solicitudes e invitaciones usaran una proteccion temporal con feature flags y header secreto `x-puntoclub-admin-token` comparado contra el app setting `INTERNAL_ADMIN_TOKEN`.
+
+Motivo: Los endpoints de aprobacion, rechazo, creacion y reenvio de invitaciones no deben quedar abiertos solo por tener un feature flag activo. El token compartido permite validar el flujo controlado sin exponer administracion publica.
+
+Impacto: Infra / Azure debe configurar `INTERNAL_ADMIN_TOKEN`, `COMPANY_REGISTRATION_REVIEW_ENABLED` y `COMPANY_INVITATION_MANAGEMENT_ENABLED` como app settings sin imprimir secretos. QA puede validar que sin token los endpoints responden 403. Este mecanismo no debe exponerse al frontend ni guardarse en repo.
+
+Riesgo aceptado: Es una proteccion temporal de secreto compartido. Debe reemplazarse por auth/roles reales con Entra External ID antes de abrir operacion administrativa a terceros.

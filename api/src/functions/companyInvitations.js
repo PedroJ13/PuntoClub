@@ -13,6 +13,7 @@ const {
   validateInvitationToken
 } = require('../lib/companyInvitations');
 const { created, handle, ok, readJson } = require('../lib/http');
+const { assertInternalAdminAuthorized } = require('../lib/internalAdmin');
 const { parsePositiveInteger, validateCompanyInvitationPayload } = require('../lib/validators');
 const notifier = require('../lib/notifier');
 const repository = require('../lib/repository');
@@ -23,6 +24,7 @@ app.http('createCompanyInvitation', {
   route: 'company-invitations',
   handler: handle(async (request, context) => {
     assertCompanyInvitationManagementEnabled();
+    assertInternalAdminAuthorized(request);
     const payload = validateCompanyInvitationPayload(await readJson(request));
     const token = generateInvitationToken();
     const invitation = await repository.createCompanyInvitation(
@@ -57,6 +59,7 @@ app.http('resendCompanyInvitation', {
   route: 'company-invitations/{invitationId}/resend',
   handler: handle(async (request, context) => {
     assertCompanyInvitationManagementEnabled();
+    assertInternalAdminAuthorized(request);
     const invitationId = parsePositiveInteger(request.params.invitationId, 'invitationId');
     const token = generateInvitationToken();
     const invitation = await repository.rotateCompanyInvitationToken(invitationId, hashInvitationToken(token));

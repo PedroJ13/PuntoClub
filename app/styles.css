@@ -109,7 +109,8 @@ textarea:focus {
 }
 
 .topbar h1,
-.section-header h2 {
+.section-header h2,
+.registration-result h3 {
   margin: 0;
   letter-spacing: 0;
 }
@@ -223,6 +224,7 @@ textarea:focus {
 }
 
 .company-section .company-panel,
+.company-section .company-registration-panel,
 .reports-section .report-panel,
 .reports-section .audit-panel {
   grid-area: auto;
@@ -290,6 +292,14 @@ textarea:focus {
   font-size: 1.12rem;
 }
 
+.section-support {
+  max-width: 780px;
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+  font-weight: 700;
+}
+
 .secondary-button {
   border: 1px solid var(--line);
   background: #ffffff;
@@ -345,6 +355,7 @@ textarea:focus {
 .purchase-form,
 .redemption-form,
 .company-form,
+.company-registration-form,
 .report-form,
 .audit-form {
   display: grid;
@@ -362,7 +373,8 @@ textarea:focus {
 .empty-state[hidden],
 .report-summary[hidden],
 .report-table-wrap[hidden],
-.audit-table-wrap[hidden] {
+.audit-table-wrap[hidden],
+.registration-result[hidden] {
   display: none;
 }
 
@@ -378,6 +390,13 @@ textarea:focus {
   color: var(--error);
   font-size: 0.8rem;
   font-weight: 800;
+}
+
+.field-help {
+  margin: -2px 0 0;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 
 .form-actions {
@@ -596,6 +615,36 @@ textarea:focus {
 
 .company-controls {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.company-registration-panel {
+  grid-area: registration;
+}
+
+.company-registration-controls {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.registration-result {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+  border: 1px solid rgba(15, 122, 66, 0.24);
+  border-radius: 8px;
+  padding: 12px;
+  background: #f6fef9;
+  color: var(--text);
+}
+
+.registration-result h3 {
+  color: var(--success);
+  font-size: 1rem;
+}
+
+.registration-result p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
 }
 
 .company-current {
@@ -842,6 +891,7 @@ textarea:focus {
   .history-summary,
   .company-current,
   .company-controls,
+  .company-registration-controls,
   .company-future,
   .report-controls,
   .audit-controls,

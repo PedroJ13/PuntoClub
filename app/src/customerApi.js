@@ -42,10 +42,12 @@ let mockCompanySettings = {
   status: "active",
   updatedAt: "2026-06-02T15:20:00Z",
 };
+let mockCompanyRegistrationRequests = [];
 let nextCustomerId = 12;
 let nextPurchaseId = 50;
 let nextRedemptionId = 70;
 let nextAuditEventId = 1;
+let nextCompanyRegistrationRequestId = 200;
 
 export class ApiError extends Error {
   constructor(code, message, details = []) {
@@ -74,6 +76,7 @@ function createHttpCustomerApi(config) {
   );
   const auditEventsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/audit/events`);
   const settingsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/settings`);
+  const companyRegistrationRequestsUrl = buildApiUrl(config, "/api/company-registration-requests");
 
   return {
     sourceLabel: "API real",
@@ -84,6 +87,15 @@ function createHttpCustomerApi(config) {
     async updateCompanySettings(payload) {
       const response = await fetch(settingsUrl, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      return parseResponse(response);
+    },
+    async createCompanyRegistrationRequest(payload) {
+      const response = await fetch(companyRegistrationRequestsUrl, {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
@@ -197,6 +209,52 @@ function createMockCustomerApi() {
       }
 
       return { ...mockCompanySettings };
+    },
+    async createCompanyRegistrationRequest(payload) {
+      await wait(500);
+      validateCompanyRegistrationRequest(payload);
+      const request = normalizeCompanyRegistrationPayload(payload);
+
+      if (normalize(request.companyEmail) === normalize(mockCompanySettings.email)) {
+        throw new ApiError(
+          "COMPANY_ALREADY_EXISTS",
+          "Ya existe una empresa registrada con ese correo.",
+        );
+      }
+
+      const hasPendingRequest = mockCompanyRegistrationRequests.some(
+        (item) =>
+          item.status === "pending" &&
+          normalize(item.companyEmail) === normalize(request.companyEmail),
+      );
+
+      if (hasPendingRequest) {
+        throw new ApiError(
+          "REGISTRATION_ALREADY_PENDING",
+          "Ya hay una solicitud pendiente para ese correo.",
+        );
+      }
+
+      const now = new Date().toISOString();
+      const result = {
+        id: String(nextCompanyRegistrationRequestId),
+        companyName: request.companyName,
+        companyEmail: request.companyEmail,
+        companyAddress: request.companyAddress,
+        status: "pending",
+        createdAt: now,
+        message: "Solicitud recibida.",
+      };
+
+      nextCompanyRegistrationRequestId += 1;
+      mockCompanyRegistrationRequests = [result, ...mockCompanyRegistrationRequests];
+      recordMockAuditEvent({
+        eventType: "company.registration.submitted",
+        entityType: "company_registration_request",
+        entityId: result.id,
+        summary: `Solicitud de empresa recibida: ${result.companyName}.`,
+      });
+      return result;
     },
     async searchCustomers(search) {
       await wait(450);
@@ -552,6 +610,68 @@ function normalizeCompanySettingsPayload(payload) {
     phone: normalizeNullableText(payload.phone),
     logoUrl: normalizeNullableText(payload.logoUrl),
     pointsPercentage: Number(payload.pointsPercentage),
+  };
+}
+
+function validateCompanyRegistrationRequest(payload) {
+  const details = [];
+  const forbiddenFields = ["requestedLogoUrl", "companyId", "password"];
+  const companyName = String(payload.companyName ?? "").trim();
+  const companyEmail = String(payload.companyEmail ?? "").trim();
+  const companyPhone = String(payload.companyPhone ?? "").trim();
+  const companyAddress = String(payload.companyAddress ?? "").trim();
+  const contactName = String(payload.contactName ?? "").trim();
+  const contactEmail = String(payload.contactEmail ?? "").trim();
+  const contactPhone = String(payload.contactPhone ?? "").trim();
+
+  forbiddenFields.forEach((field) => {
+    if (hasOwn(payload, field)) {
+      details.push({ field, message: "El campo no esta permitido." });
+    }
+  });
+
+  if (!companyName || companyName.length > 160) {
+    details.push({ field: "companyName", message: "El nombre de empresa es requerido." });
+  }
+
+  if (!companyEmail || !isEmail(companyEmail) || companyEmail.length > 254) {
+    details.push({ field: "companyEmail", message: "El correo de empresa no es valido." });
+  }
+
+  if (!companyAddress || companyAddress.length > 300) {
+    details.push({ field: "companyAddress", message: "La direccion es requerida." });
+  }
+
+  if (companyPhone.length > 32) {
+    details.push({ field: "companyPhone", message: "El telefono de empresa debe tener 32 caracteres o menos." });
+  }
+
+  if (contactName.length > 160) {
+    details.push({ field: "contactName", message: "El contacto debe tener 160 caracteres o menos." });
+  }
+
+  if (!contactEmail || !isEmail(contactEmail) || contactEmail.length > 254) {
+    details.push({ field: "contactEmail", message: "El correo de contacto no es valido." });
+  }
+
+  if (contactPhone.length > 32) {
+    details.push({ field: "contactPhone", message: "El telefono de contacto debe tener 32 caracteres o menos." });
+  }
+
+  if (details.length > 0) {
+    throw new ApiError("VALIDATION_ERROR", "Revise los campos marcados.", details);
+  }
+}
+
+function normalizeCompanyRegistrationPayload(payload) {
+  return {
+    companyName: String(payload.companyName ?? "").trim(),
+    companyEmail: String(payload.companyEmail ?? "").trim().toLowerCase(),
+    companyPhone: normalizeNullableText(payload.companyPhone),
+    companyAddress: String(payload.companyAddress ?? "").trim(),
+    contactName: normalizeNullableText(payload.contactName),
+    contactEmail: String(payload.contactEmail ?? "").trim().toLowerCase(),
+    contactPhone: normalizeNullableText(payload.contactPhone),
   };
 }
 

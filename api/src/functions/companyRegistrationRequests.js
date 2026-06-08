@@ -8,6 +8,7 @@ const {
   getCompanyRegistrationReviewActorLabel
 } = require('../lib/companyRegistration');
 const { created, handle, ok, readJson } = require('../lib/http');
+const { assertInternalAdminAuthorized } = require('../lib/internalAdmin');
 const {
   parsePositiveInteger,
   validateCompanyRegistrationRequestPayload,
@@ -35,6 +36,7 @@ app.http('approveCompanyRegistrationRequest', {
   route: 'company-registration-requests/{requestId}/approve',
   handler: handle(async (request, context) => {
     assertCompanyRegistrationReviewEnabled();
+    assertInternalAdminAuthorized(request);
     const requestId = parsePositiveInteger(request.params.requestId, 'requestId');
     const payload = validateCompanyRegistrationReviewPayload(await readJson(request), 'approve');
     const result = await repository.approveCompanyRegistrationRequest(requestId, payload, {
@@ -53,6 +55,7 @@ app.http('rejectCompanyRegistrationRequest', {
   route: 'company-registration-requests/{requestId}/reject',
   handler: handle(async (request) => {
     assertCompanyRegistrationReviewEnabled();
+    assertInternalAdminAuthorized(request);
     const requestId = parsePositiveInteger(request.params.requestId, 'requestId');
     const payload = validateCompanyRegistrationReviewPayload(await readJson(request), 'reject');
     const result = await repository.rejectCompanyRegistrationRequest(requestId, payload, {

@@ -21,7 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
-- Email real para solicitudes, invitaciones internas y endpoints base publicados avanzaron; Entra External ID sigue pendiente/manual.
+- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos y UI de solicitud de empresa avanzaron; Entra External ID sigue pendiente/manual.
 
 ### Siguiente
 
@@ -252,6 +252,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-134: Asignada a Backend API para proteger endpoints internos con autorizacion temporal.
 - TASK-135: Asignada a Infra / Azure para guiar configuracion manual de Entra External ID.
 - TASK-136: Asignada a Web Dev para crear UI de solicitud de empresa.
+- TASK-134: Backend API agrego autorizacion temporal por `x-puntoclub-admin-token` para endpoints internos de revision/invitacion; 70 tests pasaron.
+- TASK-135: Infra / Azure preparo guia manual de Entra External ID y confirmo que no se deben crear apps en `Default Directory`.
+- TASK-136: Web Dev creo UI de solicitud de empresa en `Mi empresa` con API real y mocks locales; pendiente deploy/QA publicado.
+- TASK-137: Asignada a Infra / Azure para configurar app settings de autorizacion temporal interna.
+- TASK-138: Asignada a QA para validar UI publicada de solicitud de empresa y endpoints internos cerrados.
+- TASK-139: Asignada a Infra / Azure para acompanar configuracion manual de Entra External ID y entregar valores publicos seguros.
 
 ## Riesgos principales
 
@@ -262,7 +268,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Proteger endpoints internos, guiar configuracion manual de Entra External ID y crear UI de solicitud de empresa. Mantener accept/login/logo productivos fuera hasta que auth quede listo.
+Configurar app settings seguros para la proteccion temporal interna, validar UI publicada de solicitud de empresa y acompanar la configuracion manual de Entra External ID. Mantener accept/login/logo productivos fuera hasta que auth quede listo.
 
 ## Listo para probar
 
