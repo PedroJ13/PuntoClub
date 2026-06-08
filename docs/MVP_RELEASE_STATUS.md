@@ -21,7 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
-- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. Entra External ID sigue pendiente/manual.
+- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. La aprobacion controlada ya genera invitacion real, pero falta entregar un link real a QA por canal seguro. Entra External ID sigue pendiente/manual.
 
 ### Siguiente
 
@@ -275,6 +275,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-145: QA aprobo fallback publicado; `/company-invitations/accept` ya renderiza Punto Club y muestra estados controlados sin P0/P1/P2/P3.
 - TASK-146: Asignada a Infra / Azure para ejecutar aprobacion controlada y generar invitacion real sin exponer secretos.
 - TASK-147: Asignada a QA para validar invitacion real publicada si recibe link seguro fuera del repo.
+- TASK-146: Infra / Azure aprobo solicitud QA `requestId=8`, creo empresa `companyId=2` e invitacion owner `invitationId=1` sin exponer token raw/hash/link.
+- TASK-147: QA quedo bloqueado porque no recibio link real por canal seguro; rutas publicas siguen respondiendo 200 sin 404.
+- TASK-148: Asignada a Infra / Azure para confirmar entrega ACS o reenviar invitacion real por canal seguro.
+- TASK-149: Asignada a QA para reintentar validacion de invitacion real con link seguro despues de TASK-148.
 
 ## Riesgos principales
 
@@ -285,7 +289,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Validar una invitacion real de punta a punta hasta pantalla publica, usando token admin/link por canal seguro y sin documentar secretos. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
+Confirmar entrega o reenvio seguro de la invitacion real y reintentar validacion de link real en la pantalla publicada. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
 
 ## Listo para probar
 

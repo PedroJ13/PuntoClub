@@ -126,6 +126,8 @@
 - TASK-145: Revalidar fallback publicado despues del deploy de config SWA.
 - TASK-146: Ejecutar aprobacion controlada y generar invitacion real.
 - TASK-147: Validar invitacion real publicada con link seguro.
+- TASK-148: Confirmar entrega ACS o reenviar invitacion real por canal seguro.
+- TASK-149: Reintentar validacion de invitacion real con link seguro.
 
 ## P1 pre-lanzamiento
 
