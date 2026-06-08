@@ -322,6 +322,13 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-169: Asignada a Backend API para diagnosticar fallo publicado de Crear acceso.
 - TASK-170: Asignada a Web Dev, condicionada a TASK-169, para ajustar frontend si el fallo es CORS/cookie/UX.
 - TASK-171: Asignada a QA para revalidar Crear acceso despues del diagnostico/fix.
+- TASK-169: Backend API diagnostico causa probable CORS/credentials; preflight no devuelve Access-Control-Allow-Credentials.
+- TASK-170: Web Dev quito credentials: include solo de cceptCompanyInvitation; pendiente deploy.
+- TASK-171: QA no aprobo porque el bundle publicado aun tenia credentials en accept, CORS credentials sigue ausente y login invalido respondio timeout/500.
+- TASK-172: Asignada a Backend API para corregir login invalido 500 y revisar cookie SameSite cross-site.
+- TASK-173: Asignada a Infra / Azure para habilitar CORS credentials con origen acotado.
+- TASK-174: Asignada a Web Dev para confirmar deploy del ajuste accept sin credentials.
+- TASK-175: Asignada a QA para revalidar auth propia despues de CORS/cookie/deploy.
 
 ## Riesgos principales
 
@@ -332,7 +339,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Diagnosticar el fallo publicado de Crear acceso con Backend/API usando App Insights y logs seguros. No pedir ni registrar token/password. Luego revalidar E2E con QA. Entra External ID queda diferido.
+Corregir login invalido 500, habilitar CORS credentials con origen acotado, confirmar deploy Web del ajuste accept sin credentials y revalidar auth propia E2E. Entra External ID queda diferido.
 
 ## Listo para probar
 
@@ -357,6 +364,7 @@ Diagnosticar el fallo publicado de Crear acceso con Backend/API usando App Insig
 - Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
+
 
 
 

@@ -150,6 +150,10 @@
 - TASK-169: Diagnosticar fallo publicado en Crear acceso auth propia.
 - TASK-170: Ajustar Web auth propia si el fallo es CORS/cookie/UX.
 - TASK-171: Revalidar Crear acceso despues del diagnostico.
+- TASK-172: Corregir login invalido y estrategia cookie cross-site.
+- TASK-173: Habilitar CORS credentials en Azure Functions.
+- TASK-174: Confirmar deploy Web del ajuste accept sin credentials.
+- TASK-175: Revalidar auth propia despues de CORS/cookie/deploy.
 
 ## P1 pre-lanzamiento
 
@@ -195,6 +199,7 @@
 - Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
+
 
 
 

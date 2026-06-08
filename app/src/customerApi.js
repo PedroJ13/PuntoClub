@@ -107,7 +107,6 @@ function createHttpCustomerApi(config) {
       const response = await fetch(companyInvitationsAcceptUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify(payload),
       });
 
