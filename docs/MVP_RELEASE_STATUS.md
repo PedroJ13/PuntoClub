@@ -21,7 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
-- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. La aprobacion controlada ya genera invitacion real, pero falta entregar un link real a QA por canal seguro. Entra External ID sigue pendiente/manual.
+- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos, UI de solicitud de empresa y pantalla publica de invitacion con fallback publicado quedaron validados. La aprobacion controlada ya genera invitacion real, pero la validacion del link real sigue bloqueada por entrega/canal seguro del correo. Entra External ID sigue pendiente/manual.
 
 ### Siguiente
 
@@ -279,6 +279,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-147: QA quedo bloqueado porque no recibio link real por canal seguro; rutas publicas siguen respondiendo 200 sin 404.
 - TASK-148: Asignada a Infra / Azure para confirmar entrega ACS o reenviar invitacion real por canal seguro.
 - TASK-149: Asignada a QA para reintentar validacion de invitacion real con link seguro despues de TASK-148.
+- TASK-148: Infra / Azure reenvio invitacion real `invitationId=1`; App Insights muestra `resendCompanyInvitation` 200 sin excepciones visibles, pero sin confirmacion de delivery final de mailbox.
+- TASK-149: QA quedo bloqueado porque no recibio el link real por canal seguro; rutas publicas `/` y `/company-invitations/accept` siguen respondiendo 200.
+- TASK-150: Asignada a Infra / Azure para diagnosticar entregabilidad ACS y coordinar un mailbox confirmado para invitacion QA.
+- TASK-151: Asignada a QA para reintentar validacion de invitacion real solo despues de link seguro confirmado.
 
 ## Riesgos principales
 
@@ -289,7 +293,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Confirmar entrega o reenvio seguro de la invitacion real y reintentar validacion de link real en la pantalla publicada. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
+Diagnosticar entregabilidad ACS y coordinar un mailbox confirmado para obtener link real por canal seguro. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
 
 ## Listo para probar
 

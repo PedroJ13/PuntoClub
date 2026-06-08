@@ -128,6 +128,8 @@
 - TASK-147: Validar invitacion real publicada con link seguro.
 - TASK-148: Confirmar entrega ACS o reenviar invitacion real por canal seguro.
 - TASK-149: Reintentar validacion de invitacion real con link seguro.
+- TASK-150: Diagnosticar entregabilidad ACS y coordinar mailbox confirmado.
+- TASK-151: Reintentar validacion de invitacion real con link confirmado.
 
 ## P1 pre-lanzamiento
 
