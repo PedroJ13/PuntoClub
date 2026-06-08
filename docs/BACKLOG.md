@@ -112,6 +112,9 @@
 - TASK-131: Conectar solicitudes de empresa con email real ACS.
 - TASK-132: Implementar invitaciones internas con token hash.
 - TASK-133: Validar endpoints base de solicitudes de empresa publicados.
+- TASK-134: Proteger endpoints internos de empresa con autorizacion temporal.
+- TASK-135: Guiar configuracion manual de Entra External ID.
+- TASK-136: Crear UI de solicitud de empresa.
 
 ## P1 pre-lanzamiento
 

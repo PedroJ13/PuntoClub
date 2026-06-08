@@ -3,12 +3,33 @@ const assert = require('node:assert/strict');
 
 const { ApiError } = require('../src/lib/errors');
 const {
+  createInternalRegistrationEmail,
+  createRequesterAcknowledgementEmail,
+  defaultInternalNotificationEmail,
+  getEmailConfig,
+  notifyCompanyRegistrationSubmitted,
+  sendEmailViaAcs
+} = require('../src/lib/notifier');
+const {
   assertCompanyRegistrationReviewEnabled,
   formatCompanyRegistrationApprovedAuditEvent,
   formatCompanyRegistrationCreatedResponse,
   formatCompanyRegistrationRejectedResponse,
   getCompanyRegistrationReviewActorLabel
 } = require('../src/lib/companyRegistration');
+
+const sampleRegistrationRequest = {
+  id: '123',
+  companyName: 'Cafe Central',
+  companyEmail: 'hola@cafecentral.test',
+  companyPhone: '+50622223333',
+  companyAddress: 'San Jose',
+  contactName: 'Maria Soto',
+  contactEmail: 'maria@cafecentral.test',
+  contactPhone: '+50688889999',
+  status: 'pending',
+  createdAt: '2026-06-07T18:30:00.000Z'
+};
 
 test('formatCompanyRegistrationCreatedResponse returns public submission contract', () => {
   assert.deepEqual(
@@ -87,4 +108,118 @@ test('formatCompanyRegistrationApprovedAuditEvent builds approved audit payload'
       }
     }
   );
+});
+
+test('getEmailConfig enables ACS email only when required settings exist', () => {
+  assert.deepEqual(
+    getEmailConfig({}),
+    {
+      connectionString: '',
+      senderAddress: '',
+      senderDisplayName: 'Punto Club',
+      internalNotificationEmail: defaultInternalNotificationEmail,
+      publicBaseUrl: '',
+      enabled: false
+    }
+  );
+
+  assert.equal(
+    getEmailConfig({
+      ACS_EMAIL_CONNECTION_STRING: 'endpoint=https://example.communication.azure.com/;accesskey=secret',
+      ACS_EMAIL_SENDER_ADDRESS: 'DoNotReply@example.test',
+      INTERNAL_NOTIFICATION_EMAIL: 'ops@example.test'
+    }).enabled,
+    true
+  );
+});
+
+test('email templates use approved copy and escape HTML content', () => {
+  const config = getEmailConfig({
+    ACS_EMAIL_CONNECTION_STRING: 'endpoint=https://example.communication.azure.com/;accesskey=secret',
+    ACS_EMAIL_SENDER_ADDRESS: 'DoNotReply@example.test',
+    INTERNAL_NOTIFICATION_EMAIL: 'ops@example.test'
+  });
+  const request = {
+    ...sampleRegistrationRequest,
+    companyName: '<Cafe Central>'
+  };
+
+  const internal = createInternalRegistrationEmail(request, config);
+  const acknowledgement = createRequesterAcknowledgementEmail(request, config);
+
+  assert.equal(internal.subject, 'Nueva solicitud de empresa en Punto Club: <Cafe Central>');
+  assert.match(internal.plainText, /Se recibio una nueva solicitud de empresa/);
+  assert.match(internal.html, /&lt;Cafe Central&gt;/);
+  assert.equal(internal.to[0].address, 'ops@example.test');
+
+  assert.equal(acknowledgement.subject, 'Recibimos su solicitud para Punto Club');
+  assert.match(acknowledgement.plainText, /Todavia no crea acceso operativo/);
+  assert.equal(acknowledgement.to[0].address, 'maria@cafecentral.test');
+});
+
+test('notifyCompanyRegistrationSubmitted sends internal and acknowledgement emails through injected adapter', async () => {
+  const sentMessages = [];
+  const result = await notifyCompanyRegistrationSubmitted(sampleRegistrationRequest, null, {
+    config: getEmailConfig({
+      ACS_EMAIL_CONNECTION_STRING: 'endpoint=https://example.communication.azure.com/;accesskey=secret',
+      ACS_EMAIL_SENDER_ADDRESS: 'DoNotReply@example.test',
+      ACS_EMAIL_SENDER_DISPLAY_NAME: 'Punto Club',
+      INTERNAL_NOTIFICATION_EMAIL: 'ops@example.test'
+    }),
+    sendEmail: async (message) => {
+      sentMessages.push(message);
+      return { provider: 'mock', status: 'sent', id: `email-${sentMessages.length}` };
+    }
+  });
+
+  assert.equal(result.status, 'sent');
+  assert.equal(sentMessages.length, 2);
+  assert.equal(sentMessages[0].to[0].address, 'ops@example.test');
+  assert.equal(sentMessages[1].to[0].address, 'maria@cafecentral.test');
+  assert.deepEqual(
+    result.results.map((item) => ({ type: item.type, status: item.status })),
+    [
+      { type: 'internal', status: 'sent' },
+      { type: 'requester_ack', status: 'sent' }
+    ]
+  );
+});
+
+test('notifyCompanyRegistrationSubmitted skips safely when ACS email is not configured', async () => {
+  const result = await notifyCompanyRegistrationSubmitted(sampleRegistrationRequest, null, { env: {} });
+
+  assert.deepEqual(result, { provider: 'acs-email', status: 'skipped', reason: 'not_configured' });
+});
+
+test('sendEmailViaAcs maps SDK poller result without exposing configuration', async () => {
+  class MockEmailClient {
+    constructor(connectionString) {
+      this.connectionString = connectionString;
+    }
+
+    async beginSend(message) {
+      assert.equal(this.connectionString, 'secret-connection-string');
+      assert.equal(message.recipients.to[0].address, 'ops@example.test');
+      return {
+        async pollUntilDone() {
+          return { id: 'operation-1' };
+        }
+      };
+    }
+  }
+
+  const result = await sendEmailViaAcs(
+    {
+      senderAddress: 'DoNotReply@example.test',
+      senderDisplayName: 'Punto Club',
+      to: [{ address: 'ops@example.test' }],
+      subject: 'Test',
+      plainText: 'Hello',
+      html: '<p>Hello</p>'
+    },
+    { connectionString: 'secret-connection-string' },
+    { EmailClient: MockEmailClient }
+  );
+
+  assert.deepEqual(result, { provider: 'acs-email', status: 'sent', id: 'operation-1' });
 });

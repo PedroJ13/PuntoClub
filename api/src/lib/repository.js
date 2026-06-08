@@ -73,6 +73,13 @@ function mapCompanyInvitation(row) {
   };
 }
 
+function mapCompanyInvitationWithCompany(row) {
+  return {
+    ...mapCompanyInvitation(row),
+    companyName: row.company_name || null
+  };
+}
+
 function mapCompanyUser(row) {
   return {
     id: toApiId(row.id),
@@ -401,6 +408,209 @@ async function rejectCompanyRegistrationRequest(requestId, payload, options = {}
   return mapCompanyRegistrationRequest(result.recordset[0]);
 }
 
+async function getInvitationCompany(companyId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .query(`
+      SELECT id, name
+      FROM dbo.Companies
+      WHERE id = @company_id
+        AND status IN ('pending_activation', 'active')
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+  }
+
+  return result.recordset[0];
+}
+
+async function ensureRegistrationRequestBelongsToCompany(registrationRequestId, companyId) {
+  if (registrationRequestId == null) {
+    return;
+  }
+
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('registration_request_id', sql.BigInt, registrationRequestId)
+    .input('company_id', sql.BigInt, companyId)
+    .query(`
+      SELECT 1 AS exists_flag
+      FROM dbo.CompanyRegistrationRequests
+      WHERE id = @registration_request_id
+        AND approved_company_id = @company_id
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(400, 'VALIDATION_ERROR', 'One or more fields are invalid.', [
+      { field: 'registrationRequestId', message: 'registrationRequestId must belong to the company.' }
+    ]);
+  }
+}
+
+async function createCompanyInvitation(payload, tokenHash, expiresAt, options = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const actorLabel = options.actorLabel || 'internal';
+  const company = await getInvitationCompany(payload.companyId);
+  await ensureRegistrationRequestBelongsToCompany(payload.registrationRequestId, payload.companyId);
+
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, payload.companyId)
+    .input('registration_request_id', sql.BigInt, payload.registrationRequestId)
+    .input('email', sql.NVarChar(254), payload.email)
+    .input('token_hash', sql.VarBinary(32), tokenHash)
+    .input('role', sql.VarChar(30), payload.role)
+    .input('expires_at', sql.DateTime2, expiresAt)
+    .input('created_by_label', sql.NVarChar(120), actorLabel)
+    .query(`
+      INSERT INTO dbo.CompanyInvitations (
+        company_id,
+        registration_request_id,
+        email,
+        token_hash,
+        role,
+        expires_at,
+        created_by_label
+      )
+      OUTPUT
+        INSERTED.id,
+        INSERTED.company_id,
+        INSERTED.registration_request_id,
+        INSERTED.email,
+        INSERTED.role,
+        INSERTED.status,
+        INSERTED.expires_at,
+        INSERTED.accepted_at,
+        INSERTED.revoked_at,
+        INSERTED.created_at,
+        INSERTED.created_by_label
+      VALUES (
+        @company_id,
+        @registration_request_id,
+        @email,
+        @token_hash,
+        @role,
+        @expires_at,
+        @created_by_label
+      )
+    `);
+
+  return {
+    ...mapCompanyInvitation(result.recordset[0]),
+    companyName: company.name
+  };
+}
+
+async function getCompanyInvitationByTokenHash(tokenHash) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('token_hash', sql.VarBinary(32), tokenHash)
+    .query(`
+      SELECT TOP (1)
+        invitations.id,
+        invitations.company_id,
+        companies.name AS company_name,
+        invitations.registration_request_id,
+        invitations.email,
+        invitations.role,
+        invitations.status,
+        invitations.expires_at,
+        invitations.accepted_at,
+        invitations.revoked_at,
+        invitations.created_at,
+        invitations.created_by_label
+      FROM dbo.CompanyInvitations AS invitations
+      INNER JOIN dbo.Companies AS companies
+        ON companies.id = invitations.company_id
+      WHERE invitations.token_hash = @token_hash
+    `);
+
+  return result.recordset.length ? mapCompanyInvitationWithCompany(result.recordset[0]) : null;
+}
+
+async function getCompanyInvitationById(invitationId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('invitation_id', sql.BigInt, invitationId)
+    .query(`
+      SELECT TOP (1)
+        invitations.id,
+        invitations.company_id,
+        companies.name AS company_name,
+        invitations.registration_request_id,
+        invitations.email,
+        invitations.role,
+        invitations.status,
+        invitations.expires_at,
+        invitations.accepted_at,
+        invitations.revoked_at,
+        invitations.created_at,
+        invitations.created_by_label
+      FROM dbo.CompanyInvitations AS invitations
+      INNER JOIN dbo.Companies AS companies
+        ON companies.id = invitations.company_id
+      WHERE invitations.id = @invitation_id
+    `);
+
+  return result.recordset.length ? mapCompanyInvitationWithCompany(result.recordset[0]) : null;
+}
+
+async function rotateCompanyInvitationToken(invitationId, tokenHash) {
+  const sql = getSql();
+  const pool = await getPool();
+  const currentResult = await pool.request()
+    .input('invitation_id', sql.BigInt, invitationId)
+    .query(`
+      SELECT TOP (1)
+        invitations.id,
+        invitations.status,
+        invitations.expires_at
+      FROM dbo.CompanyInvitations AS invitations
+      WHERE invitations.id = @invitation_id
+    `);
+
+  if (!currentResult.recordset.length) {
+    throw new ApiError(404, 'INVITATION_NOT_FOUND', 'Company invitation was not found.');
+  }
+
+  const current = currentResult.recordset[0];
+  if (current.status === 'accepted') {
+    throw new ApiError(409, 'INVITATION_ALREADY_ACCEPTED', 'Company invitation was already accepted.');
+  }
+
+  if (current.status !== 'pending') {
+    throw new ApiError(404, 'INVITATION_NOT_FOUND', 'Company invitation was not found.');
+  }
+
+  if (current.expires_at < new Date()) {
+    throw new ApiError(409, 'INVITATION_EXPIRED', 'Company invitation is expired.');
+  }
+
+  const result = await pool.request()
+    .input('invitation_id', sql.BigInt, invitationId)
+    .input('token_hash', sql.VarBinary(32), tokenHash)
+    .query(`
+      UPDATE invitations
+      SET token_hash = @token_hash
+      FROM dbo.CompanyInvitations AS invitations
+      WHERE invitations.id = @invitation_id
+        AND invitations.status = 'pending'
+        AND invitations.expires_at >= SYSUTCDATETIME()
+    `);
+
+  if (!result.rowsAffected || !result.rowsAffected[0]) {
+    throw new ApiError(409, 'INVITATION_EXPIRED', 'Company invitation is expired.');
+  }
+
+  return getCompanyInvitationById(invitationId);
+}
+
 async function listCustomers(companyId, search) {
   const sql = getSql();
   const pool = await getPool();
@@ -656,6 +866,7 @@ async function createRedemption(companyId, payload) {
 
 module.exports = {
   approveCompanyRegistrationRequest,
+  createCompanyInvitation,
   createCompanyRegistrationRequest,
   createCustomer,
   createPurchase,
@@ -665,14 +876,18 @@ module.exports = {
   getActivity,
   getActivityReport,
   getBalance,
+  getCompanyInvitationById,
+  getCompanyInvitationByTokenHash,
   getCompanySettings,
   listCustomers,
   mapCompanyInvitation,
+  mapCompanyInvitationWithCompany,
   mapCompanyRegistrationRequest,
   mapCompanySettings,
   mapCompanyUser,
   mapMyCompany,
   rejectCompanyRegistrationRequest,
+  rotateCompanyInvitationToken,
   toApiId,
   toIsoTimestamp,
   updateCompanySettings

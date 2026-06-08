@@ -21,6 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
+- Email real para solicitudes, invitaciones internas y endpoints base publicados avanzaron; Entra External ID sigue pendiente/manual.
 
 ### Siguiente
 
@@ -244,6 +245,13 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-131: Asignada a Backend API para conectar solicitudes de empresa con email real ACS.
 - TASK-132: Asignada a Backend API para implementar invitaciones internas con token hash.
 - TASK-133: Asignada a QA para validar endpoints base de solicitudes de empresa publicados.
+- TASK-130: Infra / Azure confirmo que Entra External ID sigue pendiente/manual; no crear apps en `Default Directory`.
+- TASK-131: Backend API conecto solicitudes de empresa con ACS Email real y fallback seguro; 50 tests pasaron.
+- TASK-132: Backend API implemento invitaciones internas con token hash, validate y resend con feature flag; 61 tests pasaron.
+- TASK-133: QA aprobo endpoints base publicados de solicitud de empresa y regresion operativa sin P0/P1/P2/P3 nuevos.
+- TASK-134: Asignada a Backend API para proteger endpoints internos con autorizacion temporal.
+- TASK-135: Asignada a Infra / Azure para guiar configuracion manual de Entra External ID.
+- TASK-136: Asignada a Web Dev para crear UI de solicitud de empresa.
 
 ## Riesgos principales
 
@@ -254,7 +262,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Configurar Entra External ID, conectar email real ACS, implementar invitaciones internas y validar endpoints base publicados. Mantener accept/login/logo productivos fuera hasta que auth quede listo.
+Proteger endpoints internos, guiar configuracion manual de Entra External ID y crear UI de solicitud de empresa. Mantener accept/login/logo productivos fuera hasta que auth quede listo.
 
 ## Listo para probar
 

@@ -20,10 +20,10 @@ app.http('createCompanyRegistrationRequest', {
   methods: ['POST'],
   authLevel: 'anonymous',
   route: 'company-registration-requests',
-  handler: handle(async (request) => {
+  handler: handle(async (request, context) => {
     const payload = validateCompanyRegistrationRequestPayload(await readJson(request));
     const registrationRequest = await repository.createCompanyRegistrationRequest(payload);
-    await notifier.notifyCompanyRegistrationSubmitted(registrationRequest);
+    await notifier.notifyCompanyRegistrationSubmitted(registrationRequest, context);
 
     return created(formatCompanyRegistrationCreatedResponse(registrationRequest));
   })
