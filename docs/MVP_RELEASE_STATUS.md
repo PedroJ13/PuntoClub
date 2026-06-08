@@ -316,6 +316,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-166: QA valido negativos y publicacion, pero no aprobo E2E por falta de invitacion fresca segura; token real visto en captura se considera comprometido.
 - TASK-167: Asignada a Infra / Azure para reemitir invitacion fresca sin exponer token.
 - TASK-168: Asignada a QA para reintentar E2E auth propia con invitacion fresca.
+- TASK-167: Infra / Azure reemitio invitacion fresca, ACS mostro delivery success y no expuso token/link.
+- TASK-168: QA sigue bloqueado porque no recibio el link fresco por canal seguro; checks negativos publicados siguen OK.
 
 ## Riesgos principales
 
@@ -326,7 +328,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Reemitir una invitacion fresca sin exponer token y reintentar QA E2E de auth propia publicada. Entra External ID queda diferido.
+Product Owner debe abrir el ultimo correo posterior a `2026-06-08T22:13:46.829Z` y ejecutar o compartir por canal seguro el link fresco sin exponer token. Reintentar QA E2E de auth propia publicada cuando QA tenga ese link. Entra External ID queda diferido.
 
 ## Listo para probar
 
@@ -351,6 +353,7 @@ Reemitir una invitacion fresca sin exponer token y reintentar QA E2E de auth pro
 - Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
+
 
 
 
