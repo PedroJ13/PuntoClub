@@ -21,7 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
-- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos y UI de solicitud de empresa quedaron validados; Entra External ID sigue pendiente/manual. La pantalla publica de invitacion existe localmente, pero la ruta profunda publicada esta bloqueada por fallback/rewrite pendiente en Static Web Apps.
+- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos y UI de solicitud de empresa quedaron validados; Entra External ID sigue pendiente/manual. La pantalla publica de invitacion y fallback existen localmente, pendiente revalidacion publicada despues de commit/deploy.
 
 ### Siguiente
 
@@ -269,6 +269,9 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-142: QA no aprobo por P1: ruta profunda publicada `/company-invitations/accept` devuelve 404 de Azure Static Web Apps; flujo operativo existente sigue OK.
 - TASK-143: Asignada a Web Dev para agregar fallback/rewrite de Static Web Apps para rutas profundas.
 - TASK-144: Asignada a QA para revalidar invitacion publicada despues de TASK-143.
+- TASK-143: Web Dev agrego `app/staticwebapp.config.json` con `navigationFallback.rewrite` a `/index.html`; validado localmente con SWA CLI.
+- TASK-144: QA no aprobo porque el fallback aun no estaba efectivo en el ambiente publicado; pendiente revalidar despues de commit/deploy del config.
+- TASK-145: Asignada a QA para revalidar fallback publicado despues de subir `app/staticwebapp.config.json`.
 
 ## Riesgos principales
 
@@ -279,7 +282,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Corregir fallback/rewrite de Static Web Apps para que `/company-invitations/accept` sirva la app y revalidar la invitacion publicada. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
+Revalidar fallback/rewrite publicado de Static Web Apps despues del commit/deploy de `app/staticwebapp.config.json`. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
 
 ## Listo para probar
 
