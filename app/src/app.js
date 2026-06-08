@@ -5,6 +5,16 @@ const api = createCustomerApi(config);
 
 const elements = {
   dataSourceStatus: document.querySelector("#data-source-status"),
+  appBody: document.querySelector(".app-body"),
+  invitationPage: document.querySelector("#invitation-page"),
+  invitationLoading: document.querySelector("#invitation-loading"),
+  invitationError: document.querySelector("#invitation-error"),
+  invitationValid: document.querySelector("#invitation-valid"),
+  invitationUnavailable: document.querySelector("#invitation-unavailable"),
+  invitationCompanyName: document.querySelector("#invitation-company-name"),
+  invitationEmail: document.querySelector("#invitation-email"),
+  invitationRole: document.querySelector("#invitation-role"),
+  invitationExpiresAt: document.querySelector("#invitation-expires-at"),
   navButtons: [...document.querySelectorAll("[data-section-target]")],
   sectionPanels: [...document.querySelectorAll("[data-section]")],
   searchForm: document.querySelector("#customer-search-form"),
@@ -120,6 +130,8 @@ let currentReport = null;
 let currentCompanySettings = null;
 let activeSection = "operations";
 const customerBalances = new Map();
+const invitationToken = getInvitationTokenFromUrl();
+const isInvitationPage = isCompanyInvitationRoute();
 
 elements.dataSourceStatus.textContent = api.sourceLabel;
 elements.purchaseDateInput.value = getToday();
@@ -213,8 +225,14 @@ renderSearchPrompt();
 resetOperation();
 renderReportPrompt();
 renderAuditPrompt();
-loadCompanySettings();
-elements.searchInput.focus();
+
+if (isInvitationPage) {
+  showInvitationPage();
+  validateCompanyInvitation(invitationToken);
+} else {
+  loadCompanySettings();
+  elements.searchInput.focus();
+}
 
 function setActiveSection(section, options = {}) {
   const nextSection = ["operations", "company", "reports"].includes(section)
@@ -742,6 +760,28 @@ async function submitCompanyRegistrationRequest() {
   }
 }
 
+async function validateCompanyInvitation(token) {
+  renderInvitationLoading();
+
+  if (!token) {
+    renderInvitationUnavailable("invalid");
+    return;
+  }
+
+  try {
+    const result = await api.validateCompanyInvitation(token);
+
+    if (result.valid) {
+      renderInvitationValid(result);
+      return;
+    }
+
+    renderInvitationUnavailable(result.reason || "invalid");
+  } catch (error) {
+    renderInvitationServiceError(error);
+  }
+}
+
 function renderSelectedCustomer() {
   if (!selectedCustomer) {
     elements.selectedCustomerCard.hidden = true;
@@ -1132,6 +1172,53 @@ function renderCompanyRegistrationError(error) {
   showCompanyRegistrationError("No se pudo enviar la solicitud. Intente de nuevo.");
 }
 
+function renderInvitationLoading() {
+  elements.invitationLoading.hidden = false;
+  elements.invitationLoading.textContent = "Validando invitacion...";
+  elements.invitationError.hidden = true;
+  elements.invitationError.textContent = "";
+  elements.invitationValid.hidden = true;
+  elements.invitationUnavailable.hidden = true;
+  elements.invitationUnavailable.innerHTML = "";
+}
+
+function renderInvitationValid(invitation) {
+  elements.invitationLoading.hidden = true;
+  elements.invitationError.hidden = true;
+  elements.invitationValid.hidden = false;
+  elements.invitationUnavailable.hidden = true;
+  elements.invitationCompanyName.textContent = invitation.companyName || "No disponible";
+  elements.invitationEmail.textContent = invitation.email || "No disponible";
+  elements.invitationRole.textContent = getInvitationRoleLabel(invitation.role);
+  elements.invitationExpiresAt.textContent = formatDateTime(invitation.expiresAt);
+}
+
+function renderInvitationUnavailable(reason) {
+  const state = getInvitationUnavailableState(reason);
+  elements.invitationLoading.hidden = true;
+  elements.invitationError.hidden = true;
+  elements.invitationValid.hidden = true;
+  elements.invitationUnavailable.hidden = false;
+  elements.invitationUnavailable.innerHTML = `
+    <h3>${escapeHtml(state.title)}</h3>
+    <p>${escapeHtml(state.message)}</p>
+  `;
+}
+
+function renderInvitationServiceError(error) {
+  elements.invitationLoading.hidden = true;
+  elements.invitationValid.hidden = true;
+  elements.invitationUnavailable.hidden = true;
+
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    renderInvitationUnavailable("invalid");
+    return;
+  }
+
+  elements.invitationError.hidden = false;
+  elements.invitationError.textContent = "El servicio no esta disponible en este momento. Intente mas tarde.";
+}
+
 function renderCustomersError(error) {
   const message =
     error instanceof ApiError && error.code === "INTERNAL_ERROR"
@@ -1505,6 +1592,11 @@ function setCompanyRegistrationSubmitting(isSubmitting) {
   elements.submitRegistrationButton.textContent = isSubmitting ? "Enviando..." : "Enviar solicitud";
 }
 
+function showInvitationPage() {
+  elements.appBody.hidden = true;
+  elements.invitationPage.hidden = false;
+}
+
 function getBalanceValue(balance) {
   return balance && balance.pointsBalance != null ? Number(balance.pointsBalance) : 0;
 }
@@ -1657,6 +1749,49 @@ function getCompanyStatusLabel(status) {
   };
 
   return labels[status] ?? (status || "No disponible");
+}
+
+function getInvitationRoleLabel(role) {
+  const labels = {
+    owner: "Owner",
+    admin: "Admin",
+    staff: "Staff",
+  };
+
+  return labels[role] ?? (role || "No disponible");
+}
+
+function getInvitationUnavailableState(reason) {
+  const states = {
+    invalid: {
+      title: "Invitacion no disponible",
+      message:
+        "Esta invitacion expiro, ya fue usada o no es valida. Solicite una nueva invitacion para crear el acceso.",
+    },
+    expired: {
+      title: "Invitacion expirada",
+      message: "Esta invitacion expiro. Contacte al equipo de Punto Club para recibir una nueva invitacion.",
+    },
+    accepted: {
+      title: "Acceso creado",
+      message: "Esta invitacion ya fue usada. Si no puede entrar, contacte al equipo de Punto Club.",
+    },
+    revoked: {
+      title: "Invitacion no disponible",
+      message:
+        "Esta invitacion ya no esta disponible. Contacte al equipo de Punto Club para revisar el acceso de la empresa.",
+    },
+  };
+
+  return states[reason] ?? states.invalid;
+}
+
+function isCompanyInvitationRoute() {
+  return window.location.pathname.replace(/\/$/, "") === "/company-invitations/accept";
+}
+
+function getInvitationTokenFromUrl() {
+  return new URLSearchParams(window.location.search).get("token") || "";
 }
 
 function getSafeHttpUrl(value) {

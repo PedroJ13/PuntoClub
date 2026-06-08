@@ -110,6 +110,7 @@ textarea:focus {
 
 .topbar h1,
 .section-header h2,
+.invitation-card h2,
 .registration-result h3 {
   margin: 0;
   letter-spacing: 0;
@@ -217,6 +218,11 @@ textarea:focus {
   display: none;
 }
 
+.app-body[hidden],
+.invitation-page[hidden] {
+  display: none;
+}
+
 .company-section,
 .reports-section {
   grid-template-columns: 1fr;
@@ -269,6 +275,22 @@ textarea:focus {
 
 .audit-panel {
   grid-area: audit;
+}
+
+.invitation-page {
+  display: grid;
+  min-height: calc(100vh - 112px);
+  align-items: start;
+  padding-top: 22px;
+}
+
+.invitation-card {
+  width: min(760px, 100%);
+  margin: 0 auto;
+}
+
+.invitation-card h2 {
+  font-size: 1.4rem;
 }
 
 .zone-card {
@@ -367,6 +389,9 @@ textarea:focus {
 .company-form[hidden],
 .history-panel[hidden],
 .selected-customer-card[hidden],
+#invitation-loading[hidden],
+#invitation-valid[hidden],
+#invitation-unavailable[hidden],
 .success-message[hidden],
 .form-error[hidden],
 .feedback[hidden],
@@ -636,6 +661,64 @@ textarea:focus {
   color: var(--text);
 }
 
+.invitation-result {
+  display: grid;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.invitation-result h3 {
+  margin: 0;
+  color: var(--success);
+  font-size: 1.08rem;
+}
+
+.invitation-result p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.invitation-result.is-unavailable h3 {
+  color: var(--warning);
+}
+
+.invitation-details {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.invitation-details div {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--surface-strong);
+}
+
+.invitation-details span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.invitation-details strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.invitation-actions {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
 .registration-result h3 {
   color: var(--success);
   font-size: 1rem;
@@ -892,6 +975,7 @@ textarea:focus {
   .company-current,
   .company-controls,
   .company-registration-controls,
+  .invitation-details,
   .company-future,
   .report-controls,
   .audit-controls,

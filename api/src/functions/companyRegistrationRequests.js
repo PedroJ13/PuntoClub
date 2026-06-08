@@ -3,10 +3,17 @@ const { auditBestEffort } = require('../lib/audit');
 const {
   assertCompanyRegistrationReviewEnabled,
   formatCompanyRegistrationApprovedAuditEvent,
+  formatCompanyRegistrationApprovedResponse,
   formatCompanyRegistrationCreatedResponse,
   formatCompanyRegistrationRejectedResponse,
   getCompanyRegistrationReviewActorLabel
 } = require('../lib/companyRegistration');
+const {
+  formatCompanyInvitationCreatedAuditEvent,
+  generateInvitationToken,
+  getInvitationExpiresAt,
+  hashInvitationToken
+} = require('../lib/companyInvitations');
 const { created, handle, ok, readJson } = require('../lib/http');
 const { assertInternalAdminAuthorized } = require('../lib/internalAdmin');
 const {
@@ -39,13 +46,22 @@ app.http('approveCompanyRegistrationRequest', {
     assertInternalAdminAuthorized(request);
     const requestId = parsePositiveInteger(request.params.requestId, 'requestId');
     const payload = validateCompanyRegistrationReviewPayload(await readJson(request), 'approve');
+    const invitationToken = generateInvitationToken();
     const result = await repository.approveCompanyRegistrationRequest(requestId, payload, {
-      actorLabel: getCompanyRegistrationReviewActorLabel()
+      actorLabel: getCompanyRegistrationReviewActorLabel(),
+      invitation: {
+        tokenHash: hashInvitationToken(invitationToken),
+        expiresAt: getInvitationExpiresAt()
+      }
     });
 
+    if (result.invitation) {
+      await notifier.notifyCompanyInvitationCreated(result.invitation, invitationToken, context);
+      await auditBestEffort(context, formatCompanyInvitationCreatedAuditEvent(result.invitation, context));
+    }
     await auditBestEffort(context, formatCompanyRegistrationApprovedAuditEvent(result, context));
 
-    return ok(result);
+    return ok(formatCompanyRegistrationApprovedResponse(result));
   })
 });
 

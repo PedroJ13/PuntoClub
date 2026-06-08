@@ -77,9 +77,16 @@ function createHttpCustomerApi(config) {
   const auditEventsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/audit/events`);
   const settingsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/settings`);
   const companyRegistrationRequestsUrl = buildApiUrl(config, "/api/company-registration-requests");
+  const companyInvitationsValidateUrl = buildApiUrl(config, "/api/company-invitations/validate");
 
   return {
     sourceLabel: "API real",
+    async validateCompanyInvitation(token) {
+      const url = new URL(companyInvitationsValidateUrl, window.location.origin);
+      url.searchParams.set("token", token);
+      const response = await fetch(url);
+      return parseResponse(response);
+    },
     async getCompanySettings() {
       const response = await fetch(settingsUrl);
       return parseResponse(response);
@@ -181,6 +188,10 @@ function buildApiUrl(config, path) {
 function createMockCustomerApi() {
   return {
     sourceLabel: "Mock local",
+    async validateCompanyInvitation(token) {
+      await wait(350);
+      return validateMockCompanyInvitation(token);
+    },
     async getCompanySettings() {
       await wait(250);
       return { ...mockCompanySettings };
@@ -672,6 +683,45 @@ function normalizeCompanyRegistrationPayload(payload) {
     contactName: normalizeNullableText(payload.contactName),
     contactEmail: String(payload.contactEmail ?? "").trim().toLowerCase(),
     contactPhone: normalizeNullableText(payload.contactPhone),
+  };
+}
+
+function validateMockCompanyInvitation(token) {
+  const normalizedToken = normalize(token);
+  const validTokens = new Set(["valid", "valid-token", "mock-valid-token"]);
+
+  if (normalizedToken === "service-error") {
+    throw new ApiError("INTERNAL_ERROR", "No se pudo validar la invitacion.");
+  }
+
+  if (!normalizedToken || normalizedToken === "invalid" || normalizedToken === "invalid-token") {
+    return { valid: false, reason: "invalid" };
+  }
+
+  if (["expired", "expired-token"].includes(normalizedToken)) {
+    return { valid: false, reason: "expired" };
+  }
+
+  if (["accepted", "accepted-token"].includes(normalizedToken)) {
+    return { valid: false, reason: "accepted" };
+  }
+
+  if (["revoked", "revoked-token"].includes(normalizedToken)) {
+    return { valid: false, reason: "revoked" };
+  }
+
+  if (!validTokens.has(normalizedToken)) {
+    return { valid: false, reason: "invalid" };
+  }
+
+  return {
+    valid: true,
+    invitationId: "300",
+    companyId: "10",
+    companyName: "Cafe Central",
+    email: "hola@cafecentral.test",
+    role: "owner",
+    expiresAt: "2026-06-14T19:00:00Z",
   };
 }
 

@@ -21,7 +21,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Backend/API y Diseno / UX completaron revision de migracion/contratos y copy de registro/invitacion.
 - Contratos finales y base interna Backend/API multiempresa preparados.
 - ACS Email, storage privado de logos y migracion SQL multiempresa quedaron listos; Entra External ID sigue pendiente.
-- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos y UI de solicitud de empresa quedaron validados; Entra External ID sigue pendiente/manual.
+- Email real para solicitudes, invitaciones internas, proteccion temporal de endpoints internos y UI de solicitud de empresa quedaron validados; Entra External ID sigue pendiente/manual. La pantalla publica de invitacion existe localmente, pero la ruta profunda publicada esta bloqueada por fallback/rewrite pendiente en Static Web Apps.
 
 ### Siguiente
 
@@ -264,6 +264,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-140: Asignada a Backend API para conectar aprobacion de solicitud con creacion/envio de invitacion owner.
 - TASK-141: Asignada a Web Dev para crear pantalla publica de invitacion con validacion de token y estados.
 - TASK-142: Asignada a QA para validar flujo publicado solicitud aprobada + invitacion despues de TASK-140/TASK-141.
+- TASK-140: Backend API conecto aprobacion de solicitud con invitacion owner, token hash y respuesta no sensible; 72 tests pasaron.
+- TASK-141: Web Dev creo pantalla publica `/company-invitations/accept?token=...` con validacion de token y estados locales.
+- TASK-142: QA no aprobo por P1: ruta profunda publicada `/company-invitations/accept` devuelve 404 de Azure Static Web Apps; flujo operativo existente sigue OK.
+- TASK-143: Asignada a Web Dev para agregar fallback/rewrite de Static Web Apps para rutas profundas.
+- TASK-144: Asignada a QA para revalidar invitacion publicada despues de TASK-143.
 
 ## Riesgos principales
 
@@ -274,7 +279,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Conectar aprobacion de solicitud con invitacion owner y agregar pantalla publica de invitacion. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
+Corregir fallback/rewrite de Static Web Apps para que `/company-invitations/accept` sirva la app y revalidar la invitacion publicada. Mantener accept/login/password productivos bloqueados hasta que Entra External ID quede configurado.
 
 ## Listo para probar
 

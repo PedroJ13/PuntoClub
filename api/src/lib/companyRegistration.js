@@ -31,6 +31,41 @@ function formatCompanyRegistrationRejectedResponse(registrationRequest) {
   };
 }
 
+function formatCompanyRegistrationApprovedResponse(result) {
+  const response = {
+    id: result.id,
+    companyName: result.companyName,
+    companyEmail: result.companyEmail,
+    companyPhone: result.companyPhone,
+    companyAddress: result.companyAddress,
+    contactName: result.contactName,
+    contactEmail: result.contactEmail,
+    contactPhone: result.contactPhone,
+    status: result.status,
+    reviewedAt: result.reviewedAt,
+    reviewedByLabel: result.reviewedByLabel,
+    reviewNote: result.reviewNote,
+    approvedCompanyId: result.approvedCompanyId,
+    createdAt: result.createdAt,
+    updatedAt: result.updatedAt,
+    company: result.company
+  };
+
+  if (result.invitation) {
+    response.invitation = {
+      id: result.invitation.id,
+      companyId: result.invitation.companyId,
+      email: result.invitation.email,
+      role: result.invitation.role,
+      status: result.invitation.status,
+      expiresAt: result.invitation.expiresAt,
+      createdAt: result.invitation.createdAt
+    };
+  }
+
+  return response;
+}
+
 function formatCompanyRegistrationApprovedAuditEvent(result, context) {
   return {
     companyId: result.company.id,
@@ -48,6 +83,7 @@ function formatCompanyRegistrationApprovedAuditEvent(result, context) {
 module.exports = {
   assertCompanyRegistrationReviewEnabled,
   formatCompanyRegistrationApprovedAuditEvent,
+  formatCompanyRegistrationApprovedResponse,
   formatCompanyRegistrationCreatedResponse,
   formatCompanyRegistrationRejectedResponse,
   getCompanyRegistrationReviewActorLabel

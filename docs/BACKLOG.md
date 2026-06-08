@@ -121,6 +121,8 @@
 - TASK-140: Conectar aprobacion de solicitud con invitacion owner.
 - TASK-141: Crear pantalla publica de invitacion y validacion de token.
 - TASK-142: Validar flujo publicado solicitud aprobada e invitacion.
+- TASK-143: Corregir fallback/rewrite de Static Web Apps para rutas profundas.
+- TASK-144: Revalidar invitacion publicada despues del fallback.
 
 ## P1 pre-lanzamiento
 

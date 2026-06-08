@@ -13,6 +13,7 @@ const {
 const {
   assertCompanyRegistrationReviewEnabled,
   formatCompanyRegistrationApprovedAuditEvent,
+  formatCompanyRegistrationApprovedResponse,
   formatCompanyRegistrationCreatedResponse,
   formatCompanyRegistrationRejectedResponse,
   getCompanyRegistrationReviewActorLabel
@@ -108,6 +109,55 @@ test('formatCompanyRegistrationApprovedAuditEvent builds approved audit payload'
       }
     }
   );
+});
+
+test('formatCompanyRegistrationApprovedResponse includes invitation summary without token material', () => {
+  const response = formatCompanyRegistrationApprovedResponse({
+    id: '123',
+    companyName: 'Cafe Central',
+    companyEmail: 'owner@cafecentral.test',
+    companyPhone: '+50622223333',
+    companyAddress: 'San Jose',
+    contactName: 'Maria Soto',
+    contactEmail: 'maria@cafecentral.test',
+    contactPhone: '+50688889999',
+    status: 'approved',
+    reviewedAt: '2026-06-07T19:01:00.000Z',
+    reviewedByLabel: 'internal',
+    reviewNote: null,
+    approvedCompanyId: '10',
+    createdAt: '2026-06-07T18:30:00.000Z',
+    updatedAt: '2026-06-07T19:01:00.000Z',
+    company: {
+      id: '10',
+      name: 'Cafe Central',
+      email: 'owner@cafecentral.test',
+      status: 'pending_activation'
+    },
+    invitation: {
+      id: '300',
+      companyId: '10',
+      email: 'owner@cafecentral.test',
+      role: 'owner',
+      status: 'pending',
+      expiresAt: '2026-06-14T19:00:00.000Z',
+      createdAt: '2026-06-07T19:02:00.000Z',
+      token: 'raw-token',
+      tokenHash: 'hash'
+    }
+  });
+
+  assert.deepEqual(response.invitation, {
+    id: '300',
+    companyId: '10',
+    email: 'owner@cafecentral.test',
+    role: 'owner',
+    status: 'pending',
+    expiresAt: '2026-06-14T19:00:00.000Z',
+    createdAt: '2026-06-07T19:02:00.000Z'
+  });
+  assert.equal(JSON.stringify(response).includes('raw-token'), false);
+  assert.equal(JSON.stringify(response).includes('hash'), false);
 });
 
 test('getEmailConfig enables ACS email only when required settings exist', () => {

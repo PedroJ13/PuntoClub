@@ -247,6 +247,7 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
   const transaction = new sql.Transaction(pool);
   const actorLabel = options.actorLabel || 'internal';
   const pointsPercentage = payload.pointsPercentage == null ? 5 : payload.pointsPercentage;
+  const invitation = options.invitation || null;
 
   await transaction.begin();
 
@@ -340,10 +341,54 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
         WHERE id = @request_id
       `);
 
+    let invitationResult = null;
+    if (invitation) {
+      invitationResult = await new sql.Request(transaction)
+        .input('company_id', sql.BigInt, companyResult.recordset[0].id)
+        .input('registration_request_id', sql.BigInt, requestId)
+        .input('email', sql.NVarChar(254), request.company_email)
+        .input('token_hash', sql.VarBinary(32), invitation.tokenHash)
+        .input('role', sql.VarChar(30), 'owner')
+        .input('expires_at', sql.DateTime2, invitation.expiresAt)
+        .input('created_by_label', sql.NVarChar(120), actorLabel)
+        .query(`
+          INSERT INTO dbo.CompanyInvitations (
+            company_id,
+            registration_request_id,
+            email,
+            token_hash,
+            role,
+            expires_at,
+            created_by_label
+          )
+          OUTPUT
+            INSERTED.id,
+            INSERTED.company_id,
+            INSERTED.registration_request_id,
+            INSERTED.email,
+            INSERTED.role,
+            INSERTED.status,
+            INSERTED.expires_at,
+            INSERTED.accepted_at,
+            INSERTED.revoked_at,
+            INSERTED.created_at,
+            INSERTED.created_by_label
+          VALUES (
+            @company_id,
+            @registration_request_id,
+            @email,
+            @token_hash,
+            @role,
+            @expires_at,
+            @created_by_label
+          )
+        `);
+    }
+
     await transaction.commit();
 
     const company = companyResult.recordset[0];
-    return {
+    const approvedRequest = {
       ...mapCompanyRegistrationRequest(reviewResult.recordset[0]),
       company: {
         id: toApiId(company.id),
@@ -355,6 +400,15 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
         pointsPercentage: Number(company.points_percentage)
       }
     };
+
+    if (invitationResult) {
+      approvedRequest.invitation = {
+        ...mapCompanyInvitation(invitationResult.recordset[0]),
+        companyName: company.name
+      };
+    }
+
+    return approvedRequest;
   } catch (error) {
     try {
       await transaction.rollback();
