@@ -107,12 +107,22 @@ function isSecureCookie(env = process.env) {
   return env.COMPANY_SESSION_COOKIE_SECURE === 'true' || Boolean(env.WEBSITE_SITE_NAME) || env.NODE_ENV === 'production';
 }
 
+function getSessionSameSite(env = process.env) {
+  const configured = env.COMPANY_SESSION_COOKIE_SAMESITE;
+  if (configured && ['lax', 'strict', 'none'].includes(configured.trim().toLowerCase())) {
+    return configured.trim().toLowerCase();
+  }
+
+  return isSecureCookie(env) ? 'none' : 'lax';
+}
+
 function buildSessionCookie(token, expiresAt, env = process.env) {
+  const sameSite = getSessionSameSite(env);
   const parts = [
     `${getSessionCookieName(env)}=${encodeURIComponent(token)}`,
     'Path=/',
     'HttpOnly',
-    'SameSite=Lax',
+    `SameSite=${sameSite === 'none' ? 'None' : sameSite === 'strict' ? 'Strict' : 'Lax'}`,
     `Expires=${expiresAt.toUTCString()}`
   ];
 
@@ -124,11 +134,12 @@ function buildSessionCookie(token, expiresAt, env = process.env) {
 }
 
 function buildClearSessionCookie(env = process.env) {
+  const sameSite = getSessionSameSite(env);
   const parts = [
     `${getSessionCookieName(env)}=`,
     'Path=/',
     'HttpOnly',
-    'SameSite=Lax',
+    `SameSite=${sameSite === 'none' ? 'None' : sameSite === 'strict' ? 'Strict' : 'Lax'}`,
     'Expires=Thu, 01 Jan 1970 00:00:00 GMT'
   ];
 
@@ -174,6 +185,7 @@ module.exports = {
   formatInvitationAcceptedResponse,
   generateSessionToken,
   getSessionExpiresAt,
+  getSessionSameSite,
   hashPassword,
   hashSessionToken,
   passwordAlgorithm,

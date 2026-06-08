@@ -154,6 +154,8 @@
 - TASK-173: Habilitar CORS credentials en Azure Functions.
 - TASK-174: Confirmar deploy Web del ajuste accept sin credentials.
 - TASK-175: Revalidar auth propia despues de CORS/cookie/deploy.
+- TASK-176: Confirmar deploy API de fix login/cookie.
+- TASK-177: Reintentar E2E auth propia final.
 
 ## P1 pre-lanzamiento
 
@@ -199,6 +201,7 @@
 - Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
+
 
 
 

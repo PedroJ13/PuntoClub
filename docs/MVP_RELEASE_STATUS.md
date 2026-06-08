@@ -329,6 +329,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-173: Asignada a Infra / Azure para habilitar CORS credentials con origen acotado.
 - TASK-174: Asignada a Web Dev para confirmar deploy del ajuste accept sin credentials.
 - TASK-175: Asignada a QA para revalidar auth propia despues de CORS/cookie/deploy.
+- TASK-172: Backend API corrigio localmente login invalido/SQL transitorio y cookie cross-site; 82 tests pasaron, pendiente deploy API.
+- TASK-173: Infra / Azure habilito CORS credentials con origen acotado.
+- TASK-174: Web Dev confirmo deploy de accept sin credentials.
+- TASK-175: QA confirmo CORS/Web publicados y login invalido controlado, pero E2E sigue bloqueado por falta de link fresco en QA.
+- TASK-176: Asignada a Backend API para confirmar deploy publicado del fix login/cookie.
+- TASK-177: Asignada a QA para reintentar E2E auth propia final.
 
 ## Riesgos principales
 
@@ -339,7 +345,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Corregir login invalido 500, habilitar CORS credentials con origen acotado, confirmar deploy Web del ajuste accept sin credentials y revalidar auth propia E2E. Entra External ID queda diferido.
+Confirmar deploy API del fix login/cookie y reintentar E2E auth propia con link fresco o evidencia redaccionada del Product Owner. Entra External ID queda diferido.
 
 ## Listo para probar
 
@@ -364,6 +370,7 @@ Corregir login invalido 500, habilitar CORS credentials con origen acotado, conf
 - Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
+
 
 
 

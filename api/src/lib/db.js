@@ -16,7 +16,10 @@ async function getPool() {
 
   if (!poolPromise) {
     const sql = getSql();
-    poolPromise = new sql.ConnectionPool(connectionString).connect();
+    poolPromise = new sql.ConnectionPool(connectionString).connect().catch((error) => {
+      poolPromise = null;
+      throw error;
+    });
   }
 
   return poolPromise;

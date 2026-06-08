@@ -19,6 +19,18 @@ function mapSqlError(error) {
 
   const message = String(error && error.message ? error.message : '');
   const number = Number(error && error.number);
+  const code = String(error && error.code ? error.code : '');
+
+  if (
+    code === 'ELOGIN' &&
+    message.includes('is not currently available')
+  ) {
+    return new ApiError(503, 'SERVICE_UNAVAILABLE', 'Database is temporarily unavailable. Please try again.');
+  }
+
+  if (['ETIMEOUT', 'ESOCKET', 'ECONNCLOSED'].includes(code)) {
+    return new ApiError(503, 'SERVICE_UNAVAILABLE', 'Database is temporarily unavailable. Please try again.');
+  }
 
   if ((number === 2601 || number === 2627) && message.includes('UX_Purchases_company_invoice')) {
     return new ApiError(409, 'DUPLICATE_INVOICE', 'Invoice number already exists for this company.');

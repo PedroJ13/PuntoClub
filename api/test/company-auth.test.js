@@ -8,6 +8,7 @@ const {
   formatInvitationAcceptedResponse,
   generateSessionToken,
   getSessionExpiresAt,
+  getSessionSameSite,
   hashPassword,
   hashSessionToken,
   readSessionTokenFromRequest,
@@ -41,7 +42,7 @@ test('session token hashing stores SHA-256 bytes only', () => {
   assert.notEqual(hash.toString('hex'), token);
 });
 
-test('session cookie is HttpOnly SameSite=Lax and secure in production', () => {
+test('session cookie is HttpOnly SameSite=None and secure in production', () => {
   const expiresAt = new Date('2026-06-08T12:00:00Z');
   const cookie = buildSessionCookie('raw-token', expiresAt, {
     COMPANY_SESSION_COOKIE_NAME: 'pc_session',
@@ -50,14 +51,21 @@ test('session cookie is HttpOnly SameSite=Lax and secure in production', () => {
 
   assert.match(cookie, /^pc_session=raw-token/);
   assert.match(cookie, /HttpOnly/);
-  assert.match(cookie, /SameSite=Lax/);
+  assert.match(cookie, /SameSite=None/);
   assert.match(cookie, /Secure/);
   assert.match(cookie, /Expires=Mon, 08 Jun 2026 12:00:00 GMT/);
 
   const clearCookie = buildClearSessionCookie({ COMPANY_SESSION_COOKIE_NAME: 'pc_session', COMPANY_SESSION_COOKIE_SECURE: 'false' });
   assert.match(clearCookie, /^pc_session=/);
   assert.match(clearCookie, /Expires=Thu, 01 Jan 1970 00:00:00 GMT/);
+  assert.match(clearCookie, /SameSite=Lax/);
   assert.doesNotMatch(clearCookie, /Secure/);
+});
+
+test('getSessionSameSite defaults to none only for secure environments', () => {
+  assert.equal(getSessionSameSite({ WEBSITE_SITE_NAME: 'func-puntoclub-prod-br-001' }), 'none');
+  assert.equal(getSessionSameSite({ COMPANY_SESSION_COOKIE_SECURE: 'false' }), 'lax');
+  assert.equal(getSessionSameSite({ COMPANY_SESSION_COOKIE_SAMESITE: 'Strict' }), 'strict');
 });
 
 test('readSessionTokenFromRequest reads configured cookie name', () => {

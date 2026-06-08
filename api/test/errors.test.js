@@ -48,3 +48,16 @@ test('maps company user duplicates to user conflict', () => {
   assert.equal(bySubject.status, 409);
   assert.equal(bySubject.code, 'COMPANY_USER_ALREADY_EXISTS');
 });
+
+test('maps transient SQL availability errors to service unavailable', () => {
+  const unavailable = mapSqlError({
+    code: 'ELOGIN',
+    message: "Database 'sql-db-puntoclub' on server 'sqlserver-pj13-brazil.database.windows.net' is not currently available."
+  });
+  assert.equal(unavailable.status, 503);
+  assert.equal(unavailable.code, 'SERVICE_UNAVAILABLE');
+
+  const timeout = mapSqlError({ code: 'ETIMEOUT', message: 'Connection timeout.' });
+  assert.equal(timeout.status, 503);
+  assert.equal(timeout.code, 'SERVICE_UNAVAILABLE');
+});
