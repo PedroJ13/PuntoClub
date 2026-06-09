@@ -41,7 +41,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ### Bloqueado
 
-- Crear acceso/login/password productivos avanzan con auth propia MVP. SQL, Backend y Web ya prepararon migracion/codigo local en TASK-159/TASK-160/TASK-161, pero QA no aprobo publicado en TASK-162 porque falta aplicar migracion Azure SQL y desplegar API/Web.
+- Auth propia MVP fue validada operativamente por Product Owner con invitacion valida, crear acceso/password, login correcto, sesion visible con empresa/correo esperado y logout. Queda como mejora posterior el rate limiting/lockout identificado por QA como P2 heredado.
 - No hay bloqueos P0/P1 abiertos para el flujo cliente + compra + redencion en pantalla web por zonas.
 - No hay bloqueos P0/P1 abiertos para historial publicado.
 - No hay bloqueos P0/P1 abiertos para integridad SQL auditada.
@@ -337,6 +337,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-177: Asignada a QA para reintentar E2E auth propia final.
 - TASK-176: Backend API confirmo deploy publicado del fix login/cookie; login invalido 401 controlado y cookie SameSite=None; Secure redaccionada.
 - TASK-177: QA confirmo dependencias tecnicas publicadas, pero E2E final sigue bloqueado por falta de link fresco/evidencia PO.
+- TASK-177: Product Owner aporto evidencia redaccionada final en `tasks/TASK-177-PO-EVIDENCE.md`; crear acceso, login correcto, sesion con empresa/correo esperado y logout quedan validados operativamente.
 
 ## Riesgos principales
 
@@ -347,7 +348,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Product Owner debe ejecutar el E2E con el ultimo link fresco o entregar evidencia redaccionada completa: crear acceso, login correcto, `/api/me`/panel empresa y logout. Entra External ID queda diferido.
+Auth propia MVP queda lista para seguir con la siguiente fase funcional. Mantener Entra External ID diferido y planificar rate limiting/lockout como mejora posterior antes de abrir uso mas amplio.
 
 ## Listo para probar
 
@@ -370,6 +371,7 @@ Product Owner debe ejecutar el E2E con el ultimo link fresco o entregar evidenci
 - Menu lateral publicado con Operaciones, Mi empresa y Reportes: aprobado por QA en TASK-118.
 - Solicitud publica de empresa y endpoints internos cerrados sin token: aprobado por QA en TASK-138.
 - Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
+- Auth propia MVP: validada operativamente por Product Owner en TASK-177 con invitacion, crear acceso/password, login, sesion visible y logout.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
 
