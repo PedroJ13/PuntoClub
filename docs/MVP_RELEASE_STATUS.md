@@ -27,15 +27,14 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 - Opcion A completada: configuracion de empresa piloto publicada y aprobada.
 - Opcion B/multiempresa controlado avanza a fase funcional con auth propia MVP ya validada por Product Owner.
+- Siguiente bloque decidido por Product / Architect / Release: hardening de auth propia antes de abrir uso a mas empresas.
 - Round actual liberado:
-  - TASK-179: Backend API usa sesion de empresa como contexto operativo.
-  - TASK-180: Web Dev conecta operacion a sesion autenticada.
-  - TASK-182: Backend API propone rate limiting/lockout sin implementar todavia.
+  - TASK-187: SQL DEV prepara soporte persistente para rate limiting/lockout.
+  - TASK-188: Infra / Azure confirma IP confiable en Azure Functions.
 - Round siguiente:
-  - TASK-183: Backend API confirma deploy publicado de contexto por sesion.
-  - TASK-184: Web Dev confirma deploy publicado de operacion con credentials.
-  - TASK-185: PO Test valida operacion autenticada con sesion real sin compartir secretos.
-  - TASK-186: QA cierra operacion autenticada publicada con evidencia redaccionada.
+  - TASK-189: Backend API implementa rate limiting/lockout usando TASK-187/TASK-188.
+- Round final:
+  - TASK-190: QA valida rate limiting publicado.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -354,6 +353,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-184: Web Dev confirmo deploy Web publicado con `credentials: "include"` en operaciones privadas y rutas publicas sin credentials.
 - TASK-185: PO Test aprobo operacion autenticada real con evidencia redaccionada: cliente, compra, redencion, historial, reporte, auditoria y logout.
 - TASK-186: QA aprobo operacion autenticada publicada sin P0/P1/P2/P3 nuevos.
+- Decision: antes de avanzar a mas empresas o mejoras UX, se prioriza hardening de auth propia con rate limiting/lockout.
+- TASK-187: Asignada a SQL DEV para preparar SQL de rate limiting auth propia.
+- TASK-188: Asignada a Infra / Azure para confirmar IP confiable en Azure Functions.
+- TASK-189: Asignada a Backend API para implementar rate limiting auth propia despues de TASK-187/TASK-188.
+- TASK-190: Asignada a QA para validar rate limiting auth propia publicado.
 
 ## Riesgos principales
 
@@ -364,7 +368,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Auth propia MVP queda lista para seguir con la siguiente fase funcional. Mantener Entra External ID diferido y planificar rate limiting/lockout como mejora posterior antes de abrir uso mas amplio.
+Prioridad inmediata: implementar y validar rate limiting/lockout de auth propia antes de abrir uso a mas empresas. Mantener Entra External ID diferido.
 
 ## Listo para probar
 

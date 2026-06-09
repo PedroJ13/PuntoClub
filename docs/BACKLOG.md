@@ -165,6 +165,10 @@
 - TASK-184: Confirmar deploy Web de operacion con credentials.
 - TASK-185: PO Test valida operacion con sesion de empresa.
 - TASK-186: QA cierra operacion autenticada publicada.
+- TASK-187: Preparar SQL para rate limiting auth propia.
+- TASK-188: Confirmar IP confiable para rate limiting en Azure Functions.
+- TASK-189: Implementar rate limiting auth propia en Backend API.
+- TASK-190: Validar rate limiting auth propia publicado.
 
 ## P1 pre-lanzamiento
 
@@ -210,7 +214,7 @@
 - Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
 - Operacion multiempresa controlada con auth propia: siguiente fase con TASK-179 a TASK-181.
 - Operacion multiempresa controlada con auth propia: aprobada publicada en TASK-186.
-- Rate limiting/lockout auth propia: analisis pendiente en TASK-182.
+- Rate limiting/lockout auth propia: analisis completado en TASK-182; implementacion/hardening liberado en TASK-187 a TASK-190.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
 
