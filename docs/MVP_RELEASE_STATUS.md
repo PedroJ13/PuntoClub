@@ -26,17 +26,13 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 ### Siguiente
 
 - Opcion A completada: configuracion de empresa piloto publicada y aprobada.
-- Opcion B/multiempresa se reabre por decision explicita del Product Owner, pero primero como fase de diseno/arquitectura.
-- Round 1 liberado:
-  - TASK-113: Diseno / UX define menu lateral y flujo empresa/invitacion.
-  - TASK-114: Infra / Azure evalua email, auth y logo upload.
-  - TASK-115: SQL DEV disena modelo para registro de empresas e invitaciones.
-- Round 2 queda bloqueado hasta insumos de Round 1:
-  - TASK-116: Backend API define contratos.
-  - TASK-117: Web Dev reorganiza UI con menu lateral.
-- Round 3 queda bloqueado hasta implementacion/contratos:
-  - TASK-118: QA valida menu lateral publicado.
-  - TASK-119: Product / Architect / Release decide arquitectura multiempresa/invitaciones.
+- Opcion B/multiempresa controlado avanza a fase funcional con auth propia MVP ya validada por Product Owner.
+- Round actual liberado:
+  - TASK-179: Backend API usa sesion de empresa como contexto operativo.
+  - TASK-180: Web Dev conecta operacion a sesion autenticada.
+  - TASK-182: Backend API propone rate limiting/lockout sin implementar todavia.
+- Round siguiente:
+  - TASK-181: QA valida operacion publicada con empresa autenticada despues de TASK-179/TASK-180.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -338,6 +334,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-176: Backend API confirmo deploy publicado del fix login/cookie; login invalido 401 controlado y cookie SameSite=None; Secure redaccionada.
 - TASK-177: QA confirmo dependencias tecnicas publicadas, pero E2E final sigue bloqueado por falta de link fresco/evidencia PO.
 - TASK-177: Product Owner aporto evidencia redaccionada final en `tasks/TASK-177-PO-EVIDENCE.md`; crear acceso, login correcto, sesion con empresa/correo esperado y logout quedan validados operativamente.
+- TASK-178: Asignada a Infra / Azure para reemitir invitacion auth propia a mailbox directo si vuelve a requerirse link.
+- TASK-179: Asignada a Backend API para usar sesion de empresa como contexto operativo en API.
+- TASK-180: Asignada a Web Dev para conectar Web operativa a sesion de empresa autenticada.
+- TASK-181: Asignada a QA para validar operacion publicada con empresa autenticada despues de TASK-179/TASK-180.
+- TASK-182: Asignada a Backend API para proponer rate limiting y lockout de auth propia.
 
 ## Riesgos principales
 

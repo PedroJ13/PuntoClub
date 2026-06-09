@@ -156,6 +156,11 @@
 - TASK-175: Revalidar auth propia despues de CORS/cookie/deploy.
 - TASK-176: Confirmar deploy API de fix login/cookie.
 - TASK-177: Reintentar E2E auth propia final.
+- TASK-178: Reemitir invitacion auth propia a mailbox directo.
+- TASK-179: Usar sesion de empresa como contexto operativo en API.
+- TASK-180: Conectar Web operativa a sesion de empresa autenticada.
+- TASK-181: Validar operacion publicada con empresa autenticada.
+- TASK-182: Proponer rate limiting y lockout para auth propia.
 
 ## P1 pre-lanzamiento
 
@@ -199,6 +204,8 @@
 - Registro publico/controlado de empresas. En exploracion P1 con TASK-113 a TASK-119.
 - Aprobacion administrativa. En avance controlado con TASK-134, TASK-137 y TASK-140.
 - Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
+- Operacion multiempresa controlada con auth propia: siguiente fase con TASK-179 a TASK-181.
+- Rate limiting/lockout auth propia: analisis pendiente en TASK-182.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
 
