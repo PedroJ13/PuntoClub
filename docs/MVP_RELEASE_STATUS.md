@@ -34,7 +34,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Round siguiente:
   - TASK-189: Backend API implementa rate limiting/lockout usando TASK-187/TASK-188.
 - Round final:
-  - TASK-190: QA valida rate limiting publicado.
+  - TASK-191: Backend API confirma deploy API del rate limiting.
+  - TASK-192: QA revalida rate limiting publicado.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -358,6 +359,12 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-188: Asignada a Infra / Azure para confirmar IP confiable en Azure Functions.
 - TASK-189: Asignada a Backend API para implementar rate limiting auth propia despues de TASK-187/TASK-188.
 - TASK-190: Asignada a QA para validar rate limiting auth propia publicado.
+- TASK-187: SQL DEV aplico y valido `dbo.AuthAttemptLimits` en Azure SQL; regla temporal de firewall retirada.
+- TASK-188: Infra / Azure recomendo no usar bloqueo fuerte por IP en arquitectura actual; controles principales por email/token.
+- TASK-189: Backend API implemento rate limiting local por email/token, IP diferida; `npm test` paso 91/91.
+- TASK-190: QA no aprobo publicado porque el cambio de TASK-189 aun no estaba desplegado o no se observaba activo.
+- TASK-191: Asignada a Backend API para confirmar deploy API de rate limiting auth propia.
+- TASK-192: Asignada a QA para revalidar rate limiting auth propia publicado despues de TASK-191.
 
 ## Riesgos principales
 
@@ -368,7 +375,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Prioridad inmediata: implementar y validar rate limiting/lockout de auth propia antes de abrir uso a mas empresas. Mantener Entra External ID diferido.
+Prioridad inmediata: publicar y revalidar rate limiting/lockout de auth propia. Mantener Entra External ID diferido.
 
 ## Listo para probar
 

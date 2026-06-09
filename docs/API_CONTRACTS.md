@@ -53,7 +53,7 @@ Propuesta inicial Backend/API para MVP. No implementa endpoints.
 | 409 | `COMPANY_USER_ALREADY_EXISTS` | Ya existe usuario con ese email o subject externo. |
 | 413 | `UPLOAD_TOO_LARGE` | Archivo supera el limite permitido. |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | Tipo de archivo no permitido. |
-| 429 | `RATE_LIMITED` | Demasiados intentos recientes. |
+| 429 | `TOO_MANY_ATTEMPTS` | Demasiados intentos recientes. |
 | 500 | `INTERNAL_ERROR` | Error no esperado. No debe exponer detalles SQL. |
 
 ## Multiempresa controlado
@@ -136,7 +136,7 @@ Errores esperados:
 - `400 VALIDATION_ERROR`.
 - `409 COMPANY_ALREADY_EXISTS` por `UX_Companies_email`.
 - `409 REGISTRATION_ALREADY_PENDING` por `UX_CompanyRegistrationRequests_pending_company_email`.
-- `429 RATE_LIMITED`.
+- `429 TOO_MANY_ATTEMPTS`.
 
 ### POST `/api/company-registration-requests/{requestId}/approve`
 
@@ -297,7 +297,7 @@ Errores esperados:
 - `403 FORBIDDEN`.
 - `404 COMPANY_NOT_FOUND`.
 - `409 INVITATION_ALREADY_PENDING` por `UX_CompanyInvitations_pending_company_email`.
-- `429 RATE_LIMITED`.
+- `429 TOO_MANY_ATTEMPTS`.
 
 ### POST `/api/company-invitations/{invitationId}/resend`
 
@@ -329,7 +329,7 @@ Errores esperados:
 - `404 INVITATION_NOT_FOUND`.
 - `409 INVITATION_ALREADY_ACCEPTED`.
 - `409 INVITATION_EXPIRED`.
-- `429 RATE_LIMITED`.
+- `429 TOO_MANY_ATTEMPTS`.
 
 ### GET `/api/company-invitations/validate?token=...`
 
@@ -482,7 +482,7 @@ Errores esperados:
 - `400 VALIDATION_ERROR`.
 - `401 UNAUTHORIZED`.
 - `403 FORBIDDEN`.
-- `429 RATE_LIMITED`.
+- `429 TOO_MANY_ATTEMPTS`.
 
 ### POST `/api/company-auth/logout`
 

@@ -169,6 +169,8 @@
 - TASK-188: Confirmar IP confiable para rate limiting en Azure Functions.
 - TASK-189: Implementar rate limiting auth propia en Backend API.
 - TASK-190: Validar rate limiting auth propia publicado.
+- TASK-191: Confirmar deploy API de rate limiting auth propia.
+- TASK-192: Revalidar rate limiting auth propia publicado.
 
 ## P1 pre-lanzamiento
 

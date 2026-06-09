@@ -1,6 +1,12 @@
 const { app } = require('@azure/functions');
 const { auditBestEffort } = require('../lib/audit');
 const {
+  assertAuthAttemptAllowed,
+  clearAuthAttemptLimit,
+  recordAuthAttemptFailure,
+  scopes
+} = require('../lib/authRateLimit');
+const {
   assertCompanyInvitationManagementEnabled,
   formatCompanyInvitationCreatedAuditEvent,
   formatCompanyInvitationCreatedResponse,
@@ -76,12 +82,25 @@ app.http('acceptCompanyInvitation', {
   authLevel: 'anonymous',
   route: 'company-invitations/accept',
   handler: handle(async (request, context) => {
-    const payload = validateInvitationAcceptPayload(await readJson(request));
-    const result = await repository.acceptCompanyInvitationWithPassword(
-      hashInvitationToken(payload.token),
-      payload,
-      createPasswordHash(payload.password)
-    );
+    const body = await readJson(request);
+    const token = validateInvitationToken(body && body.token);
+    const tokenHash = hashInvitationToken(token);
+    await assertAuthAttemptAllowed(repository, scopes.companyInvitationToken, tokenHash);
+
+    let result;
+    try {
+      const payload = validateInvitationAcceptPayload(body);
+      result = await repository.acceptCompanyInvitationWithPassword(
+        tokenHash,
+        payload,
+        createPasswordHash(payload.password)
+      );
+    } catch (error) {
+      await recordAuthAttemptFailure(repository, scopes.companyInvitationToken, tokenHash);
+      throw error;
+    }
+
+    await clearAuthAttemptLimit(repository, scopes.companyInvitationToken, tokenHash);
 
     await auditBestEffort(context, {
       companyId: result.company.id,

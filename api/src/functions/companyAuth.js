@@ -1,6 +1,13 @@
 const { app } = require('@azure/functions');
 const { ApiError } = require('../lib/errors');
 const {
+  assertAuthAttemptAllowed,
+  clearAuthAttemptLimit,
+  hashRateLimitSubject,
+  recordAuthAttemptFailure,
+  scopes
+} = require('../lib/authRateLimit');
+const {
   buildClearSessionCookie,
   buildSessionCookie,
   formatAuthIdentity,
@@ -29,6 +36,9 @@ app.http('companyAuthLogin', {
   route: 'company-auth/login',
   handler: handle(async (request) => {
     const payload = validateCompanyAuthLoginPayload(await readJson(request));
+    const emailSubjectHash = hashRateLimitSubject(payload.email);
+    await assertAuthAttemptAllowed(repository, scopes.companyLoginEmail, emailSubjectHash);
+
     const user = await repository.getLocalPasswordUserByEmail(payload.email);
 
     if (
@@ -41,12 +51,14 @@ app.http('companyAuthLogin', {
         passwordParams: user.password_params
       })
     ) {
+      await recordAuthAttemptFailure(repository, scopes.companyLoginEmail, emailSubjectHash);
       throw new ApiError(401, 'UNAUTHORIZED', 'Invalid email or password.');
     }
 
     const token = generateSessionToken();
     const expiresAt = getSessionExpiresAt();
     await repository.createCompanySession(user.company_id, user.id, hashSessionToken(token), expiresAt);
+    await clearAuthAttemptLimit(repository, scopes.companyLoginEmail, emailSubjectHash);
 
     return jsonWithHeaders(200, formatAuthIdentity({
       user: {

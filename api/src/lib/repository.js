@@ -1,4 +1,5 @@
 const { ApiError } = require('./errors');
+const { getFailedAttemptUpdate } = require('./authRateLimit');
 const { getPool, getSql } = require('./db');
 
 function toIsoTimestamp(value) {
@@ -106,6 +107,22 @@ function mapAuthIdentity(row) {
   };
 }
 
+function mapAuthAttemptLimit(row) {
+  if (!row) {
+    return null;
+  }
+
+  return {
+    scope: row.scope,
+    subjectHash: row.subject_hash,
+    windowStartedAt: row.window_started_at,
+    failedCount: row.failed_count,
+    lockedUntil: row.locked_until,
+    lastFailedAt: row.last_failed_at,
+    updatedAt: row.updated_at
+  };
+}
+
 function mapMyCompany(row) {
   const hasLogo = Boolean(row.logo_blob_path);
   return {
@@ -140,6 +157,129 @@ async function ensureActiveCompany(companyId) {
   }
 
   return result.recordset[0];
+}
+
+async function getAuthAttemptLimit(scope, subjectHash) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('scope', sql.VarChar(40), scope)
+    .input('subject_hash', sql.VarBinary(32), subjectHash)
+    .query(`
+      SELECT TOP (1)
+        scope,
+        subject_hash,
+        window_started_at,
+        failed_count,
+        locked_until,
+        last_failed_at,
+        updated_at
+      FROM dbo.AuthAttemptLimits
+      WHERE scope = @scope
+        AND subject_hash = @subject_hash
+    `);
+
+  return mapAuthAttemptLimit(result.recordset[0]);
+}
+
+async function recordAuthAttemptFailure(scope, subjectHash, policy, now = new Date()) {
+  const sql = getSql();
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+
+  await transaction.begin();
+
+  try {
+    const request = new sql.Request(transaction);
+    const result = await request
+      .input('scope', sql.VarChar(40), scope)
+      .input('subject_hash', sql.VarBinary(32), subjectHash)
+      .query(`
+        SELECT TOP (1)
+          scope,
+          subject_hash,
+          window_started_at,
+          failed_count,
+          locked_until,
+          last_failed_at,
+          updated_at
+        FROM dbo.AuthAttemptLimits WITH (UPDLOCK, HOLDLOCK)
+        WHERE scope = @scope
+          AND subject_hash = @subject_hash
+      `);
+
+    const next = getFailedAttemptUpdate(mapAuthAttemptLimit(result.recordset[0]), policy, now);
+
+    if (result.recordset.length) {
+      await new sql.Request(transaction)
+        .input('scope', sql.VarChar(40), scope)
+        .input('subject_hash', sql.VarBinary(32), subjectHash)
+        .input('window_started_at', sql.DateTime2, next.windowStartedAt)
+        .input('failed_count', sql.Int, next.failedCount)
+        .input('locked_until', sql.DateTime2, next.lockedUntil)
+        .input('last_failed_at', sql.DateTime2, next.lastFailedAt)
+        .query(`
+          UPDATE dbo.AuthAttemptLimits
+          SET
+            window_started_at = @window_started_at,
+            failed_count = @failed_count,
+            locked_until = @locked_until,
+            last_failed_at = @last_failed_at,
+            updated_at = SYSUTCDATETIME()
+          WHERE scope = @scope
+            AND subject_hash = @subject_hash
+        `);
+    } else {
+      await new sql.Request(transaction)
+        .input('scope', sql.VarChar(40), scope)
+        .input('subject_hash', sql.VarBinary(32), subjectHash)
+        .input('window_started_at', sql.DateTime2, next.windowStartedAt)
+        .input('failed_count', sql.Int, next.failedCount)
+        .input('locked_until', sql.DateTime2, next.lockedUntil)
+        .input('last_failed_at', sql.DateTime2, next.lastFailedAt)
+        .query(`
+          INSERT INTO dbo.AuthAttemptLimits (
+            scope,
+            subject_hash,
+            window_started_at,
+            failed_count,
+            locked_until,
+            last_failed_at
+          )
+          VALUES (
+            @scope,
+            @subject_hash,
+            @window_started_at,
+            @failed_count,
+            @locked_until,
+            @last_failed_at
+          )
+        `);
+    }
+
+    await transaction.commit();
+    return next;
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch {
+      // Preserve the original failure; rollback errors are secondary here.
+    }
+    throw error;
+  }
+}
+
+async function clearAuthAttemptLimit(scope, subjectHash) {
+  const sql = getSql();
+  const pool = await getPool();
+  await pool.request()
+    .input('scope', sql.VarChar(40), scope)
+    .input('subject_hash', sql.VarBinary(32), subjectHash)
+    .query(`
+      DELETE FROM dbo.AuthAttemptLimits
+      WHERE scope = @scope
+        AND subject_hash = @subject_hash
+    `);
 }
 
 async function getCompanySettings(companyId) {
@@ -1216,6 +1356,7 @@ async function createRedemption(companyId, payload) {
 module.exports = {
   acceptCompanyInvitationWithPassword,
   approveCompanyRegistrationRequest,
+  clearAuthAttemptLimit,
   createCompanySession,
   createCompanyInvitation,
   createCompanyRegistrationRequest,
@@ -1226,6 +1367,7 @@ module.exports = {
   ensureActiveCompany,
   getActivity,
   getActivityReport,
+  getAuthAttemptLimit,
   getAuthIdentityBySessionTokenHash,
   getBalance,
   getCompanyInvitationById,
@@ -1239,6 +1381,7 @@ module.exports = {
   mapCompanySettings,
   mapCompanyUser,
   mapMyCompany,
+  recordAuthAttemptFailure,
   rejectCompanyRegistrationRequest,
   revokeCompanySession,
   rotateCompanyInvitationToken,
