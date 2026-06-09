@@ -91,6 +91,7 @@ function createHttpCustomerApi(config) {
   const companyInvitationsAcceptUrl = buildApiUrl(config, "/api/company-invitations/accept");
   const companyAuthLoginUrl = buildApiUrl(config, "/api/company-auth/login");
   const companyAuthLogoutUrl = buildApiUrl(config, "/api/company-auth/logout");
+  const companyLogoUrl = buildApiUrl(config, "/api/my-company/logo");
   const meUrl = buildApiUrl(config, "/api/me");
   const getActiveCompanyId = () => activeCompanyId || normalizeCompanyId(config.companyId);
   const buildCompanyUrl = (path) =>
@@ -103,6 +104,9 @@ function createHttpCustomerApi(config) {
     },
     getActiveCompanyId() {
       return getActiveCompanyId();
+    },
+    getCompanyLogoUrl(logoUrl = "/api/my-company/logo") {
+      return buildApiUrl(config, logoUrl || "/api/my-company/logo");
     },
     async acceptCompanyInvitation(payload) {
       const response = await fetch(companyInvitationsAcceptUrl, {
@@ -156,6 +160,18 @@ function createHttpCustomerApi(config) {
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify(payload),
+      });
+
+      return parseResponse(response);
+    },
+    async uploadCompanyLogo(file) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch(companyLogoUrl, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
       });
 
       return parseResponse(response);
@@ -263,6 +279,9 @@ function createMockCustomerApi() {
     getActiveCompanyId() {
       return activeCompanyId;
     },
+    getCompanyLogoUrl(logoUrl = "") {
+      return logoUrl;
+    },
     async acceptCompanyInvitation(payload) {
       await wait(450);
       return acceptMockCompanyInvitation(payload);
@@ -316,6 +335,29 @@ function createMockCustomerApi() {
       }
 
       return { ...mockCompanySettings };
+    },
+    async uploadCompanyLogo(file) {
+      await wait(450);
+      validateMockCompanyLogo(file);
+      const now = new Date().toISOString();
+      mockCompanySettings = {
+        ...mockCompanySettings,
+        logoUrl: "/api/my-company/logo",
+        logoContentType: file.type,
+        logoUpdatedAt: now,
+        updatedAt: now,
+      };
+      recordMockAuditEvent({
+        eventType: "company.logo.updated",
+        entityType: "company",
+        entityId: mockCompanySettings.id,
+        summary: "Logo actualizado.",
+      });
+      return {
+        logoUrl: mockCompanySettings.logoUrl,
+        contentType: file.type,
+        updatedAt: now,
+      };
     },
     async createCompanyRegistrationRequest(payload) {
       await wait(500);
@@ -670,12 +712,11 @@ function validateCustomer(payload) {
 
 function validateCompanySettings(payload) {
   const details = [];
-  const editableFields = ["name", "email", "phone", "logoUrl", "pointsPercentage"];
+  const editableFields = ["name", "email", "phone", "pointsPercentage"];
   const hasEditableField = editableFields.some((field) => hasOwn(payload, field));
   const name = String(payload.name ?? "").trim();
   const email = String(payload.email ?? "").trim();
   const phone = String(payload.phone ?? "").trim();
-  const logoUrl = String(payload.logoUrl ?? "").trim();
   const pointsPercentage = Number(payload.pointsPercentage);
 
   if (!hasEditableField) {
@@ -692,10 +733,6 @@ function validateCompanySettings(payload) {
 
   if (hasOwn(payload, "phone") && phone && (phone.length < 7 || phone.length > 32)) {
     details.push({ field: "phone", message: "El telefono debe tener entre 7 y 32 caracteres." });
-  }
-
-  if (hasOwn(payload, "logoUrl") && logoUrl && !isHttpUrl(logoUrl)) {
-    details.push({ field: "logoUrl", message: "El logo URL debe ser http(s)." });
   }
 
   if (
@@ -715,9 +752,24 @@ function normalizeCompanySettingsPayload(payload) {
     name: String(payload.name ?? "").trim(),
     email: normalizeNullableText(payload.email),
     phone: normalizeNullableText(payload.phone),
-    logoUrl: normalizeNullableText(payload.logoUrl),
     pointsPercentage: Number(payload.pointsPercentage),
   };
+}
+
+function validateMockCompanyLogo(file) {
+  const allowedTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+  if (!file) {
+    throw new ApiError("VALIDATION_ERROR", "Seleccione un archivo de logo.");
+  }
+
+  if (!allowedTypes.has(file.type)) {
+    throw new ApiError("UNSUPPORTED_MEDIA_TYPE", "El tipo de archivo no esta permitido.");
+  }
+
+  if (file.size > 1048576) {
+    throw new ApiError("UPLOAD_TOO_LARGE", "El archivo supera el tamano maximo.");
+  }
 }
 
 function validateCompanyRegistrationRequest(payload) {
@@ -1160,15 +1212,6 @@ function isDateOnly(value) {
 
 function isEmail(value) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value));
-}
-
-function isHttpUrl(value) {
-  try {
-    const url = new URL(value);
-    return url.protocol === "http:" || url.protocol === "https:";
-  } catch (error) {
-    return false;
-  }
 }
 
 function getDateRangeDays(from, to) {

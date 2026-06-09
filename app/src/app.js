@@ -109,13 +109,19 @@ const elements = {
   companyNameInput: document.querySelector("#company-name"),
   companyEmailInput: document.querySelector("#company-email"),
   companyPhoneInput: document.querySelector("#company-phone"),
-  companyLogoUrlInput: document.querySelector("#company-logo-url"),
   companyPointsPercentageInput: document.querySelector("#company-points-percentage"),
   companyNameError: document.querySelector("#company-name-error"),
   companyEmailError: document.querySelector("#company-email-error"),
   companyPhoneError: document.querySelector("#company-phone-error"),
-  companyLogoUrlError: document.querySelector("#company-logo-url-error"),
   companyPointsPercentageError: document.querySelector("#company-points-percentage-error"),
+  companyLogoFileInput: document.querySelector("#company-logo-file"),
+  companyLogoFileError: document.querySelector("#company-logo-file-error"),
+  companyLogoPreviewText: document.querySelector("#company-logo-preview-text"),
+  companyLogoPreviewImage: document.querySelector("#company-logo-preview-image"),
+  companyLogoStatus: document.querySelector("#company-logo-status"),
+  companyLogoError: document.querySelector("#company-logo-error"),
+  uploadCompanyLogoButton: document.querySelector("#upload-company-logo-button"),
+  clearCompanyLogoButton: document.querySelector("#clear-company-logo-button"),
   companyStatus: document.querySelector("#company-status"),
   companyError: document.querySelector("#company-error"),
   companyEmpty: document.querySelector("#company-empty"),
@@ -153,6 +159,7 @@ let currentCompanySettings = null;
 let currentAuthIdentity = null;
 let currentInvitation = null;
 let activeSection = "operations";
+let companyLogoPreviewUrl = "";
 const customerBalances = new Map();
 const invitationToken = getInvitationTokenFromUrl();
 const isInvitationPage = isCompanyInvitationRoute();
@@ -242,6 +249,18 @@ elements.createAccessForm.addEventListener("submit", async (event) => {
 elements.companyForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   await submitCompanySettings();
+});
+
+elements.companyLogoFileInput.addEventListener("change", () => {
+  previewSelectedCompanyLogo();
+});
+
+elements.uploadCompanyLogoButton.addEventListener("click", async () => {
+  await submitCompanyLogo();
+});
+
+elements.clearCompanyLogoButton.addEventListener("click", () => {
+  clearSelectedCompanyLogo();
 });
 
 elements.companyRegistrationForm.addEventListener("submit", async (event) => {
@@ -768,7 +787,6 @@ async function submitCompanySettings() {
     name: elements.companyNameInput.value,
     email: elements.companyEmailInput.value.trim() || null,
     phone: elements.companyPhoneInput.value.trim() || null,
-    logoUrl: elements.companyLogoUrlInput.value.trim() || null,
     pointsPercentage: elements.companyPointsPercentageInput.value,
   };
 
@@ -781,6 +799,39 @@ async function submitCompanySettings() {
     renderCompanySettingsError(error);
   } finally {
     setCompanySubmitting(false);
+  }
+}
+
+async function submitCompanyLogo() {
+  clearCompanyLogoMessages();
+
+  const [file] = elements.companyLogoFileInput.files;
+  const validationMessage = getCompanyLogoValidationMessage(file);
+
+  if (validationMessage) {
+    elements.companyLogoFileError.textContent = validationMessage;
+    showCompanyLogoError(validationMessage);
+    return;
+  }
+
+  setCompanyLogoSubmitting(true);
+
+  try {
+    const result = await api.uploadCompanyLogo(file);
+    currentCompanySettings = {
+      ...(currentCompanySettings || {}),
+      logoUrl: result.logoUrl || "/api/my-company/logo",
+      logoContentType: result.contentType || file.type,
+      logoUpdatedAt: result.updatedAt || new Date().toISOString(),
+      updatedAt: result.updatedAt || currentCompanySettings?.updatedAt,
+    };
+    clearSelectedCompanyLogo({ keepMessages: true, renderCurrent: false });
+    renderCompanyLogo(currentCompanySettings);
+    showCompanyLogoStatus("Logo actualizado.");
+  } catch (error) {
+    renderCompanyLogoError(error);
+  } finally {
+    setCompanyLogoSubmitting(false);
   }
 }
 
@@ -1190,16 +1241,12 @@ function renderCompanySettings(settings) {
   elements.companyNameInput.value = settings.name ?? "";
   elements.companyEmailInput.value = settings.email ?? "";
   elements.companyPhoneInput.value = settings.phone ?? "";
-  elements.companyLogoUrlInput.value = settings.logoUrl ?? "";
   elements.companyPointsPercentageInput.value = settings.pointsPercentage ?? "";
   elements.companyCurrentStatus.textContent = getCompanyStatusLabel(settings.status);
   elements.companyCurrentUpdated.textContent = settings.updatedAt
     ? formatDateTime(settings.updatedAt)
     : "No disponible";
-  const logoUrl = getSafeHttpUrl(settings.logoUrl);
-  elements.companyCurrentLogo.innerHTML = logoUrl
-    ? `<a href="${escapeHtml(logoUrl)}" target="_blank" rel="noreferrer">Ver logo</a>`
-    : "Sin logo";
+  renderCompanyLogo(settings);
 }
 
 function renderCompanySettingsError(error) {
@@ -1209,7 +1256,6 @@ function renderCompanySettingsError(error) {
         name: elements.companyNameError,
         email: elements.companyEmailError,
         phone: elements.companyPhoneError,
-        logoUrl: elements.companyLogoUrlError,
         pointsPercentage: elements.companyPointsPercentageError,
       }[detail.field];
 
@@ -1240,6 +1286,93 @@ function renderCompanySettingsError(error) {
   }
 
   showCompanyError("No se pudo cargar o guardar la configuracion. Intente de nuevo.");
+}
+
+function renderCompanyLogo(settings) {
+  revokeCompanyLogoPreviewUrl();
+  const logoUrl = settings?.logoUrl ? api.getCompanyLogoUrl?.(settings.logoUrl) : "";
+  const updatedAt = settings?.logoUpdatedAt || settings?.updatedAt;
+
+  if (!logoUrl) {
+    elements.companyCurrentLogo.textContent = "Sin logo";
+    elements.companyLogoPreviewText.hidden = false;
+    elements.companyLogoPreviewText.textContent = "Sin logo";
+    elements.companyLogoPreviewImage.hidden = true;
+    elements.companyLogoPreviewImage.removeAttribute("src");
+    return;
+  }
+
+  const cacheKey = updatedAt ? `?v=${encodeURIComponent(updatedAt)}` : "";
+  elements.companyCurrentLogo.textContent = updatedAt
+    ? `Actualizado ${formatDateTime(updatedAt)}`
+    : "Logo cargado";
+  elements.companyLogoPreviewText.hidden = true;
+  elements.companyLogoPreviewImage.hidden = false;
+  elements.companyLogoPreviewImage.src = `${logoUrl}${cacheKey}`;
+}
+
+function previewSelectedCompanyLogo() {
+  clearCompanyLogoMessages();
+  const [file] = elements.companyLogoFileInput.files;
+  const validationMessage = getCompanyLogoValidationMessage(file);
+
+  if (validationMessage) {
+    elements.companyLogoFileError.textContent = validationMessage;
+    showCompanyLogoError(validationMessage);
+    renderCompanyLogo(currentCompanySettings);
+    return;
+  }
+
+  revokeCompanyLogoPreviewUrl();
+  companyLogoPreviewUrl = URL.createObjectURL(file);
+  elements.companyLogoPreviewText.hidden = true;
+  elements.companyLogoPreviewImage.hidden = false;
+  elements.companyLogoPreviewImage.src = companyLogoPreviewUrl;
+  showCompanyLogoStatus("Logo listo para subir.");
+}
+
+function clearSelectedCompanyLogo(options = {}) {
+  elements.companyLogoFileInput.value = "";
+  revokeCompanyLogoPreviewUrl();
+
+  if (!options.keepMessages) {
+    clearCompanyLogoMessages();
+  }
+
+  if (options.renderCurrent !== false) {
+    renderCompanyLogo(currentCompanySettings);
+  }
+}
+
+function revokeCompanyLogoPreviewUrl() {
+  if (companyLogoPreviewUrl) {
+    URL.revokeObjectURL(companyLogoPreviewUrl);
+    companyLogoPreviewUrl = "";
+  }
+}
+
+function renderCompanyLogoError(error) {
+  if (error instanceof ApiError && error.code === "UPLOAD_TOO_LARGE") {
+    showCompanyLogoError("El logo debe pesar 1 MB o menos.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "UNSUPPORTED_MEDIA_TYPE") {
+    showCompanyLogoError("Use una imagen PNG, JPG o WebP.");
+    return;
+  }
+
+  if (isAuthRequiredError(error)) {
+    showCompanyLogoError(getAuthRequiredMessage());
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    showCompanyLogoError(error.message || "Revise el archivo seleccionado.");
+    return;
+  }
+
+  showCompanyLogoError("No se pudo subir el logo. Intente de nuevo.");
 }
 
 function renderCompanyRegistrationSuccess(result) {
@@ -1602,11 +1735,28 @@ function getCompanyValidationMessage(detail) {
     name: "El nombre es requerido y debe tener 160 caracteres o menos.",
     email: "El email debe tener un formato valido y 254 caracteres o menos.",
     phone: "El telefono debe tener entre 7 y 32 caracteres.",
-    logoUrl: "El logo URL debe ser una URL http(s) valida.",
     pointsPercentage: "El porcentaje debe ser mayor que 0 y menor o igual que 100.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
+}
+
+function getCompanyLogoValidationMessage(file) {
+  const allowedTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+  if (!file) {
+    return "Seleccione una imagen de logo.";
+  }
+
+  if (!allowedTypes.has(file.type)) {
+    return "Use una imagen PNG, JPG o WebP.";
+  }
+
+  if (file.size > 1048576) {
+    return "El logo debe pesar 1 MB o menos.";
+  }
+
+  return "";
 }
 
 function getCompanyRegistrationValidationMessage(detail) {
@@ -1713,6 +1863,16 @@ function showCompanyError(message) {
   elements.companyError.textContent = message;
 }
 
+function showCompanyLogoStatus(message) {
+  elements.companyLogoStatus.hidden = false;
+  elements.companyLogoStatus.textContent = message;
+}
+
+function showCompanyLogoError(message) {
+  elements.companyLogoError.hidden = false;
+  elements.companyLogoError.textContent = message;
+}
+
 function showCompanyRegistrationError(message) {
   elements.registrationError.hidden = false;
   elements.registrationError.textContent = message;
@@ -1809,12 +1969,19 @@ function clearCompanyMessages() {
   elements.companyNameError.textContent = "";
   elements.companyEmailError.textContent = "";
   elements.companyPhoneError.textContent = "";
-  elements.companyLogoUrlError.textContent = "";
   elements.companyPointsPercentageError.textContent = "";
   elements.companyError.hidden = true;
   elements.companyError.textContent = "";
   elements.companyStatus.hidden = true;
   elements.companyStatus.textContent = "";
+}
+
+function clearCompanyLogoMessages() {
+  elements.companyLogoFileError.textContent = "";
+  elements.companyLogoError.hidden = true;
+  elements.companyLogoError.textContent = "";
+  elements.companyLogoStatus.hidden = true;
+  elements.companyLogoStatus.textContent = "";
 }
 
 function clearCompanyRegistrationForm(options = {}) {
@@ -1896,6 +2063,13 @@ function setCompanySubmitting(isSubmitting) {
   elements.saveCompanyButton.textContent = isSubmitting
     ? "Guardando..."
     : "Guardar configuracion";
+}
+
+function setCompanyLogoSubmitting(isSubmitting) {
+  elements.uploadCompanyLogoButton.disabled = isSubmitting;
+  elements.clearCompanyLogoButton.disabled = isSubmitting;
+  elements.companyLogoFileInput.disabled = isSubmitting;
+  elements.uploadCompanyLogoButton.textContent = isSubmitting ? "Subiendo..." : "Subir logo";
 }
 
 function setCompanyRegistrationSubmitting(isSubmitting) {
@@ -2159,15 +2333,6 @@ function isStrongPassword(password) {
     /[A-Za-z]/.test(password) &&
     /[0-9]/.test(password)
   );
-}
-
-function getSafeHttpUrl(value) {
-  try {
-    const url = new URL(String(value ?? ""));
-    return url.protocol === "http:" || url.protocol === "https:" ? url.href : "";
-  } catch (error) {
-    return "";
-  }
 }
 
 function getAuditSummary(item, eventType) {

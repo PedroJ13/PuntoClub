@@ -175,6 +175,10 @@
 - TASK-194: Implementar API de logo privado de empresa.
 - TASK-195: Conectar UI de Mi empresa con logo.
 - TASK-196: Validar logo de empresa publicado.
+- TASK-197: Confirmar deploy API de logo privado.
+- TASK-198: Confirmar deploy Web de UI de logo.
+- TASK-199: PO Test valida logo con sesion real.
+- TASK-200: Revalidar logo de empresa publicado.
 
 ## P1 pre-lanzamiento
 

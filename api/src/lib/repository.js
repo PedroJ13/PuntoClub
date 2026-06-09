@@ -341,6 +341,75 @@ async function updateCompanySettings(companyId, settings) {
   return mapCompanySettings(result.recordset[0]);
 }
 
+async function updateCompanyLogo(companyId, logo) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('logo_blob_path', sql.NVarChar(500), logo.blobPath)
+    .input('logo_content_type', sql.VarChar(80), logo.contentType)
+    .query(`
+      UPDATE dbo.Companies
+      SET
+        logo_blob_path = @logo_blob_path,
+        logo_content_type = @logo_content_type,
+        logo_updated_at = SYSUTCDATETIME(),
+        updated_at = SYSUTCDATETIME()
+      OUTPUT
+        INSERTED.id,
+        INSERTED.name,
+        INSERTED.email,
+        INSERTED.phone,
+        INSERTED.address,
+        INSERTED.logo_blob_path,
+        INSERTED.logo_content_type,
+        INSERTED.logo_updated_at,
+        INSERTED.points_percentage,
+        INSERTED.status,
+        INSERTED.updated_at
+      WHERE id = @company_id
+        AND status = 'active'
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+  }
+
+  return mapMyCompany(result.recordset[0]);
+}
+
+async function getCompanyLogoMetadata(companyId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .query(`
+      SELECT
+        id,
+        logo_blob_path,
+        logo_content_type,
+        logo_updated_at
+      FROM dbo.Companies
+      WHERE id = @company_id
+        AND status = 'active'
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+  }
+
+  const row = result.recordset[0];
+  if (!row.logo_blob_path) {
+    throw new ApiError(404, 'COMPANY_LOGO_NOT_FOUND', 'Company logo was not found.');
+  }
+
+  return {
+    blobPath: row.logo_blob_path,
+    contentType: row.logo_content_type,
+    updatedAt: toIsoTimestamp(row.logo_updated_at)
+  };
+}
+
 async function createCompanyRegistrationRequest(payload) {
   const sql = getSql();
   const pool = await getPool();
@@ -1372,6 +1441,7 @@ module.exports = {
   getBalance,
   getCompanyInvitationById,
   getCompanyInvitationByTokenHash,
+  getCompanyLogoMetadata,
   getCompanySettings,
   getLocalPasswordUserByEmail,
   listCustomers,
@@ -1387,5 +1457,6 @@ module.exports = {
   rotateCompanyInvitationToken,
   toApiId,
   toIsoTimestamp,
+  updateCompanyLogo,
   updateCompanySettings
 };

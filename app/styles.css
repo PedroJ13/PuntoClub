@@ -110,6 +110,7 @@ textarea:focus {
 
 .topbar h1,
 .section-header h2,
+.section-header h3,
 .invitation-card h2,
 .registration-result h3 {
   margin: 0;
@@ -411,6 +412,7 @@ textarea:focus {
 .form-error[hidden],
 .feedback[hidden],
 .empty-state[hidden],
+.company-logo-preview img[hidden],
 .report-summary[hidden],
 .report-table-wrap[hidden],
 .audit-table-wrap[hidden],
@@ -777,9 +779,59 @@ textarea:focus {
   overflow-wrap: anywhere;
 }
 
+.company-logo-panel {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.compact-header {
+  margin-bottom: 0;
+}
+
+.compact-header h3 {
+  font-size: 1rem;
+}
+
+.company-logo-grid {
+  display: grid;
+  grid-template-columns: 180px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+}
+
+.company-logo-preview {
+  display: grid;
+  place-items: center;
+  min-height: 128px;
+  overflow: hidden;
+  border: 1px dashed var(--line);
+  border-radius: 8px;
+  background: var(--surface-strong);
+  color: var(--muted);
+  font-size: 0.86rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.company-logo-preview img {
+  width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+}
+
+.company-logo-controls {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
 .company-future {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 8px;
 }
 
@@ -988,6 +1040,7 @@ textarea:focus {
 
   .history-summary,
   .company-current,
+  .company-logo-grid,
   .company-controls,
   .company-registration-controls,
   .invitation-details,

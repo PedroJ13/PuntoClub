@@ -371,6 +371,14 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-194: Asignada a Backend API para implementar API de logo privado, depende de TASK-193.
 - TASK-195: Asignada a Web Dev para conectar UI de `Mi empresa` con logo, depende de TASK-194.
 - TASK-196: Asignada a QA para validar logo publicado, depende de TASK-194/TASK-195.
+- TASK-193: Infra / Azure confirmo storage privado `stpuntoclublogosbr001/company-logos`, Managed Identity/RBAC y app settings de logo.
+- TASK-194: Backend API implemento API privada de logo localmente; `npm test` paso 99/99. Pendiente publicar.
+- TASK-195: Web Dev implemento UI local de logo en `Mi empresa`; sintaxis Web validada. Pendiente publicar.
+- TASK-196: QA no aprobo publicado porque API/Web aun no reflejaban TASK-194/TASK-195; storage anonimo sigue privado.
+- TASK-197: Asignada a Backend API para confirmar deploy API de logo privado.
+- TASK-198: Asignada a Web Dev para confirmar deploy Web de UI de logo.
+- TASK-199: Asignada a PO Test para validar logo con sesion real despues de TASK-197/TASK-198.
+- TASK-200: Asignada a QA para revalidar logo de empresa publicado.
 
 ## Riesgos principales
 

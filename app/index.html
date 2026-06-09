@@ -464,6 +464,38 @@
                   </div>
                 </div>
 
+                <section class="company-logo-panel" aria-labelledby="company-logo-title">
+                  <div class="section-header compact-header">
+                    <div>
+                      <h3 id="company-logo-title">Logo de empresa</h3>
+                    </div>
+                  </div>
+
+                  <div class="company-logo-grid">
+                    <div class="company-logo-preview" id="company-logo-preview">
+                      <span id="company-logo-preview-text">Sin logo</span>
+                      <img id="company-logo-preview-image" alt="Logo de empresa" hidden />
+                    </div>
+
+                    <div class="company-logo-controls">
+                      <div class="field">
+                        <label for="company-logo-file">Imagen</label>
+                        <input id="company-logo-file" name="logoFile" type="file" accept="image/png,image/jpeg,image/webp" />
+                        <p class="field-help">PNG, JPG o WebP hasta 1 MB.</p>
+                        <p class="field-error" id="company-logo-file-error"></p>
+                      </div>
+
+                      <div id="company-logo-status" class="success-message" hidden></div>
+                      <div id="company-logo-error" class="form-error" hidden></div>
+
+                      <div class="form-actions">
+                        <button class="secondary-button" id="clear-company-logo-button" type="button">Quitar seleccion</button>
+                        <button id="upload-company-logo-button" type="button">Subir logo</button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
                 <div class="field-grid company-controls">
                   <div class="field">
                     <label for="company-name">Nombre</label>
@@ -498,20 +530,10 @@
                   </div>
                 </div>
 
-                <div class="field">
-                  <label for="company-logo-url">Logo URL</label>
-                  <input id="company-logo-url" name="logoUrl" maxlength="2048" autocomplete="url" />
-                  <p class="field-error" id="company-logo-url-error"></p>
-                </div>
-
                 <div class="company-future">
                   <div>
                     <span>Acceso</span>
                     <strong>Invitacion por correo pendiente de arquitectura.</strong>
-                  </div>
-                  <div>
-                    <span>Logo</span>
-                    <strong>Upload a storage queda fuera de esta fase.</strong>
                   </div>
                 </div>
 
