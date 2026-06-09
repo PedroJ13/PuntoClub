@@ -179,6 +179,10 @@
 - TASK-198: Confirmar deploy Web de UI de logo.
 - TASK-199: PO Test valida logo con sesion real.
 - TASK-200: Revalidar logo de empresa publicado.
+- TASK-201: Revisar contratos internos de administracion de empresas.
+- TASK-202: Definir UX minima para panel interno de empresas.
+- TASK-203: Crear panel interno de administracion de empresas.
+- TASK-204: Validar panel interno de empresas publicado.
 
 ## P1 pre-lanzamiento
 
@@ -226,6 +230,7 @@
 - Operacion multiempresa controlada con auth propia: aprobada publicada en TASK-186.
 - Rate limiting/lockout auth propia: aprobado publicado en TASK-192 para email/token; limite por IP diferido hasta proxy confiable.
 - Logo privado de empresa: aprobado publicado en TASK-200.
+- Panel interno de administracion de empresas: siguiente bloque con TASK-201 a TASK-204.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
 

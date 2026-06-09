@@ -27,14 +27,14 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 - Opcion A completada: configuracion de empresa piloto publicada y aprobada.
 - Opcion B/multiempresa controlado avanza a fase funcional con auth propia MVP ya validada por Product Owner.
-- Siguiente bloque decidido por Product / Architect / Release: perfil visual de empresa con logo privado.
+- Siguiente bloque decidido por Product / Architect / Release: panel interno de administracion de empresas.
 - Round actual liberado:
-  - TASK-193: Infra / Azure confirma storage privado para logos.
+  - TASK-201: Backend API revisa/ajusta contratos internos de administracion.
+  - TASK-202: Diseno / UX define flujo minimo del panel interno.
 - Round siguiente:
-  - TASK-194: Backend API implementa API de logo privado.
-  - TASK-195: Web Dev conecta UI de `Mi empresa` con logo.
+  - TASK-203: Web Dev implementa panel interno de administracion de empresas.
 - Round final:
-  - TASK-196: QA valida logo de empresa publicado.
+  - TASK-204: QA valida panel interno publicado.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -383,6 +383,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-198: Web Dev confirmo deploy Web de UI de logo en `Mi empresa`, con `FormData` y `credentials: include`.
 - TASK-199: PO Test aprobo upload real de logo con evidencia redaccionada: preview, refresh, logout/login y archivo no permitido.
 - TASK-200: QA aprobo logo privado de empresa publicado; storage anonimo sigue bloqueado y no hay P0/P1/P2/P3 nuevos.
+- Decision: avanzar con panel interno/controlado para solicitudes, aprobaciones, rechazos y reenvio de invitaciones; no abrir SaaS autoservicio completo todavia.
+- TASK-201: Asignada a Backend API para revisar contratos internos de administracion de empresas.
+- TASK-202: Asignada a Diseno / UX para definir UX minima del panel interno.
+- TASK-203: Asignada a Web Dev para crear panel interno, depende de TASK-201/TASK-202.
+- TASK-204: Asignada a QA para validar panel interno publicado, depende de TASK-203.
 
 ## Riesgos principales
 
@@ -393,7 +398,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Logo privado de empresa queda aprobado en publicado. Mantener Entra External ID diferido y limite por IP como mejora futura condicionada a proxy confiable.
+Validar panel interno de administracion de empresas. Mantener Entra External ID diferido, token interno temporal y limite por IP como mejoras futuras condicionadas a arquitectura.
 
 ## Listo para probar
 
