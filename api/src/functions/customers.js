@@ -10,7 +10,7 @@ app.http('listCustomers', {
   authLevel: 'anonymous',
   route: 'companies/{companyId}/customers',
   handler: handle(async (request) => {
-    const companyId = getCompanyId(request);
+    const companyId = await getCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const items = await repository.listCustomers(companyId, request.query.get('search'));
     return ok({ items });
@@ -22,7 +22,7 @@ app.http('createCustomer', {
   authLevel: 'anonymous',
   route: 'companies/{companyId}/customers',
   handler: handle(async (request, context) => {
-    const companyId = getCompanyId(request);
+    const companyId = await getCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const payload = validateCustomerPayload(await readJson(request));
     let customer;
@@ -59,7 +59,7 @@ app.http('getCustomerBalance', {
   authLevel: 'anonymous',
   route: 'companies/{companyId}/customers/{customerId}/balance',
   handler: handle(async (request) => {
-    const companyId = getCompanyId(request);
+    const companyId = await getCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const customerId = Number(request.params.customerId);
     if (!Number.isInteger(customerId) || customerId <= 0) {
@@ -75,7 +75,7 @@ app.http('getCustomerActivity', {
   authLevel: 'anonymous',
   route: 'companies/{companyId}/customers/{customerId}/activity',
   handler: handle(async (request) => {
-    const companyId = getCompanyId(request);
+    const companyId = await getCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const customerId = Number(request.params.customerId);
     if (!Number.isInteger(customerId) || customerId <= 0 || !(await repository.customerExists(companyId, customerId))) {

@@ -9,7 +9,7 @@ app.http('listAuditEvents', {
   authLevel: 'anonymous',
   route: 'companies/{companyId}/audit/events',
   handler: handle(async (request) => {
-    const companyId = getCompanyId(request);
+    const companyId = await getCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const filters = validateAuditEventsQuery(request.query);
     const events = await listAuditEvents(companyId, filters);

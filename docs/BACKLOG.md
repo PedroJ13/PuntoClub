@@ -161,6 +161,10 @@
 - TASK-180: Conectar Web operativa a sesion de empresa autenticada.
 - TASK-181: Validar operacion publicada con empresa autenticada.
 - TASK-182: Proponer rate limiting y lockout para auth propia.
+- TASK-183: Confirmar deploy API de contexto por sesion.
+- TASK-184: Confirmar deploy Web de operacion con credentials.
+- TASK-185: PO Test valida operacion con sesion de empresa.
+- TASK-186: QA cierra operacion autenticada publicada.
 
 ## P1 pre-lanzamiento
 

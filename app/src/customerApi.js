@@ -85,24 +85,25 @@ export function createCustomerApi(config) {
 }
 
 function createHttpCustomerApi(config) {
-  const customersUrl = buildApiUrl(config, `/api/companies/${config.companyId}/customers`);
-  const purchasesUrl = buildApiUrl(config, `/api/companies/${config.companyId}/purchases`);
-  const redemptionsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/redemptions`);
-  const reportsActivityUrl = buildApiUrl(
-    config,
-    `/api/companies/${config.companyId}/reports/activity`,
-  );
-  const auditEventsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/audit/events`);
-  const settingsUrl = buildApiUrl(config, `/api/companies/${config.companyId}/settings`);
+  let activeCompanyId = normalizeCompanyId(config.companyId);
   const companyRegistrationRequestsUrl = buildApiUrl(config, "/api/company-registration-requests");
   const companyInvitationsValidateUrl = buildApiUrl(config, "/api/company-invitations/validate");
   const companyInvitationsAcceptUrl = buildApiUrl(config, "/api/company-invitations/accept");
   const companyAuthLoginUrl = buildApiUrl(config, "/api/company-auth/login");
   const companyAuthLogoutUrl = buildApiUrl(config, "/api/company-auth/logout");
   const meUrl = buildApiUrl(config, "/api/me");
+  const getActiveCompanyId = () => activeCompanyId || normalizeCompanyId(config.companyId);
+  const buildCompanyUrl = (path) =>
+    buildApiUrl(config, `/api/companies/${encodeURIComponent(getActiveCompanyId())}${path}`);
 
   return {
     sourceLabel: "API real",
+    setActiveCompanyId(companyId) {
+      activeCompanyId = normalizeCompanyId(companyId) || normalizeCompanyId(config.companyId);
+    },
+    getActiveCompanyId() {
+      return getActiveCompanyId();
+    },
     async acceptCompanyInvitation(payload) {
       const response = await fetch(companyInvitationsAcceptUrl, {
         method: "POST",
@@ -144,13 +145,16 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async getCompanySettings() {
-      const response = await fetch(settingsUrl);
+      const response = await fetch(buildCompanyUrl("/settings"), {
+        credentials: "include",
+      });
       return parseResponse(response);
     },
     async updateCompanySettings(payload) {
-      const response = await fetch(settingsUrl, {
+      const response = await fetch(buildCompanyUrl("/settings"), {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -166,68 +170,75 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async searchCustomers(search) {
-      const url = new URL(customersUrl, window.location.origin);
+      const url = new URL(buildCompanyUrl("/customers"), window.location.origin);
       if (search) {
         url.searchParams.set("search", search);
       }
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        credentials: "include",
+      });
       return parseResponse(response);
     },
     async createCustomer(payload) {
-      const response = await fetch(customersUrl, {
+      const response = await fetch(buildCompanyUrl("/customers"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
       return parseResponse(response);
     },
     async getCustomerBalance(customerId) {
-      const url = buildApiUrl(
-        config,
-        `/api/companies/${config.companyId}/customers/${customerId}/balance`,
-      );
-      const response = await fetch(url);
+      const url = buildCompanyUrl(`/customers/${customerId}/balance`);
+      const response = await fetch(url, {
+        credentials: "include",
+      });
       return parseResponse(response);
     },
     async getCustomerActivity(customerId) {
-      const url = buildApiUrl(
-        config,
-        `/api/companies/${config.companyId}/customers/${customerId}/activity`,
-      );
-      const response = await fetch(url);
+      const url = buildCompanyUrl(`/customers/${customerId}/activity`);
+      const response = await fetch(url, {
+        credentials: "include",
+      });
       return parseResponse(response);
     },
     async getActivityReport(filters) {
-      const url = new URL(reportsActivityUrl, window.location.origin);
+      const url = new URL(buildCompanyUrl("/reports/activity"), window.location.origin);
       url.searchParams.set("from", filters.from);
       url.searchParams.set("to", filters.to);
       url.searchParams.set("type", filters.type || "all");
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        credentials: "include",
+      });
       return parseResponse(response);
     },
     async getAuditEvents(filters) {
-      const url = new URL(auditEventsUrl, window.location.origin);
+      const url = new URL(buildCompanyUrl("/audit/events"), window.location.origin);
       url.searchParams.set("from", filters.from);
       url.searchParams.set("to", filters.to);
       url.searchParams.set("limit", filters.limit || "25");
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        credentials: "include",
+      });
       return parseResponse(response);
     },
     async createPurchase(payload) {
-      const response = await fetch(purchasesUrl, {
+      const response = await fetch(buildCompanyUrl("/purchases"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
       return parseResponse(response);
     },
     async createRedemption(payload) {
-      const response = await fetch(redemptionsUrl, {
+      const response = await fetch(buildCompanyUrl("/redemptions"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(payload),
       });
 
@@ -242,8 +253,16 @@ function buildApiUrl(config, path) {
 }
 
 function createMockCustomerApi() {
+  let activeCompanyId = "9";
+
   return {
     sourceLabel: "Mock local",
+    setActiveCompanyId(companyId) {
+      activeCompanyId = normalizeCompanyId(companyId) || "9";
+    },
+    getActiveCompanyId() {
+      return activeCompanyId;
+    },
     async acceptCompanyInvitation(payload) {
       await wait(450);
       return acceptMockCompanyInvitation(payload);
@@ -1162,6 +1181,10 @@ function normalize(value) {
   return String(value ?? "")
     .trim()
     .toLowerCase();
+}
+
+function normalizeCompanyId(value) {
+  return String(value ?? "").trim();
 }
 
 function hasOwn(object, property) {

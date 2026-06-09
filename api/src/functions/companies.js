@@ -19,7 +19,7 @@ app.http('getCompanySettings', {
   authLevel: 'anonymous',
   route: 'companies/{companyId}/settings',
   handler: handle(async (request) => {
-    const companyId = getCompanyId(request);
+    const companyId = await getCompanyId(request);
     const settings = await repository.getCompanySettings(companyId);
     return ok(settings);
   })
@@ -30,7 +30,7 @@ app.http('updateCompanySettings', {
   authLevel: 'anonymous',
   route: 'companies/{companyId}/settings',
   handler: handle(async (request, context) => {
-    const companyId = getCompanyId(request);
+    const companyId = await getCompanyId(request);
     const current = await repository.getCompanySettings(companyId);
     const { patch, providedFields } = validateCompanySettingsPatchPayload(await readJson(request));
     const changedFields = getChangedFields(current, patch, providedFields);

@@ -276,8 +276,9 @@ if (isInvitationPage) {
   showLoginPage();
   refreshAuthIdentity({ silent: true });
 } else {
-  loadCompanySettings();
-  refreshAuthIdentity({ silent: true });
+  refreshAuthIdentity({ silent: true }).finally(() => {
+    loadCompanySettings();
+  });
   elements.searchInput.focus();
 }
 
@@ -980,7 +981,9 @@ function renderHistoryItem(item) {
 
 function renderHistoryError(error) {
   const message =
-    error instanceof ApiError && error.code === "CUSTOMER_NOT_FOUND"
+    isAuthRequiredError(error)
+      ? getAuthRequiredMessage()
+      : error instanceof ApiError && error.code === "CUSTOMER_NOT_FOUND"
       ? "El cliente seleccionado ya no esta disponible."
       : "No se pudo cargar el historial. Intente de nuevo.";
   elements.historySummary.innerHTML = "";
@@ -1095,6 +1098,11 @@ function renderReportError(error) {
     return;
   }
 
+  if (isAuthRequiredError(error)) {
+    showReportError(getAuthRequiredMessage());
+    return;
+  }
+
   showReportError("No se pudo cargar el reporte. Intente de nuevo.");
 }
 
@@ -1160,6 +1168,11 @@ function renderAuditError(error) {
     return;
   }
 
+  if (isAuthRequiredError(error)) {
+    showAuditError(getAuthRequiredMessage());
+    return;
+  }
+
   showAuditError(
     "No se pudo consultar auditoria. Si el endpoint aun no esta disponible, intente despues del deploy.",
   );
@@ -1218,6 +1231,11 @@ function renderCompanySettingsError(error) {
 
   if (error instanceof ApiError && error.code === "COMPANY_NOT_FOUND") {
     showCompanyError("La empresa piloto no esta disponible.");
+    return;
+  }
+
+  if (isAuthRequiredError(error)) {
+    showCompanyError(getAuthRequiredMessage());
     return;
   }
 
@@ -1423,12 +1441,14 @@ function renderLoginError(error) {
 function renderAuthIdentity(identity) {
   const companyName = identity?.company?.name || "Empresa";
   const email = identity?.user?.email || "Sesion iniciada";
-  elements.authStatus.textContent = `${companyName} - ${email}`;
+  api.setActiveCompanyId?.(identity?.company?.id);
+  elements.authStatus.textContent = `Empresa activa: ${companyName} - ${email}`;
   elements.loginButton.hidden = true;
   elements.logoutButton.hidden = false;
 }
 
 function renderSignedOut() {
+  api.setActiveCompanyId?.(config.companyId);
   elements.authStatus.textContent = "Sesion no iniciada";
   elements.loginButton.hidden = false;
   elements.logoutButton.hidden = true;
@@ -1436,7 +1456,9 @@ function renderSignedOut() {
 
 function renderCustomersError(error) {
   const message =
-    error instanceof ApiError && error.code === "INTERNAL_ERROR"
+    isAuthRequiredError(error)
+      ? getAuthRequiredMessage()
+      : error instanceof ApiError && error.code === "INTERNAL_ERROR"
       ? "No se pudo consultar clientes. Intente de nuevo."
       : error instanceof ApiError
         ? error.message
@@ -1464,6 +1486,11 @@ function renderFormError(error) {
 
   if (error instanceof ApiError && error.code === "INTERNAL_ERROR") {
     showFormError("No se pudo registrar el cliente. Intente de nuevo.");
+    return;
+  }
+
+  if (isAuthRequiredError(error)) {
+    showFormError(getAuthRequiredMessage());
     return;
   }
 
@@ -1497,6 +1524,11 @@ function renderPurchaseError(error) {
     return;
   }
 
+  if (isAuthRequiredError(error)) {
+    showPurchaseError(getAuthRequiredMessage());
+    return;
+  }
+
   showPurchaseError("No se pudo registrar la compra. Intente de nuevo.");
 }
 
@@ -1524,6 +1556,11 @@ function renderRedemptionError(error) {
 
   if (error instanceof ApiError && error.code === "CUSTOMER_NOT_FOUND") {
     showRedemptionError("El cliente seleccionado ya no esta disponible.");
+    return;
+  }
+
+  if (isAuthRequiredError(error)) {
+    showRedemptionError(getAuthRequiredMessage());
     return;
   }
 
@@ -1602,6 +1639,14 @@ function getLoginValidationMessage(detail) {
   };
 
   return messagesByField[detail.field] ?? detail.message;
+}
+
+function isAuthRequiredError(error) {
+  return error instanceof ApiError && ["UNAUTHORIZED", "FORBIDDEN"].includes(error.code);
+}
+
+function getAuthRequiredMessage() {
+  return "Inicie sesion para operar con la empresa activa.";
 }
 
 function clearCustomerMessages() {

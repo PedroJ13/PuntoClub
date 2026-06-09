@@ -10,7 +10,7 @@ app.http('createRedemption', {
   authLevel: 'anonymous',
   route: 'companies/{companyId}/redemptions',
   handler: handle(async (request, context) => {
-    const companyId = getCompanyId(request);
+    const companyId = await getCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const payload = validateRedemptionPayload(await readJson(request));
     let redemption;

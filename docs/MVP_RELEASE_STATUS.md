@@ -32,7 +32,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
   - TASK-180: Web Dev conecta operacion a sesion autenticada.
   - TASK-182: Backend API propone rate limiting/lockout sin implementar todavia.
 - Round siguiente:
-  - TASK-181: QA valida operacion publicada con empresa autenticada despues de TASK-179/TASK-180.
+  - TASK-183: Backend API confirma deploy publicado de contexto por sesion.
+  - TASK-184: Web Dev confirma deploy publicado de operacion con credentials.
+  - TASK-185: PO Test valida operacion autenticada con sesion real sin compartir secretos.
+  - TASK-186: QA cierra operacion autenticada publicada con evidencia redaccionada.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -339,6 +342,14 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-180: Asignada a Web Dev para conectar Web operativa a sesion de empresa autenticada.
 - TASK-181: Asignada a QA para validar operacion publicada con empresa autenticada despues de TASK-179/TASK-180.
 - TASK-182: Asignada a Backend API para proponer rate limiting y lockout de auth propia.
+- TASK-179: Backend API completo cambios locales; `npm test` paso 85/85. Pendiente confirmar deploy publicado.
+- TASK-180: Web Dev completo cambios locales; sintaxis Web validada. Pendiente confirmar deploy publicado.
+- TASK-181: QA no aprobo publicado porque API/Web aun no reflejaban TASK-179/TASK-180 y faltaba sesion real/evidencia PO.
+- TASK-182: Backend API completo propuesta tecnica; recomendacion SQL persistente para rate limiting/lockout, sin implementar codigo.
+- TASK-183: Asignada a Backend API para confirmar deploy API de contexto por sesion.
+- TASK-184: Asignada a Web Dev para confirmar deploy Web de operacion con credentials.
+- TASK-185: Asignada a PO Test para validar operacion con sesion de empresa real.
+- TASK-186: Asignada a QA para cerrar operacion autenticada publicada despues de TASK-183/TASK-184/TASK-185.
 
 ## Riesgos principales
 

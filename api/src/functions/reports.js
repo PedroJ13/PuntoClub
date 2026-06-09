@@ -8,7 +8,7 @@ app.http('getActivityReport', {
   authLevel: 'anonymous',
   route: 'companies/{companyId}/reports/activity',
   handler: handle(async (request) => {
-    const companyId = getCompanyId(request);
+    const companyId = await getCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const filters = validateActivityReportQuery(request.query);
     const report = await repository.getActivityReport(companyId, filters);

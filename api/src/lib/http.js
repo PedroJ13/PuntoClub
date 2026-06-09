@@ -1,5 +1,7 @@
 const { ApiError, mapSqlError, validationError } = require('./errors');
+const { hashSessionToken, readSessionTokenFromRequest } = require('./companyAuth');
 const { parsePositiveInteger } = require('./validators');
+const repository = require('./repository');
 
 function json(status, body) {
   return {
@@ -48,8 +50,15 @@ async function readJson(request) {
   }
 }
 
-function getCompanyId(request) {
+async function getCompanyId(request) {
   const pathCompanyId = parsePositiveInteger(request.params.companyId, 'companyId');
+  const sessionToken = readSessionTokenFromRequest(request);
+
+  if (sessionToken) {
+    const identity = await repository.getAuthIdentityBySessionTokenHash(hashSessionToken(sessionToken));
+    return parsePositiveInteger(identity.company.id, 'companyId');
+  }
+
   const pilotCompanyId = parsePositiveInteger(process.env.PILOT_COMPANY_ID, 'PILOT_COMPANY_ID');
 
   if (pathCompanyId !== pilotCompanyId) {

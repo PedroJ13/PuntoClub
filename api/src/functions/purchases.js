@@ -10,7 +10,7 @@ app.http('createPurchase', {
   authLevel: 'anonymous',
   route: 'companies/{companyId}/purchases',
   handler: handle(async (request, context) => {
-    const companyId = getCompanyId(request);
+    const companyId = await getCompanyId(request);
     const company = await repository.ensureActiveCompany(companyId);
     const payload = validatePurchasePayload(await readJson(request));
 
