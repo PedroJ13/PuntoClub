@@ -379,6 +379,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-198: Asignada a Web Dev para confirmar deploy Web de UI de logo.
 - TASK-199: Asignada a PO Test para validar logo con sesion real despues de TASK-197/TASK-198.
 - TASK-200: Asignada a QA para revalidar logo de empresa publicado.
+- TASK-197: Backend API confirmo deploy API de logo privado; `GET/POST /api/my-company/logo` activos y protegidos con `401` sin sesion.
+- TASK-198: Web Dev confirmo deploy Web de UI de logo en `Mi empresa`, con `FormData` y `credentials: include`.
+- TASK-199: PO Test aprobo upload real de logo con evidencia redaccionada: preview, refresh, logout/login y archivo no permitido.
+- TASK-200: QA aprobo logo privado de empresa publicado; storage anonimo sigue bloqueado y no hay P0/P1/P2/P3 nuevos.
 
 ## Riesgos principales
 
@@ -389,7 +393,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Validar logo privado de empresa en `Mi empresa`. Mantener Entra External ID diferido y limite por IP como mejora futura condicionada a proxy confiable.
+Logo privado de empresa queda aprobado en publicado. Mantener Entra External ID diferido y limite por IP como mejora futura condicionada a proxy confiable.
 
 ## Listo para probar
 
@@ -415,6 +419,7 @@ Validar logo privado de empresa en `Mi empresa`. Mantener Entra External ID dife
 - Auth propia MVP: validada operativamente por Product Owner en TASK-177 con invitacion, crear acceso/password, login, sesion visible y logout.
 - Operacion autenticada publicada: aprobada por QA en TASK-186; API usa contexto por sesion y Web envia cookies en operaciones privadas.
 - Rate limiting/lockout auth propia: aprobado por QA en TASK-192 para login y accept por email/token; limite por IP diferido por arquitectura.
+- Logo privado de empresa en `Mi empresa`: aprobado por QA en TASK-200; upload/preview/persistencia validados con evidencia PO redaccionada.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
 

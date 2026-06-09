@@ -225,7 +225,7 @@
 - Operacion multiempresa controlada con auth propia: siguiente fase con TASK-179 a TASK-181.
 - Operacion multiempresa controlada con auth propia: aprobada publicada en TASK-186.
 - Rate limiting/lockout auth propia: aprobado publicado en TASK-192 para email/token; limite por IP diferido hasta proxy confiable.
-- Logo privado de empresa: siguiente mejora funcional con TASK-193 a TASK-196.
+- Logo privado de empresa: aprobado publicado en TASK-200.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
 
