@@ -216,7 +216,7 @@
 - Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
 - Operacion multiempresa controlada con auth propia: siguiente fase con TASK-179 a TASK-181.
 - Operacion multiempresa controlada con auth propia: aprobada publicada en TASK-186.
-- Rate limiting/lockout auth propia: analisis completado en TASK-182; implementacion/hardening liberado en TASK-187 a TASK-190.
+- Rate limiting/lockout auth propia: aprobado publicado en TASK-192 para email/token; limite por IP diferido hasta proxy confiable.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
 

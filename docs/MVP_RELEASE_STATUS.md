@@ -365,6 +365,8 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-190: QA no aprobo publicado porque el cambio de TASK-189 aun no estaba desplegado o no se observaba activo.
 - TASK-191: Asignada a Backend API para confirmar deploy API de rate limiting auth propia.
 - TASK-192: Asignada a QA para revalidar rate limiting auth propia publicado despues de TASK-191.
+- TASK-191: Backend API confirmo deploy API publicado de rate limiting; login y accept sinteticos llegan a `429 TOO_MANY_ATTEMPTS`.
+- TASK-192: QA aprobo rate limiting auth propia publicado; sin P0/P1/P2/P3 nuevos. Limite por IP queda diferido hasta proxy confiable.
 
 ## Riesgos principales
 
@@ -375,7 +377,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Prioridad inmediata: publicar y revalidar rate limiting/lockout de auth propia. Mantener Entra External ID diferido.
+Rate limiting/lockout de auth propia queda aprobado en publicado. Mantener Entra External ID diferido y limite por IP como mejora futura condicionada a proxy confiable.
 
 ## Listo para probar
 
@@ -400,6 +402,7 @@ Prioridad inmediata: publicar y revalidar rate limiting/lockout de auth propia. 
 - Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
 - Auth propia MVP: validada operativamente por Product Owner en TASK-177 con invitacion, crear acceso/password, login, sesion visible y logout.
 - Operacion autenticada publicada: aprobada por QA en TASK-186; API usa contexto por sesion y Web envia cookies en operaciones privadas.
+- Rate limiting/lockout auth propia: aprobado por QA en TASK-192 para login y accept por email/token; limite por IP diferido por arquitectura.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
 
