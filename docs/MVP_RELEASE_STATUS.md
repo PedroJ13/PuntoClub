@@ -27,15 +27,14 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 - Opcion A completada: configuracion de empresa piloto publicada y aprobada.
 - Opcion B/multiempresa controlado avanza a fase funcional con auth propia MVP ya validada por Product Owner.
-- Siguiente bloque decidido por Product / Architect / Release: hardening de auth propia antes de abrir uso a mas empresas.
+- Siguiente bloque decidido por Product / Architect / Release: perfil visual de empresa con logo privado.
 - Round actual liberado:
-  - TASK-187: SQL DEV prepara soporte persistente para rate limiting/lockout.
-  - TASK-188: Infra / Azure confirma IP confiable en Azure Functions.
+  - TASK-193: Infra / Azure confirma storage privado para logos.
 - Round siguiente:
-  - TASK-189: Backend API implementa rate limiting/lockout usando TASK-187/TASK-188.
+  - TASK-194: Backend API implementa API de logo privado.
+  - TASK-195: Web Dev conecta UI de `Mi empresa` con logo.
 - Round final:
-  - TASK-191: Backend API confirma deploy API del rate limiting.
-  - TASK-192: QA revalida rate limiting publicado.
+  - TASK-196: QA valida logo de empresa publicado.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -367,6 +366,11 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-192: Asignada a QA para revalidar rate limiting auth propia publicado despues de TASK-191.
 - TASK-191: Backend API confirmo deploy API publicado de rate limiting; login y accept sinteticos llegan a `429 TOO_MANY_ATTEMPTS`.
 - TASK-192: QA aprobo rate limiting auth propia publicado; sin P0/P1/P2/P3 nuevos. Limite por IP queda diferido hasta proxy confiable.
+- Decision: avanzar con perfil visual de empresa y logo privado antes de mejoras esteticas generales o SaaS abierto.
+- TASK-193: Asignada a Infra / Azure para confirmar storage privado de logos.
+- TASK-194: Asignada a Backend API para implementar API de logo privado, depende de TASK-193.
+- TASK-195: Asignada a Web Dev para conectar UI de `Mi empresa` con logo, depende de TASK-194.
+- TASK-196: Asignada a QA para validar logo publicado, depende de TASK-194/TASK-195.
 
 ## Riesgos principales
 
@@ -377,7 +381,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Rate limiting/lockout de auth propia queda aprobado en publicado. Mantener Entra External ID diferido y limite por IP como mejora futura condicionada a proxy confiable.
+Validar logo privado de empresa en `Mi empresa`. Mantener Entra External ID diferido y limite por IP como mejora futura condicionada a proxy confiable.
 
 ## Listo para probar
 

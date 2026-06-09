@@ -171,6 +171,10 @@
 - TASK-190: Validar rate limiting auth propia publicado.
 - TASK-191: Confirmar deploy API de rate limiting auth propia.
 - TASK-192: Revalidar rate limiting auth propia publicado.
+- TASK-193: Confirmar storage privado para logos de empresa.
+- TASK-194: Implementar API de logo privado de empresa.
+- TASK-195: Conectar UI de Mi empresa con logo.
+- TASK-196: Validar logo de empresa publicado.
 
 ## P1 pre-lanzamiento
 
@@ -217,6 +221,7 @@
 - Operacion multiempresa controlada con auth propia: siguiente fase con TASK-179 a TASK-181.
 - Operacion multiempresa controlada con auth propia: aprobada publicada en TASK-186.
 - Rate limiting/lockout auth propia: aprobado publicado en TASK-192 para email/token; limite por IP diferido hasta proxy confiable.
+- Logo privado de empresa: siguiente mejora funcional con TASK-193 a TASK-196.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
 
