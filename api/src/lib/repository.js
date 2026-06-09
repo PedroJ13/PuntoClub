@@ -140,6 +140,28 @@ function mapMyCompany(row) {
   };
 }
 
+function mapCompanyRegistrationRequestWithInvitation(row) {
+  const registrationRequest = mapCompanyRegistrationRequest(row);
+
+  if (row.invitation_id) {
+    registrationRequest.invitation = mapCompanyInvitation({
+      id: row.invitation_id,
+      company_id: row.invitation_company_id,
+      registration_request_id: row.invitation_registration_request_id,
+      email: row.invitation_email,
+      role: row.invitation_role,
+      status: row.invitation_status,
+      expires_at: row.invitation_expires_at,
+      accepted_at: row.invitation_accepted_at,
+      revoked_at: row.invitation_revoked_at,
+      created_at: row.invitation_created_at,
+      created_by_label: row.invitation_created_by_label
+    });
+  }
+
+  return registrationRequest;
+}
+
 async function ensureActiveCompany(companyId) {
   const sql = getSql();
   const pool = await getPool();
@@ -376,6 +398,70 @@ async function updateCompanyLogo(companyId, logo) {
   }
 
   return mapMyCompany(result.recordset[0]);
+}
+
+async function listCompanyRegistrationRequests(filters) {
+  const sql = getSql();
+  const pool = await getPool();
+  const status = filters.status === 'all' ? null : filters.status;
+  const result = await pool.request()
+    .input('status', sql.VarChar(30), status)
+    .input('limit', sql.Int, filters.limit)
+    .query(`
+      SELECT TOP (@limit)
+        requests.id,
+        requests.company_name,
+        requests.company_email,
+        requests.company_phone,
+        requests.company_address,
+        requests.contact_name,
+        requests.contact_email,
+        requests.contact_phone,
+        requests.status,
+        requests.reviewed_at,
+        requests.reviewed_by_label,
+        requests.review_note,
+        requests.approved_company_id,
+        requests.created_at,
+        requests.updated_at,
+        invitations.id AS invitation_id,
+        invitations.company_id AS invitation_company_id,
+        invitations.registration_request_id AS invitation_registration_request_id,
+        invitations.email AS invitation_email,
+        invitations.role AS invitation_role,
+        invitations.status AS invitation_status,
+        invitations.expires_at AS invitation_expires_at,
+        invitations.accepted_at AS invitation_accepted_at,
+        invitations.revoked_at AS invitation_revoked_at,
+        invitations.created_at AS invitation_created_at,
+        invitations.created_by_label AS invitation_created_by_label
+      FROM dbo.CompanyRegistrationRequests AS requests
+      OUTER APPLY (
+        SELECT TOP (1)
+          id,
+          company_id,
+          registration_request_id,
+          email,
+          role,
+          status,
+          expires_at,
+          accepted_at,
+          revoked_at,
+          created_at,
+          created_by_label
+        FROM dbo.CompanyInvitations AS invitations
+        WHERE invitations.registration_request_id = requests.id
+        ORDER BY invitations.created_at DESC, invitations.id DESC
+      ) AS invitations
+      WHERE (@status IS NULL OR requests.status = @status)
+      ORDER BY requests.created_at DESC, requests.id DESC
+    `);
+
+  return {
+    status: filters.status,
+    limit: filters.limit,
+    items: result.recordset.map(mapCompanyRegistrationRequestWithInvitation)
+  };
 }
 
 async function getCompanyLogoMetadata(companyId) {
@@ -1445,6 +1531,7 @@ module.exports = {
   getCompanySettings,
   getLocalPasswordUserByEmail,
   listCustomers,
+  listCompanyRegistrationRequests,
   mapCompanyInvitation,
   mapCompanyInvitationWithCompany,
   mapCompanyRegistrationRequest,

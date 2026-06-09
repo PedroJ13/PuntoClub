@@ -5,6 +5,7 @@ const {
   formatCompanyRegistrationApprovedAuditEvent,
   formatCompanyRegistrationApprovedResponse,
   formatCompanyRegistrationCreatedResponse,
+  formatCompanyRegistrationRequestListResponse,
   formatCompanyRegistrationRejectedResponse,
   getCompanyRegistrationReviewActorLabel
 } = require('../lib/companyRegistration');
@@ -18,6 +19,7 @@ const { created, handle, ok, readJson } = require('../lib/http');
 const { assertInternalAdminAuthorized } = require('../lib/internalAdmin');
 const {
   parsePositiveInteger,
+  validateCompanyRegistrationRequestListQuery,
   validateCompanyRegistrationRequestPayload,
   validateCompanyRegistrationReviewPayload
 } = require('../lib/validators');
@@ -34,6 +36,20 @@ app.http('createCompanyRegistrationRequest', {
     await notifier.notifyCompanyRegistrationSubmitted(registrationRequest, context);
 
     return created(formatCompanyRegistrationCreatedResponse(registrationRequest));
+  })
+});
+
+app.http('listCompanyRegistrationRequests', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'company-registration-requests',
+  handler: handle(async (request) => {
+    assertCompanyRegistrationReviewEnabled();
+    assertInternalAdminAuthorized(request);
+    const filters = validateCompanyRegistrationRequestListQuery(request.query);
+    const result = await repository.listCompanyRegistrationRequests(filters);
+
+    return ok(formatCompanyRegistrationRequestListResponse(result));
   })
 });
 

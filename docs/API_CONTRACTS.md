@@ -81,6 +81,76 @@ Estados:
 - Usuario de empresa: `invited`, `active`, `disabled`.
 - Roles: `owner`, `admin`, `staff`.
 
+### GET `/api/company-registration-requests?status=pending&limit=25`
+
+Lista solicitudes de empresa para un panel interno minimo.
+
+Auth:
+
+- Requiere `COMPANY_REGISTRATION_REVIEW_ENABLED=true`.
+- Requiere header `x-puntoclub-admin-token`.
+- Proteccion temporal hasta que exista un mecanismo admin final; no usa Entra External ID.
+
+Query:
+
+- `status`: opcional, default `pending`; valores `pending`, `approved`, `rejected`, `cancelled`, `all`.
+- `limit`: opcional, default `25`; valores `10`, `25`, `50`.
+
+Respuesta `200`:
+
+```json
+{
+  "status": "pending",
+  "limit": 25,
+  "items": [
+    {
+      "id": "200",
+      "companyName": "Cafe Central",
+      "companyEmail": "hola@cafecentral.test",
+      "companyPhone": "+50622223333",
+      "companyAddress": "San Jose, Costa Rica",
+      "contactName": "Maria Soto",
+      "contactEmail": "maria@cafecentral.test",
+      "contactPhone": "+50688887777",
+      "status": "pending",
+      "reviewedAt": null,
+      "reviewedByLabel": null,
+      "reviewNote": null,
+      "approvedCompanyId": null,
+      "createdAt": "2026-06-07T18:30:00Z",
+      "updatedAt": "2026-06-07T18:30:00Z",
+      "invitation": null
+    }
+  ]
+}
+```
+
+Para solicitudes aprobadas con invitacion asociada, `invitation` puede incluir resumen no sensible:
+
+```json
+{
+  "id": "300",
+  "companyId": "10",
+  "email": "hola@cafecentral.test",
+  "role": "owner",
+  "status": "pending",
+  "expiresAt": "2026-06-14T19:00:00Z",
+  "acceptedAt": null,
+  "revokedAt": null,
+  "createdAt": "2026-06-07T19:00:00Z"
+}
+```
+
+Reglas:
+
+- Ordena por solicitudes mas recientes.
+- No devuelve token raw, `token_hash`, password, cookie, SAS ni secretos.
+
+Errores esperados:
+
+- `400 VALIDATION_ERROR`.
+- `403 FORBIDDEN` sin feature flag, sin token interno o con token invalido.
+
 ### POST `/api/company-registration-requests`
 
 Registra una solicitud controlada de empresa. No crea acceso operativo inmediato.

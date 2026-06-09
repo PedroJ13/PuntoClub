@@ -150,6 +150,26 @@ const elements = {
   registrationResult: document.querySelector("#registration-result"),
   resetRegistrationButton: document.querySelector("#reset-registration-button"),
   submitRegistrationButton: document.querySelector("#submit-registration-button"),
+  adminTokenForm: document.querySelector("#admin-token-form"),
+  adminTokenInput: document.querySelector("#admin-token"),
+  adminTokenError: document.querySelector("#admin-token-error"),
+  adminTokenStatus: document.querySelector("#admin-token-status"),
+  adminGlobalError: document.querySelector("#admin-global-error"),
+  saveAdminTokenButton: document.querySelector("#save-admin-token-button"),
+  clearAdminTokenButton: document.querySelector("#clear-admin-token-button"),
+  adminRequestsForm: document.querySelector("#admin-requests-form"),
+  adminRequestStatusInput: document.querySelector("#admin-request-status"),
+  adminRequestSearchInput: document.querySelector("#admin-request-search"),
+  loadAdminRequestsButton: document.querySelector("#load-admin-requests-button"),
+  adminListStatus: document.querySelector("#admin-list-status"),
+  adminListError: document.querySelector("#admin-list-error"),
+  adminSummary: document.querySelector("#admin-summary"),
+  adminRequestsList: document.querySelector("#admin-requests-list"),
+  adminDetailStatus: document.querySelector("#admin-detail-status"),
+  adminDetailError: document.querySelector("#admin-detail-error"),
+  adminDetailEmpty: document.querySelector("#admin-detail-empty"),
+  adminRequestDetail: document.querySelector("#admin-request-detail"),
+  backAdminListButton: document.querySelector("#back-admin-list-button"),
 };
 
 let currentCustomers = [];
@@ -158,6 +178,9 @@ let currentReport = null;
 let currentCompanySettings = null;
 let currentAuthIdentity = null;
 let currentInvitation = null;
+let adminToken = "";
+let adminRequests = [];
+let selectedAdminRequest = null;
 let activeSection = "operations";
 let companyLogoPreviewUrl = "";
 const customerBalances = new Map();
@@ -276,6 +299,58 @@ elements.reloadCompanyButton.addEventListener("click", async () => {
   await loadCompanySettings();
 });
 
+elements.adminTokenForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitAdminToken();
+});
+
+elements.clearAdminTokenButton.addEventListener("click", () => {
+  clearAdminToken();
+});
+
+elements.adminRequestsForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await loadAdminRequests();
+});
+
+elements.adminRequestSearchInput.addEventListener("input", () => {
+  renderAdminRequestsList();
+});
+
+elements.adminRequestsList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-admin-request-id]");
+  if (!button) {
+    return;
+  }
+
+  const request = adminRequests.find((item) => String(item.id) === String(button.dataset.adminRequestId));
+  if (request) {
+    selectAdminRequest(request);
+  }
+});
+
+elements.adminRequestDetail.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-admin-action]");
+  if (!button || !selectedAdminRequest) {
+    return;
+  }
+
+  const action = button.dataset.adminAction;
+  if (action === "approve") {
+    await approveSelectedAdminRequest();
+  } else if (action === "reject") {
+    await rejectSelectedAdminRequest();
+  } else if (action === "resend") {
+    await resendSelectedAdminInvitation();
+  }
+});
+
+elements.backAdminListButton.addEventListener("click", () => {
+  selectedAdminRequest = null;
+  renderAdminDetailPrompt();
+  elements.adminRequestsList.focus?.();
+});
+
 elements.navButtons.forEach((button) => {
   button.addEventListener("click", () => {
     setActiveSection(button.dataset.sectionTarget);
@@ -287,6 +362,7 @@ renderSearchPrompt();
 resetOperation();
 renderReportPrompt();
 renderAuditPrompt();
+renderAdminPrompt();
 
 if (isInvitationPage) {
   showInvitationPage();
@@ -302,7 +378,7 @@ if (isInvitationPage) {
 }
 
 function setActiveSection(section, options = {}) {
-  const nextSection = ["operations", "company", "reports"].includes(section)
+  const nextSection = ["operations", "company", "reports", "adminCompanies"].includes(section)
     ? section
     : "operations";
   activeSection = nextSection;
@@ -325,6 +401,7 @@ function setActiveSection(section, options = {}) {
     operations: elements.searchInput,
     company: elements.registrationCompanyNameInput,
     reports: elements.reportFromInput,
+    adminCompanies: elements.adminTokenInput,
   }[nextSection];
 
   window.requestAnimationFrame(() => {
@@ -856,6 +933,208 @@ async function submitCompanyRegistrationRequest() {
     renderCompanyRegistrationError(error);
   } finally {
     setCompanyRegistrationSubmitting(false);
+  }
+}
+
+async function submitAdminToken() {
+  clearAdminMessages();
+  const nextToken = elements.adminTokenInput.value.trim();
+
+  if (!nextToken) {
+    elements.adminTokenError.textContent = "Ingrese el token interno para cargar solicitudes.";
+    showAdminGlobalError("Token interno requerido.");
+    return;
+  }
+
+  adminToken = nextToken;
+  elements.adminTokenInput.value = "";
+  showAdminTokenStatus("Acceso interno activo en esta pestana.");
+  await loadAdminRequests();
+}
+
+function clearAdminToken() {
+  adminToken = "";
+  adminRequests = [];
+  selectedAdminRequest = null;
+  elements.adminTokenInput.value = "";
+  clearAdminMessages();
+  renderAdminPrompt();
+  elements.adminTokenInput.focus();
+}
+
+async function loadAdminRequests() {
+  clearAdminMessages({ keepTokenStatus: true });
+
+  if (!adminToken) {
+    renderAdminPrompt();
+    elements.adminTokenError.textContent = "Ingrese el token interno para cargar solicitudes.";
+    showAdminGlobalError("Ingrese el token interno para cargar solicitudes.");
+    return;
+  }
+
+  setAdminLoading(true);
+  renderAdminListLoading();
+
+  try {
+    const result = await api.listCompanyRegistrationRequests(
+      {
+        status: elements.adminRequestStatusInput.value || "pending",
+        limit: "25",
+      },
+      adminToken,
+    );
+    adminRequests = Array.isArray(result.items) ? result.items : [];
+    selectedAdminRequest = reconcileSelectedAdminRequest(selectedAdminRequest, adminRequests);
+    renderAdminRequestsList();
+    renderAdminDetail();
+    showAdminListStatus(`Solicitudes cargadas: ${formatReportNumber(adminRequests.length)}.`);
+  } catch (error) {
+    if (isAdminPermissionError(error)) {
+      adminToken = "";
+      elements.adminTokenStatus.hidden = true;
+      elements.adminTokenStatus.textContent = "";
+    }
+    adminRequests = [];
+    selectedAdminRequest = null;
+    renderAdminListError(error);
+    renderAdminDetailPrompt();
+  } finally {
+    setAdminLoading(false);
+  }
+}
+
+async function approveSelectedAdminRequest() {
+  if (!selectedAdminRequest || !adminToken) {
+    showAdminDetailError("Seleccione una solicitud y confirme el token interno.");
+    return;
+  }
+
+  if (selectedAdminRequest.status !== "pending") {
+    showAdminDetailError("Esta solicitud ya fue procesada. Actualice la lista.");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Va a aprobar la solicitud de ${selectedAdminRequest.companyName || "esta empresa"} y enviar una invitacion al correo ${selectedAdminRequest.companyEmail || "registrado"}.`,
+  );
+  if (!confirmed) {
+    return;
+  }
+
+  clearAdminMessages({ keepTokenStatus: true });
+  setAdminActionLoading(true, "approve");
+
+  try {
+    const result = await api.approveCompanyRegistrationRequest(
+      selectedAdminRequest.id,
+      { reviewNote: "Aprobada desde panel interno." },
+      adminToken,
+    );
+    selectedAdminRequest = {
+      ...selectedAdminRequest,
+      ...result,
+      status: result.status || "approved",
+      invitation: result.invitation || selectedAdminRequest.invitation || null,
+      companyEmail: selectedAdminRequest.companyEmail,
+      companyName: selectedAdminRequest.companyName,
+    };
+    await loadAdminRequests();
+    showAdminDetailStatus(`Solicitud aprobada. La invitacion fue enviada a ${selectedAdminRequest.companyEmail}.`);
+  } catch (error) {
+    renderAdminActionError(error);
+  } finally {
+    setAdminActionLoading(false);
+  }
+}
+
+async function rejectSelectedAdminRequest() {
+  if (!selectedAdminRequest || !adminToken) {
+    showAdminDetailError("Seleccione una solicitud y confirme el token interno.");
+    return;
+  }
+
+  if (selectedAdminRequest.status !== "pending") {
+    showAdminDetailError("Esta solicitud ya fue procesada. Actualice la lista.");
+    return;
+  }
+
+  const noteInput = elements.adminRequestDetail.querySelector("#admin-reject-note");
+  const reviewNote = noteInput?.value.trim() || "";
+
+  if (!reviewNote) {
+    showAdminDetailError("Ingrese un motivo para rechazar la solicitud.");
+    noteInput?.focus();
+    return;
+  }
+
+  const confirmed = window.confirm("Va a rechazar esta solicitud. El motivo quedara como referencia interna.");
+  if (!confirmed) {
+    return;
+  }
+
+  clearAdminMessages({ keepTokenStatus: true });
+  setAdminActionLoading(true, "reject");
+
+  try {
+    const result = await api.rejectCompanyRegistrationRequest(
+      selectedAdminRequest.id,
+      { reviewNote },
+      adminToken,
+    );
+    selectedAdminRequest = {
+      ...selectedAdminRequest,
+      ...result,
+      status: result.status || "rejected",
+      reviewNote,
+    };
+    await loadAdminRequests();
+    showAdminDetailStatus("Solicitud rechazada.");
+  } catch (error) {
+    renderAdminActionError(error);
+  } finally {
+    setAdminActionLoading(false);
+  }
+}
+
+async function resendSelectedAdminInvitation() {
+  const invitation = selectedAdminRequest?.invitation;
+
+  if (!invitation || !adminToken) {
+    showAdminDetailError("No hay una invitacion pendiente para reenviar.");
+    return;
+  }
+
+  if (invitation.status === "accepted") {
+    showAdminDetailError("La invitacion ya fue aceptada. No es necesario reenviarla.");
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Se reenviara la invitacion al correo ${invitation.email || selectedAdminRequest.companyEmail}. No se mostrara el link en pantalla.`,
+  );
+  if (!confirmed) {
+    return;
+  }
+
+  clearAdminMessages({ keepTokenStatus: true });
+  setAdminActionLoading(true, "resend");
+
+  try {
+    const result = await api.resendCompanyInvitation(invitation.id, adminToken);
+    selectedAdminRequest = {
+      ...selectedAdminRequest,
+      invitation: {
+        ...invitation,
+        ...result,
+        status: result.status || "pending",
+      },
+    };
+    await loadAdminRequests();
+    showAdminDetailStatus(`Invitacion reenviada a ${result.email || invitation.email}.`);
+  } catch (error) {
+    renderAdminActionError(error);
+  } finally {
+    setAdminActionLoading(false);
   }
 }
 
@@ -1448,6 +1727,295 @@ function renderCompanyRegistrationError(error) {
   showCompanyRegistrationError("No se pudo enviar la solicitud. Intente de nuevo.");
 }
 
+function renderAdminPrompt() {
+  elements.adminSummary.hidden = true;
+  elements.adminSummary.innerHTML = "";
+  elements.adminRequestsList.innerHTML =
+    '<div class="empty-state">Ingrese el token interno para cargar solicitudes.</div>';
+  renderAdminDetailPrompt();
+}
+
+function renderAdminListLoading() {
+  elements.adminSummary.hidden = true;
+  elements.adminSummary.innerHTML = "";
+  elements.adminRequestsList.innerHTML = '<div class="loading-state">Cargando solicitudes...</div>';
+}
+
+function renderAdminRequestsList() {
+  const search = normalize(elements.adminRequestSearchInput.value);
+  const filteredRequests = adminRequests.filter((request) =>
+    [request.companyName, request.companyEmail, request.contactName, request.contactEmail]
+      .some((value) => normalize(value).includes(search)),
+  );
+
+  elements.adminSummary.hidden = false;
+  elements.adminSummary.innerHTML = `
+    <div>
+      <span>Total cargadas</span>
+      <strong>${formatReportNumber(adminRequests.length)}</strong>
+    </div>
+    <div>
+      <span>Pendientes</span>
+      <strong>${formatReportNumber(adminRequests.filter((item) => item.status === "pending").length)}</strong>
+    </div>
+    <div>
+      <span>Filtro visible</span>
+      <strong>${formatReportNumber(filteredRequests.length)}</strong>
+    </div>
+  `;
+
+  if (filteredRequests.length === 0) {
+    const message = search
+      ? "No encontramos solicitudes con esos datos."
+      : elements.adminRequestStatusInput.value === "pending"
+        ? "No hay solicitudes pendientes."
+        : "No hay solicitudes para revisar.";
+    elements.adminRequestsList.innerHTML = `<div class="empty-state">${escapeHtml(message)}</div>`;
+    return;
+  }
+
+  elements.adminRequestsList.innerHTML = filteredRequests.map((request) => renderAdminRequestCard(request)).join("");
+}
+
+function renderAdminRequestCard(request) {
+  const isSelected = selectedAdminRequest && String(selectedAdminRequest.id) === String(request.id);
+  const invitationLabel = getAdminInvitationLabel(request.invitation);
+
+  return `
+    <article class="admin-request-card ${isSelected ? "is-selected" : ""}">
+      <div class="admin-request-main">
+        <h3>${escapeHtml(request.companyName || "Empresa sin nombre")}</h3>
+        <p>${escapeHtml(request.companyEmail || "Correo no disponible")}</p>
+        <p>Contacto: ${escapeHtml(request.contactName || "No indicado")} - ${escapeHtml(request.contactEmail || "Sin correo")}</p>
+      </div>
+      <div class="admin-request-meta">
+        <span>${escapeHtml(getRegistrationStatusLabel(request.status))}</span>
+        <span>${escapeHtml(formatDateTime(request.createdAt))}</span>
+        <span>${escapeHtml(invitationLabel)}</span>
+      </div>
+      <div class="row-actions">
+        <button
+          class="secondary-button"
+          type="button"
+          data-admin-request-id="${escapeHtml(request.id)}"
+        >
+          Ver detalle
+        </button>
+      </div>
+    </article>
+  `;
+}
+
+function selectAdminRequest(request) {
+  selectedAdminRequest = request;
+  renderAdminRequestsList();
+  renderAdminDetail();
+}
+
+function renderAdminDetailPrompt() {
+  elements.backAdminListButton.hidden = true;
+  elements.adminDetailEmpty.hidden = false;
+  elements.adminDetailEmpty.textContent = "Seleccione una solicitud para revisar sus datos.";
+  elements.adminRequestDetail.hidden = true;
+  elements.adminRequestDetail.innerHTML = "";
+}
+
+function renderAdminDetail() {
+  if (!selectedAdminRequest) {
+    renderAdminDetailPrompt();
+    return;
+  }
+
+  const request = selectedAdminRequest;
+  const isPending = request.status === "pending";
+  elements.backAdminListButton.hidden = false;
+  elements.adminDetailEmpty.hidden = true;
+  elements.adminRequestDetail.hidden = false;
+  elements.adminRequestDetail.innerHTML = `
+    <div class="admin-detail-grid">
+      ${renderAdminDetailItem("Empresa", request.companyName)}
+      ${renderAdminDetailItem("Correo de empresa", request.companyEmail)}
+      ${renderAdminDetailItem("Telefono", request.companyPhone)}
+      ${renderAdminDetailItem("Direccion", request.companyAddress)}
+      ${renderAdminDetailItem("Contacto", request.contactName)}
+      ${renderAdminDetailItem("Correo de contacto", request.contactEmail)}
+      ${renderAdminDetailItem("Telefono de contacto", request.contactPhone)}
+      ${renderAdminDetailItem("Estado", getRegistrationStatusLabel(request.status))}
+      ${renderAdminDetailItem("Solicitud", formatDateTime(request.createdAt))}
+      ${renderAdminDetailItem("Actualizacion", formatDateTime(request.updatedAt))}
+    </div>
+
+    <div class="admin-state-note">
+      ${escapeHtml(getAdminRequestStateMessage(request.status))}
+    </div>
+
+    ${renderAdminInvitationPanel(request.invitation)}
+
+    ${
+      isPending
+        ? `
+          <div class="admin-action-panel">
+            <div class="form-actions">
+              <button id="approve-admin-request-button" type="button" data-admin-action="approve">
+                Aprobar y enviar invitacion
+              </button>
+            </div>
+
+            <div class="field">
+              <label for="admin-reject-note">Motivo del rechazo</label>
+              <textarea
+                id="admin-reject-note"
+                maxlength="500"
+                rows="3"
+                placeholder="Ej. Datos incompletos, correo no corresponde o empresa fuera del piloto."
+              ></textarea>
+              <p class="field-help">Este motivo queda como referencia interna.</p>
+            </div>
+
+            <div class="form-actions">
+              <button
+                class="secondary-button danger-button"
+                id="reject-admin-request-button"
+                type="button"
+                data-admin-action="reject"
+              >
+                Rechazar solicitud
+              </button>
+            </div>
+          </div>
+        `
+        : ""
+    }
+  `;
+}
+
+function renderAdminDetailItem(label, value) {
+  return `
+    <div>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value || "No disponible")}</strong>
+    </div>
+  `;
+}
+
+function renderAdminInvitationPanel(invitation) {
+  if (!invitation) {
+    return `
+      <section class="admin-invitation-panel" aria-label="Invitacion">
+        <h3>Invitacion</h3>
+        <p>Esta solicitud aun no tiene invitacion asociada.</p>
+      </section>
+    `;
+  }
+
+  const canResend = ["pending", "expired"].includes(invitation.status);
+
+  return `
+    <section class="admin-invitation-panel" aria-label="Invitacion">
+      <div class="section-header compact-header">
+        <div>
+          <h3>Invitacion</h3>
+          <p class="section-support">Link generado y enviado por correo. No se muestra el link en pantalla.</p>
+        </div>
+      </div>
+
+      <div class="admin-detail-grid">
+        ${renderAdminDetailItem("Estado", getInvitationStatusLabel(invitation.status))}
+        ${renderAdminDetailItem("Correo invitado", invitation.email)}
+        ${renderAdminDetailItem("Rol", getInvitationRoleLabel(invitation.role))}
+        ${renderAdminDetailItem("Envio", formatDateTime(invitation.createdAt))}
+        ${renderAdminDetailItem("Expira", formatDateTime(invitation.expiresAt))}
+        ${renderAdminDetailItem("Aceptada", invitation.acceptedAt ? formatDateTime(invitation.acceptedAt) : "No")}
+      </div>
+
+      ${
+        canResend
+          ? `
+            <div class="form-actions">
+              <button
+                class="secondary-button"
+                id="resend-admin-invitation-button"
+                type="button"
+                data-admin-action="resend"
+              >
+                Reenviar invitacion
+              </button>
+            </div>
+          `
+          : ""
+      }
+    </section>
+  `;
+}
+
+function reconcileSelectedAdminRequest(selected, requests) {
+  if (!selected) {
+    return null;
+  }
+
+  return requests.find((request) => String(request.id) === String(selected.id)) || selected;
+}
+
+function renderAdminListError(error) {
+  elements.adminSummary.hidden = true;
+  elements.adminSummary.innerHTML = "";
+  elements.adminRequestsList.innerHTML = '<div class="empty-state">No hay solicitudes cargadas.</div>';
+
+  if (isAdminPermissionError(error)) {
+    showAdminListError("Token interno invalido o vencido. Ingreselo de nuevo.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    showAdminListError("Revise el filtro de estado e intente de nuevo.");
+    return;
+  }
+
+  showAdminListError("No se pudieron cargar las solicitudes. Revise el token interno e intente de nuevo.");
+}
+
+function renderAdminActionError(error) {
+  if (isAdminPermissionError(error)) {
+    showAdminDetailError("No tiene acceso para realizar esta accion con el token actual.");
+    return;
+  }
+
+  if (
+    error instanceof ApiError &&
+    ["COMPANY_REGISTRATION_REQUEST_NOT_FOUND", "COMPANY_NOT_FOUND"].includes(error.code)
+  ) {
+    showAdminDetailError("La solicitud ya fue procesada por otro flujo. Actualice la lista.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    showAdminDetailError("Revise los datos de la accion e intente de nuevo.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "COMPANY_ALREADY_EXISTS") {
+    showAdminDetailError("Ya existe una empresa registrada con ese correo.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "INVITATION_ALREADY_ACCEPTED") {
+    showAdminDetailError("La invitacion ya fue aceptada. No es necesario reenviarla.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "INVITATION_EXPIRED") {
+    showAdminDetailError("La invitacion expiro. Actualice la lista antes de reenviar.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "INVITATION_NOT_FOUND") {
+    showAdminDetailError("No hay una invitacion pendiente para reenviar.");
+    return;
+  }
+
+  showAdminDetailError("No se pudo completar la accion. Intente de nuevo.");
+}
+
 function renderInvitationLoading() {
   currentInvitation = null;
   elements.invitationLoading.hidden = false;
@@ -1795,6 +2363,10 @@ function isAuthRequiredError(error) {
   return error instanceof ApiError && ["UNAUTHORIZED", "FORBIDDEN"].includes(error.code);
 }
 
+function isAdminPermissionError(error) {
+  return error instanceof ApiError && ["UNAUTHORIZED", "FORBIDDEN"].includes(error.code);
+}
+
 function getAuthRequiredMessage() {
   return "Inicie sesion para operar con la empresa activa.";
 }
@@ -1876,6 +2448,36 @@ function showCompanyLogoError(message) {
 function showCompanyRegistrationError(message) {
   elements.registrationError.hidden = false;
   elements.registrationError.textContent = message;
+}
+
+function showAdminTokenStatus(message) {
+  elements.adminTokenStatus.hidden = false;
+  elements.adminTokenStatus.textContent = message;
+}
+
+function showAdminGlobalError(message) {
+  elements.adminGlobalError.hidden = false;
+  elements.adminGlobalError.textContent = message;
+}
+
+function showAdminListStatus(message) {
+  elements.adminListStatus.hidden = false;
+  elements.adminListStatus.textContent = message;
+}
+
+function showAdminListError(message) {
+  elements.adminListError.hidden = false;
+  elements.adminListError.textContent = message;
+}
+
+function showAdminDetailStatus(message) {
+  elements.adminDetailStatus.hidden = false;
+  elements.adminDetailStatus.textContent = message;
+}
+
+function showAdminDetailError(message) {
+  elements.adminDetailError.hidden = false;
+  elements.adminDetailError.textContent = message;
 }
 
 function showAccessError(message) {
@@ -2009,6 +2611,27 @@ function clearCompanyRegistrationMessages() {
   elements.registrationResult.innerHTML = "";
 }
 
+function clearAdminMessages(options = {}) {
+  elements.adminTokenError.textContent = "";
+  elements.adminGlobalError.hidden = true;
+  elements.adminGlobalError.textContent = "";
+  elements.adminListError.hidden = true;
+  elements.adminListError.textContent = "";
+  elements.adminListStatus.hidden = true;
+  elements.adminListStatus.textContent = "";
+  elements.adminDetailError.hidden = true;
+  elements.adminDetailError.textContent = "";
+  elements.adminDetailStatus.hidden = true;
+  elements.adminDetailStatus.textContent = "";
+
+  if (!options.keepTokenStatus) {
+    elements.adminTokenStatus.hidden = !adminToken;
+    elements.adminTokenStatus.textContent = adminToken
+      ? "Acceso interno activo en esta pestana."
+      : "";
+  }
+}
+
 function clearCreateAccessMessages() {
   elements.accessDisplayNameError.textContent = "";
   elements.accessPasswordError.textContent = "";
@@ -2076,6 +2699,42 @@ function setCompanyRegistrationSubmitting(isSubmitting) {
   elements.submitRegistrationButton.disabled = isSubmitting;
   elements.resetRegistrationButton.disabled = isSubmitting;
   elements.submitRegistrationButton.textContent = isSubmitting ? "Enviando..." : "Enviar solicitud";
+}
+
+function setAdminLoading(isLoading) {
+  elements.loadAdminRequestsButton.disabled = isLoading;
+  elements.loadAdminRequestsButton.textContent = isLoading ? "Cargando..." : "Actualizar";
+  elements.saveAdminTokenButton.disabled = isLoading;
+}
+
+function setAdminActionLoading(isLoading, action = "") {
+  const approveButton = elements.adminRequestDetail.querySelector("#approve-admin-request-button");
+  const rejectButton = elements.adminRequestDetail.querySelector("#reject-admin-request-button");
+  const resendButton = elements.adminRequestDetail.querySelector("#resend-admin-invitation-button");
+
+  [approveButton, rejectButton, resendButton].forEach((button) => {
+    if (button) {
+      button.disabled = isLoading;
+    }
+  });
+
+  if (approveButton) {
+    approveButton.textContent = isLoading && action === "approve"
+      ? "Aprobando solicitud..."
+      : "Aprobar y enviar invitacion";
+  }
+
+  if (rejectButton) {
+    rejectButton.textContent = isLoading && action === "reject"
+      ? "Rechazando solicitud..."
+      : "Rechazar solicitud";
+  }
+
+  if (resendButton) {
+    resendButton.textContent = isLoading && action === "resend"
+      ? "Reenviando invitacion..."
+      : "Reenviar invitacion";
+  }
 }
 
 function setCreateAccessSubmitting(isSubmitting) {
@@ -2274,9 +2933,51 @@ function getCompanyStatusLabel(status) {
   const labels = {
     active: "Activa",
     inactive: "Inactiva",
+    pending_activation: "Pendiente de activacion",
   };
 
   return labels[status] ?? (status || "No disponible");
+}
+
+function getRegistrationStatusLabel(status) {
+  const labels = {
+    pending: "Pendiente",
+    approved: "Aprobada",
+    rejected: "Rechazada",
+    cancelled: "Cancelada",
+  };
+
+  return labels[status] ?? (status || "No disponible");
+}
+
+function getInvitationStatusLabel(status) {
+  const labels = {
+    pending: "Invitacion pendiente",
+    accepted: "Invitacion aceptada",
+    expired: "Invitacion expirada",
+    revoked: "Invitacion no disponible",
+  };
+
+  return labels[status] ?? (status || "Invitacion no disponible");
+}
+
+function getAdminInvitationLabel(invitation) {
+  if (!invitation) {
+    return "Sin invitacion";
+  }
+
+  return getInvitationStatusLabel(invitation.status);
+}
+
+function getAdminRequestStateMessage(status) {
+  const messages = {
+    pending: "Esta solicitud esta pendiente de revision.",
+    approved: "Esta solicitud ya fue aprobada.",
+    rejected: "Esta solicitud fue rechazada.",
+    cancelled: "Esta solicitud ya no esta disponible.",
+  };
+
+  return messages[status] ?? "Esta solicitud ya fue procesada. Actualice la lista para ver el estado mas reciente.";
 }
 
 function getInvitationRoleLabel(role) {

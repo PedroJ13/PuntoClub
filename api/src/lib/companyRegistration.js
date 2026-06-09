@@ -66,6 +66,51 @@ function formatCompanyRegistrationApprovedResponse(result) {
   return response;
 }
 
+function formatCompanyRegistrationRequestListItem(registrationRequest) {
+  const item = {
+    id: registrationRequest.id,
+    companyName: registrationRequest.companyName,
+    companyEmail: registrationRequest.companyEmail,
+    companyPhone: registrationRequest.companyPhone,
+    companyAddress: registrationRequest.companyAddress,
+    contactName: registrationRequest.contactName,
+    contactEmail: registrationRequest.contactEmail,
+    contactPhone: registrationRequest.contactPhone,
+    status: registrationRequest.status,
+    reviewedAt: registrationRequest.reviewedAt,
+    reviewedByLabel: registrationRequest.reviewedByLabel,
+    reviewNote: registrationRequest.reviewNote,
+    approvedCompanyId: registrationRequest.approvedCompanyId,
+    createdAt: registrationRequest.createdAt,
+    updatedAt: registrationRequest.updatedAt,
+    invitation: null
+  };
+
+  if (registrationRequest.invitation) {
+    item.invitation = {
+      id: registrationRequest.invitation.id,
+      companyId: registrationRequest.invitation.companyId,
+      email: registrationRequest.invitation.email,
+      role: registrationRequest.invitation.role,
+      status: registrationRequest.invitation.status,
+      expiresAt: registrationRequest.invitation.expiresAt,
+      acceptedAt: registrationRequest.invitation.acceptedAt,
+      revokedAt: registrationRequest.invitation.revokedAt,
+      createdAt: registrationRequest.invitation.createdAt
+    };
+  }
+
+  return item;
+}
+
+function formatCompanyRegistrationRequestListResponse(result) {
+  return {
+    status: result.status,
+    limit: result.limit,
+    items: result.items.map(formatCompanyRegistrationRequestListItem)
+  };
+}
+
 function formatCompanyRegistrationApprovedAuditEvent(result, context) {
   return {
     companyId: result.company.id,
@@ -85,6 +130,8 @@ module.exports = {
   formatCompanyRegistrationApprovedAuditEvent,
   formatCompanyRegistrationApprovedResponse,
   formatCompanyRegistrationCreatedResponse,
+  formatCompanyRegistrationRequestListItem,
+  formatCompanyRegistrationRequestListResponse,
   formatCompanyRegistrationRejectedResponse,
   getCompanyRegistrationReviewActorLabel
 };

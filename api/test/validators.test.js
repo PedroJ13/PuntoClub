@@ -12,6 +12,7 @@ const {
   validateActivityReportQuery,
   validateCompanyInvitationPayload,
   validateCompanyRegistrationRequestPayload,
+  validateCompanyRegistrationRequestListQuery,
   validateCompanyRegistrationReviewPayload,
   validateCompanyRole,
   validateCompanySettingsPatchPayload,
@@ -105,6 +106,23 @@ test('company registration review validates approve and reject payloads', () => 
   assert.throws(
     () => validateCompanyRegistrationReviewPayload({}, 'reject'),
     /One or more fields are invalid/
+  );
+});
+
+test('company registration request list query defaults and validates filters', () => {
+  assert.deepEqual(
+    validateCompanyRegistrationRequestListQuery(new URLSearchParams()),
+    { status: 'pending', limit: 25 }
+  );
+
+  assert.deepEqual(
+    validateCompanyRegistrationRequestListQuery(new URLSearchParams('status=all&limit=50')),
+    { status: 'all', limit: 50 }
+  );
+
+  assert.throws(
+    () => validateCompanyRegistrationRequestListQuery(new URLSearchParams('status=deleted&limit=100')),
+    (error) => error.status === 400 && error.code === 'VALIDATION_ERROR' && error.details.length === 2
   );
 });
 

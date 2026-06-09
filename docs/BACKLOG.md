@@ -183,6 +183,10 @@
 - TASK-202: Definir UX minima para panel interno de empresas.
 - TASK-203: Crear panel interno de administracion de empresas.
 - TASK-204: Validar panel interno de empresas publicado.
+- TASK-205: Confirmar deploy API del panel interno de empresas.
+- TASK-206: Confirmar deploy Web del panel interno de empresas.
+- TASK-207: PO Test valida operacion interna con token real sin exponer secretos.
+- TASK-208: Revalidar panel interno de empresas publicado.
 
 ## P1 pre-lanzamiento
 
@@ -230,14 +234,7 @@
 - Operacion multiempresa controlada con auth propia: aprobada publicada en TASK-186.
 - Rate limiting/lockout auth propia: aprobado publicado en TASK-192 para email/token; limite por IP diferido hasta proxy confiable.
 - Logo privado de empresa: aprobado publicado en TASK-200.
-- Panel interno de administracion de empresas: siguiente bloque con TASK-201 a TASK-204.
+- Panel interno de administracion de empresas: en cierre de publicacion con TASK-205 a TASK-208.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
-
-
-
-
-
-
-
 

@@ -42,7 +42,72 @@ let mockCompanySettings = {
   status: "active",
   updatedAt: "2026-06-02T15:20:00Z",
 };
-let mockCompanyRegistrationRequests = [];
+let mockCompanyRegistrationRequests = [
+  {
+    id: "200",
+    companyName: "Cafe Central",
+    companyEmail: "hola@cafecentral.test",
+    companyPhone: "+50622223333",
+    companyAddress: "San Jose, Costa Rica",
+    contactName: "Maria Soto",
+    contactEmail: "maria@cafecentral.test",
+    contactPhone: "+50688887777",
+    status: "pending",
+    reviewedAt: null,
+    reviewedByLabel: null,
+    reviewNote: null,
+    approvedCompanyId: null,
+    createdAt: "2026-06-07T18:30:00Z",
+    updatedAt: "2026-06-07T18:30:00Z",
+    invitation: null,
+  },
+  {
+    id: "199",
+    companyName: "Panaderia Norte",
+    companyEmail: "admin@panaderianorte.test",
+    companyPhone: "+50624445555",
+    companyAddress: "Alajuela, Costa Rica",
+    contactName: "Luis Mora",
+    contactEmail: "luis@panaderianorte.test",
+    contactPhone: "+50687776666",
+    status: "approved",
+    reviewedAt: "2026-06-07T19:00:00Z",
+    reviewedByLabel: "Panel interno",
+    reviewNote: "Aprobada para piloto controlado.",
+    approvedCompanyId: "10",
+    createdAt: "2026-06-07T17:20:00Z",
+    updatedAt: "2026-06-07T19:00:00Z",
+    invitation: {
+      id: "300",
+      companyId: "10",
+      email: "admin@panaderianorte.test",
+      role: "owner",
+      status: "pending",
+      expiresAt: "2026-06-14T19:00:00Z",
+      acceptedAt: null,
+      revokedAt: null,
+      createdAt: "2026-06-07T19:00:00Z",
+    },
+  },
+  {
+    id: "198",
+    companyName: "Tienda Sur",
+    companyEmail: "hola@tiendasur.test",
+    companyPhone: "+50625556666",
+    companyAddress: "Cartago, Costa Rica",
+    contactName: "Ana Ruiz",
+    contactEmail: "ana@tiendasur.test",
+    contactPhone: "+50689998888",
+    status: "rejected",
+    reviewedAt: "2026-06-07T18:40:00Z",
+    reviewedByLabel: "Panel interno",
+    reviewNote: "Datos incompletos.",
+    approvedCompanyId: null,
+    createdAt: "2026-06-07T16:10:00Z",
+    updatedAt: "2026-06-07T18:40:00Z",
+    invitation: null,
+  },
+];
 let mockAcceptedInvitationTokens = new Set();
 let mockLocalCompanyUsers = [
   {
@@ -64,7 +129,8 @@ let nextCustomerId = 12;
 let nextPurchaseId = 50;
 let nextRedemptionId = 70;
 let nextAuditEventId = 1;
-let nextCompanyRegistrationRequestId = 200;
+let nextCompanyRegistrationRequestId = 201;
+let nextCompanyInvitationId = 301;
 let nextCompanyUserId = 400;
 
 export class ApiError extends Error {
@@ -185,6 +251,49 @@ function createHttpCustomerApi(config) {
 
       return parseResponse(response);
     },
+    async listCompanyRegistrationRequests(filters, adminToken) {
+      const url = new URL(companyRegistrationRequestsUrl, window.location.origin);
+      url.searchParams.set("status", filters.status || "pending");
+      url.searchParams.set("limit", filters.limit || "25");
+      const response = await fetch(url, {
+        headers: buildAdminHeaders(adminToken),
+      });
+
+      return parseResponse(response);
+    },
+    async approveCompanyRegistrationRequest(requestId, payload, adminToken) {
+      const response = await fetch(`${companyRegistrationRequestsUrl}/${encodeURIComponent(requestId)}/approve`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...buildAdminHeaders(adminToken),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      return parseResponse(response);
+    },
+    async rejectCompanyRegistrationRequest(requestId, payload, adminToken) {
+      const response = await fetch(`${companyRegistrationRequestsUrl}/${encodeURIComponent(requestId)}/reject`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...buildAdminHeaders(adminToken),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      return parseResponse(response);
+    },
+    async resendCompanyInvitation(invitationId, adminToken) {
+      const url = buildApiUrl(config, `/api/company-invitations/${encodeURIComponent(invitationId)}/resend`);
+      const response = await fetch(url, {
+        method: "POST",
+        headers: buildAdminHeaders(adminToken),
+      });
+
+      return parseResponse(response);
+    },
     async searchCustomers(search) {
       const url = new URL(buildCompanyUrl("/customers"), window.location.origin);
       if (search) {
@@ -266,6 +375,11 @@ function createHttpCustomerApi(config) {
 function buildApiUrl(config, path) {
   const normalizedBase = String(config.apiBaseUrl || "").replace(/\/$/, "");
   return `${normalizedBase}${path}`;
+}
+
+function buildAdminHeaders(adminToken) {
+  const token = String(adminToken ?? "").trim();
+  return token ? { "x-puntoclub-admin-token": token } : {};
 }
 
 function createMockCustomerApi() {
@@ -389,9 +503,19 @@ function createMockCustomerApi() {
         id: String(nextCompanyRegistrationRequestId),
         companyName: request.companyName,
         companyEmail: request.companyEmail,
+        companyPhone: request.companyPhone,
         companyAddress: request.companyAddress,
+        contactName: request.contactName,
+        contactEmail: request.contactEmail,
+        contactPhone: request.contactPhone,
         status: "pending",
+        reviewedAt: null,
+        reviewedByLabel: null,
+        reviewNote: null,
+        approvedCompanyId: null,
         createdAt: now,
+        updatedAt: now,
+        invitation: null,
         message: "Solicitud recibida.",
       };
 
@@ -403,7 +527,122 @@ function createMockCustomerApi() {
         entityId: result.id,
         summary: `Solicitud de empresa recibida: ${result.companyName}.`,
       });
-      return result;
+      return cloneMockRegistrationRequest(result);
+    },
+    async listCompanyRegistrationRequests(filters, adminToken) {
+      await wait(350);
+      validateMockAdminToken(adminToken);
+      const status = filters.status || "pending";
+      const limit = Number(filters.limit || 25);
+      const allowedStatuses = new Set(["pending", "approved", "rejected", "cancelled", "all"]);
+
+      if (!allowedStatuses.has(status) || ![10, 25, 50].includes(limit)) {
+        throw new ApiError("VALIDATION_ERROR", "Revise los filtros.", []);
+      }
+
+      const items = mockCompanyRegistrationRequests
+        .filter((request) => status === "all" || request.status === status)
+        .slice(0, limit)
+        .map(cloneMockRegistrationRequest);
+
+      return { status, limit, items };
+    },
+    async approveCompanyRegistrationRequest(requestId, payload, adminToken) {
+      await wait(450);
+      validateMockAdminToken(adminToken);
+      const request = findPendingMockRegistrationRequest(requestId);
+      const reviewNote = String(payload?.reviewNote ?? "").trim();
+      const now = new Date().toISOString();
+      const companyId = String(20 + Number(request.id));
+      const invitation = {
+        id: String(nextCompanyInvitationId),
+        companyId,
+        email: request.companyEmail,
+        role: "owner",
+        status: "pending",
+        expiresAt: addDaysIso(now, 7),
+        acceptedAt: null,
+        revokedAt: null,
+        createdAt: now,
+      };
+
+      nextCompanyInvitationId += 1;
+      Object.assign(request, {
+        status: "approved",
+        reviewedAt: now,
+        reviewedByLabel: "Panel interno",
+        reviewNote: reviewNote || null,
+        approvedCompanyId: companyId,
+        updatedAt: now,
+        invitation,
+      });
+
+      return {
+        id: request.id,
+        status: request.status,
+        reviewedAt: request.reviewedAt,
+        approvedCompanyId: companyId,
+        invitation: { ...invitation },
+      };
+    },
+    async rejectCompanyRegistrationRequest(requestId, payload, adminToken) {
+      await wait(450);
+      validateMockAdminToken(adminToken);
+      const request = findPendingMockRegistrationRequest(requestId);
+      const reviewNote = String(payload?.reviewNote ?? "").trim();
+
+      if (!reviewNote || reviewNote.length > 500) {
+        throw new ApiError("VALIDATION_ERROR", "Ingrese un motivo valido.", [
+          { field: "reviewNote", message: "El motivo es requerido." },
+        ]);
+      }
+
+      const now = new Date().toISOString();
+      Object.assign(request, {
+        status: "rejected",
+        reviewedAt: now,
+        reviewedByLabel: "Panel interno",
+        reviewNote,
+        updatedAt: now,
+      });
+
+      return {
+        id: request.id,
+        status: request.status,
+        reviewedAt: request.reviewedAt,
+      };
+    },
+    async resendCompanyInvitation(invitationId, adminToken) {
+      await wait(400);
+      validateMockAdminToken(adminToken);
+      const request = mockCompanyRegistrationRequests.find(
+        (item) => String(item.invitation?.id) === String(invitationId),
+      );
+      const invitation = request?.invitation;
+
+      if (!invitation) {
+        throw new ApiError("INVITATION_NOT_FOUND", "La invitacion no esta disponible.");
+      }
+
+      if (invitation.status === "accepted") {
+        throw new ApiError("INVITATION_ALREADY_ACCEPTED", "La invitacion ya fue aceptada.");
+      }
+
+      if (invitation.status !== "pending") {
+        throw new ApiError("INVITATION_EXPIRED", "La invitacion expiro.");
+      }
+
+      const now = new Date().toISOString();
+      invitation.expiresAt = addDaysIso(now, 7);
+      invitation.resentAt = now;
+
+      return {
+        id: invitation.id,
+        status: "pending",
+        email: invitation.email,
+        expiresAt: invitation.expiresAt,
+        resentAt: now,
+      };
     },
     async searchCustomers(search) {
       await wait(450);
@@ -832,6 +1071,37 @@ function normalizeCompanyRegistrationPayload(payload) {
     contactEmail: String(payload.contactEmail ?? "").trim().toLowerCase(),
     contactPhone: normalizeNullableText(payload.contactPhone),
   };
+}
+
+function validateMockAdminToken(adminToken) {
+  const token = String(adminToken ?? "").trim();
+
+  if (!token || token === "invalid" || token === "token-invalido") {
+    throw new ApiError("FORBIDDEN", "Token interno invalido.");
+  }
+}
+
+function findPendingMockRegistrationRequest(requestId) {
+  const request = mockCompanyRegistrationRequests.find((item) => String(item.id) === String(requestId));
+
+  if (!request || request.status !== "pending") {
+    throw new ApiError("COMPANY_REGISTRATION_REQUEST_NOT_FOUND", "Solicitud no encontrada.");
+  }
+
+  return request;
+}
+
+function cloneMockRegistrationRequest(request) {
+  return {
+    ...request,
+    invitation: request.invitation ? { ...request.invitation } : null,
+  };
+}
+
+function addDaysIso(value, days) {
+  const date = new Date(value);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString();
 }
 
 function validateMockCompanyInvitation(token) {

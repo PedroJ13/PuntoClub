@@ -15,6 +15,7 @@ const {
   formatCompanyRegistrationApprovedAuditEvent,
   formatCompanyRegistrationApprovedResponse,
   formatCompanyRegistrationCreatedResponse,
+  formatCompanyRegistrationRequestListResponse,
   formatCompanyRegistrationRejectedResponse,
   getCompanyRegistrationReviewActorLabel
 } = require('../src/lib/companyRegistration');
@@ -154,6 +155,60 @@ test('formatCompanyRegistrationApprovedResponse includes invitation summary with
     role: 'owner',
     status: 'pending',
     expiresAt: '2026-06-14T19:00:00.000Z',
+    createdAt: '2026-06-07T19:02:00.000Z'
+  });
+  assert.equal(JSON.stringify(response).includes('raw-token'), false);
+  assert.equal(JSON.stringify(response).includes('hash'), false);
+});
+
+test('formatCompanyRegistrationRequestListResponse includes safe invitation summary only', () => {
+  const response = formatCompanyRegistrationRequestListResponse({
+    status: 'all',
+    limit: 25,
+    items: [{
+      id: '123',
+      companyName: 'Cafe Central',
+      companyEmail: 'owner@cafecentral.test',
+      companyPhone: '+50622223333',
+      companyAddress: 'San Jose',
+      contactName: 'Maria Soto',
+      contactEmail: 'maria@cafecentral.test',
+      contactPhone: '+50688889999',
+      status: 'approved',
+      reviewedAt: '2026-06-07T19:01:00.000Z',
+      reviewedByLabel: 'internal',
+      reviewNote: null,
+      approvedCompanyId: '10',
+      createdAt: '2026-06-07T18:30:00.000Z',
+      updatedAt: '2026-06-07T19:01:00.000Z',
+      invitation: {
+        id: '300',
+        companyId: '10',
+        email: 'owner@cafecentral.test',
+        role: 'owner',
+        status: 'pending',
+        expiresAt: '2026-06-14T19:00:00.000Z',
+        acceptedAt: null,
+        revokedAt: null,
+        createdAt: '2026-06-07T19:02:00.000Z',
+        token: 'raw-token',
+        tokenHash: 'hash',
+        createdByLabel: 'internal'
+      }
+    }]
+  });
+
+  assert.equal(response.status, 'all');
+  assert.equal(response.limit, 25);
+  assert.deepEqual(response.items[0].invitation, {
+    id: '300',
+    companyId: '10',
+    email: 'owner@cafecentral.test',
+    role: 'owner',
+    status: 'pending',
+    expiresAt: '2026-06-14T19:00:00.000Z',
+    acceptedAt: null,
+    revokedAt: null,
     createdAt: '2026-06-07T19:02:00.000Z'
   });
   assert.equal(JSON.stringify(response).includes('raw-token'), false);

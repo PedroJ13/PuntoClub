@@ -140,6 +140,9 @@
           <button class="nav-button" type="button" data-section-target="reports">
             Reportes
           </button>
+          <button class="nav-button" type="button" data-section-target="adminCompanies">
+            Admin empresas
+          </button>
         </aside>
 
         <main class="workspace" aria-live="polite">
@@ -666,6 +669,110 @@
                   <tbody id="audit-table-body"></tbody>
                 </table>
               </div>
+            </section>
+          </section>
+
+          <section
+            class="workspace-section admin-companies-section"
+            data-section="adminCompanies"
+            aria-labelledby="admin-companies-title"
+            hidden
+          >
+            <section class="admin-access-panel zone-card" aria-labelledby="admin-access-title">
+              <div class="section-header">
+                <div>
+                  <h2 id="admin-access-title">Acceso interno temporal</h2>
+                  <p class="section-support">
+                    Ingrese el token interno para revisar solicitudes de empresa. Este acceso es temporal y no
+                    reemplaza un login administrativo final.
+                  </p>
+                </div>
+              </div>
+
+              <form id="admin-token-form" class="admin-token-form" novalidate>
+                <div class="field">
+                  <label for="admin-token">Token interno</label>
+                  <input
+                    id="admin-token"
+                    name="adminToken"
+                    type="password"
+                    autocomplete="off"
+                    placeholder="Pegue el token interno"
+                  />
+                  <p class="field-help">El token solo se usa durante esta sesion del navegador.</p>
+                  <p class="field-error" id="admin-token-error"></p>
+                </div>
+
+                <div class="form-actions">
+                  <button class="secondary-button" id="clear-admin-token-button" type="button">Limpiar token</button>
+                  <button id="save-admin-token-button" type="submit">Entrar</button>
+                </div>
+              </form>
+
+              <div id="admin-token-status" class="success-message" hidden></div>
+              <div id="admin-global-error" class="form-error" hidden></div>
+            </section>
+
+            <section class="admin-list-panel zone-card" aria-labelledby="admin-list-title">
+              <div class="section-header">
+                <div>
+                  <h2 id="admin-list-title">Solicitudes de empresa</h2>
+                </div>
+              </div>
+
+              <form id="admin-requests-form" class="admin-requests-form" novalidate>
+                <div class="field-grid admin-controls">
+                  <div class="field">
+                    <label for="admin-request-status">Estado</label>
+                    <select id="admin-request-status" name="status">
+                      <option value="pending">Pendientes</option>
+                      <option value="all">Recientes</option>
+                      <option value="approved">Aprobadas</option>
+                      <option value="rejected">Rechazadas</option>
+                    </select>
+                  </div>
+
+                  <div class="field">
+                    <label for="admin-request-search">Busqueda</label>
+                    <input
+                      id="admin-request-search"
+                      name="search"
+                      type="search"
+                      autocomplete="off"
+                      placeholder="Empresa, correo o contacto"
+                    />
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button id="load-admin-requests-button" type="submit">Actualizar</button>
+                </div>
+              </form>
+
+              <div id="admin-list-status" class="success-message" hidden></div>
+              <div id="admin-list-error" class="form-error" hidden></div>
+              <div id="admin-summary" class="admin-summary" hidden></div>
+              <div id="admin-requests-list" class="admin-requests-list">
+                <div class="empty-state">Ingrese el token interno para cargar solicitudes.</div>
+              </div>
+            </section>
+
+            <section class="admin-detail-panel zone-card" aria-labelledby="admin-detail-title">
+              <div class="section-header">
+                <div>
+                  <h2 id="admin-detail-title">Detalle de solicitud</h2>
+                </div>
+                <button class="secondary-button" id="back-admin-list-button" type="button" hidden>
+                  Volver a solicitudes
+                </button>
+              </div>
+
+              <div id="admin-detail-status" class="success-message" hidden></div>
+              <div id="admin-detail-error" class="form-error" hidden></div>
+              <div id="admin-detail-empty" class="empty-state">
+                Seleccione una solicitud para revisar sus datos.
+              </div>
+              <div id="admin-request-detail" class="admin-request-detail" hidden></div>
             </section>
           </section>
         </main>

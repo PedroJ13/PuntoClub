@@ -226,7 +226,8 @@ textarea:focus {
 }
 
 .company-section,
-.reports-section {
+.reports-section,
+.admin-companies-section {
   grid-template-columns: 1fr;
   grid-template-areas: none;
 }
@@ -234,7 +235,10 @@ textarea:focus {
 .company-section .company-panel,
 .company-section .company-registration-panel,
 .reports-section .report-panel,
-.reports-section .audit-panel {
+.reports-section .audit-panel,
+.admin-companies-section .admin-access-panel,
+.admin-companies-section .admin-list-panel,
+.admin-companies-section .admin-detail-panel {
   grid-area: auto;
 }
 
@@ -344,6 +348,15 @@ textarea:focus {
 
 .secondary-button:hover {
   background: var(--surface-strong);
+}
+
+.danger-button {
+  border-color: rgba(180, 35, 24, 0.28);
+  color: var(--error);
+}
+
+.danger-button:hover {
+  background: #fff1f0;
 }
 
 .search-form label,
@@ -868,6 +881,121 @@ textarea:focus {
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(160px, 0.4fr);
 }
 
+.admin-token-form,
+.admin-requests-form,
+.admin-request-detail,
+.admin-action-panel,
+.admin-invitation-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-controls {
+  grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
+}
+
+.admin-summary,
+.admin-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.admin-summary {
+  margin: 12px 0;
+}
+
+.admin-summary div,
+.admin-detail-grid div {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: var(--surface-strong);
+}
+
+.admin-summary span,
+.admin-detail-grid span,
+.admin-request-meta span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.admin-summary strong,
+.admin-detail-grid strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.admin-requests-list {
+  display: grid;
+  gap: 10px;
+}
+
+.admin-request-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(160px, 0.5fr) auto;
+  gap: 12px;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.admin-request-card.is-selected {
+  border-color: rgba(15, 118, 110, 0.42);
+  background: #f0fdfa;
+}
+
+.admin-request-main h3 {
+  margin: 0 0 3px;
+  font-size: 1rem;
+}
+
+.admin-request-main p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.admin-request-meta {
+  display: grid;
+  gap: 4px;
+}
+
+.admin-state-note,
+.admin-invitation-panel {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  background: #ffffff;
+}
+
+.admin-state-note {
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.admin-invitation-panel h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.admin-invitation-panel p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 700;
+}
+
 .report-summary {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -987,7 +1115,7 @@ textarea:focus {
 
   .side-nav {
     position: static;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .nav-button {
@@ -1045,6 +1173,10 @@ textarea:focus {
   .company-registration-controls,
   .invitation-details,
   .company-future,
+  .admin-controls,
+  .admin-summary,
+  .admin-detail-grid,
+  .admin-request-card,
   .report-controls,
   .audit-controls,
   .report-summary,

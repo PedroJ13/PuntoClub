@@ -227,6 +227,31 @@ function validateCompanyRegistrationReviewPayload(payload, action) {
   };
 }
 
+function validateCompanyRegistrationRequestListQuery(query) {
+  const details = [];
+  const status = normalizeText(query.get('status') || 'pending') || 'pending';
+  const limitValue = query.get('limit') || '25';
+  const allowedStatuses = new Set(['all', ...allowedRegistrationRequestStatuses]);
+  const allowedLimits = new Set(['10', '25', '50']);
+
+  if (!allowedStatuses.has(status)) {
+    details.push({ field: 'status', message: 'status must be one of all, pending, approved, rejected, cancelled.' });
+  }
+
+  if (!allowedLimits.has(limitValue)) {
+    details.push({ field: 'limit', message: 'limit must be one of 10, 25, 50.' });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    status,
+    limit: Number(limitValue)
+  };
+}
+
 function validateCompanyRole(value, field = 'role') {
   const role = normalizeText(value || 'owner');
   if (!allowedCompanyRoles.has(role)) {
@@ -582,6 +607,7 @@ module.exports = {
   validateCompanyAuthLoginPayload,
   validateCompanyInvitationPayload,
   validateCompanyRegistrationRequestPayload,
+  validateCompanyRegistrationRequestListQuery,
   validateCompanyRegistrationReviewPayload,
   validateCompanyRole,
   validateCustomerPayload,

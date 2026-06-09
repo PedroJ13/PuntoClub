@@ -28,13 +28,14 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Opcion A completada: configuracion de empresa piloto publicada y aprobada.
 - Opcion B/multiempresa controlado avanza a fase funcional con auth propia MVP ya validada por Product Owner.
 - Siguiente bloque decidido por Product / Architect / Release: panel interno de administracion de empresas.
+- TASK-201/TASK-202/TASK-203 quedaron completadas en codigo/local. TASK-204 quedo no aprobada porque API/Web publicados aun no reflejaban esos cambios.
 - Round actual liberado:
-  - TASK-201: Backend API revisa/ajusta contratos internos de administracion.
-  - TASK-202: Diseno / UX define flujo minimo del panel interno.
+  - TASK-205: Backend API confirma deploy API del endpoint interno.
+  - TASK-206: Web Dev confirma deploy Web del panel interno.
 - Round siguiente:
-  - TASK-203: Web Dev implementa panel interno de administracion de empresas.
+  - TASK-207: PO Test valida flujo interno con token real sin exponer secretos, si hace falta para evidencia positiva.
 - Round final:
-  - TASK-204: QA valida panel interno publicado.
+  - TASK-208: QA revalida panel interno publicado.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -388,6 +389,14 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-202: Asignada a Diseno / UX para definir UX minima del panel interno.
 - TASK-203: Asignada a Web Dev para crear panel interno, depende de TASK-201/TASK-202.
 - TASK-204: Asignada a QA para validar panel interno publicado, depende de TASK-203.
+- TASK-201: Backend API completo endpoint interno de listado `GET /api/company-registration-requests` y contratos asociados; pruebas locales 101/101.
+- TASK-202: Diseno / UX completo UX minima de panel interno con token temporal en memoria y sin exponer links/tokens.
+- TASK-203: Web Dev completo panel interno local `Admin empresas`; sintaxis Web validada.
+- TASK-204: QA no aprobo publicado porque API/Web aun no reflejaban TASK-201/TASK-203; regresiones seguras OK.
+- TASK-205: Asignada a Backend API para confirmar deploy API del panel interno.
+- TASK-206: Asignada a Web Dev para confirmar deploy Web del panel interno.
+- TASK-207: Asignada a PO Test para validar operacion interna con token real sin exponer secretos.
+- TASK-208: Asignada a QA para revalidar panel interno publicado.
 
 ## Riesgos principales
 
@@ -398,7 +407,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Validar panel interno de administracion de empresas. Mantener Entra External ID diferido, token interno temporal y limite por IP como mejoras futuras condicionadas a arquitectura.
+Publicar y revalidar el panel interno de administracion de empresas: primero API/Web (TASK-205/TASK-206), luego evidencia PO si requiere token real (TASK-207) y QA final (TASK-208). Mantener Entra External ID diferido, token interno temporal y limite por IP como mejoras futuras condicionadas a arquitectura.
 
 ## Listo para probar
 
@@ -427,14 +436,4 @@ Validar panel interno de administracion de empresas. Mantener Entra External ID 
 - Logo privado de empresa en `Mi empresa`: aprobado por QA en TASK-200; upload/preview/persistencia validados con evidencia PO redaccionada.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
-
-
-
-
-
-
-
-
-
-
 
