@@ -29,13 +29,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - Opcion B/multiempresa controlado avanza a fase funcional con auth propia MVP ya validada por Product Owner.
 - Siguiente bloque decidido por Product / Architect / Release: panel interno de administracion de empresas.
 - TASK-201/TASK-202/TASK-203 quedaron completadas en codigo/local. TASK-204 quedo no aprobada porque API/Web publicados aun no reflejaban esos cambios.
-- Round actual liberado:
-  - TASK-205: Backend API confirma deploy API del endpoint interno.
-  - TASK-206: Web Dev confirma deploy Web del panel interno.
-- Round siguiente:
-  - TASK-207: PO Test valida flujo interno con token real sin exponer secretos, si hace falta para evidencia positiva.
-- Round final:
-  - TASK-208: QA revalida panel interno publicado.
+- TASK-205 y TASK-206 quedaron aprobadas: API y Web publicados contienen el panel interno.
+- TASK-207 queda diferida por decision Product Owner; se asume OK para no frenar y se hara prueba completa posterior.
+- Siguiente tarea activa:
+  - TASK-208: QA revalida panel interno publicado sin depender de PO Test.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -393,10 +390,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-202: Diseno / UX completo UX minima de panel interno con token temporal en memoria y sin exponer links/tokens.
 - TASK-203: Web Dev completo panel interno local `Admin empresas`; sintaxis Web validada.
 - TASK-204: QA no aprobo publicado porque API/Web aun no reflejaban TASK-201/TASK-203; regresiones seguras OK.
-- TASK-205: Asignada a Backend API para confirmar deploy API del panel interno.
-- TASK-206: Asignada a Web Dev para confirmar deploy Web del panel interno.
-- TASK-207: Asignada a PO Test para validar operacion interna con token real sin exponer secretos.
-- TASK-208: Asignada a QA para revalidar panel interno publicado.
+- TASK-205: Backend API aprobo deploy API; endpoint interno de listado publicado y protegido con 403 sin token/token sintetico.
+- TASK-206: Web Dev aprobo deploy Web; panel `Admin empresas` publicado, token admin solo como header y sin localStorage/sessionStorage.
+- TASK-207: Diferida/saltada por decision Product Owner; flujo positivo con token real se probara en una prueba completa posterior.
+- TASK-208: Siguiente tarea activa para QA; revalidar panel interno publicado sin esperar PO Test.
 
 ## Riesgos principales
 
@@ -407,7 +404,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Publicar y revalidar el panel interno de administracion de empresas: primero API/Web (TASK-205/TASK-206), luego evidencia PO si requiere token real (TASK-207) y QA final (TASK-208). Mantener Entra External ID diferido, token interno temporal y limite por IP como mejoras futuras condicionadas a arquitectura.
+Revalidar con QA el panel interno de administracion de empresas en TASK-208. La prueba PO con token real queda diferida para una prueba completa posterior. Mantener Entra External ID diferido, token interno temporal y limite por IP como mejoras futuras condicionadas a arquitectura.
 
 ## Listo para probar
 

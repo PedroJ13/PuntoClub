@@ -6,25 +6,26 @@ Equipo responsable: QA
 
 TASK-204 quedo no aprobado porque API/Web publicados no contenian los cambios locales de TASK-201/TASK-203.
 
-Esta revalidacion depende de:
+Desde entonces:
 
-- TASK-205: API publicada con endpoint de listado interno.
-- TASK-206: Web publicada con panel `Admin empresas`.
-- TASK-207: evidencia PO si se requiere token real para flujo positivo.
+- TASK-205 aprobo que la API publicada ya contiene `GET /api/company-registration-requests` y responde `403` sin token/token sintetico.
+- TASK-206 aprobo que la Web publicada ya contiene `Admin empresas`, usa `x-puntoclub-admin-token` como header y no usa `localStorage`/`sessionStorage`.
+- TASK-207 queda diferida por decision Product Owner. Se asume OK para no frenar y la prueba completa con token real se hara despues.
 
 ## Objetivo
 
-Cerrar QA del panel interno de administracion de empresas publicado, validando negativos, seguridad y evidencia positiva sin secretos.
+Cerrar QA del panel interno de administracion de empresas publicado validando publicacion, negativos, seguridad y regresion basica sin depender de PO Test.
 
 ## Alcance
 
-- Leer handoffs TASK-205, TASK-206 y TASK-207 si existe.
+- Leer handoffs TASK-205 y TASK-206.
 - Validar publicado sin token y con token sintetico invalido:
   - listado interno protegido con `403`;
   - approve/reject/resend protegidos con `403`.
 - Confirmar que la Web publicada contiene el panel admin y no persiste token en `localStorage`/`sessionStorage`.
 - Confirmar que no se muestran token raw, hash, link completo de invitacion, cookies, passwords ni secretos.
-- Si QA no usa token real, revisar evidencia redaccionada de TASK-207 para cerrar flujo positivo.
+- No usar token interno real en esta tarea, salvo que Product Owner lo entregue por canal seguro y pida expresamente validacion positiva.
+- Si no hay token real, no bloquear por falta de flujo positivo: documentar como pendiente diferido para prueba completa posterior.
 - Ejecutar regresion basica:
   - solicitud publica de empresa;
   - invitacion/crear acceso con token sintetico;
@@ -40,4 +41,4 @@ Crear o actualizar `tasks/TASK-208-HANDOFF.md` con:
 - Checks ejecutados.
 - Evidencia redaccionada.
 - P0/P1/P2/P3.
-- Riesgos o pendientes.
+- Pendiente diferido de flujo positivo con token real, si aplica.
