@@ -209,6 +209,7 @@
 - Aprobacion administrativa. En avance controlado con TASK-134, TASK-137 y TASK-140.
 - Invitaciones. En avance controlado con TASK-132, TASK-140 y TASK-141; accept/login depende de Entra External ID.
 - Operacion multiempresa controlada con auth propia: siguiente fase con TASK-179 a TASK-181.
+- Operacion multiempresa controlada con auth propia: aprobada publicada en TASK-186.
 - Rate limiting/lockout auth propia: analisis pendiente en TASK-182.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.

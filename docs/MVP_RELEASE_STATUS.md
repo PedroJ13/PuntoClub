@@ -350,6 +350,10 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-184: Asignada a Web Dev para confirmar deploy Web de operacion con credentials.
 - TASK-185: Asignada a PO Test para validar operacion con sesion de empresa real.
 - TASK-186: Asignada a QA para cerrar operacion autenticada publicada despues de TASK-183/TASK-184/TASK-185.
+- TASK-183: Backend API confirmo deploy API publicado con contexto por sesion; cookie sintetica invalida en endpoint operativo responde `401`.
+- TASK-184: Web Dev confirmo deploy Web publicado con `credentials: "include"` en operaciones privadas y rutas publicas sin credentials.
+- TASK-185: PO Test aprobo operacion autenticada real con evidencia redaccionada: cliente, compra, redencion, historial, reporte, auditoria y logout.
+- TASK-186: QA aprobo operacion autenticada publicada sin P0/P1/P2/P3 nuevos.
 
 ## Riesgos principales
 
@@ -384,6 +388,7 @@ Auth propia MVP queda lista para seguir con la siguiente fase funcional. Mantene
 - Solicitud publica de empresa y endpoints internos cerrados sin token: aprobado por QA en TASK-138.
 - Pantalla publica de invitacion y fallback de rutas profundas: aprobado por QA en TASK-145. Invitacion real valida aprobada por QA en TASK-154 y token expuesto rotado/reemitido por Infra en TASK-155.
 - Auth propia MVP: validada operativamente por Product Owner en TASK-177 con invitacion, crear acceso/password, login, sesion visible y logout.
+- Operacion autenticada publicada: aprobada por QA en TASK-186; API usa contexto por sesion y Web envia cookies en operaciones privadas.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
 
