@@ -33,6 +33,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-207 queda diferida por decision Product Owner; se asume OK para no frenar y se hara prueba completa posterior.
 - TASK-208 quedo aprobada por QA para publicacion, negativos y seguridad basica del panel interno. Pendiente P2 diferido: prueba positiva con token real por canal seguro.
 - Hallazgo Product Owner: despues de login exitoso, la pantalla muestra `Sesion iniciada.` pero no lleva al panel operativo. TASK-211 confirmo que el fix Web ya esta publicado. TASK-212 no aprobo porque falta evidencia positiva segura. Se crean TASK-213/TASK-214 para evidencia PO redaccionada y cierre QA.
+- Nueva regla de producto: aprobacion de servicio y aprobacion de imagenes son procesos separados; se crean TASK-215 a TASK-219 para modelo, contratos, UX, UI y QA.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -404,7 +405,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Aportar evidencia PO redaccionada y cerrar QA del login exitoso en TASK-213/TASK-214 antes de avanzar al siguiente bloque funcional. El fix Web ya esta publicado; falta evidencia positiva segura de login/refresh/logout.
+Cerrar evidencia PO/QA del login exitoso en TASK-213/TASK-214 y avanzar en paralelo con la definicion de aprobacion independiente de imagenes en TASK-215/TASK-217. No implementar UI de imagenes hasta tener modelo, contratos y UX.
 
 ## Listo para probar
 
