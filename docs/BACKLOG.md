@@ -191,6 +191,8 @@
 - TASK-210: Validar transicion despues de login exitoso.
 - TASK-211: Confirmar deploy Web del fix post-login.
 - TASK-212: Revalidar login exitoso despues del deploy Web.
+- TASK-213: Aportar evidencia redaccionada de login exitoso.
+- TASK-214: Cerrar QA de login exitoso con evidencia PO.
 
 ## P1 pre-lanzamiento
 
