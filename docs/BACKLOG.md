@@ -187,6 +187,8 @@
 - TASK-206: Confirmar deploy Web del panel interno de empresas.
 - TASK-207: Diferida - PO Test valida operacion interna con token real sin exponer secretos en prueba completa posterior.
 - TASK-208: Revalidar panel interno de empresas publicado.
+- TASK-209: Corregir transicion despues de login exitoso.
+- TASK-210: Validar transicion despues de login exitoso.
 
 ## P1 pre-lanzamiento
 
