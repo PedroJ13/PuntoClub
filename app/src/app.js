@@ -1200,8 +1200,8 @@ async function submitCompanyLogin() {
     });
     currentAuthIdentity = identity;
     renderAuthIdentity(identity);
-    showLoginStatus("Sesion iniciada.");
     elements.loginPasswordInput.value = "";
+    await showMainApp({ replaceLoginRoute: true, focus: true, refreshCompany: true });
   } catch (error) {
     renderLoginError(error);
   } finally {
@@ -1214,6 +1214,10 @@ async function refreshAuthIdentity(options = {}) {
     const identity = await api.getCurrentCompanyUser();
     currentAuthIdentity = identity;
     renderAuthIdentity(identity);
+
+    if (isLoginPage) {
+      await showMainApp({ replaceLoginRoute: true, refreshCompany: true });
+    }
   } catch (error) {
     currentAuthIdentity = null;
     renderSignedOut();
@@ -1233,9 +1237,9 @@ async function logoutCompany() {
 
   currentAuthIdentity = null;
   renderSignedOut();
-  if (isLoginPage) {
-    showLoginStatus("Sesion cerrada.");
-  }
+  showLoginPage({ replaceRoute: true });
+  clearLoginMessages();
+  showLoginStatus("Sesion cerrada.");
 }
 
 function renderSelectedCustomer() {
@@ -2753,13 +2757,31 @@ function showInvitationPage() {
   elements.invitationPage.hidden = false;
 }
 
-function showLoginPage() {
+function showLoginPage(options = {}) {
   elements.appBody.hidden = true;
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = false;
+  if (options.replaceRoute && !isCompanyLoginRoute()) {
+    window.history.replaceState({}, "", "/login");
+  }
   window.requestAnimationFrame(() => {
     elements.loginEmailInput.focus();
   });
+}
+
+async function showMainApp(options = {}) {
+  elements.invitationPage.hidden = true;
+  elements.authPage.hidden = true;
+  elements.appBody.hidden = false;
+  setActiveSection("operations", { focus: options.focus !== false });
+
+  if (options.replaceLoginRoute && isCompanyLoginRoute()) {
+    window.history.replaceState({}, "", "/");
+  }
+
+  if (options.refreshCompany) {
+    await loadCompanySettings();
+  }
 }
 
 function validateCreateAccessForm() {

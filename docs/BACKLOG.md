@@ -189,6 +189,8 @@
 - TASK-208: Revalidar panel interno de empresas publicado.
 - TASK-209: Corregir transicion despues de login exitoso.
 - TASK-210: Validar transicion despues de login exitoso.
+- TASK-211: Confirmar deploy Web del fix post-login.
+- TASK-212: Revalidar login exitoso despues del deploy Web.
 
 ## P1 pre-lanzamiento
 

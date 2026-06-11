@@ -32,7 +32,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-205 y TASK-206 quedaron aprobadas: API y Web publicados contienen el panel interno.
 - TASK-207 queda diferida por decision Product Owner; se asume OK para no frenar y se hara prueba completa posterior.
 - TASK-208 quedo aprobada por QA para publicacion, negativos y seguridad basica del panel interno. Pendiente P2 diferido: prueba positiva con token real por canal seguro.
-- Hallazgo Product Owner: despues de login exitoso, la pantalla muestra `Sesion iniciada.` pero no lleva al panel operativo; se crean TASK-209/TASK-210 para corregir y validar.
+- Hallazgo Product Owner: despues de login exitoso, la pantalla muestra `Sesion iniciada.` pero no lleva al panel operativo. TASK-209 corrigio localmente; TASK-210 no aprobo porque el fix no estaba publicado. Se crean TASK-211/TASK-212 para confirmar deploy Web y revalidar.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -404,7 +404,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Corregir y validar el bloqueo de UX posterior a login exitoso en TASK-209/TASK-210 antes de avanzar al siguiente bloque funcional. El panel interno ya quedo aprobado por QA en TASK-208; la prueba positiva con token real queda diferida para una prueba completa posterior.
+Publicar y revalidar el fix de transicion posterior a login exitoso en TASK-211/TASK-212 antes de avanzar al siguiente bloque funcional. El panel interno ya quedo aprobado por QA en TASK-208; la prueba positiva con token real queda diferida para una prueba completa posterior.
 
 ## Listo para probar
 
