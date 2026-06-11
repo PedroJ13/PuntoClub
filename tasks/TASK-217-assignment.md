@@ -36,3 +36,10 @@ Crear o actualizar `tasks/TASK-217-HANDOFF.md` con:
 - Copy de acciones, confirmaciones y errores.
 - Estados visuales.
 - Reglas de seguridad/privacidad para imagenes.
+---
+
+## Estado
+
+CANCELADA / NO APLICA para Punto Club.
+
+Motivo: esta solicitud correspondia a otro proyecto/contexto y fue creada por error en este repo. No implementar, no ejecutar y no usar como dependencia.

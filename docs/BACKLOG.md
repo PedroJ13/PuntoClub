@@ -193,11 +193,11 @@
 - TASK-212: Revalidar login exitoso despues del deploy Web.
 - TASK-213: Aportar evidencia redaccionada de login exitoso.
 - TASK-214: Cerrar QA de login exitoso con evidencia PO.
-- TASK-215: Revisar modelo para aprobacion independiente de imagenes.
-- TASK-216: Definir contratos para moderacion independiente de imagenes.
-- TASK-217: Definir UX de administracion para aprobar imagenes por separado.
-- TASK-218: Implementar UI de moderacion individual de imagenes.
-- TASK-219: Validar aprobacion independiente de imagenes.
+- TASK-215: CANCELADA / NO APLICA - Revisar modelo para aprobacion independiente de imagenes.
+- TASK-216: CANCELADA / NO APLICA - Definir contratos para moderacion independiente de imagenes.
+- TASK-217: CANCELADA / NO APLICA - Definir UX de administracion para aprobar imagenes por separado.
+- TASK-218: CANCELADA / NO APLICA - Implementar UI de moderacion individual de imagenes.
+- TASK-219: CANCELADA / NO APLICA - Validar aprobacion independiente de imagenes.
 
 ## P1 pre-lanzamiento
 

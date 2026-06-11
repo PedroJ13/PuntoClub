@@ -38,3 +38,10 @@ Crear o actualizar `tasks/TASK-215-HANDOFF.md` con:
 - Propuesta SQL minima si hace falta.
 - Riesgos de integridad.
 - Dependencias para Backend/API.
+---
+
+## Estado
+
+CANCELADA / NO APLICA para Punto Club.
+
+Motivo: esta solicitud correspondia a otro proyecto/contexto y fue creada por error en este repo. No implementar, no ejecutar y no usar como dependencia.

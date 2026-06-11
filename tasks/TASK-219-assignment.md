@@ -36,3 +36,10 @@ Crear o actualizar `tasks/TASK-219-HANDOFF.md` con:
 - Evidencia redaccionada.
 - P0/P1/P2/P3.
 - Pendientes o bloqueos.
+---
+
+## Estado
+
+CANCELADA / NO APLICA para Punto Club.
+
+Motivo: esta solicitud correspondia a otro proyecto/contexto y fue creada por error en este repo. No implementar, no ejecutar y no usar como dependencia.
