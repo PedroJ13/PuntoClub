@@ -234,7 +234,7 @@
 - Operacion multiempresa controlada con auth propia: aprobada publicada en TASK-186.
 - Rate limiting/lockout auth propia: aprobado publicado en TASK-192 para email/token; limite por IP diferido hasta proxy confiable.
 - Logo privado de empresa: aprobado publicado en TASK-200.
-- Panel interno de administracion de empresas: API/Web publicados; siguiente cierre QA en TASK-208. TASK-207 queda diferida para prueba completa posterior.
+- Panel interno de administracion de empresas: aprobado por QA en TASK-208 para publicacion, negativos y seguridad basica. TASK-207/prueba positiva con token real queda diferida para prueba completa posterior.
 - Estadisticas avanzadas.
 - SaaS multiempresa autoservicio.
 

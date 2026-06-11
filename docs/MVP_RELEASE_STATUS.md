@@ -31,8 +31,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-201/TASK-202/TASK-203 quedaron completadas en codigo/local. TASK-204 quedo no aprobada porque API/Web publicados aun no reflejaban esos cambios.
 - TASK-205 y TASK-206 quedaron aprobadas: API y Web publicados contienen el panel interno.
 - TASK-207 queda diferida por decision Product Owner; se asume OK para no frenar y se hara prueba completa posterior.
-- Siguiente tarea activa:
-  - TASK-208: QA revalida panel interno publicado sin depender de PO Test.
+- TASK-208 quedo aprobada por QA para publicacion, negativos y seguridad basica del panel interno. Pendiente P2 diferido: prueba positiva con token real por canal seguro.
 - UX/colores quedan despues; prioridad actual es funcionalidad operativa.
 
 ### Bloqueado
@@ -393,7 +392,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 - TASK-205: Backend API aprobo deploy API; endpoint interno de listado publicado y protegido con 403 sin token/token sintetico.
 - TASK-206: Web Dev aprobo deploy Web; panel `Admin empresas` publicado, token admin solo como header y sin localStorage/sessionStorage.
 - TASK-207: Diferida/saltada por decision Product Owner; flujo positivo con token real se probara en una prueba completa posterior.
-- TASK-208: Siguiente tarea activa para QA; revalidar panel interno publicado sin esperar PO Test.
+- TASK-208: QA aprobo panel interno publicado para publicacion, negativos y seguridad basica; P2 diferido para prueba positiva con token real.
 
 ## Riesgos principales
 
@@ -404,7 +403,7 @@ Nota: el usuario ya creo una Azure SQL Database. No crear otra DB; usar `sqlserv
 
 ## Siguiente paso recomendado
 
-Revalidar con QA el panel interno de administracion de empresas en TASK-208. La prueba PO con token real queda diferida para una prueba completa posterior. Mantener Entra External ID diferido, token interno temporal y limite por IP como mejoras futuras condicionadas a arquitectura.
+Definir el siguiente bloque funcional posterior al panel interno. El panel interno ya quedo aprobado por QA en TASK-208; la prueba positiva con token real queda diferida para una prueba completa posterior. Mantener Entra External ID diferido, token interno temporal y limite por IP como mejoras futuras condicionadas a arquitectura.
 
 ## Listo para probar
 
@@ -431,6 +430,7 @@ Revalidar con QA el panel interno de administracion de empresas en TASK-208. La 
 - Operacion autenticada publicada: aprobada por QA en TASK-186; API usa contexto por sesion y Web envia cookies en operaciones privadas.
 - Rate limiting/lockout auth propia: aprobado por QA en TASK-192 para login y accept por email/token; limite por IP diferido por arquitectura.
 - Logo privado de empresa en `Mi empresa`: aprobado por QA en TASK-200; upload/preview/persistencia validados con evidencia PO redaccionada.
+- Panel interno de administracion de empresas: aprobado por QA en TASK-208 para publicacion, negativos y seguridad basica; prueba positiva con token real queda diferida.
 - API deploy: workflow `Deploy Punto Club API` tuvo primer run real exitoso y fue aprobado por QA en TASK-057.
 - Nota: las pruebas crean datos reales de QA en la empresa piloto.
 
