@@ -207,6 +207,7 @@ const invitationToken = getInvitationTokenFromUrl();
 const isInvitationPage = isCompanyInvitationRoute();
 const isLoginPage = isCompanyLoginRoute();
 const isRegistrationPage = isCompanyRegistrationRoute();
+const isAdminCompaniesPage = isAdminCompaniesRoute();
 
 elements.dataSourceStatus.textContent = api.sourceLabel;
 elements.purchaseDateInput.value = getToday();
@@ -407,6 +408,11 @@ elements.adminConfirmationModal.addEventListener("click", (event) => {
 
 elements.navButtons.forEach((button) => {
   button.addEventListener("click", () => {
+    if (button.dataset.sectionTarget === "adminCompanies" && !isAdminCompaniesRoute()) {
+      window.location.assign("/admin-companies");
+      return;
+    }
+
     setActiveSection(button.dataset.sectionTarget);
   });
 });
@@ -426,6 +432,8 @@ if (isInvitationPage) {
   refreshAuthIdentity({ silent: true });
 } else if (isRegistrationPage) {
   showPublicCompanyRegistrationPage();
+} else if (isAdminCompaniesPage) {
+  showAdminCompaniesPage();
 } else {
   refreshAuthIdentity({ silent: true }).finally(() => {
     loadCompanySettings();
@@ -2995,6 +3003,7 @@ function setLoginSubmitting(isSubmitting) {
 
 function showInvitationPage() {
   document.body.classList.remove("public-registration-mode");
+  document.body.classList.remove("admin-companies-page-mode");
   elements.appBody.hidden = true;
   elements.authPage.hidden = true;
   elements.invitationPage.hidden = false;
@@ -3003,6 +3012,7 @@ function showInvitationPage() {
 
 function showLoginPage(options = {}) {
   document.body.classList.remove("public-registration-mode");
+  document.body.classList.remove("admin-companies-page-mode");
   elements.appBody.hidden = true;
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = false;
@@ -3016,6 +3026,7 @@ function showLoginPage(options = {}) {
 
 async function showMainApp(options = {}) {
   document.body.classList.remove("public-registration-mode");
+  document.body.classList.remove("admin-companies-page-mode");
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = true;
   elements.appBody.hidden = false;
@@ -3032,6 +3043,7 @@ async function showMainApp(options = {}) {
 
 function showPublicCompanyRegistrationPage() {
   document.body.classList.add("public-registration-mode");
+  document.body.classList.remove("admin-companies-page-mode");
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = true;
   elements.appBody.hidden = false;
@@ -3051,6 +3063,35 @@ function showPublicCompanyRegistrationPage() {
 function isolatePublicCompanyRegistrationView() {
   elements.sectionPanels.forEach((panel) => {
     panel.hidden = panel.dataset.section !== "company";
+  });
+}
+
+function showAdminCompaniesPage() {
+  document.body.classList.remove("public-registration-mode");
+  document.body.classList.add("admin-companies-page-mode");
+  elements.invitationPage.hidden = true;
+  elements.authPage.hidden = true;
+  elements.appBody.hidden = false;
+  elements.loginButton.hidden = true;
+  elements.logoutButton.hidden = true;
+  elements.authStatus.textContent = "Admin interno";
+  renderActiveCompanyIdentity(null);
+  setActiveSection("adminCompanies", { focus: false });
+  isolateAdminCompaniesView();
+
+  window.requestAnimationFrame(() => {
+    if (adminToken) {
+      elements.adminRequestSearchInput.focus();
+      return;
+    }
+
+    elements.adminTokenInput.focus();
+  });
+}
+
+function isolateAdminCompaniesView() {
+  elements.sectionPanels.forEach((panel) => {
+    panel.hidden = panel.dataset.section !== "adminCompanies";
   });
 }
 
@@ -3317,6 +3358,10 @@ function isCompanyLoginRoute() {
 
 function isCompanyRegistrationRoute() {
   return window.location.pathname.replace(/\/$/, "") === "/company-registration";
+}
+
+function isAdminCompaniesRoute() {
+  return window.location.pathname.replace(/\/$/, "") === "/admin-companies";
 }
 
 function getInvitationTokenFromUrl() {

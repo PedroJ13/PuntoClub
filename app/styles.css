@@ -312,6 +312,32 @@ textarea:focus {
   margin: 24px auto 0;
 }
 
+.admin-companies-page-mode .app-shell {
+  width: min(1040px, calc(100% - 28px));
+}
+
+.admin-companies-page-mode .side-nav,
+.admin-companies-page-mode [data-section="operations"],
+.admin-companies-page-mode [data-section="company"],
+.admin-companies-page-mode [data-section="reports"] {
+  display: none;
+}
+
+.admin-companies-page-mode .app-body {
+  display: block;
+}
+
+.admin-companies-page-mode [data-section="adminCompanies"] {
+  display: grid;
+}
+
+.admin-companies-page-mode .workspace-section[hidden],
+.admin-companies-page-mode [data-section="operations"],
+.admin-companies-page-mode [data-section="company"],
+.admin-companies-page-mode [data-section="reports"] {
+  display: none;
+}
+
 .company-section,
 .reports-section,
 .admin-companies-section {
