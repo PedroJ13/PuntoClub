@@ -16,10 +16,12 @@ function formatCompanyRegistrationCreatedResponse(registrationRequest) {
     id: registrationRequest.id,
     companyName: registrationRequest.companyName,
     companyEmail: registrationRequest.companyEmail,
+    contactEmail: registrationRequest.contactEmail,
     companyAddress: registrationRequest.companyAddress,
+    requestedLogo: registrationRequest.requestedLogo,
     status: registrationRequest.status,
     createdAt: registrationRequest.createdAt,
-    message: 'Company registration request received.'
+    message: 'Solicitud recibida.'
   };
 }
 
@@ -41,6 +43,7 @@ function formatCompanyRegistrationApprovedResponse(result) {
     contactName: result.contactName,
     contactEmail: result.contactEmail,
     contactPhone: result.contactPhone,
+    requestedLogo: result.requestedLogo,
     status: result.status,
     reviewedAt: result.reviewedAt,
     reviewedByLabel: result.reviewedByLabel,
@@ -76,6 +79,7 @@ function formatCompanyRegistrationRequestListItem(registrationRequest) {
     contactName: registrationRequest.contactName,
     contactEmail: registrationRequest.contactEmail,
     contactPhone: registrationRequest.contactPhone,
+    requestedLogo: registrationRequest.requestedLogo,
     status: registrationRequest.status,
     reviewedAt: registrationRequest.reviewedAt,
     reviewedByLabel: registrationRequest.reviewedByLabel,

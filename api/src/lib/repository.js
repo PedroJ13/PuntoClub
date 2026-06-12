@@ -39,6 +39,7 @@ function mapCompanySettings(row) {
 }
 
 function mapCompanyRegistrationRequest(row) {
+  const requestedLogoAvailable = Boolean(row.requested_logo_blob_path);
   return {
     id: toApiId(row.id),
     companyName: row.company_name,
@@ -48,6 +49,10 @@ function mapCompanyRegistrationRequest(row) {
     contactName: row.contact_name,
     contactEmail: row.contact_email,
     contactPhone: row.contact_phone,
+    requestedLogo: {
+      available: requestedLogoAvailable,
+      contentType: requestedLogoAvailable ? row.requested_logo_content_type : null
+    },
     status: row.status,
     reviewedAt: toIsoTimestamp(row.reviewed_at),
     reviewedByLabel: row.reviewed_by_label,
@@ -417,6 +422,8 @@ async function listCompanyRegistrationRequests(filters) {
         requests.contact_name,
         requests.contact_email,
         requests.contact_phone,
+        requests.requested_logo_blob_path,
+        requests.requested_logo_content_type,
         requests.status,
         requests.reviewed_at,
         requests.reviewed_by_label,
@@ -526,6 +533,8 @@ async function createCompanyRegistrationRequest(payload) {
         INSERTED.contact_name,
         INSERTED.contact_email,
         INSERTED.contact_phone,
+        INSERTED.requested_logo_blob_path,
+        INSERTED.requested_logo_content_type,
         INSERTED.status,
         INSERTED.reviewed_at,
         INSERTED.reviewed_by_label,
@@ -543,6 +552,48 @@ async function createCompanyRegistrationRequest(payload) {
         @contact_phone
       )
     `);
+
+  return mapCompanyRegistrationRequest(result.recordset[0]);
+}
+
+async function updateCompanyRegistrationRequestLogo(requestId, logo) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('request_id', sql.BigInt, requestId)
+    .input('requested_logo_blob_path', sql.NVarChar(512), logo.blobPath)
+    .input('requested_logo_content_type', sql.NVarChar(100), logo.contentType)
+    .query(`
+      UPDATE dbo.CompanyRegistrationRequests
+      SET
+        requested_logo_blob_path = @requested_logo_blob_path,
+        requested_logo_content_type = @requested_logo_content_type,
+        updated_at = SYSUTCDATETIME()
+      OUTPUT
+        INSERTED.id,
+        INSERTED.company_name,
+        INSERTED.company_email,
+        INSERTED.company_phone,
+        INSERTED.company_address,
+        INSERTED.contact_name,
+        INSERTED.contact_email,
+        INSERTED.contact_phone,
+        INSERTED.requested_logo_blob_path,
+        INSERTED.requested_logo_content_type,
+        INSERTED.status,
+        INSERTED.reviewed_at,
+        INSERTED.reviewed_by_label,
+        INSERTED.review_note,
+        INSERTED.approved_company_id,
+        INSERTED.created_at,
+        INSERTED.updated_at
+      WHERE id = @request_id
+        AND status = 'pending'
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'COMPANY_REGISTRATION_REQUEST_NOT_FOUND', 'Company registration request was not found.');
+  }
 
   return mapCompanyRegistrationRequest(result.recordset[0]);
 }
@@ -569,7 +620,9 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
           company_address,
           contact_name,
           contact_email,
-          contact_phone
+          contact_phone,
+          requested_logo_blob_path,
+          requested_logo_content_type
         FROM dbo.CompanyRegistrationRequests WITH (UPDLOCK, HOLDLOCK)
         WHERE id = @request_id
           AND status = 'pending'
@@ -585,6 +638,8 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
       .input('email', sql.NVarChar(254), request.company_email)
       .input('phone', sql.NVarChar(32), request.company_phone)
       .input('address', sql.NVarChar(300), request.company_address)
+      .input('logo_blob_path', sql.NVarChar(512), request.requested_logo_blob_path)
+      .input('logo_content_type', sql.NVarChar(100), request.requested_logo_content_type)
       .input('points_percentage', sql.Decimal(5, 2), pointsPercentage)
       .query(`
         INSERT INTO dbo.Companies (
@@ -592,6 +647,9 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
           email,
           phone,
           address,
+          logo_blob_path,
+          logo_content_type,
+          logo_updated_at,
           points_percentage,
           status
         )
@@ -601,6 +659,9 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
           INSERTED.email,
           INSERTED.phone,
           INSERTED.address,
+          INSERTED.logo_blob_path,
+          INSERTED.logo_content_type,
+          INSERTED.logo_updated_at,
           INSERTED.points_percentage,
           INSERTED.status,
           INSERTED.updated_at
@@ -609,6 +670,9 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
           @email,
           @phone,
           @address,
+          @logo_blob_path,
+          @logo_content_type,
+          CASE WHEN @logo_blob_path IS NULL THEN NULL ELSE SYSUTCDATETIME() END,
           @points_percentage,
           'pending_activation'
         )
@@ -637,6 +701,8 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
           INSERTED.contact_name,
           INSERTED.contact_email,
           INSERTED.contact_phone,
+          INSERTED.requested_logo_blob_path,
+          INSERTED.requested_logo_content_type,
           INSERTED.status,
           INSERTED.reviewed_at,
           INSERTED.reviewed_by_label,
@@ -702,6 +768,9 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
         email: company.email,
         phone: company.phone,
         address: company.address,
+        logoUrl: company.logo_blob_path ? '/api/my-company/logo' : null,
+        logoContentType: company.logo_content_type,
+        logoUpdatedAt: toIsoTimestamp(company.logo_updated_at),
         status: company.status,
         pointsPercentage: Number(company.points_percentage)
       }
@@ -1545,5 +1614,6 @@ module.exports = {
   toApiId,
   toIsoTimestamp,
   updateCompanyLogo,
+  updateCompanyRegistrationRequestLogo,
   updateCompanySettings
 };

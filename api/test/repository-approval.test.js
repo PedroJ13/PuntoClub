@@ -39,7 +39,9 @@ function makeSqlMock(queryLog) {
             company_address: 'San Jose',
             contact_name: 'Maria Soto',
             contact_email: 'maria@cafecentral.test',
-            contact_phone: '+50688889999'
+            contact_phone: '+50688889999',
+            requested_logo_blob_path: 'registration-requests/200/logo/logo-id.png',
+            requested_logo_content_type: 'image/png'
           }]
         };
       }
@@ -52,6 +54,9 @@ function makeSqlMock(queryLog) {
             email: 'owner@cafecentral.test',
             phone: '+50622223333',
             address: 'San Jose',
+            logo_blob_path: this.inputs.logo_blob_path,
+            logo_content_type: this.inputs.logo_content_type,
+            logo_updated_at: new Date('2026-06-07T19:00:00Z'),
             points_percentage: '5.00',
             status: 'pending_activation',
             updated_at: new Date('2026-06-07T19:00:00Z')
@@ -70,6 +75,8 @@ function makeSqlMock(queryLog) {
             contact_name: 'Maria Soto',
             contact_email: 'maria@cafecentral.test',
             contact_phone: '+50688889999',
+            requested_logo_blob_path: 'registration-requests/200/logo/logo-id.png',
+            requested_logo_content_type: 'image/png',
             status: 'approved',
             reviewed_at: new Date('2026-06-07T19:01:00Z'),
             reviewed_by_label: 'internal',
@@ -141,6 +148,8 @@ test('approveCompanyRegistrationRequest creates owner invitation with token hash
     });
 
     assert.equal(result.company.id, '10');
+    assert.equal(result.company.logoUrl, '/api/my-company/logo');
+    assert.equal(result.company.logoContentType, 'image/png');
     assert.deepEqual(result.invitation, {
       id: '300',
       companyId: '10',
@@ -157,6 +166,9 @@ test('approveCompanyRegistrationRequest creates owner invitation with token hash
     });
 
     const invitationInsert = queryLog.find((entry) => entry.kind === 'query' && entry.sqlText.includes('INSERT INTO dbo.CompanyInvitations'));
+    const companyInsert = queryLog.find((entry) => entry.kind === 'query' && entry.sqlText.includes('INSERT INTO dbo.Companies'));
+    assert.equal(companyInsert.inputs.logo_blob_path, 'registration-requests/200/logo/logo-id.png');
+    assert.equal(companyInsert.inputs.logo_content_type, 'image/png');
     assert.equal(invitationInsert.inputs.email, 'owner@cafecentral.test');
     assert.equal(invitationInsert.inputs.role, 'owner');
     assert.equal(invitationInsert.inputs.token_hash, tokenHash);

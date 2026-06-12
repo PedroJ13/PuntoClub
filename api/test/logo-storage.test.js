@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 
 const {
   buildLogoBlobPath,
+  buildRegistrationRequestLogoBlobPath,
   getLogoConfig,
   getLogoExtension,
   parseMultipartFile,
@@ -103,6 +104,13 @@ test('buildLogoBlobPath scopes generated paths by company id', () => {
     /^companies\/10\/logo\/logo-id\.webp$/
   );
   assert.equal(getLogoExtension('image/jpeg'), 'jpg');
+});
+
+test('buildRegistrationRequestLogoBlobPath scopes generated paths by request key', () => {
+  assert.match(
+    buildRegistrationRequestLogoBlobPath('request-10', 'image/png', 'logo-id'),
+    /^registration-requests\/request-10\/logo\/logo-id\.png$/
+  );
 });
 
 test('getLogoConfig reads storage config with safe defaults', () => {

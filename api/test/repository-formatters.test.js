@@ -57,6 +57,8 @@ test('mapCompanyRegistrationRequest serializes SQL row to API contract', () => {
       contact_name: 'Maria Soto',
       contact_email: 'maria@cafecentral.test',
       contact_phone: null,
+      requested_logo_blob_path: 'registration-requests/200/logo/logo-id.png',
+      requested_logo_content_type: 'image/png',
       status: 'pending',
       reviewed_at: null,
       reviewed_by_label: null,
@@ -74,6 +76,10 @@ test('mapCompanyRegistrationRequest serializes SQL row to API contract', () => {
       contactName: 'Maria Soto',
       contactEmail: 'maria@cafecentral.test',
       contactPhone: null,
+      requestedLogo: {
+        available: true,
+        contentType: 'image/png'
+      },
       status: 'pending',
       reviewedAt: null,
       reviewedByLabel: null,

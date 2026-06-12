@@ -189,6 +189,10 @@ function buildLogoBlobPath(companyId, contentType, id = crypto.randomUUID()) {
   return `companies/${encodeURIComponent(String(companyId))}/logo/${id}.${getLogoExtension(contentType)}`;
 }
 
+function buildRegistrationRequestLogoBlobPath(requestKey, contentType, id = crypto.randomUUID()) {
+  return `registration-requests/${encodeURIComponent(String(requestKey))}/logo/${id}.${getLogoExtension(contentType)}`;
+}
+
 async function getManagedIdentityToken(env = process.env) {
   if (!env.IDENTITY_ENDPOINT || !env.IDENTITY_HEADER) {
     throw new ApiError(503, 'LOGO_STORAGE_UNAVAILABLE', 'Logo storage is not configured.');
@@ -268,6 +272,7 @@ async function downloadLogoBlob(blobPath, options = {}) {
 
 module.exports = {
   buildLogoBlobPath,
+  buildRegistrationRequestLogoBlobPath,
   downloadLogoBlob,
   getLogoConfig,
   getLogoExtension,

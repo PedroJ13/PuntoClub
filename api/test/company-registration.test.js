@@ -30,7 +30,11 @@ const sampleRegistrationRequest = {
   contactEmail: 'maria@cafecentral.test',
   contactPhone: '+50688889999',
   status: 'pending',
-  createdAt: '2026-06-07T18:30:00.000Z'
+  createdAt: '2026-06-07T18:30:00.000Z',
+  requestedLogo: {
+    available: true,
+    contentType: 'image/png'
+  }
 };
 
 test('formatCompanyRegistrationCreatedResponse returns public submission contract', () => {
@@ -49,9 +53,11 @@ test('formatCompanyRegistrationCreatedResponse returns public submission contrac
       companyName: 'Cafe Central',
       companyEmail: 'hola@cafecentral.test',
       companyAddress: 'San Jose',
+      contactEmail: 'owner@cafecentral.test',
+      requestedLogo: undefined,
       status: 'pending',
       createdAt: '2026-06-07T18:30:00.000Z',
-      message: 'Company registration request received.'
+      message: 'Solicitud recibida.'
     }
   );
 });
@@ -122,6 +128,10 @@ test('formatCompanyRegistrationApprovedResponse includes invitation summary with
     contactName: 'Maria Soto',
     contactEmail: 'maria@cafecentral.test',
     contactPhone: '+50688889999',
+    requestedLogo: {
+      available: true,
+      contentType: 'image/png'
+    },
     status: 'approved',
     reviewedAt: '2026-06-07T19:01:00.000Z',
     reviewedByLabel: 'internal',
@@ -174,6 +184,10 @@ test('formatCompanyRegistrationRequestListResponse includes safe invitation summ
       contactName: 'Maria Soto',
       contactEmail: 'maria@cafecentral.test',
       contactPhone: '+50688889999',
+      requestedLogo: {
+        available: true,
+        contentType: 'image/png'
+      },
       status: 'approved',
       reviewedAt: '2026-06-07T19:01:00.000Z',
       reviewedByLabel: 'internal',
@@ -252,13 +266,14 @@ test('email templates use approved copy and escape HTML content', () => {
   const internal = createInternalRegistrationEmail(request, config);
   const acknowledgement = createRequesterAcknowledgementEmail(request, config);
 
-  assert.equal(internal.subject, 'Nueva solicitud de empresa en Punto Club: <Cafe Central>');
-  assert.match(internal.plainText, /Se recibio una nueva solicitud de empresa/);
+  assert.equal(internal.subject, 'Nueva solicitud de empresa: <Cafe Central>');
+  assert.match(internal.plainText, /Hay una nueva solicitud de empresa/);
+  assert.match(internal.plainText, /Logo: Adjunto/);
   assert.match(internal.html, /&lt;Cafe Central&gt;/);
   assert.equal(internal.to[0].address, 'ops@example.test');
 
-  assert.equal(acknowledgement.subject, 'Recibimos su solicitud para Punto Club');
-  assert.match(acknowledgement.plainText, /Todavia no crea acceso operativo/);
+  assert.equal(acknowledgement.subject, 'Recibimos tu solicitud en Punto Club');
+  assert.match(acknowledgement.plainText, /Recibimos la solicitud para/);
   assert.equal(acknowledgement.to[0].address, 'maria@cafecentral.test');
 });
 

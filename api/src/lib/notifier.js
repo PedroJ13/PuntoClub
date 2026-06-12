@@ -39,6 +39,22 @@ function getRequesterEmail(registrationRequest) {
   return normalizeText(registrationRequest.contactEmail) || normalizeText(registrationRequest.companyEmail);
 }
 
+function getRegistrationLogoStatus(registrationRequest) {
+  return registrationRequest && registrationRequest.requestedLogo && registrationRequest.requestedLogo.available
+    ? 'Adjunto'
+    : 'No incluido';
+}
+
+function wrapEmailHtml(title, bodyHtml) {
+  return [
+    '<div style="font-family:Arial,sans-serif;color:#17202a;line-height:1.45;max-width:640px">',
+    `<h1 style="font-size:22px;margin:0 0 16px">${escapeHtml(title)}</h1>`,
+    bodyHtml,
+    '<p style="font-size:13px;color:#5f6b7a;margin-top:24px">Punto Club</p>',
+    '</div>'
+  ].join('');
+}
+
 function createInvitationLink(token, config) {
   const publicBaseUrl = normalizeText(config.publicBaseUrl);
   if (!publicBaseUrl) {
@@ -51,31 +67,29 @@ function createInvitationLink(token, config) {
 }
 
 function createInternalRegistrationEmail(registrationRequest, config) {
-  const subject = `Nueva solicitud de empresa en Punto Club: ${registrationRequest.companyName}`;
+  const subject = `Nueva solicitud de empresa: ${registrationRequest.companyName}`;
+  const logoStatus = getRegistrationLogoStatus(registrationRequest);
   const plainText = [
-    'Se recibio una nueva solicitud de empresa en Punto Club.',
+    'Hay una nueva solicitud de empresa pendiente de revision.',
     '',
-    'Empresa:',
-    `- Nombre: ${displayValue(registrationRequest.companyName)}`,
-    `- Correo de empresa: ${displayValue(registrationRequest.companyEmail)}`,
-    `- Telefono de empresa: ${displayValue(registrationRequest.companyPhone)}`,
-    `- Direccion: ${displayValue(registrationRequest.companyAddress)}`,
+    `Empresa: ${displayValue(registrationRequest.companyName)}`,
+    `Correo empresa: ${displayValue(registrationRequest.companyEmail)}`,
+    `Telefono empresa: ${displayValue(registrationRequest.companyPhone)}`,
+    `Direccion: ${displayValue(registrationRequest.companyAddress)}`,
     '',
-    'Contacto:',
-    `- Nombre: ${displayValue(registrationRequest.contactName)}`,
-    `- Correo: ${displayValue(registrationRequest.contactEmail)}`,
-    `- Telefono: ${displayValue(registrationRequest.contactPhone)}`,
+    `Contacto: ${displayValue(registrationRequest.contactName)}`,
+    `Correo contacto: ${displayValue(registrationRequest.contactEmail)}`,
+    `Telefono contacto: ${displayValue(registrationRequest.contactPhone)}`,
+    `Logo: ${logoStatus}`,
     '',
-    'Estado:',
-    `- Solicitud: ${displayValue(registrationRequest.status)}`,
-    `- Fecha de solicitud: ${displayValue(registrationRequest.createdAt)}`,
+    `Estado: ${displayValue(registrationRequest.status)}`,
+    `Fecha de solicitud: ${displayValue(registrationRequest.createdAt)}`,
     '',
-    'Accion esperada:',
-    'Revise la solicitud. Si corresponde, apruebe la empresa y envie la invitacion de acceso.'
+    'Revisala desde Admin empresas.'
   ].join('\n');
 
-  const html = [
-    '<p>Se recibio una nueva solicitud de empresa en Punto Club.</p>',
+  const html = wrapEmailHtml('Nueva solicitud de empresa', [
+    '<p>Hay una nueva solicitud de empresa pendiente de revision.</p>',
     '<h2>Empresa</h2>',
     '<ul>',
     `<li>Nombre: ${escapeHtml(displayValue(registrationRequest.companyName))}</li>`,
@@ -89,13 +103,14 @@ function createInternalRegistrationEmail(registrationRequest, config) {
     `<li>Correo: ${escapeHtml(displayValue(registrationRequest.contactEmail))}</li>`,
     `<li>Telefono: ${escapeHtml(displayValue(registrationRequest.contactPhone))}</li>`,
     '</ul>',
-    '<h2>Estado</h2>',
+    '<h2>Revision</h2>',
     '<ul>',
     `<li>Solicitud: ${escapeHtml(displayValue(registrationRequest.status))}</li>`,
     `<li>Fecha de solicitud: ${escapeHtml(displayValue(registrationRequest.createdAt))}</li>`,
+    `<li>Logo: ${escapeHtml(logoStatus)}</li>`,
     '</ul>',
-    '<p><strong>Accion esperada:</strong> Revise la solicitud. Si corresponde, apruebe la empresa y envie la invitacion de acceso.</p>'
-  ].join('');
+    '<p><strong>Accion esperada:</strong> Revisala desde Admin empresas.</p>'
+  ].join(''));
 
   return {
     senderAddress: config.senderAddress,
@@ -113,11 +128,11 @@ function createCompanyInvitationEmail(invitation, token, config) {
     return null;
   }
 
-  const subject = 'Invitacion para activar Punto Club';
+  const subject = 'Activa el acceso de tu empresa en Punto Club';
   const plainText = [
     'Hola,',
     '',
-    `Su empresa ${displayValue(invitation.companyName)} fue invitada a usar Punto Club.`,
+    `La empresa ${displayValue(invitation.companyName)} fue aprobada para usar Punto Club.`,
     '',
     'Para crear el acceso, abra el siguiente enlace:',
     inviteLink,
@@ -131,15 +146,15 @@ function createCompanyInvitationEmail(invitation, token, config) {
     'Equipo Punto Club'
   ].join('\n');
 
-  const html = [
+  const html = wrapEmailHtml('Active el acceso de su empresa', [
     '<h1>Active el acceso de su empresa</h1>',
-    `<p>Su empresa <strong>${escapeHtml(displayValue(invitation.companyName))}</strong> fue invitada a usar Punto Club.</p>`,
+    `<p>La empresa <strong>${escapeHtml(displayValue(invitation.companyName))}</strong> fue aprobada para usar Punto Club.</p>`,
     `<p>Use este correo como usuario de acceso: <strong>${escapeHtml(displayValue(invitation.email))}</strong></p>`,
     `<p><a href="${escapeHtml(inviteLink)}">Crear acceso</a></p>`,
     `<p>La invitacion vence el ${escapeHtml(displayValue(invitation.expiresAt))}.</p>`,
     '<p>Si vence o usted no solicito este acceso, contacte al equipo de Punto Club.</p>',
     '<p>Gracias,<br />Equipo Punto Club</p>'
-  ].join('');
+  ].join(''));
 
   return {
     senderAddress: config.senderAddress,
@@ -170,7 +185,7 @@ function createInternalInvitationSentEmail(invitation, config) {
     'Dar seguimiento si la empresa no acepta la invitacion antes del vencimiento.'
   ].join('\n');
 
-  const html = [
+  const html = wrapEmailHtml('Invitacion enviada', [
     '<p>Se envio una invitacion de acceso en Punto Club.</p>',
     '<h2>Empresa</h2>',
     '<ul>',
@@ -185,7 +200,7 @@ function createInternalInvitationSentEmail(invitation, config) {
     `<li>Vence: ${escapeHtml(displayValue(invitation.expiresAt))}</li>`,
     '</ul>',
     '<p><strong>Accion esperada:</strong> Dar seguimiento si la empresa no acepta la invitacion antes del vencimiento.</p>'
-  ].join('');
+  ].join(''));
 
   return {
     senderAddress: config.senderAddress,
@@ -204,29 +219,27 @@ function createRequesterAcknowledgementEmail(registrationRequest, config) {
   }
 
   const contactName = normalizeText(registrationRequest.contactName) || normalizeText(registrationRequest.companyName);
-  const subject = 'Recibimos su solicitud para Punto Club';
+  const subject = 'Recibimos tu solicitud en Punto Club';
   const plainText = [
-    `Hola ${displayValue(contactName)},`,
+    'Hola,',
     '',
-    `Recibimos la solicitud de ${displayValue(registrationRequest.companyName)} para usar Punto Club.`,
+    `Recibimos la solicitud para ${displayValue(registrationRequest.companyName)}.`,
     '',
-    'Revisaremos los datos y, si corresponde, enviaremos una invitacion al correo de empresa:',
-    displayValue(registrationRequest.companyEmail),
+    'Nuestro equipo revisara la informacion. Si la solicitud es aprobada, enviaremos una invitacion al correo de contacto para crear el acceso de la empresa.',
     '',
-    'Este mensaje confirma la recepcion de la solicitud. Todavia no crea acceso operativo.',
+    `Correo de contacto: ${displayValue(registrationRequest.contactEmail)}`,
     '',
     'Gracias,',
     'Equipo Punto Club'
   ].join('\n');
 
-  const html = [
-    `<p>Hola ${escapeHtml(displayValue(contactName))},</p>`,
-    `<p>Recibimos la solicitud de <strong>${escapeHtml(displayValue(registrationRequest.companyName))}</strong> para usar Punto Club.</p>`,
-    '<p>Revisaremos los datos y, si corresponde, enviaremos una invitacion al correo de empresa:</p>',
-    `<p><strong>${escapeHtml(displayValue(registrationRequest.companyEmail))}</strong></p>`,
-    '<p>Este mensaje confirma la recepcion de la solicitud. Todavia no crea acceso operativo.</p>',
+  const html = wrapEmailHtml('Solicitud recibida', [
+    '<p>Hola,</p>',
+    `<p>Recibimos la solicitud para <strong>${escapeHtml(displayValue(registrationRequest.companyName))}</strong>.</p>`,
+    '<p>Nuestro equipo revisara la informacion. Si la solicitud es aprobada, enviaremos una invitacion al correo de contacto para crear el acceso de la empresa.</p>',
+    `<p><strong>Correo de contacto:</strong> ${escapeHtml(displayValue(registrationRequest.contactEmail))}</p>`,
     '<p>Gracias,<br />Equipo Punto Club</p>'
-  ].join('');
+  ].join(''));
 
   return {
     senderAddress: config.senderAddress,
