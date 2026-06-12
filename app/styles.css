@@ -296,8 +296,15 @@ textarea:focus {
   display: block;
 }
 
-.public-registration-mode .workspace-section {
+.public-registration-mode [data-section="company"] {
   display: block;
+}
+
+.public-registration-mode .workspace-section[hidden],
+.public-registration-mode [data-section="operations"],
+.public-registration-mode [data-section="reports"],
+.public-registration-mode [data-section="adminCompanies"] {
+  display: none;
 }
 
 .public-registration-mode .company-registration-panel {

@@ -3040,10 +3040,17 @@ function showPublicCompanyRegistrationPage() {
   elements.authStatus.textContent = "Registro publico";
   renderActiveCompanyIdentity(null);
   setActiveSection("company", { focus: false });
+  isolatePublicCompanyRegistrationView();
   clearCompanyRegistrationForm({ focus: false });
 
   window.requestAnimationFrame(() => {
     elements.registrationCompanyNameInput.focus();
+  });
+}
+
+function isolatePublicCompanyRegistrationView() {
+  elements.sectionPanels.forEach((panel) => {
+    panel.hidden = panel.dataset.section !== "company";
   });
 }
 
