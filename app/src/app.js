@@ -463,7 +463,7 @@ function setActiveSection(section, options = {}) {
 
   const focusTarget = {
     operations: elements.searchInput,
-    company: elements.registrationCompanyNameInput,
+    company: elements.companyNameInput,
     reports: elements.reportFromInput,
     adminCompanies: elements.adminTokenInput,
   }[nextSection];
@@ -938,7 +938,7 @@ async function submitCompanySettings() {
     currentCompanySettings = settings;
     renderCompanySettings(settings);
     renderActiveCompanyIdentity(settings);
-    showCompanyStatus("Configuracion guardada.");
+    showCompanyStatus("Datos de empresa actualizados.");
   } catch (error) {
     renderCompanySettingsError(error);
   } finally {
@@ -1658,7 +1658,7 @@ function renderCompanySettingsError(error) {
     return;
   }
 
-  showCompanyError("No se pudo cargar o guardar la configuracion. Intente de nuevo.");
+  showCompanyError("No se pudo cargar la informacion de la empresa.");
 }
 
 function renderCompanyLogo(settings) {
@@ -1667,9 +1667,9 @@ function renderCompanyLogo(settings) {
   const updatedAt = settings?.logoUpdatedAt || settings?.updatedAt;
 
   if (!logoUrl) {
-    elements.companyCurrentLogo.textContent = "Sin logo";
+    elements.companyCurrentLogo.textContent = "Sin logo cargado";
     elements.companyLogoPreviewText.hidden = false;
-    elements.companyLogoPreviewText.textContent = "Sin logo";
+    elements.companyLogoPreviewText.textContent = "Sin logo cargado";
     elements.companyLogoPreviewImage.hidden = true;
     elements.companyLogoPreviewImage.removeAttribute("src");
     return;

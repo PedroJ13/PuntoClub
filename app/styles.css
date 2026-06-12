@@ -355,6 +355,10 @@ textarea:focus {
   grid-area: auto;
 }
 
+body:not(.public-registration-mode) .company-section .company-registration-panel {
+  display: none;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
