@@ -8,6 +8,10 @@ const elements = {
   authStatus: document.querySelector("#auth-status"),
   loginButton: document.querySelector("#login-button"),
   logoutButton: document.querySelector("#logout-button"),
+  activeCompanyIdentity: document.querySelector("#active-company-identity"),
+  activeCompanyLogoFallback: document.querySelector("#active-company-logo-fallback"),
+  activeCompanyLogoImage: document.querySelector("#active-company-logo-image"),
+  activeCompanyName: document.querySelector("#active-company-name"),
   appBody: document.querySelector(".app-body"),
   authPage: document.querySelector("#auth-page"),
   loginForm: document.querySelector("#login-form"),
@@ -145,11 +149,19 @@ const elements = {
   registrationContactNameError: document.querySelector("#registration-contact-name-error"),
   registrationContactEmailError: document.querySelector("#registration-contact-email-error"),
   registrationContactPhoneError: document.querySelector("#registration-contact-phone-error"),
+  registrationLogoFileInput: document.querySelector("#registration-logo-file"),
+  registrationLogoFileError: document.querySelector("#registration-logo-file-error"),
+  registrationLogoPreviewText: document.querySelector("#registration-logo-preview-text"),
+  registrationLogoPreviewImage: document.querySelector("#registration-logo-preview-image"),
+  clearRegistrationLogoButton: document.querySelector("#clear-registration-logo-button"),
   registrationStatus: document.querySelector("#registration-status"),
   registrationError: document.querySelector("#registration-error"),
   registrationResult: document.querySelector("#registration-result"),
   resetRegistrationButton: document.querySelector("#reset-registration-button"),
   submitRegistrationButton: document.querySelector("#submit-registration-button"),
+  adminCompaniesSection: document.querySelector(".admin-companies-section"),
+  adminAccessPanel: document.querySelector(".admin-access-panel"),
+  adminDetailPanel: document.querySelector(".admin-detail-panel"),
   adminTokenForm: document.querySelector("#admin-token-form"),
   adminTokenInput: document.querySelector("#admin-token"),
   adminTokenError: document.querySelector("#admin-token-error"),
@@ -170,6 +182,11 @@ const elements = {
   adminDetailEmpty: document.querySelector("#admin-detail-empty"),
   adminRequestDetail: document.querySelector("#admin-request-detail"),
   backAdminListButton: document.querySelector("#back-admin-list-button"),
+  adminConfirmationModal: document.querySelector("#admin-confirmation-modal"),
+  adminConfirmationTitle: document.querySelector("#admin-confirmation-title"),
+  adminConfirmationMessage: document.querySelector("#admin-confirmation-message"),
+  adminConfirmationCancel: document.querySelector("#admin-confirmation-cancel"),
+  adminConfirmationConfirm: document.querySelector("#admin-confirmation-confirm"),
 };
 
 let currentCustomers = [];
@@ -183,10 +200,13 @@ let adminRequests = [];
 let selectedAdminRequest = null;
 let activeSection = "operations";
 let companyLogoPreviewUrl = "";
+let registrationLogoPreviewUrl = "";
+let pendingAdminConfirmation = null;
 const customerBalances = new Map();
 const invitationToken = getInvitationTokenFromUrl();
 const isInvitationPage = isCompanyInvitationRoute();
 const isLoginPage = isCompanyLoginRoute();
+const isRegistrationPage = isCompanyRegistrationRoute();
 
 elements.dataSourceStatus.textContent = api.sourceLabel;
 elements.purchaseDateInput.value = getToday();
@@ -291,6 +311,23 @@ elements.companyRegistrationForm.addEventListener("submit", async (event) => {
   await submitCompanyRegistrationRequest();
 });
 
+elements.registrationLogoFileInput.addEventListener("change", () => {
+  previewSelectedRegistrationLogo();
+});
+
+elements.clearRegistrationLogoButton.addEventListener("click", () => {
+  clearSelectedRegistrationLogo();
+});
+
+elements.registrationResult.addEventListener("click", (event) => {
+  const button = event.target.closest("#new-registration-button");
+  if (!button) {
+    return;
+  }
+
+  clearCompanyRegistrationForm();
+});
+
 elements.resetRegistrationButton.addEventListener("click", () => {
   clearCompanyRegistrationForm();
 });
@@ -317,8 +354,8 @@ elements.adminRequestSearchInput.addEventListener("input", () => {
   renderAdminRequestsList();
 });
 
-elements.adminRequestsList.addEventListener("click", (event) => {
-  const button = event.target.closest("[data-admin-request-id]");
+elements.adminRequestsList.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-admin-request-id], [data-admin-card-action]");
   if (!button) {
     return;
   }
@@ -326,6 +363,9 @@ elements.adminRequestsList.addEventListener("click", (event) => {
   const request = adminRequests.find((item) => String(item.id) === String(button.dataset.adminRequestId));
   if (request) {
     selectAdminRequest(request);
+    if (button.dataset.adminCardAction === "approve") {
+      await approveSelectedAdminRequest();
+    }
   }
 });
 
@@ -351,6 +391,20 @@ elements.backAdminListButton.addEventListener("click", () => {
   elements.adminRequestsList.focus?.();
 });
 
+elements.adminConfirmationCancel.addEventListener("click", () => {
+  resolveAdminConfirmation(false);
+});
+
+elements.adminConfirmationConfirm.addEventListener("click", () => {
+  resolveAdminConfirmation(true);
+});
+
+elements.adminConfirmationModal.addEventListener("click", (event) => {
+  if (event.target === elements.adminConfirmationModal) {
+    resolveAdminConfirmation(false);
+  }
+});
+
 elements.navButtons.forEach((button) => {
   button.addEventListener("click", () => {
     setActiveSection(button.dataset.sectionTarget);
@@ -370,6 +424,8 @@ if (isInvitationPage) {
 } else if (isLoginPage) {
   showLoginPage();
   refreshAuthIdentity({ silent: true });
+} else if (isRegistrationPage) {
+  showPublicCompanyRegistrationPage();
 } else {
   refreshAuthIdentity({ silent: true }).finally(() => {
     loadCompanySettings();
@@ -848,8 +904,10 @@ async function loadCompanySettings() {
     const settings = await api.getCompanySettings();
     currentCompanySettings = settings;
     renderCompanySettings(settings);
+    renderActiveCompanyIdentity(settings);
   } catch (error) {
     currentCompanySettings = null;
+    renderActiveCompanyIdentity(currentAuthIdentity?.company || null);
     renderCompanySettingsError(error);
   } finally {
     setCompanyLoading(false);
@@ -871,6 +929,7 @@ async function submitCompanySettings() {
     const settings = await api.updateCompanySettings(payload);
     currentCompanySettings = settings;
     renderCompanySettings(settings);
+    renderActiveCompanyIdentity(settings);
     showCompanyStatus("Configuracion guardada.");
   } catch (error) {
     renderCompanySettingsError(error);
@@ -904,6 +963,7 @@ async function submitCompanyLogo() {
     };
     clearSelectedCompanyLogo({ keepMessages: true, renderCurrent: false });
     renderCompanyLogo(currentCompanySettings);
+    renderActiveCompanyIdentity(currentCompanySettings);
     showCompanyLogoStatus("Logo actualizado.");
   } catch (error) {
     renderCompanyLogoError(error);
@@ -914,6 +974,15 @@ async function submitCompanyLogo() {
 
 async function submitCompanyRegistrationRequest() {
   clearCompanyRegistrationMessages();
+  const [logoFile] = elements.registrationLogoFileInput.files;
+  const logoValidationMessage = logoFile ? getCompanyLogoValidationMessage(logoFile) : "";
+
+  if (logoValidationMessage) {
+    elements.registrationLogoFileError.textContent = logoValidationMessage;
+    showCompanyRegistrationError(logoValidationMessage);
+    return;
+  }
+
   setCompanyRegistrationSubmitting(true);
 
   const payload = {
@@ -924,6 +993,7 @@ async function submitCompanyRegistrationRequest() {
     contactName: elements.registrationContactNameInput.value.trim() || null,
     contactEmail: elements.registrationContactEmailInput.value,
     contactPhone: elements.registrationContactPhoneInput.value.trim() || null,
+    logoFile: logoFile || null,
   };
 
   try {
@@ -949,6 +1019,7 @@ async function submitAdminToken() {
   adminToken = nextToken;
   elements.adminTokenInput.value = "";
   showAdminTokenStatus("Acceso interno activo en esta pestana.");
+  updateAdminAccessState();
   await loadAdminRequests();
 }
 
@@ -958,6 +1029,7 @@ function clearAdminToken() {
   selectedAdminRequest = null;
   elements.adminTokenInput.value = "";
   clearAdminMessages();
+  updateAdminAccessState();
   renderAdminPrompt();
   elements.adminTokenInput.focus();
 }
@@ -993,6 +1065,7 @@ async function loadAdminRequests() {
       adminToken = "";
       elements.adminTokenStatus.hidden = true;
       elements.adminTokenStatus.textContent = "";
+      updateAdminAccessState();
     }
     adminRequests = [];
     selectedAdminRequest = null;
@@ -1014,9 +1087,11 @@ async function approveSelectedAdminRequest() {
     return;
   }
 
-  const confirmed = window.confirm(
-    `Va a aprobar la solicitud de ${selectedAdminRequest.companyName || "esta empresa"} y enviar una invitacion al correo ${selectedAdminRequest.companyEmail || "registrado"}.`,
-  );
+  const confirmed = await requestAdminConfirmation({
+    title: "Aprobar solicitud",
+    message: `Va a aprobar la solicitud de ${selectedAdminRequest.companyName || "esta empresa"} y enviar una invitacion al correo ${selectedAdminRequest.companyEmail || "registrado"}.`,
+    confirmLabel: "Aprobar y enviar",
+  });
   if (!confirmed) {
     return;
   }
@@ -1067,7 +1142,12 @@ async function rejectSelectedAdminRequest() {
     return;
   }
 
-  const confirmed = window.confirm("Va a rechazar esta solicitud. El motivo quedara como referencia interna.");
+  const confirmed = await requestAdminConfirmation({
+    title: "Rechazar solicitud",
+    message: "Va a rechazar esta solicitud. El motivo quedara como referencia interna.",
+    confirmLabel: "Rechazar",
+    danger: true,
+  });
   if (!confirmed) {
     return;
   }
@@ -1109,9 +1189,11 @@ async function resendSelectedAdminInvitation() {
     return;
   }
 
-  const confirmed = window.confirm(
-    `Se reenviara la invitacion al correo ${invitation.email || selectedAdminRequest.companyEmail}. No se mostrara el link en pantalla.`,
-  );
+  const confirmed = await requestAdminConfirmation({
+    title: "Reenviar invitacion",
+    message: `Se reenviara la invitacion al correo ${invitation.email || selectedAdminRequest.companyEmail}. No se mostrara el link en pantalla.`,
+    confirmLabel: "Reenviar",
+  });
   if (!confirmed) {
     return;
   }
@@ -1634,6 +1716,53 @@ function revokeCompanyLogoPreviewUrl() {
   }
 }
 
+function previewSelectedRegistrationLogo() {
+  const [file] = elements.registrationLogoFileInput.files;
+  const validationMessage = file ? getCompanyLogoValidationMessage(file) : "";
+  elements.registrationLogoFileError.textContent = "";
+
+  if (!file) {
+    clearSelectedRegistrationLogo();
+    return;
+  }
+
+  if (validationMessage) {
+    elements.registrationLogoFileError.textContent = validationMessage;
+    revokeRegistrationLogoPreviewUrl();
+    elements.registrationLogoPreviewText.hidden = false;
+    elements.registrationLogoPreviewText.textContent = "Sin logo";
+    elements.registrationLogoPreviewImage.hidden = true;
+    elements.registrationLogoPreviewImage.removeAttribute("src");
+    return;
+  }
+
+  revokeRegistrationLogoPreviewUrl();
+  registrationLogoPreviewUrl = URL.createObjectURL(file);
+  elements.registrationLogoPreviewText.hidden = true;
+  elements.registrationLogoPreviewImage.hidden = false;
+  elements.registrationLogoPreviewImage.src = registrationLogoPreviewUrl;
+}
+
+function clearSelectedRegistrationLogo(options = {}) {
+  elements.registrationLogoFileInput.value = "";
+  revokeRegistrationLogoPreviewUrl();
+  elements.registrationLogoPreviewText.hidden = false;
+  elements.registrationLogoPreviewText.textContent = "Sin logo";
+  elements.registrationLogoPreviewImage.hidden = true;
+  elements.registrationLogoPreviewImage.removeAttribute("src");
+
+  if (!options.keepMessages) {
+    elements.registrationLogoFileError.textContent = "";
+  }
+}
+
+function revokeRegistrationLogoPreviewUrl() {
+  if (registrationLogoPreviewUrl) {
+    URL.revokeObjectURL(registrationLogoPreviewUrl);
+    registrationLogoPreviewUrl = "";
+  }
+}
+
 function renderCompanyLogoError(error) {
   if (error instanceof ApiError && error.code === "UPLOAD_TOO_LARGE") {
     showCompanyLogoError("El logo debe pesar 1 MB o menos.");
@@ -1661,6 +1790,8 @@ function renderCompanyLogoError(error) {
 function renderCompanyRegistrationSuccess(result) {
   const companyName = result.companyName || elements.registrationCompanyNameInput.value.trim();
   const companyEmail = result.companyEmail || elements.registrationCompanyEmailInput.value.trim();
+  const contactEmail = result.contactEmail || elements.registrationContactEmailInput.value.trim();
+  const hasLogo = Boolean(result.requestedLogo?.available || elements.registrationLogoFileInput.files.length);
 
   elements.registrationStatus.hidden = false;
   elements.registrationStatus.textContent = "Solicitud recibida";
@@ -1669,11 +1800,23 @@ function renderCompanyRegistrationSuccess(result) {
     <h3>Solicitud recibida</h3>
     <p>
       Recibimos la solicitud de ${escapeHtml(companyName)}. Revisaremos los datos y enviaremos la invitacion al
-      correo ${escapeHtml(companyEmail)} cuando quede aprobada.
+      correo de empresa cuando quede aprobada.
     </p>
+    <div class="registration-summary">
+      ${renderAdminDetailItem("Empresa", companyName)}
+      ${renderAdminDetailItem("Correo de empresa", companyEmail)}
+      ${renderAdminDetailItem("Correo de contacto", contactEmail)}
+      ${renderAdminDetailItem("Estado", getRegistrationStatusLabel(result.status || "pending"))}
+      ${renderAdminDetailItem("Logo", hasLogo ? "Incluido" : "No incluido")}
+    </div>
     <p>Tambien notificamos internamente al equipo de Punto Club para dar seguimiento.</p>
+    <div class="form-actions">
+      <button class="secondary-button" id="new-registration-button" type="button">Enviar otra solicitud</button>
+    </div>
   `;
+  elements.companyRegistrationForm.hidden = true;
   elements.companyRegistrationForm.reset();
+  clearSelectedRegistrationLogo({ keepMessages: true });
 }
 
 function renderCompanyRegistrationError(error) {
@@ -1687,6 +1830,7 @@ function renderCompanyRegistrationError(error) {
         contactName: elements.registrationContactNameError,
         contactEmail: elements.registrationContactEmailError,
         contactPhone: elements.registrationContactPhoneError,
+        logoFile: elements.registrationLogoFileError,
       }[detail.field];
 
       if (target) {
@@ -1732,6 +1876,7 @@ function renderCompanyRegistrationError(error) {
 }
 
 function renderAdminPrompt() {
+  updateAdminAccessState();
   elements.adminSummary.hidden = true;
   elements.adminSummary.innerHTML = "";
   elements.adminRequestsList.innerHTML =
@@ -1784,6 +1929,7 @@ function renderAdminRequestsList() {
 function renderAdminRequestCard(request) {
   const isSelected = selectedAdminRequest && String(selectedAdminRequest.id) === String(request.id);
   const invitationLabel = getAdminInvitationLabel(request.invitation);
+  const canApprove = request.status === "pending";
 
   return `
     <article class="admin-request-card ${isSelected ? "is-selected" : ""}">
@@ -1798,6 +1944,19 @@ function renderAdminRequestCard(request) {
         <span>${escapeHtml(invitationLabel)}</span>
       </div>
       <div class="row-actions">
+        ${
+          canApprove
+            ? `
+              <button
+                type="button"
+                data-admin-request-id="${escapeHtml(request.id)}"
+                data-admin-card-action="approve"
+              >
+                Aprobar
+              </button>
+            `
+            : ""
+        }
         <button
           class="secondary-button"
           type="button"
@@ -1814,9 +1973,11 @@ function selectAdminRequest(request) {
   selectedAdminRequest = request;
   renderAdminRequestsList();
   renderAdminDetail();
+  elements.adminCompaniesSection.classList.add("is-admin-drawer-open");
 }
 
 function renderAdminDetailPrompt() {
+  elements.adminCompaniesSection.classList.remove("is-admin-drawer-open");
   elements.backAdminListButton.hidden = true;
   elements.adminDetailEmpty.hidden = false;
   elements.adminDetailEmpty.textContent = "Seleccione una solicitud para revisar sus datos.";
@@ -1845,6 +2006,7 @@ function renderAdminDetail() {
       ${renderAdminDetailItem("Correo de contacto", request.contactEmail)}
       ${renderAdminDetailItem("Telefono de contacto", request.contactPhone)}
       ${renderAdminDetailItem("Estado", getRegistrationStatusLabel(request.status))}
+      ${renderAdminDetailItem("Logo", request.requestedLogo?.available ? "Incluido" : "No incluido")}
       ${renderAdminDetailItem("Solicitud", formatDateTime(request.createdAt))}
       ${renderAdminDetailItem("Actualizacion", formatDateTime(request.updatedAt))}
     </div>
@@ -1976,6 +2138,39 @@ function renderAdminListError(error) {
   }
 
   showAdminListError("No se pudieron cargar las solicitudes. Revise el token interno e intente de nuevo.");
+}
+
+function updateAdminAccessState() {
+  elements.adminCompaniesSection.classList.toggle("has-admin-token", Boolean(adminToken));
+}
+
+function requestAdminConfirmation(options) {
+  if (pendingAdminConfirmation) {
+    pendingAdminConfirmation(false);
+  }
+
+  elements.adminConfirmationTitle.textContent = options.title || "Confirmar accion";
+  elements.adminConfirmationMessage.textContent = options.message || "";
+  elements.adminConfirmationConfirm.textContent = options.confirmLabel || "Confirmar";
+  elements.adminConfirmationConfirm.classList.toggle("danger-button", Boolean(options.danger));
+  elements.adminConfirmationModal.hidden = false;
+  elements.adminConfirmationConfirm.focus();
+
+  return new Promise((resolve) => {
+    pendingAdminConfirmation = resolve;
+  });
+}
+
+function resolveAdminConfirmation(value) {
+  if (!pendingAdminConfirmation) {
+    return;
+  }
+
+  const resolve = pendingAdminConfirmation;
+  pendingAdminConfirmation = null;
+  elements.adminConfirmationModal.hidden = true;
+  elements.adminConfirmationConfirm.classList.remove("danger-button");
+  resolve(value);
 }
 
 function renderAdminActionError(error) {
@@ -2150,6 +2345,7 @@ function renderAuthIdentity(identity) {
   elements.authStatus.textContent = `Empresa activa: ${companyName} - ${email}`;
   elements.loginButton.hidden = true;
   elements.logoutButton.hidden = false;
+  renderActiveCompanyIdentity(identity?.company || null);
 }
 
 function renderSignedOut() {
@@ -2157,6 +2353,49 @@ function renderSignedOut() {
   elements.authStatus.textContent = "Sesion no iniciada";
   elements.loginButton.hidden = false;
   elements.logoutButton.hidden = true;
+  currentCompanySettings = null;
+  renderActiveCompanyIdentity(null);
+}
+
+function renderActiveCompanyIdentity(company) {
+  const companyName = company?.name || currentAuthIdentity?.company?.name || "";
+
+  if (!companyName) {
+    elements.activeCompanyIdentity.hidden = true;
+    elements.activeCompanyLogoImage.hidden = true;
+    elements.activeCompanyLogoImage.removeAttribute("src");
+    elements.activeCompanyName.textContent = "";
+    return;
+  }
+
+  elements.activeCompanyIdentity.hidden = false;
+  elements.activeCompanyName.textContent = companyName;
+  elements.activeCompanyLogoFallback.textContent = getCompanyInitials(companyName);
+
+  const logoUrl = company?.logoUrl ? api.getCompanyLogoUrl?.(company.logoUrl) : "";
+  const updatedAt = company?.logoUpdatedAt || company?.updatedAt;
+
+  if (!logoUrl) {
+    elements.activeCompanyLogoFallback.hidden = false;
+    elements.activeCompanyLogoImage.hidden = true;
+    elements.activeCompanyLogoImage.removeAttribute("src");
+    return;
+  }
+
+  const cacheKey = updatedAt ? `?v=${encodeURIComponent(updatedAt)}` : "";
+  elements.activeCompanyLogoFallback.hidden = true;
+  elements.activeCompanyLogoImage.hidden = false;
+  elements.activeCompanyLogoImage.src = `${logoUrl}${cacheKey}`;
+}
+
+function getCompanyInitials(name) {
+  return String(name || "PC")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase() || "PC";
 }
 
 function renderCustomersError(error) {
@@ -2592,6 +2831,8 @@ function clearCompanyLogoMessages() {
 
 function clearCompanyRegistrationForm(options = {}) {
   elements.companyRegistrationForm.reset();
+  elements.companyRegistrationForm.hidden = false;
+  clearSelectedRegistrationLogo({ keepMessages: true });
   clearCompanyRegistrationMessages();
 
   if (options.focus !== false) {
@@ -2607,6 +2848,7 @@ function clearCompanyRegistrationMessages() {
   elements.registrationContactNameError.textContent = "";
   elements.registrationContactEmailError.textContent = "";
   elements.registrationContactPhoneError.textContent = "";
+  elements.registrationLogoFileError.textContent = "";
   elements.registrationError.hidden = true;
   elements.registrationError.textContent = "";
   elements.registrationStatus.hidden = true;
@@ -2752,12 +2994,15 @@ function setLoginSubmitting(isSubmitting) {
 }
 
 function showInvitationPage() {
+  document.body.classList.remove("public-registration-mode");
   elements.appBody.hidden = true;
   elements.authPage.hidden = true;
   elements.invitationPage.hidden = false;
+  renderActiveCompanyIdentity(null);
 }
 
 function showLoginPage(options = {}) {
+  document.body.classList.remove("public-registration-mode");
   elements.appBody.hidden = true;
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = false;
@@ -2770,6 +3015,7 @@ function showLoginPage(options = {}) {
 }
 
 async function showMainApp(options = {}) {
+  document.body.classList.remove("public-registration-mode");
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = true;
   elements.appBody.hidden = false;
@@ -2782,6 +3028,23 @@ async function showMainApp(options = {}) {
   if (options.refreshCompany) {
     await loadCompanySettings();
   }
+}
+
+function showPublicCompanyRegistrationPage() {
+  document.body.classList.add("public-registration-mode");
+  elements.invitationPage.hidden = true;
+  elements.authPage.hidden = true;
+  elements.appBody.hidden = false;
+  elements.loginButton.hidden = true;
+  elements.logoutButton.hidden = true;
+  elements.authStatus.textContent = "Registro publico";
+  renderActiveCompanyIdentity(null);
+  setActiveSection("company", { focus: false });
+  clearCompanyRegistrationForm({ focus: false });
+
+  window.requestAnimationFrame(() => {
+    elements.registrationCompanyNameInput.focus();
+  });
 }
 
 function validateCreateAccessForm() {
@@ -3043,6 +3306,10 @@ function isCompanyInvitationRoute() {
 
 function isCompanyLoginRoute() {
   return window.location.pathname.replace(/\/$/, "") === "/login";
+}
+
+function isCompanyRegistrationRoute() {
+  return window.location.pathname.replace(/\/$/, "") === "/company-registration";
 }
 
 function getInvitationTokenFromUrl() {

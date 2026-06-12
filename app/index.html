@@ -15,6 +15,11 @@
           <h1>Punto Club</h1>
         </div>
         <div class="topbar-actions">
+          <div class="active-company-identity" id="active-company-identity" hidden>
+            <span class="active-company-logo" id="active-company-logo-fallback">PC</span>
+            <img id="active-company-logo-image" alt="Logo de empresa activa" hidden />
+            <span id="active-company-name">Empresa</span>
+          </div>
           <div class="status-pill" id="auth-status">Sesion no iniciada</div>
           <button class="secondary-button" id="login-button" type="button">Iniciar sesion</button>
           <button class="secondary-button" id="logout-button" type="button" hidden>Cerrar sesion</button>
@@ -432,6 +437,32 @@
                   </div>
                 </div>
 
+                <section class="registration-logo-panel" aria-labelledby="registration-logo-title">
+                  <div>
+                    <h3 id="registration-logo-title">Logo de empresa</h3>
+                    <p class="field-help">Opcional. PNG, JPG o WebP hasta 1 MB.</p>
+                  </div>
+
+                  <div class="company-logo-grid">
+                    <div class="company-logo-preview" id="registration-logo-preview">
+                      <span id="registration-logo-preview-text">Sin logo</span>
+                      <img id="registration-logo-preview-image" alt="Logo solicitado" hidden />
+                    </div>
+
+                    <div class="company-logo-controls">
+                      <div class="field">
+                        <label for="registration-logo-file">Imagen</label>
+                        <input id="registration-logo-file" name="logoFile" type="file" accept="image/png,image/jpeg,image/webp" />
+                        <p class="field-error" id="registration-logo-file-error"></p>
+                      </div>
+
+                      <div class="form-actions">
+                        <button class="secondary-button" id="clear-registration-logo-button" type="button">Quitar seleccion</button>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+
                 <div class="form-actions">
                   <button class="secondary-button" id="reset-registration-button" type="button">Limpiar</button>
                   <button id="submit-registration-button" type="submit">Enviar solicitud</button>
@@ -678,6 +709,11 @@
             aria-labelledby="admin-companies-title"
             hidden
           >
+            <div class="admin-companies-header">
+              <p class="eyebrow">Panel interno</p>
+              <h2>Admin empresas</h2>
+            </div>
+
             <section class="admin-access-panel zone-card" aria-labelledby="admin-access-title">
               <div class="section-header">
                 <div>
@@ -776,6 +812,17 @@
             </section>
           </section>
         </main>
+      </div>
+
+      <div class="modal-backdrop" id="admin-confirmation-modal" hidden>
+        <section class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="admin-confirmation-title">
+          <h2 id="admin-confirmation-title">Confirmar accion</h2>
+          <p id="admin-confirmation-message"></p>
+          <div class="form-actions">
+            <button class="secondary-button" id="admin-confirmation-cancel" type="button">Cancelar</button>
+            <button id="admin-confirmation-confirm" type="button">Confirmar</button>
+          </div>
+        </section>
       </div>
     </div>
 

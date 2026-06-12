@@ -60,6 +60,7 @@ let mockCompanyRegistrationRequests = [
     createdAt: "2026-06-07T18:30:00Z",
     updatedAt: "2026-06-07T18:30:00Z",
     invitation: null,
+    requestedLogo: { available: true, contentType: "image/png" },
   },
   {
     id: "199",
@@ -77,6 +78,7 @@ let mockCompanyRegistrationRequests = [
     approvedCompanyId: "10",
     createdAt: "2026-06-07T17:20:00Z",
     updatedAt: "2026-06-07T19:00:00Z",
+    requestedLogo: { available: false, contentType: null },
     invitation: {
       id: "300",
       companyId: "10",
@@ -106,6 +108,7 @@ let mockCompanyRegistrationRequests = [
     createdAt: "2026-06-07T16:10:00Z",
     updatedAt: "2026-06-07T18:40:00Z",
     invitation: null,
+    requestedLogo: { available: false, contentType: null },
   },
 ];
 let mockAcceptedInvitationTokens = new Set();
@@ -243,10 +246,24 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async createCompanyRegistrationRequest(payload) {
-      const response = await fetch(companyRegistrationRequestsUrl, {
+      const logoFile = payload?.logoFile || null;
+      const submissionPayload = stripLogoFile(payload);
+      const requestOptions = {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+      };
+
+      if (logoFile) {
+        const formData = new FormData();
+        formData.append("payload", JSON.stringify(submissionPayload));
+        formData.append("file", logoFile);
+        requestOptions.body = formData;
+      } else {
+        requestOptions.headers = { "Content-Type": "application/json" };
+        requestOptions.body = JSON.stringify(submissionPayload);
+      }
+
+      const response = await fetch(companyRegistrationRequestsUrl, {
+        ...requestOptions,
       });
 
       return parseResponse(response);
@@ -475,8 +492,14 @@ function createMockCustomerApi() {
     },
     async createCompanyRegistrationRequest(payload) {
       await wait(500);
+      if (payload.logoFile) {
+        validateMockCompanyLogo(payload.logoFile);
+      }
       validateCompanyRegistrationRequest(payload);
       const request = normalizeCompanyRegistrationPayload(payload);
+      const requestedLogo = payload.logoFile
+        ? { available: true, contentType: payload.logoFile.type || null }
+        : { available: false, contentType: null };
 
       if (normalize(request.companyEmail) === normalize(mockCompanySettings.email)) {
         throw new ApiError(
@@ -516,6 +539,7 @@ function createMockCustomerApi() {
         createdAt: now,
         updatedAt: now,
         invitation: null,
+        requestedLogo,
         message: "Solicitud recibida.",
       };
 
@@ -1071,6 +1095,11 @@ function normalizeCompanyRegistrationPayload(payload) {
     contactEmail: String(payload.contactEmail ?? "").trim().toLowerCase(),
     contactPhone: normalizeNullableText(payload.contactPhone),
   };
+}
+
+function stripLogoFile(payload) {
+  const { logoFile, ...rest } = payload || {};
+  return rest;
 }
 
 function validateMockAdminToken(adminToken) {
