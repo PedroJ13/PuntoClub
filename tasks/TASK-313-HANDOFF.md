@@ -34,9 +34,11 @@ Se excluyeron explícitamente:
 
 ## Commit / Push
 
-- Commit SHA: `747cbb4` (`Publish UX copy icons and email copy release`)
+- Commits publicados en `main`:
+  - `747cbb4` — `Publish UX copy icons and email copy release` (cambios funcionales de release)
+  - `e72ac39` — `Finalize TASK-313 handoff with publish status`
 - Push a `main`: exitoso  
-  URL: https://github.com/PedroJ13/PuntoClub/commit/747cbb45f98391d678ebe899c5e8e3c3784592f3
+  Último commit: https://github.com/PedroJ13/PuntoClub/commit/e72ac3902f9d3d0c4f6a4e5e3cbfd8b4c5f4c8
 
 ## Workflows
 
