@@ -70,46 +70,42 @@ function createInternalRegistrationEmail(registrationRequest, config) {
   const subject = `Nueva solicitud de empresa: ${registrationRequest.companyName}`;
   const logoStatus = getRegistrationLogoStatus(registrationRequest);
   const plainText = [
-    'Hay una nueva solicitud de empresa pendiente de revision.',
+    'Hay una nueva solicitud de empresa pendiente de revisión.',
     '',
-    `Empresa: ${displayValue(registrationRequest.companyName)}`,
-    `Correo empresa: ${displayValue(registrationRequest.companyEmail)}`,
-    `Telefono empresa: ${displayValue(registrationRequest.companyPhone)}`,
-    `Direccion: ${displayValue(registrationRequest.companyAddress)}`,
+    'Empresa:',
+    `- Nombre: ${displayValue(registrationRequest.companyName)}`,
+    `- Correo: ${displayValue(registrationRequest.companyEmail)}`,
+    `- Teléfono: ${displayValue(registrationRequest.companyPhone)}`,
+    `- Dirección: ${displayValue(registrationRequest.companyAddress)}`,
     '',
-    `Contacto: ${displayValue(registrationRequest.contactName)}`,
-    `Correo contacto: ${displayValue(registrationRequest.contactEmail)}`,
-    `Telefono contacto: ${displayValue(registrationRequest.contactPhone)}`,
+    'Contacto:',
+    `- Nombre: ${displayValue(registrationRequest.contactName)}`,
+    `- Correo: ${displayValue(registrationRequest.contactEmail)}`,
+    `- Teléfono: ${displayValue(registrationRequest.contactPhone)}`,
+    '',
     `Logo: ${logoStatus}`,
     '',
-    `Estado: ${displayValue(registrationRequest.status)}`,
-    `Fecha de solicitud: ${displayValue(registrationRequest.createdAt)}`,
-    '',
-    'Revisala desde Admin empresas.'
+    'Acción esperada:',
+    'Revisar la solicitud desde Admin empresas.'
   ].join('\n');
 
   const html = wrapEmailHtml('Nueva solicitud de empresa', [
-    '<p>Hay una nueva solicitud de empresa pendiente de revision.</p>',
+    '<p>Hay una nueva solicitud de empresa pendiente de revisión.</p>',
     '<h2>Empresa</h2>',
     '<ul>',
     `<li>Nombre: ${escapeHtml(displayValue(registrationRequest.companyName))}</li>`,
-    `<li>Correo de empresa: ${escapeHtml(displayValue(registrationRequest.companyEmail))}</li>`,
-    `<li>Telefono de empresa: ${escapeHtml(displayValue(registrationRequest.companyPhone))}</li>`,
-    `<li>Direccion: ${escapeHtml(displayValue(registrationRequest.companyAddress))}</li>`,
+    `<li>Correo: ${escapeHtml(displayValue(registrationRequest.companyEmail))}</li>`,
+    `<li>Teléfono: ${escapeHtml(displayValue(registrationRequest.companyPhone))}</li>`,
+    `<li>Dirección: ${escapeHtml(displayValue(registrationRequest.companyAddress))}</li>`,
     '</ul>',
     '<h2>Contacto</h2>',
     '<ul>',
     `<li>Nombre: ${escapeHtml(displayValue(registrationRequest.contactName))}</li>`,
     `<li>Correo: ${escapeHtml(displayValue(registrationRequest.contactEmail))}</li>`,
-    `<li>Telefono: ${escapeHtml(displayValue(registrationRequest.contactPhone))}</li>`,
+    `<li>Teléfono: ${escapeHtml(displayValue(registrationRequest.contactPhone))}</li>`,
     '</ul>',
-    '<h2>Revision</h2>',
-    '<ul>',
-    `<li>Solicitud: ${escapeHtml(displayValue(registrationRequest.status))}</li>`,
-    `<li>Fecha de solicitud: ${escapeHtml(displayValue(registrationRequest.createdAt))}</li>`,
-    `<li>Logo: ${escapeHtml(logoStatus)}</li>`,
-    '</ul>',
-    '<p><strong>Accion esperada:</strong> Revisala desde Admin empresas.</p>'
+    `<p><strong>Logo:</strong> ${escapeHtml(logoStatus)}</p>`,
+    '<p><strong>Acción esperada:</strong> Revisar la solicitud desde Admin empresas.</p>'
   ].join(''));
 
   return {
@@ -134,25 +130,24 @@ function createCompanyInvitationEmail(invitation, token, config) {
     '',
     `La empresa ${displayValue(invitation.companyName)} fue aprobada para usar Punto Club.`,
     '',
-    'Para crear el acceso, abra el siguiente enlace:',
+    'Crea el acceso desde este enlace:',
     inviteLink,
     '',
-    'Este correo sera su usuario de acceso:',
+    'Usa este correo como usuario de acceso:',
     displayValue(invitation.email),
     '',
-    `La invitacion vence el ${displayValue(invitation.expiresAt)}. Si vence o usted no solicito este acceso, contacte al equipo de Punto Club.`,
+    `Esta invitación vence el ${displayValue(invitation.expiresAt)}. Si no solicitaste este acceso o el enlace venció, contacta al equipo de Punto Club.`,
     '',
     'Gracias,',
     'Equipo Punto Club'
   ].join('\n');
 
-  const html = wrapEmailHtml('Active el acceso de su empresa', [
-    '<h1>Active el acceso de su empresa</h1>',
+  const html = wrapEmailHtml('Activa el acceso de tu empresa', [
     `<p>La empresa <strong>${escapeHtml(displayValue(invitation.companyName))}</strong> fue aprobada para usar Punto Club.</p>`,
-    `<p>Use este correo como usuario de acceso: <strong>${escapeHtml(displayValue(invitation.email))}</strong></p>`,
+    `<p>Usa este correo como usuario de acceso: <strong>${escapeHtml(displayValue(invitation.email))}</strong></p>`,
     `<p><a href="${escapeHtml(inviteLink)}">Crear acceso</a></p>`,
-    `<p>La invitacion vence el ${escapeHtml(displayValue(invitation.expiresAt))}.</p>`,
-    '<p>Si vence o usted no solicito este acceso, contacte al equipo de Punto Club.</p>',
+    `<p>Esta invitación vence el ${escapeHtml(displayValue(invitation.expiresAt))}.</p>`,
+    '<p>Si no solicitaste este acceso o el enlace venció, contacta al equipo de Punto Club.</p>',
     '<p>Gracias,<br />Equipo Punto Club</p>'
   ].join(''));
 
@@ -167,39 +162,39 @@ function createCompanyInvitationEmail(invitation, token, config) {
 }
 
 function createInternalInvitationSentEmail(invitation, config) {
-  const subject = `Invitacion enviada en Punto Club: ${invitation.companyName}`;
+  const subject = `Invitación enviada en Punto Club: ${invitation.companyName}`;
   const plainText = [
-    'Se envio una invitacion de acceso en Punto Club.',
+    'Se envió una invitación de acceso en Punto Club.',
     '',
     'Empresa:',
     `- Nombre: ${displayValue(invitation.companyName)}`,
     `- Correo invitado: ${displayValue(invitation.email)}`,
     `- Rol: ${displayValue(invitation.role)}`,
     '',
-    'Invitacion:',
+    'Invitación:',
     `- Estado: ${displayValue(invitation.status)}`,
-    `- Fecha de envio: ${displayValue(invitation.createdAt)}`,
+    `- Fecha de envío: ${displayValue(invitation.createdAt)}`,
     `- Vence: ${displayValue(invitation.expiresAt)}`,
     '',
-    'Accion esperada:',
-    'Dar seguimiento si la empresa no acepta la invitacion antes del vencimiento.'
+    'Acción esperada:',
+    'Dar seguimiento si la empresa no acepta la invitación antes del vencimiento.'
   ].join('\n');
 
-  const html = wrapEmailHtml('Invitacion enviada', [
-    '<p>Se envio una invitacion de acceso en Punto Club.</p>',
+  const html = wrapEmailHtml('Invitación enviada', [
+    '<p>Se envió una invitación de acceso en Punto Club.</p>',
     '<h2>Empresa</h2>',
     '<ul>',
     `<li>Nombre: ${escapeHtml(displayValue(invitation.companyName))}</li>`,
     `<li>Correo invitado: ${escapeHtml(displayValue(invitation.email))}</li>`,
     `<li>Rol: ${escapeHtml(displayValue(invitation.role))}</li>`,
     '</ul>',
-    '<h2>Invitacion</h2>',
+    '<h2>Invitación</h2>',
     '<ul>',
     `<li>Estado: ${escapeHtml(displayValue(invitation.status))}</li>`,
-    `<li>Fecha de envio: ${escapeHtml(displayValue(invitation.createdAt))}</li>`,
+    `<li>Fecha de envío: ${escapeHtml(displayValue(invitation.createdAt))}</li>`,
     `<li>Vence: ${escapeHtml(displayValue(invitation.expiresAt))}</li>`,
     '</ul>',
-    '<p><strong>Accion esperada:</strong> Dar seguimiento si la empresa no acepta la invitacion antes del vencimiento.</p>'
+    '<p><strong>Acción esperada:</strong> Dar seguimiento si la empresa no acepta la invitación antes del vencimiento.</p>'
   ].join(''));
 
   return {
@@ -218,14 +213,13 @@ function createRequesterAcknowledgementEmail(registrationRequest, config) {
     return null;
   }
 
-  const contactName = normalizeText(registrationRequest.contactName) || normalizeText(registrationRequest.companyName);
   const subject = 'Recibimos tu solicitud en Punto Club';
   const plainText = [
     'Hola,',
     '',
     `Recibimos la solicitud para ${displayValue(registrationRequest.companyName)}.`,
     '',
-    'Nuestro equipo revisara la informacion. Si la solicitud es aprobada, enviaremos una invitacion al correo de contacto para crear el acceso de la empresa.',
+    'Nuestro equipo revisará la información. Si la solicitud es aprobada, enviaremos una invitación para crear el acceso de la empresa.',
     '',
     `Correo de contacto: ${displayValue(registrationRequest.contactEmail)}`,
     '',
@@ -236,7 +230,7 @@ function createRequesterAcknowledgementEmail(registrationRequest, config) {
   const html = wrapEmailHtml('Solicitud recibida', [
     '<p>Hola,</p>',
     `<p>Recibimos la solicitud para <strong>${escapeHtml(displayValue(registrationRequest.companyName))}</strong>.</p>`,
-    '<p>Nuestro equipo revisara la informacion. Si la solicitud es aprobada, enviaremos una invitacion al correo de contacto para crear el acceso de la empresa.</p>',
+    '<p>Nuestro equipo revisará la información. Si la solicitud es aprobada, enviaremos una invitación para crear el acceso de la empresa.</p>',
     `<p><strong>Correo de contacto:</strong> ${escapeHtml(displayValue(registrationRequest.contactEmail))}</p>`,
     '<p>Gracias,<br />Equipo Punto Club</p>'
   ].join(''));

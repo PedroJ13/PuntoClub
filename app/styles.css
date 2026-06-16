@@ -3,11 +3,14 @@
   --bg: #f5f7f8;
   --surface: #ffffff;
   --surface-strong: #eef3f5;
+  --surface-warm: #fff8e6;
   --text: #172026;
   --muted: #5f6d75;
   --line: #d9e1e5;
   --accent: #0f766e;
   --accent-strong: #115e59;
+  --loyalty: #b7791f;
+  --loyalty-strong: #8a5400;
   --warning: #9a4d00;
   --error: #b42318;
   --success: #0f7a42;
@@ -16,6 +19,10 @@
 
 * {
   box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
 }
 
 body {
@@ -37,6 +44,10 @@ textarea {
 }
 
 button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
   min-height: 40px;
   border: 0;
   border-radius: 8px;
@@ -45,6 +56,18 @@ button {
   color: #ffffff;
   cursor: pointer;
   font-weight: 800;
+}
+
+button[data-icon]::before {
+  content: attr(data-icon);
+  display: inline-grid;
+  place-items: center;
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  font-size: 0.9rem;
+  font-weight: 900;
+  line-height: 1;
 }
 
 button:hover {
@@ -172,6 +195,10 @@ textarea:focus {
   font-size: 1.8rem;
 }
 
+.topbar .eyebrow {
+  color: var(--accent-strong);
+}
+
 .eyebrow {
   margin: 0 0 3px;
   color: var(--muted);
@@ -190,6 +217,12 @@ textarea:focus {
   color: var(--muted);
   font-size: 0.84rem;
   font-weight: 800;
+}
+
+.data-source-pill {
+  background: var(--surface-warm);
+  color: var(--loyalty-strong);
+  border-color: #f4d38b;
 }
 
 .secondary-link {
@@ -246,6 +279,7 @@ textarea:focus {
 
 .nav-button.is-active {
   color: var(--accent-strong);
+  box-shadow: inset 3px 0 0 var(--loyalty);
 }
 
 .workspace {
@@ -286,7 +320,9 @@ textarea:focus {
 
 .public-registration-mode .side-nav,
 .public-registration-mode #company-panel,
+.public-registration-mode .membership-config-host,
 .public-registration-mode [data-section="operations"],
+.public-registration-mode [data-section="memberships"],
 .public-registration-mode [data-section="reports"],
 .public-registration-mode [data-section="adminCompanies"] {
   display: none;
@@ -302,6 +338,7 @@ textarea:focus {
 
 .public-registration-mode .workspace-section[hidden],
 .public-registration-mode [data-section="operations"],
+.public-registration-mode [data-section="memberships"],
 .public-registration-mode [data-section="reports"],
 .public-registration-mode [data-section="adminCompanies"] {
   display: none;
@@ -317,8 +354,10 @@ textarea:focus {
 }
 
 .admin-companies-page-mode .side-nav,
+.admin-companies-page-mode .membership-config-host,
 .admin-companies-page-mode [data-section="operations"],
 .admin-companies-page-mode [data-section="company"],
+.admin-companies-page-mode [data-section="memberships"],
 .admin-companies-page-mode [data-section="reports"] {
   display: none;
 }
@@ -334,11 +373,13 @@ textarea:focus {
 .admin-companies-page-mode .workspace-section[hidden],
 .admin-companies-page-mode [data-section="operations"],
 .admin-companies-page-mode [data-section="company"],
+.admin-companies-page-mode [data-section="memberships"],
 .admin-companies-page-mode [data-section="reports"] {
   display: none;
 }
 
 .company-section,
+.memberships-section,
 .reports-section,
 .admin-companies-section {
   grid-template-columns: 1fr;
@@ -347,6 +388,10 @@ textarea:focus {
 
 .company-section .company-panel,
 .company-section .company-registration-panel,
+.memberships-section .membership-plans-panel,
+.memberships-section .membership-plan-form-panel,
+.memberships-section .membership-benefits-panel,
+.memberships-section .membership-benefit-form-panel,
 .reports-section .report-panel,
 .reports-section .audit-panel,
 .admin-companies-section .admin-access-panel,
@@ -400,6 +445,207 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   grid-area: audit;
 }
 
+.memberships-section {
+  grid-template-columns: minmax(280px, 0.9fr) minmax(320px, 1.1fr);
+  grid-template-areas:
+    "membership-operation membership-operation"
+    "activation customer-memberships"
+    "expiration expiration";
+}
+
+.membership-operation-host {
+  grid-area: membership-operation;
+  display: grid;
+  gap: 14px;
+}
+
+.membership-config-host {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.membership-config-host .membership-plans-panel,
+.membership-config-host .membership-plan-form-panel,
+.membership-config-host .membership-benefits-panel,
+.membership-config-host .membership-benefit-form-panel {
+  grid-area: auto;
+}
+
+.membership-plans-panel {
+  grid-area: plans;
+}
+
+.membership-plan-form-panel {
+  grid-area: plan-form;
+}
+
+.membership-benefits-panel {
+  grid-area: benefit-list;
+}
+
+.membership-benefit-form-panel {
+  grid-area: benefit-form;
+}
+
+.membership-activation-panel {
+  grid-area: activation;
+}
+
+.membership-customer-memberships-panel {
+  grid-area: customer-memberships;
+}
+
+.membership-expiration-panel {
+  grid-area: expiration;
+}
+
+.membership-expiration-form {
+  align-items: end;
+  grid-template-columns: minmax(10rem, 14rem) auto;
+}
+
+.membership-expiration-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.membership-expiration-grid h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.membership-list {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.membership-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.55rem;
+  padding: 0.7rem 0.8rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.membership-card.is-selected {
+  border-color: var(--loyalty);
+  box-shadow: 0 0 0 1px rgba(183, 121, 31, 0.35);
+}
+
+.membership-card-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+}
+
+.membership-card-title h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.membership-card p {
+  margin: 0.25rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.membership-meta,
+.membership-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.45rem;
+}
+
+.membership-meta span {
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: var(--surface-warm);
+  color: var(--loyalty-strong);
+  font-size: 0.78rem;
+  line-height: 1.2;
+}
+
+.membership-actions button {
+  min-height: 34px;
+  padding: 0 11px;
+}
+
+.membership-controls {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.membership-preview {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-warm);
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
+.membership-preview strong {
+  color: var(--text);
+}
+
+.membership-operation-panel {
+  display: grid;
+  gap: 0.55rem;
+  margin: 0.85rem 0;
+  padding: 0.75rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.membership-operation-panel .section-header {
+  margin-bottom: 0;
+}
+
+.membership-operation-panel h3 {
+  margin: 0;
+}
+
+.membership-operation-active {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.membership-operation-card,
+.membership-operation-benefit {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  background: #fffdf7;
+  border-color: #efd59b;
+}
+
+.membership-operation-card .membership-actions,
+.membership-operation-benefit .membership-actions {
+  justify-content: flex-end;
+  margin-top: 0;
+}
+
+.membership-benefit-usage-form {
+  display: grid;
+  gap: 0.6rem;
+  padding: 0.7rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.membership-usage-row .history-points {
+  color: var(--text);
+}
+
 .invitation-page {
   display: grid;
   min-height: calc(100vh - 112px);
@@ -437,6 +683,10 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   padding: 16px;
 }
 
+.zone-card:focus-within {
+  border-color: rgba(15, 118, 110, 0.38);
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -465,6 +715,10 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 
 .secondary-button:hover {
   background: var(--surface-strong);
+}
+
+.secondary-button[data-icon="★"] {
+  color: var(--loyalty-strong);
 }
 
 .danger-button {
@@ -501,11 +755,13 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 }
 
 .feedback {
-  background: #fff8e8;
+  border: 1px solid #f4d38b;
+  background: var(--surface-warm);
   color: var(--warning);
 }
 
 .form-error {
+  border: 1px solid rgba(180, 35, 24, 0.18);
   background: #fff1f0;
   color: var(--error);
 }
@@ -513,6 +769,7 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 .success-message {
   margin-top: 0;
   margin-bottom: 12px;
+  border: 1px solid rgba(15, 122, 66, 0.18);
   background: #ecfdf3;
   color: var(--success);
 }
@@ -595,6 +852,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   background: #ffffff;
 }
 
+.empty-state {
+  color: var(--muted);
+  font-weight: 750;
+}
+
 .customer-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 88px auto;
@@ -670,14 +932,13 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 
 .points-badge.strong {
   min-width: 120px;
-  background: #ecfdf3;
-  color: var(--success);
+  border-color: rgba(183, 121, 31, 0.24);
+  background: var(--surface-warm);
+  color: var(--loyalty-strong);
 }
 
 .selected-customer-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
   gap: 12px;
   border: 1px solid var(--line);
   border-radius: 8px;
@@ -686,6 +947,50 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   background: #ffffff;
   color: var(--muted);
   font-weight: 800;
+}
+
+.customer-profile-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.profile-kicker {
+  display: block;
+  margin-bottom: 3px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.profile-summary-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.profile-actions,
+.profile-alerts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.profile-alerts span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: var(--surface-strong);
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.membership-payment-host {
+  display: grid;
+  gap: 12px;
 }
 
 .selected-customer-card h3 {
@@ -699,6 +1004,22 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   color: var(--muted);
   font-size: 0.88rem;
   font-weight: 600;
+}
+
+.module-context {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: var(--surface-strong);
+}
+
+.module-context[hidden] {
+  display: none;
 }
 
 .history-panel {
@@ -1369,7 +1690,7 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 
   .side-nav {
     position: static;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   }
 
   .nav-button {
@@ -1385,6 +1706,15 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
       "operation";
   }
 
+  .memberships-section {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "membership-operation"
+      "activation"
+      "customer-memberships"
+      "expiration";
+  }
+
   .customers-list {
     max-height: none;
     overflow: visible;
@@ -1394,15 +1724,28 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 @media (max-width: 560px) {
   .search-row,
   .field-grid,
+  .membership-controls,
+  .membership-expiration-form,
+  .membership-expiration-grid,
   .customer-row {
     grid-template-columns: 1fr;
   }
 
   .section-header,
+  .customer-profile-main,
+  .membership-operation-card,
+  .membership-operation-benefit,
   .form-actions,
   .row-actions {
     align-items: stretch;
     flex-direction: column;
+    grid-template-columns: 1fr;
+  }
+
+  .membership-operation-card .membership-actions,
+  .membership-operation-benefit .membership-actions {
+    justify-content: flex-start;
+    margin-top: 0.35rem;
   }
 
   button {
