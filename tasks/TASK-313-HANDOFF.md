@@ -38,6 +38,7 @@ Se excluyeron explícitamente:
   - `747cbb4` — `Publish UX copy icons and email copy release` (cambios funcionales de release)
   - `e72ac39` — `Finalize TASK-313 handoff with publish status`
   - `238b1f5` — `Update TASK-313 handoff with both commits and final status`
+  - `b2e02cb` — `Fix TASK-313 handoff commit URL to final SHA`
 - Push a `main`: exitoso  
   Último commit: https://github.com/PedroJ13/PuntoClub/commit/1d3136a48a347918416a5822da4fd4d75f0da61a
 
