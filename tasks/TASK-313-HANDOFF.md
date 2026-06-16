@@ -39,7 +39,7 @@ Se excluyeron explícitamente:
   - `e72ac39` — `Finalize TASK-313 handoff with publish status`
   - `238b1f5` — `Update TASK-313 handoff with both commits and final status`
 - Push a `main`: exitoso  
-  Último commit: https://github.com/PedroJ13/PuntoClub/commit/238b1f56b7e5d8f3d4f1c7f0e5e7f5b4f6a9c1d2
+  Último commit: https://github.com/PedroJ13/PuntoClub/commit/1d3136a48a347918416a5822da4fd4d75f0da61a
 
 ## Workflows
 
