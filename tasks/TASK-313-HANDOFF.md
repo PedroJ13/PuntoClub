@@ -2,12 +2,12 @@
 
 Equipo: Ejecucion Tecnica  
 Modo de ejecucion: Release / Git / Deploy  
-Estado: En progreso  
+Estado: Parcialmente completado  
 Fecha: 2026-06-16
 
 ## Resultado
 
-Se consolidaron y se publicaron en local los cambios de UX/copy/iconos/correos para el corte de release.
+Se consolidaron y publicaron en `main` los cambios de UX/copy/iconos/correos para el corte de release.
 
 ## Archivos incluidos
 
@@ -34,15 +34,21 @@ Se excluyeron explícitamente:
 
 ## Commit / Push
 
-- Commit SHA: **pendiente**
-- Push a `main`: **pendiente**
+- Commit SHA: `747cbb4` (`Publish UX copy icons and email copy release`)
+- Push a `main`: exitoso  
+  URL: https://github.com/PedroJ13/PuntoClub/commit/747cbb45f98391d678ebe899c5e8e3c3784592f3
 
 ## Workflows
 
 - Frontend (SWA): `.github/workflows/azure-static-web-apps-swa-puntoclub-prod-001.yml`
-- API: `.github/workflows/azure-functions-api.yml`  
-Se ejecutará la validación automática tras el push a `main`; si no dispara, se documentará bloqueo o se correrán manualmente.
+- API: `.github/workflows/azure-functions-api.yml`
+- Workflow frontend disparado por push a `main` y ejecutado OK:  
+  https://github.com/PedroJ13/PuntoClub/actions/runs/27649949160
+- Workflow API disparado por push a `main` pero con fallo en smoke test:  
+  https://github.com/PedroJ13/PuntoClub/actions/runs/27649949163
 
 ## Estado final
 
-- En progreso a la espera de SHA de commit, push y estado de workflows.
+- Frontend: `success`
+- API: `failure` en paso `Smoke test stable API` (ejecuta validaciones post-deploy).
+- Pendiente: reintentar API o validar endpoint destino (si el smoke test es inestable por ambiente).
