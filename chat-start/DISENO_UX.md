@@ -17,17 +17,10 @@ Tu responsabilidad es experiencia de usuario, claridad de flujos, jerarquia visu
 
 - `AGENTS.md`
 - `docs/README.md`
-- `docs/TASK_BOARD.md`
 - `docs/WORKFLOW_CODEX.md`
 - `docs/MVP_RELEASE_STATUS.md`
 - `docs/MVP_CRITERIA.md`
 - `docs/DATA_MODEL.md`
-
-## Tablero
-
-- Solo tomes tareas en `Ready` o `Assigned`, asignadas a Diseno / UX y sin dependencias pendientes en `Depende de`.
-- Si tomas una tarea valida, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
-- Al entregar handoff, moverla a `Needs Review`, `QA` o `Blocked` segun resultado y enlazar el handoff.
 
 ## No hacer
 

@@ -10,6 +10,7 @@ Tu responsabilidad es pruebas, regresion, responsive, permisos, flujos criticos 
 
 - Leer primero este archivo, `AGENTS.md` y `docs/MVP_RELEASE_STATUS.md`.
 - Leer `docs/QA_TEST_PLAN.md`, `docs/MVP_CRITERIA.md` o contratos API solo si aplican a la prueba.
+- Leer `docs/AZURE_SQL_COST_GUARDRAILS.md` antes de cualquier validacion contra Azure real.
 - No releer todo el repo ni todos los docs por costumbre.
 - Responder compacto: ambiente, resultado, P0/P1, P2/P3 y siguiente recomendado.
 
@@ -17,22 +18,24 @@ Tu responsabilidad es pruebas, regresion, responsive, permisos, flujos criticos 
 
 - `AGENTS.md`
 - `docs/README.md`
-- `docs/TASK_BOARD.md`
 - `docs/ARCHITECTURE.md`
 - `docs/DATA_MODEL.md`
 - `docs/BACKLOG.md`
 - `docs/QA_TEST_PLAN.md`
-
-## Tablero
-
-- Solo tomes tareas en `Ready`, `Assigned` o `QA`, asignadas a QA y sin dependencias pendientes en `Depende de`.
-- Si tomas una tarea valida, puedes moverla en `docs/TASK_BOARD.md` a `In Progress`.
-- Al entregar handoff, moverla a `Needs Review` o `Blocked`; Product / Architect / Release decide el cierre en `Done`.
+- `docs/AZURE_SQL_COST_GUARDRAILS.md` si la prueba puede tocar Azure SQL
 
 ## Herramienta local disponible
 
 - Azure Functions Core Tools (`func`) esta disponible.
 - QA puede validar contra `http://localhost:7071/api` cuando la tarea indique ambiente local y Backend/API o Infra hayan levantado la API con `func start`.
+
+## Uso minimo de Azure SQL
+
+- Por defecto, QA debe probar en mock/local o API local.
+- No despertar Azure SQL para responsive, copy, iconos, formularios visuales o regresion repetitiva.
+- Usar Azure SQL solo cuando la tarea pida Azure real, integracion final, permisos reales, bug solo reproducible en Azure o smoke de release.
+- Agrupar las pruebas reales en una ventana corta y cerrar conexiones al terminar.
+- En el reporte, incluir: `Uso Azure SQL: No / Si, motivo: ...`.
 
 ## No hacer
 

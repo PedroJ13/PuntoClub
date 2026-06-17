@@ -39,8 +39,9 @@ Se excluyeron explícitamente:
   - `e72ac39` — `Finalize TASK-313 handoff with publish status`
   - `238b1f5` — `Update TASK-313 handoff with both commits and final status`
   - `b2e02cb` — `Fix TASK-313 handoff commit URL to final SHA`
+  - `8e329a3` — `Include final TASK-313 handoff commit in its own history list`
 - Push a `main`: exitoso  
-  Último commit: https://github.com/PedroJ13/PuntoClub/commit/1d3136a48a347918416a5822da4fd4d75f0da61a
+  Último commit: https://github.com/PedroJ13/PuntoClub/commit/8e329a37d3b63e19d27e7cbac1fa0c9007075a33
 
 ## Workflows
 

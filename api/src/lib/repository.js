@@ -33,6 +33,8 @@ function mapCompanySettings(row) {
     phone: row.phone,
     logoUrl: row.logo_url,
     pointsPercentage: Number(row.points_percentage),
+    loyaltyPointsEnabled: Boolean(row.loyalty_points_enabled),
+    loyaltyMembershipsEnabled: Boolean(row.loyalty_memberships_enabled),
     status: row.status,
     updatedAt: toIsoTimestamp(row.updated_at)
   };
@@ -140,8 +142,230 @@ function mapMyCompany(row) {
     logoContentType: row.logo_content_type,
     logoUpdatedAt: toIsoTimestamp(row.logo_updated_at),
     pointsPercentage: Number(row.points_percentage),
+    loyaltyPointsEnabled: Boolean(row.loyalty_points_enabled),
+    loyaltyMembershipsEnabled: Boolean(row.loyalty_memberships_enabled),
     status: row.status,
     updatedAt: toIsoTimestamp(row.updated_at)
+  };
+}
+
+function mapMembershipPlan(row) {
+  return {
+    id: toApiId(row.id),
+    companyId: toApiId(row.company_id),
+    name: row.name,
+    description: row.description,
+    durationDays: row.duration_days,
+    price: Number(row.price),
+    renewalNoticeDays: row.renewal_notice_days,
+    status: row.status,
+    benefitCount: Number(row.benefit_count || 0),
+    createdAt: toIsoTimestamp(row.created_at),
+    updatedAt: toIsoTimestamp(row.updated_at)
+  };
+}
+
+function mapMembershipBenefit(row) {
+  return {
+    id: toApiId(row.id),
+    planId: toApiId(row.membership_plan_id),
+    name: row.name,
+    description: row.description,
+    benefitType: row.benefit_type,
+    appliesToType: row.applies_to_type,
+    appliesToName: row.applies_to_name,
+    discountPercent: row.discount_percent == null ? null : Number(row.discount_percent),
+    includedQuantity: row.included_quantity == null ? null : Number(row.included_quantity),
+    usageLimit: row.usage_limit,
+    usagePeriod: row.usage_period,
+    status: row.status,
+    createdAt: toIsoTimestamp(row.created_at),
+    updatedAt: toIsoTimestamp(row.updated_at)
+  };
+}
+
+function parseDateOnly(value) {
+  const text = toIsoDate(value);
+  if (!text) {
+    return null;
+  }
+  const date = new Date(`${text}T00:00:00Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function addDays(date, days) {
+  const next = new Date(date.getTime());
+  next.setUTCDate(next.getUTCDate() + days);
+  return next;
+}
+
+function calculateMembershipEndDate(startDate, durationDays) {
+  const date = parseDateOnly(startDate);
+  return toIsoDate(addDays(date, Number(durationDays) - 1));
+}
+
+function calculateExpirationAlert(endDate, options = {}) {
+  const today = parseDateOnly(options.today || new Date());
+  const expirationDate = parseDateOnly(endDate);
+  const warningDays = Number.isInteger(options.warningDays) ? options.warningDays : 5;
+  const daysUntilExpiration = Math.round((expirationDate.getTime() - today.getTime()) / 86400000);
+  let state = 'none';
+  let message = null;
+
+  if (daysUntilExpiration < 0) {
+    state = 'expired';
+    message = 'La membresia esta vencida.';
+  } else if (daysUntilExpiration === 0) {
+    state = 'expires_today';
+    message = 'La membresia vence hoy.';
+  } else if (daysUntilExpiration <= warningDays) {
+    state = 'expiring_soon';
+    message = `La membresia vence en ${daysUntilExpiration} dias.`;
+  }
+
+  return {
+    state,
+    daysUntilExpiration,
+    message
+  };
+}
+
+function calculateUsagePeriodStartDate(usageDate, usagePeriod, membershipStartDate) {
+  if (usagePeriod === 'membership_term') {
+    return toIsoDate(membershipStartDate);
+  }
+
+  const date = parseDateOnly(usageDate);
+  if (!date) {
+    return usageDate;
+  }
+
+  if (usagePeriod === 'week') {
+    const day = date.getUTCDay();
+    const offset = day === 0 ? -6 : 1 - day;
+    return toIsoDate(addDays(date, offset));
+  }
+
+  if (usagePeriod === 'month') {
+    return `${toIsoDate(date).slice(0, 8)}01`;
+  }
+
+  return toIsoDate(date);
+}
+
+function mapCustomerMembership(row, options = {}) {
+  const plan = {
+    id: toApiId(row.membership_plan_id),
+    name: row.plan_name
+  };
+
+  return {
+    id: toApiId(row.id),
+    companyId: toApiId(row.company_id),
+    customerId: toApiId(row.customer_id),
+    planId: plan.id,
+    membershipPlanId: plan.id,
+    planName: plan.name,
+    plan,
+    startDate: toIsoDate(row.start_date),
+    endDate: toIsoDate(row.end_date),
+    status: row.status,
+    pricePaid: row.price_paid == null ? null : Number(row.price_paid),
+    expirationAlert: calculateExpirationAlert(row.end_date, {
+      today: options.today,
+      warningDays: row.renewal_notice_days == null ? 5 : Number(row.renewal_notice_days)
+    }),
+    createdAt: toIsoTimestamp(row.created_at),
+    cancelledAt: toIsoTimestamp(row.cancelled_at),
+    cancelledByLabel: row.cancelled_by_label || null,
+    cancelNote: row.cancel_note || null
+  };
+}
+
+function mapMembershipExpirationAlert(row, options = {}) {
+  const expirationAlert = calculateExpirationAlert(row.end_date, {
+    today: options.today,
+    warningDays: options.withinDays
+  });
+
+  return {
+    id: toApiId(row.id),
+    companyId: toApiId(row.company_id),
+    customerId: toApiId(row.customer_id),
+    customerName: row.customer_name,
+    customerPhone: row.customer_phone,
+    customerEmail: row.customer_email,
+    customerMembershipId: toApiId(row.id),
+    planId: toApiId(row.membership_plan_id),
+    membershipPlanId: toApiId(row.membership_plan_id),
+    planName: row.plan_name,
+    startDate: toIsoDate(row.start_date),
+    endDate: toIsoDate(row.end_date),
+    status: row.status,
+    daysUntilExpiration: expirationAlert.daysUntilExpiration,
+    state: expirationAlert.state,
+    message: expirationAlert.message
+  };
+}
+
+function mapMembershipBenefitUsage(row) {
+  return {
+    id: toApiId(row.id),
+    companyId: toApiId(row.company_id),
+    customerId: toApiId(row.customer_id),
+    customerMembershipId: toApiId(row.customer_membership_id),
+    benefitId: toApiId(row.membership_benefit_id),
+    membershipBenefitId: toApiId(row.membership_benefit_id),
+    benefitName: row.benefit_name,
+    benefitType: row.benefit_type,
+    planId: toApiId(row.membership_plan_id),
+    membershipPlanId: toApiId(row.membership_plan_id),
+    planName: row.plan_name,
+    usageDate: toIsoDate(row.usage_date),
+    usagePeriodStartDate: toIsoDate(row.usage_period_start_date),
+    quantity: Number(row.quantity),
+    note: row.note || null,
+    usedAt: toIsoTimestamp(row.used_at),
+    createdByLabel: row.created_by_label || null
+  };
+}
+
+function mapMembershipTransaction(row) {
+  return {
+    id: toApiId(row.id),
+    companyId: toApiId(row.company_id),
+    customerId: toApiId(row.customer_id),
+    customerMembershipId: toApiId(row.customer_membership_id),
+    planId: toApiId(row.membership_plan_id),
+    membershipPlanId: toApiId(row.membership_plan_id),
+    planName: row.plan_name || null,
+    transactionType: row.transaction_type,
+    paymentMethod: row.payment_method,
+    amount: Number(row.amount),
+    transactionDate: toIsoDate(row.transaction_date),
+    note: row.note || null,
+    createdAt: toIsoTimestamp(row.created_at),
+    createdByLabel: row.created_by_label || null
+  };
+}
+
+function mapMembershipFinancialReportTransaction(row) {
+  return {
+    id: toApiId(row.id),
+    customerId: toApiId(row.customer_id),
+    customerName: row.customer_name,
+    customerPhone: row.customer_phone,
+    customerEmail: row.customer_email,
+    customerMembershipId: toApiId(row.customer_membership_id),
+    planId: toApiId(row.membership_plan_id),
+    membershipPlanId: toApiId(row.membership_plan_id),
+    planName: row.plan_name || null,
+    transactionType: row.transaction_type,
+    paymentMethod: row.payment_method,
+    amount: Number(row.amount),
+    transactionDate: toIsoDate(row.transaction_date),
+    createdAt: toIsoTimestamp(row.created_at),
+    note: row.note || null
   };
 }
 
@@ -315,7 +539,17 @@ async function getCompanySettings(companyId) {
   const result = await pool.request()
     .input('company_id', sql.BigInt, companyId)
     .query(`
-      SELECT id, name, email, phone, logo_url, points_percentage, status, updated_at
+      SELECT
+        id,
+        name,
+        email,
+        phone,
+        logo_url,
+        points_percentage,
+        loyalty_points_enabled,
+        loyalty_memberships_enabled,
+        status,
+        updated_at
       FROM dbo.Companies
       WHERE id = @company_id
         AND status = 'active'
@@ -355,6 +589,8 @@ async function updateCompanySettings(companyId, settings) {
         INSERTED.phone,
         INSERTED.logo_url,
         INSERTED.points_percentage,
+        INSERTED.loyalty_points_enabled,
+        INSERTED.loyalty_memberships_enabled,
         INSERTED.status,
         INSERTED.updated_at
       WHERE id = @company_id
@@ -392,6 +628,8 @@ async function updateCompanyLogo(companyId, logo) {
         INSERTED.logo_content_type,
         INSERTED.logo_updated_at,
         INSERTED.points_percentage,
+        INSERTED.loyalty_points_enabled,
+        INSERTED.loyalty_memberships_enabled,
         INSERTED.status,
         INSERTED.updated_at
       WHERE id = @company_id
@@ -1479,7 +1717,8 @@ async function getActivityReport(companyId, filters) {
     .query(`
       SELECT 'purchase' AS type, p.id, p.purchase_date AS activity_date,
              p.customer_id, c.name AS customer_name, c.phone AS customer_phone, c.email AS customer_email,
-             p.invoice_number, p.amount, p.points_earned AS points
+             p.invoice_number, p.amount, p.points_earned AS points,
+             CAST(NULL AS nvarchar(500)) AS note
       FROM dbo.Purchases AS p
       INNER JOIN dbo.Customers AS c
         ON c.company_id = p.company_id
@@ -1492,7 +1731,8 @@ async function getActivityReport(companyId, filters) {
       SELECT 'redemption' AS type, r.id, r.redemption_date AS activity_date,
              r.customer_id, c.name AS customer_name, c.phone AS customer_phone, c.email AS customer_email,
              CAST(NULL AS nvarchar(80)) AS invoice_number, CAST(NULL AS decimal(18,2)) AS amount,
-             -r.points_redeemed AS points
+             -r.points_redeemed AS points,
+             r.note
       FROM dbo.Redemptions AS r
       INNER JOIN dbo.Customers AS c
         ON c.company_id = r.company_id
@@ -1501,6 +1741,39 @@ async function getActivityReport(companyId, filters) {
         AND r.redemption_date >= @from
         AND r.redemption_date <= @to
         AND @type IN ('all', 'redemption')
+      UNION ALL
+      SELECT 'membership' AS type, memberships.id, memberships.start_date AS activity_date,
+             memberships.customer_id, customers.name AS customer_name, customers.phone AS customer_phone, customers.email AS customer_email,
+             CAST(NULL AS nvarchar(80)) AS invoice_number, memberships.price_paid AS amount,
+             CAST(0 AS int) AS points,
+             CONCAT(N'Membresia activada: ', plans.name) AS note
+      FROM dbo.CustomerMemberships AS memberships
+      INNER JOIN dbo.Customers AS customers
+        ON customers.company_id = memberships.company_id
+       AND customers.id = memberships.customer_id
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.company_id = memberships.company_id
+       AND plans.id = memberships.membership_plan_id
+      WHERE memberships.company_id = @company_id
+        AND memberships.start_date >= @from
+        AND memberships.start_date <= @to
+        AND @type IN ('all', 'membership')
+      UNION ALL
+      SELECT 'membership' AS type, usages.id, usages.usage_date AS activity_date,
+             usages.customer_id, customers.name AS customer_name, customers.phone AS customer_phone, customers.email AS customer_email,
+             CAST(NULL AS nvarchar(80)) AS invoice_number, CAST(NULL AS decimal(18,2)) AS amount,
+             CAST(0 AS int) AS points,
+             CONCAT(N'Beneficio usado: ', benefits.name, N' x', CONVERT(nvarchar(20), usages.quantity)) AS note
+      FROM dbo.MembershipBenefitUsages AS usages
+      INNER JOIN dbo.Customers AS customers
+        ON customers.company_id = usages.company_id
+       AND customers.id = usages.customer_id
+      INNER JOIN dbo.MembershipBenefits AS benefits
+        ON benefits.id = usages.membership_benefit_id
+      WHERE usages.company_id = @company_id
+        AND usages.usage_date >= @from
+        AND usages.usage_date <= @to
+        AND @type IN ('all', 'membership')
       ORDER BY activity_date DESC, id DESC
     `);
 
@@ -1514,12 +1787,14 @@ async function getActivityReport(companyId, filters) {
     customerEmail: row.customer_email,
     invoiceNumber: row.invoice_number || undefined,
     amount: row.amount == null ? undefined : Number(row.amount),
+    note: row.note || undefined,
     points: row.points
   }));
 
   const activeCustomerIds = new Set(items.map((item) => item.customerId));
   const purchases = items.filter((item) => item.type === 'purchase');
   const redemptions = items.filter((item) => item.type === 'redemption');
+  const memberships = items.filter((item) => item.type === 'membership');
 
   return {
     from: filters.from,
@@ -1531,6 +1806,7 @@ async function getActivityReport(companyId, filters) {
       pointsEarnedTotal: purchases.reduce((total, item) => total + item.points, 0),
       redemptionCount: redemptions.length,
       pointsRedeemedTotal: redemptions.reduce((total, item) => total + Math.abs(item.points), 0),
+      membershipCount: memberships.length,
       activeCustomerCount: activeCustomerIds.size
     },
     items
@@ -1577,14 +1853,1035 @@ async function createRedemption(companyId, payload) {
   };
 }
 
+async function listMembershipPlans(companyId, filters = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const status = filters.status === 'all' ? null : (filters.status || 'active');
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('status', sql.VarChar(20), status)
+    .query(`
+      SELECT
+        plans.id,
+        plans.company_id,
+        plans.name,
+        plans.description,
+        plans.duration_days,
+        plans.price,
+        plans.renewal_notice_days,
+        plans.status,
+        plans.created_at,
+        plans.updated_at,
+        COUNT(benefits.id) AS benefit_count
+      FROM dbo.MembershipPlans AS plans
+      LEFT JOIN dbo.MembershipBenefits AS benefits
+        ON benefits.membership_plan_id = plans.id
+      WHERE plans.company_id = @company_id
+        AND (@status IS NULL OR plans.status = @status)
+      GROUP BY
+        plans.id,
+        plans.company_id,
+        plans.name,
+        plans.description,
+        plans.duration_days,
+        plans.price,
+        plans.renewal_notice_days,
+        plans.status,
+        plans.created_at,
+        plans.updated_at
+      ORDER BY plans.created_at DESC, plans.id DESC
+    `);
+
+  return {
+    status: filters.status || 'active',
+    items: result.recordset.map(mapMembershipPlan)
+  };
+}
+
+async function getMembershipPlanById(companyId, planId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('plan_id', sql.BigInt, planId)
+    .query(`
+      SELECT
+        plans.id,
+        plans.company_id,
+        plans.name,
+        plans.description,
+        plans.duration_days,
+        plans.price,
+        plans.renewal_notice_days,
+        plans.status,
+        plans.created_at,
+        plans.updated_at,
+        COUNT(benefits.id) AS benefit_count
+      FROM dbo.MembershipPlans AS plans
+      LEFT JOIN dbo.MembershipBenefits AS benefits
+        ON benefits.membership_plan_id = plans.id
+      WHERE plans.company_id = @company_id
+        AND plans.id = @plan_id
+      GROUP BY
+        plans.id,
+        plans.company_id,
+        plans.name,
+        plans.description,
+        plans.duration_days,
+        plans.price,
+        plans.renewal_notice_days,
+        plans.status,
+        plans.created_at,
+        plans.updated_at
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'MEMBERSHIP_PLAN_NOT_FOUND', 'Membership plan was not found.');
+  }
+
+  return mapMembershipPlan(result.recordset[0]);
+}
+
+async function createMembershipPlan(companyId, payload) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('name', sql.NVarChar(120), payload.name)
+    .input('description', sql.NVarChar(500), payload.description)
+    .input('duration_days', sql.Int, payload.durationDays)
+    .input('price', sql.Decimal(18, 2), payload.price)
+    .input('renewal_notice_days', sql.Int, payload.renewalNoticeDays)
+    .input('status', sql.VarChar(20), payload.status)
+    .query(`
+      INSERT INTO dbo.MembershipPlans (
+        company_id,
+        name,
+        description,
+        duration_days,
+        price,
+        renewal_notice_days,
+        status
+      )
+      OUTPUT
+        INSERTED.id,
+        INSERTED.company_id,
+        INSERTED.name,
+        INSERTED.description,
+        INSERTED.duration_days,
+        INSERTED.price,
+        INSERTED.renewal_notice_days,
+        INSERTED.status,
+        INSERTED.created_at,
+        INSERTED.updated_at
+      VALUES (
+        @company_id,
+        @name,
+        @description,
+        @duration_days,
+        @price,
+        @renewal_notice_days,
+        @status
+      )
+    `);
+
+  return mapMembershipPlan(result.recordset[0]);
+}
+
+async function updateMembershipPlan(companyId, planId, payload) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('plan_id', sql.BigInt, planId)
+    .input('name', sql.NVarChar(120), payload.name)
+    .input('description', sql.NVarChar(500), payload.description)
+    .input('duration_days', sql.Int, payload.durationDays)
+    .input('price', sql.Decimal(18, 2), payload.price)
+    .input('renewal_notice_days', sql.Int, payload.renewalNoticeDays)
+    .input('status', sql.VarChar(20), payload.status)
+    .query(`
+      UPDATE dbo.MembershipPlans
+      SET
+        name = @name,
+        description = @description,
+        duration_days = @duration_days,
+        price = @price,
+        renewal_notice_days = @renewal_notice_days,
+        status = @status,
+        updated_at = SYSUTCDATETIME()
+      WHERE company_id = @company_id
+        AND id = @plan_id
+    `);
+
+  if (!result.rowsAffected[0]) {
+    throw new ApiError(404, 'MEMBERSHIP_PLAN_NOT_FOUND', 'Membership plan was not found.');
+  }
+
+  return getMembershipPlanById(companyId, planId);
+}
+
+async function listMembershipBenefits(companyId, planId, filters = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const status = filters.status === 'all' ? null : (filters.status || 'active');
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('plan_id', sql.BigInt, planId)
+    .input('status', sql.VarChar(20), status)
+    .query(`
+      SELECT
+        benefits.id,
+        benefits.membership_plan_id,
+        benefits.name,
+        benefits.description,
+        benefits.benefit_type,
+        benefits.applies_to_type,
+        benefits.applies_to_name,
+        benefits.discount_percent,
+        benefits.included_quantity,
+        benefits.usage_limit,
+        benefits.usage_period,
+        benefits.status,
+        benefits.created_at,
+        benefits.updated_at
+      FROM dbo.MembershipBenefits AS benefits
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.id = benefits.membership_plan_id
+      WHERE plans.company_id = @company_id
+        AND benefits.membership_plan_id = @plan_id
+        AND (@status IS NULL OR benefits.status = @status)
+      ORDER BY benefits.created_at DESC, benefits.id DESC
+    `);
+
+  return {
+    status: filters.status || 'active',
+    items: result.recordset.map(mapMembershipBenefit)
+  };
+}
+
+async function getMembershipBenefitById(companyId, benefitId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('benefit_id', sql.BigInt, benefitId)
+    .query(`
+      SELECT
+        benefits.id,
+        benefits.membership_plan_id,
+        benefits.name,
+        benefits.description,
+        benefits.benefit_type,
+        benefits.applies_to_type,
+        benefits.applies_to_name,
+        benefits.discount_percent,
+        benefits.included_quantity,
+        benefits.usage_limit,
+        benefits.usage_period,
+        benefits.status,
+        benefits.created_at,
+        benefits.updated_at
+      FROM dbo.MembershipBenefits AS benefits
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.id = benefits.membership_plan_id
+      WHERE plans.company_id = @company_id
+        AND benefits.id = @benefit_id
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'MEMBERSHIP_BENEFIT_NOT_FOUND', 'Membership benefit was not found.');
+  }
+
+  return mapMembershipBenefit(result.recordset[0]);
+}
+
+async function createMembershipBenefit(companyId, planId, payload) {
+  await getMembershipPlanById(companyId, planId);
+
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('membership_plan_id', sql.BigInt, planId)
+    .input('name', sql.NVarChar(120), payload.name)
+    .input('description', sql.NVarChar(500), payload.description)
+    .input('benefit_type', sql.VarChar(30), payload.benefitType)
+    .input('applies_to_type', sql.VarChar(30), payload.appliesToType)
+    .input('applies_to_name', sql.NVarChar(160), payload.appliesToName)
+    .input('discount_percent', sql.Decimal(5, 2), payload.discountPercent)
+    .input('included_quantity', sql.Decimal(18, 2), payload.includedQuantity)
+    .input('usage_limit', sql.Int, payload.usageLimit)
+    .input('usage_period', sql.VarChar(30), payload.usagePeriod)
+    .input('status', sql.VarChar(20), payload.status)
+    .query(`
+      INSERT INTO dbo.MembershipBenefits (
+        company_id,
+        membership_plan_id,
+        name,
+        description,
+        benefit_type,
+        applies_to_type,
+        applies_to_name,
+        discount_percent,
+        included_quantity,
+        usage_limit,
+        usage_period,
+        status
+      )
+      OUTPUT
+        INSERTED.id,
+        INSERTED.membership_plan_id,
+        INSERTED.name,
+        INSERTED.description,
+        INSERTED.benefit_type,
+        INSERTED.applies_to_type,
+        INSERTED.applies_to_name,
+        INSERTED.discount_percent,
+        INSERTED.included_quantity,
+        INSERTED.usage_limit,
+        INSERTED.usage_period,
+        INSERTED.status,
+        INSERTED.created_at,
+        INSERTED.updated_at
+      VALUES (
+        @company_id,
+        @membership_plan_id,
+        @name,
+        @description,
+        @benefit_type,
+        @applies_to_type,
+        @applies_to_name,
+        @discount_percent,
+        @included_quantity,
+        @usage_limit,
+        @usage_period,
+        @status
+      )
+    `);
+
+  return mapMembershipBenefit(result.recordset[0]);
+}
+
+async function updateMembershipBenefit(companyId, benefitId, payload) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('benefit_id', sql.BigInt, benefitId)
+    .input('name', sql.NVarChar(120), payload.name)
+    .input('description', sql.NVarChar(500), payload.description)
+    .input('benefit_type', sql.VarChar(30), payload.benefitType)
+    .input('applies_to_type', sql.VarChar(30), payload.appliesToType)
+    .input('applies_to_name', sql.NVarChar(160), payload.appliesToName)
+    .input('discount_percent', sql.Decimal(5, 2), payload.discountPercent)
+    .input('included_quantity', sql.Decimal(18, 2), payload.includedQuantity)
+    .input('usage_limit', sql.Int, payload.usageLimit)
+    .input('usage_period', sql.VarChar(30), payload.usagePeriod)
+    .input('status', sql.VarChar(20), payload.status)
+    .query(`
+      UPDATE benefits
+      SET
+        benefits.name = @name,
+        benefits.description = @description,
+        benefits.benefit_type = @benefit_type,
+        benefits.applies_to_type = @applies_to_type,
+        benefits.applies_to_name = @applies_to_name,
+        benefits.discount_percent = @discount_percent,
+        benefits.included_quantity = @included_quantity,
+        benefits.usage_limit = @usage_limit,
+        benefits.usage_period = @usage_period,
+        benefits.status = @status,
+        benefits.updated_at = SYSUTCDATETIME()
+      FROM dbo.MembershipBenefits AS benefits
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.id = benefits.membership_plan_id
+      WHERE plans.company_id = @company_id
+        AND benefits.id = @benefit_id
+    `);
+
+  if (!result.rowsAffected[0]) {
+    throw new ApiError(404, 'MEMBERSHIP_BENEFIT_NOT_FOUND', 'Membership benefit was not found.');
+  }
+
+  return getMembershipBenefitById(companyId, benefitId);
+}
+
+async function getActiveCustomerMembership(companyId, customerId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('customer_id', sql.BigInt, customerId)
+    .query(`
+      SELECT TOP (1)
+        memberships.id,
+        memberships.company_id,
+        memberships.customer_id,
+        memberships.membership_plan_id,
+        plans.name AS plan_name,
+        plans.renewal_notice_days,
+        memberships.start_date,
+        memberships.end_date,
+        memberships.status,
+        memberships.price_paid,
+        memberships.created_at,
+        memberships.cancelled_at,
+        memberships.cancelled_by_label,
+        memberships.cancel_note
+      FROM dbo.CustomerMemberships AS memberships
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.company_id = memberships.company_id
+       AND plans.id = memberships.membership_plan_id
+      WHERE memberships.company_id = @company_id
+        AND memberships.customer_id = @customer_id
+        AND memberships.status = 'active'
+      ORDER BY memberships.created_at DESC, memberships.id DESC
+    `);
+
+  return result.recordset.length ? mapCustomerMembership(result.recordset[0]) : null;
+}
+
+async function getCustomerMembershipById(companyId, customerId, membershipId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('customer_id', sql.BigInt, customerId)
+    .input('membership_id', sql.BigInt, membershipId)
+    .query(`
+      SELECT TOP (1)
+        memberships.id,
+        memberships.company_id,
+        memberships.customer_id,
+        memberships.membership_plan_id,
+        plans.name AS plan_name,
+        plans.renewal_notice_days,
+        memberships.start_date,
+        memberships.end_date,
+        memberships.status,
+        memberships.price_paid,
+        memberships.created_at,
+        memberships.cancelled_at,
+        memberships.cancelled_by_label,
+        memberships.cancel_note
+      FROM dbo.CustomerMemberships AS memberships
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.company_id = memberships.company_id
+       AND plans.id = memberships.membership_plan_id
+      WHERE memberships.company_id = @company_id
+        AND memberships.customer_id = @customer_id
+        AND memberships.id = @membership_id
+    `);
+
+  return result.recordset.length ? mapCustomerMembership(result.recordset[0]) : null;
+}
+
+async function createCustomerMembership(companyId, customerId, payload) {
+  const sql = getSql();
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+
+  await transaction.begin();
+
+  try {
+    const membershipResult = await new sql.Request(transaction)
+      .input('company_id', sql.BigInt, companyId)
+      .input('customer_id', sql.BigInt, customerId)
+      .input('membership_plan_id', sql.BigInt, payload.planId)
+      .input('start_date', sql.Date, payload.startDate)
+      .input('end_date', sql.Date, payload.endDate)
+      .input('price_paid', sql.Decimal(18, 2), payload.pricePaid)
+      .query(`
+        INSERT INTO dbo.CustomerMemberships (
+          company_id,
+          customer_id,
+          membership_plan_id,
+          start_date,
+          end_date,
+          status,
+          price_paid
+        )
+        OUTPUT
+          INSERTED.id,
+          INSERTED.company_id,
+          INSERTED.customer_id,
+          INSERTED.membership_plan_id,
+          INSERTED.start_date,
+          INSERTED.end_date,
+          INSERTED.status,
+          INSERTED.price_paid,
+          INSERTED.created_at,
+          INSERTED.cancelled_at,
+          INSERTED.cancelled_by_label,
+          INSERTED.cancel_note
+        VALUES (
+          @company_id,
+          @customer_id,
+          @membership_plan_id,
+          @start_date,
+          @end_date,
+          'active',
+          @price_paid
+        )
+      `);
+
+    const membershipRow = membershipResult.recordset[0];
+    const transactionResult = await new sql.Request(transaction)
+      .input('company_id', sql.BigInt, companyId)
+      .input('customer_id', sql.BigInt, customerId)
+      .input('customer_membership_id', sql.BigInt, membershipRow.id)
+      .input('membership_plan_id', sql.BigInt, payload.planId)
+      .input('transaction_type', sql.VarChar(30), 'new_membership')
+      .input('payment_method', sql.VarChar(30), payload.paymentMethod)
+      .input('amount', sql.Decimal(18, 2), payload.pricePaid)
+      .input('transaction_date', sql.Date, payload.transactionDate || new Date())
+      .input('note', sql.NVarChar(500), payload.note)
+      .input('created_by_label', sql.NVarChar(160), payload.createdByLabel)
+      .query(`
+        INSERT INTO dbo.MembershipTransactions (
+          company_id,
+          customer_id,
+          customer_membership_id,
+          membership_plan_id,
+          transaction_type,
+          payment_method,
+          amount,
+          transaction_date,
+          note,
+          created_by_label
+        )
+        OUTPUT
+          INSERTED.id,
+          INSERTED.company_id,
+          INSERTED.customer_id,
+          INSERTED.customer_membership_id,
+          INSERTED.membership_plan_id,
+          INSERTED.transaction_type,
+          INSERTED.payment_method,
+          INSERTED.amount,
+          INSERTED.transaction_date,
+          INSERTED.note,
+          INSERTED.created_at,
+          INSERTED.created_by_label
+        VALUES (
+          @company_id,
+          @customer_id,
+          @customer_membership_id,
+          @membership_plan_id,
+          @transaction_type,
+          @payment_method,
+          @amount,
+          @transaction_date,
+          @note,
+          @created_by_label
+        )
+      `);
+
+    await transaction.commit();
+
+    const membership = mapCustomerMembership({
+      ...membershipRow,
+      plan_name: payload.planName,
+      renewal_notice_days: payload.renewalNoticeDays
+    });
+    membership.transaction = mapMembershipTransaction({
+      ...transactionResult.recordset[0],
+      plan_name: payload.planName
+    });
+    return membership;
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch (rollbackError) {
+      // Preserve the original SQL error for API mapping.
+    }
+    throw error;
+  }
+}
+
+async function renewCustomerMembership(companyId, customerId, membership, plan, payload, actorLabel) {
+  const sql = getSql();
+  const pool = await getPool();
+  const today = parseDateOnly(payload.transactionDate || new Date());
+  const currentEndDate = parseDateOnly(membership.endDate);
+  const isStillActive = membership.status === 'active' && currentEndDate >= today;
+  const nextStartDate = isStillActive ? addDays(currentEndDate, 1) : today;
+  const nextEndDate = addDays(nextStartDate, Number(plan.durationDays) - 1);
+  const membershipStartDate = isStillActive ? membership.startDate : toIsoDate(nextStartDate);
+  const transaction = new sql.Transaction(pool);
+
+  await transaction.begin();
+
+  try {
+    const membershipResult = await new sql.Request(transaction)
+      .input('company_id', sql.BigInt, companyId)
+      .input('customer_id', sql.BigInt, customerId)
+      .input('customer_membership_id', sql.BigInt, membership.id)
+      .input('start_date', sql.Date, membershipStartDate)
+      .input('end_date', sql.Date, toIsoDate(nextEndDate))
+      .input('price_paid', sql.Decimal(18, 2), payload.amount)
+      .query(`
+        UPDATE dbo.CustomerMemberships
+        SET
+          start_date = @start_date,
+          end_date = @end_date,
+          status = 'active',
+          price_paid = @price_paid
+        OUTPUT
+          INSERTED.id,
+          INSERTED.company_id,
+          INSERTED.customer_id,
+          INSERTED.membership_plan_id,
+          INSERTED.start_date,
+          INSERTED.end_date,
+          INSERTED.status,
+          INSERTED.price_paid,
+          INSERTED.created_at,
+          INSERTED.cancelled_at,
+          INSERTED.cancelled_by_label,
+          INSERTED.cancel_note
+        WHERE company_id = @company_id
+          AND customer_id = @customer_id
+          AND id = @customer_membership_id
+          AND status <> 'cancelled'
+      `);
+
+    if (!membershipResult.recordset.length) {
+      throw new ApiError(404, 'CUSTOMER_MEMBERSHIP_NOT_FOUND', 'Customer membership was not found.');
+    }
+
+    const transactionResult = await new sql.Request(transaction)
+      .input('company_id', sql.BigInt, companyId)
+      .input('customer_id', sql.BigInt, customerId)
+      .input('customer_membership_id', sql.BigInt, membership.id)
+      .input('membership_plan_id', sql.BigInt, membership.planId)
+      .input('transaction_type', sql.VarChar(30), 'renewal')
+      .input('payment_method', sql.VarChar(30), payload.paymentMethod)
+      .input('amount', sql.Decimal(18, 2), payload.amount)
+      .input('transaction_date', sql.Date, payload.transactionDate)
+      .input('note', sql.NVarChar(500), payload.note)
+      .input('created_by_label', sql.NVarChar(160), actorLabel)
+      .query(`
+        INSERT INTO dbo.MembershipTransactions (
+          company_id,
+          customer_id,
+          customer_membership_id,
+          membership_plan_id,
+          transaction_type,
+          payment_method,
+          amount,
+          transaction_date,
+          note,
+          created_by_label
+        )
+        OUTPUT
+          INSERTED.id,
+          INSERTED.company_id,
+          INSERTED.customer_id,
+          INSERTED.customer_membership_id,
+          INSERTED.membership_plan_id,
+          INSERTED.transaction_type,
+          INSERTED.payment_method,
+          INSERTED.amount,
+          INSERTED.transaction_date,
+          INSERTED.note,
+          INSERTED.created_at,
+          INSERTED.created_by_label
+        VALUES (
+          @company_id,
+          @customer_id,
+          @customer_membership_id,
+          @membership_plan_id,
+          @transaction_type,
+          @payment_method,
+          @amount,
+          @transaction_date,
+          @note,
+          @created_by_label
+        )
+      `);
+
+    await transaction.commit();
+
+    const renewedMembership = mapCustomerMembership({
+      ...membershipResult.recordset[0],
+      plan_name: plan.name,
+      renewal_notice_days: plan.renewalNoticeDays
+    });
+    const transactionRow = mapMembershipTransaction({
+      ...transactionResult.recordset[0],
+      plan_name: plan.name
+    });
+    return { membership: renewedMembership, transaction: transactionRow };
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch (rollbackError) {
+      // Preserve the original SQL error for API mapping.
+    }
+    throw error;
+  }
+}
+
+async function listCustomerMemberships(companyId, customerId, filters = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const status = filters.status === 'all' ? null : (filters.status || 'active');
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('customer_id', sql.BigInt, customerId)
+    .input('status', sql.VarChar(20), status)
+    .query(`
+      SELECT
+        memberships.id,
+        memberships.company_id,
+        memberships.customer_id,
+        memberships.membership_plan_id,
+        plans.name AS plan_name,
+        plans.renewal_notice_days,
+        memberships.start_date,
+        memberships.end_date,
+        memberships.status,
+        memberships.price_paid,
+        memberships.created_at,
+        memberships.cancelled_at,
+        memberships.cancelled_by_label,
+        memberships.cancel_note
+      FROM dbo.CustomerMemberships AS memberships
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.company_id = memberships.company_id
+       AND plans.id = memberships.membership_plan_id
+      WHERE memberships.company_id = @company_id
+        AND memberships.customer_id = @customer_id
+        AND (@status IS NULL OR memberships.status = @status)
+      ORDER BY memberships.start_date DESC, memberships.created_at DESC, memberships.id DESC
+    `);
+
+  return {
+    customerId: toApiId(customerId),
+    status: filters.status || 'active',
+    items: result.recordset.map((row) => mapCustomerMembership(row))
+  };
+}
+
+async function createMembershipBenefitUsage(companyId, customerId, membership, benefit, payload, actorLabel) {
+  const sql = getSql();
+  const pool = await getPool();
+  const usagePeriodStartDate = calculateUsagePeriodStartDate(
+    payload.usageDate,
+    benefit.usagePeriod,
+    membership.startDate
+  );
+  const limit = benefit.usageLimit == null ? null : Number(benefit.usageLimit);
+
+  if (limit) {
+    const usageResult = await pool.request()
+      .input('company_id', sql.BigInt, companyId)
+      .input('customer_membership_id', sql.BigInt, membership.id)
+      .input('membership_benefit_id', sql.BigInt, benefit.id)
+      .input('usage_period_start_date', sql.Date, usagePeriodStartDate)
+      .query(`
+        SELECT COALESCE(SUM(quantity), 0) AS used_quantity
+        FROM dbo.MembershipBenefitUsages
+        WHERE company_id = @company_id
+          AND customer_membership_id = @customer_membership_id
+          AND membership_benefit_id = @membership_benefit_id
+          AND usage_period_start_date = @usage_period_start_date
+      `);
+
+    const usedQuantity = Number(usageResult.recordset[0].used_quantity || 0);
+    if (usedQuantity + payload.quantity > limit) {
+      throw new ApiError(409, 'MEMBERSHIP_BENEFIT_USAGE_LIMIT_EXCEEDED', 'Membership benefit usage limit would be exceeded.');
+    }
+  }
+
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('customer_membership_id', sql.BigInt, membership.id)
+    .input('membership_benefit_id', sql.BigInt, benefit.id)
+    .input('customer_id', sql.BigInt, customerId)
+    .input('usage_date', sql.Date, payload.usageDate)
+    .input('usage_period_start_date', sql.Date, usagePeriodStartDate)
+    .input('quantity', sql.Int, payload.quantity)
+    .input('note', sql.NVarChar(500), payload.note)
+    .input('created_by_label', sql.NVarChar(160), actorLabel)
+    .query(`
+      INSERT INTO dbo.MembershipBenefitUsages (
+        company_id,
+        customer_membership_id,
+        membership_benefit_id,
+        customer_id,
+        usage_date,
+        usage_period_start_date,
+        quantity,
+        note,
+        created_by_label
+      )
+      OUTPUT
+        INSERTED.id,
+        INSERTED.company_id,
+        INSERTED.customer_membership_id,
+        INSERTED.membership_benefit_id,
+        INSERTED.customer_id,
+        INSERTED.used_at,
+        INSERTED.usage_date,
+        INSERTED.usage_period_start_date,
+        INSERTED.quantity,
+        INSERTED.note,
+        INSERTED.created_by_label
+      VALUES (
+        @company_id,
+        @customer_membership_id,
+        @membership_benefit_id,
+        @customer_id,
+        @usage_date,
+        @usage_period_start_date,
+        @quantity,
+        @note,
+        @created_by_label
+      )
+    `);
+
+  return mapMembershipBenefitUsage({
+    ...result.recordset[0],
+    benefit_name: benefit.name,
+    benefit_type: benefit.benefitType,
+    membership_plan_id: membership.planId,
+    plan_name: membership.planName
+  });
+}
+
+async function listMembershipBenefitUsages(companyId, customerId, filters = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('customer_id', sql.BigInt, customerId)
+    .input('from', sql.Date, filters.from)
+    .input('to', sql.Date, filters.to)
+    .query(`
+      SELECT
+        usages.id,
+        usages.company_id,
+        usages.customer_membership_id,
+        usages.membership_benefit_id,
+        usages.customer_id,
+        usages.used_at,
+        usages.usage_date,
+        usages.usage_period_start_date,
+        usages.quantity,
+        usages.note,
+        usages.created_by_label,
+        benefits.name AS benefit_name,
+        benefits.benefit_type,
+        plans.id AS membership_plan_id,
+        plans.name AS plan_name
+      FROM dbo.MembershipBenefitUsages AS usages
+      INNER JOIN dbo.MembershipBenefits AS benefits
+        ON benefits.id = usages.membership_benefit_id
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.id = benefits.membership_plan_id
+       AND plans.company_id = usages.company_id
+      WHERE usages.company_id = @company_id
+        AND usages.customer_id = @customer_id
+        AND usages.usage_date >= @from
+        AND usages.usage_date <= @to
+      ORDER BY usages.usage_date DESC, usages.used_at DESC, usages.id DESC
+    `);
+
+  return {
+    customerId: toApiId(customerId),
+    from: filters.from,
+    to: filters.to,
+    items: result.recordset.map(mapMembershipBenefitUsage)
+  };
+}
+
+async function listMembershipTransactions(companyId, customerId, filters = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('customer_id', sql.BigInt, customerId)
+    .input('from', sql.Date, filters.from)
+    .input('to', sql.Date, filters.to)
+    .query(`
+      SELECT
+        transactions.id,
+        transactions.company_id,
+        transactions.customer_id,
+        transactions.customer_membership_id,
+        transactions.membership_plan_id,
+        plans.name AS plan_name,
+        transactions.transaction_type,
+        transactions.payment_method,
+        transactions.amount,
+        transactions.transaction_date,
+        transactions.note,
+        transactions.created_at,
+        transactions.created_by_label
+      FROM dbo.MembershipTransactions AS transactions
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.company_id = transactions.company_id
+       AND plans.id = transactions.membership_plan_id
+      WHERE transactions.company_id = @company_id
+        AND transactions.customer_id = @customer_id
+        AND transactions.transaction_date >= @from
+        AND transactions.transaction_date <= @to
+      ORDER BY transactions.transaction_date DESC, transactions.created_at DESC, transactions.id DESC
+    `);
+
+  return {
+    customerId: toApiId(customerId),
+    from: filters.from,
+    to: filters.to,
+    items: result.recordset.map(mapMembershipTransaction)
+  };
+}
+
+async function getMembershipFinancialReport(companyId, filters = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('from', sql.Date, filters.from)
+    .input('to', sql.Date, filters.to)
+    .query(`
+      SELECT
+        transactions.id,
+        transactions.customer_id,
+        customers.name AS customer_name,
+        customers.phone AS customer_phone,
+        customers.email AS customer_email,
+        transactions.customer_membership_id,
+        transactions.membership_plan_id,
+        plans.name AS plan_name,
+        transactions.transaction_type,
+        transactions.payment_method,
+        transactions.amount,
+        transactions.transaction_date,
+        transactions.created_at,
+        transactions.note
+      FROM dbo.MembershipTransactions AS transactions
+      INNER JOIN dbo.Customers AS customers
+        ON customers.company_id = transactions.company_id
+       AND customers.id = transactions.customer_id
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.company_id = transactions.company_id
+       AND plans.id = transactions.membership_plan_id
+      WHERE transactions.company_id = @company_id
+        AND transactions.transaction_date >= @from
+        AND transactions.transaction_date <= @to
+        AND transactions.transaction_type IN ('new_membership', 'renewal')
+      ORDER BY transactions.transaction_date DESC, transactions.created_at DESC, transactions.id DESC
+    `);
+
+  const items = result.recordset.map(mapMembershipFinancialReportTransaction);
+  const newMemberships = items.filter((item) => item.transactionType === 'new_membership');
+  const renewals = items.filter((item) => item.transactionType === 'renewal');
+  const paymentMethods = items.reduce((summary, item) => {
+    const current = summary[item.paymentMethod] || { paymentMethod: item.paymentMethod, count: 0, amount: 0 };
+    current.count += 1;
+    current.amount += item.amount;
+    summary[item.paymentMethod] = current;
+    return summary;
+  }, {});
+
+  return {
+    from: filters.from,
+    to: filters.to,
+    summary: {
+      newMembershipCount: newMemberships.length,
+      newMembershipAmount: newMemberships.reduce((total, item) => total + item.amount, 0),
+      renewalCount: renewals.length,
+      renewalAmount: renewals.reduce((total, item) => total + item.amount, 0),
+      paymentMethods
+    },
+    items
+  };
+}
+
+async function listMembershipExpirationAlerts(companyId, filters = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const status = filters.status || 'active';
+  const withinDays = Number.isInteger(filters.withinDays) ? filters.withinDays : 5;
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('status', sql.VarChar(20), status)
+    .input('within_days', sql.Int, withinDays)
+    .query(`
+      DECLARE @today date = CONVERT(date, SYSUTCDATETIME());
+
+      SELECT
+        memberships.id,
+        memberships.company_id,
+        memberships.customer_id,
+        memberships.membership_plan_id,
+        customers.name AS customer_name,
+        customers.phone AS customer_phone,
+        customers.email AS customer_email,
+        plans.name AS plan_name,
+        memberships.start_date,
+        memberships.end_date,
+        memberships.status,
+        @today AS today_date
+      FROM dbo.CustomerMemberships AS memberships
+      INNER JOIN dbo.Customers AS customers
+        ON customers.company_id = memberships.company_id
+       AND customers.id = memberships.customer_id
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.company_id = memberships.company_id
+       AND plans.id = memberships.membership_plan_id
+      WHERE memberships.company_id = @company_id
+        AND (
+          (
+            @status = 'active'
+            AND memberships.status = 'active'
+            AND memberships.end_date >= @today
+            AND memberships.end_date <= DATEADD(day, @within_days, @today)
+          )
+          OR (
+            @status = 'expired'
+            AND (
+              memberships.status = 'expired'
+              OR (memberships.status = 'active' AND memberships.end_date < @today)
+            )
+          )
+          OR (
+            @status = 'cancelled'
+            AND memberships.status = 'cancelled'
+          )
+        )
+      ORDER BY memberships.end_date ASC, memberships.id ASC
+    `);
+
+  return {
+    withinDays,
+    status,
+    items: result.recordset.map((row) => mapMembershipExpirationAlert(row, {
+      today: row.today_date,
+      withinDays
+    }))
+  };
+}
+
 module.exports = {
   acceptCompanyInvitationWithPassword,
   approveCompanyRegistrationRequest,
+  calculateExpirationAlert,
+  calculateMembershipEndDate,
+  calculateUsagePeriodStartDate,
   clearAuthAttemptLimit,
   createCompanySession,
   createCompanyInvitation,
   createCompanyRegistrationRequest,
   createCustomer,
+  createCustomerMembership,
+  createMembershipBenefitUsage,
+  createMembershipBenefit,
+  createMembershipPlan,
   createPurchase,
   createRedemption,
   customerExists,
@@ -1599,6 +2896,17 @@ module.exports = {
   getCompanyLogoMetadata,
   getCompanySettings,
   getLocalPasswordUserByEmail,
+  getMembershipFinancialReport,
+  getActiveCustomerMembership,
+  getCustomerMembershipById,
+  getMembershipBenefitById,
+  getMembershipPlanById,
+  listCustomerMemberships,
+  listMembershipBenefitUsages,
+  listMembershipBenefits,
+  listMembershipExpirationAlerts,
+  listMembershipTransactions,
+  listMembershipPlans,
   listCustomers,
   listCompanyRegistrationRequests,
   mapCompanyInvitation,
@@ -1606,14 +2914,24 @@ module.exports = {
   mapCompanyRegistrationRequest,
   mapCompanySettings,
   mapCompanyUser,
+  mapMembershipBenefit,
+  mapMembershipBenefitUsage,
+  mapCustomerMembership,
+  mapMembershipExpirationAlert,
+  mapMembershipFinancialReportTransaction,
+  mapMembershipTransaction,
+  mapMembershipPlan,
   mapMyCompany,
   recordAuthAttemptFailure,
   rejectCompanyRegistrationRequest,
   revokeCompanySession,
   rotateCompanyInvitationToken,
+  renewCustomerMembership,
   toApiId,
   toIsoTimestamp,
   updateCompanyLogo,
   updateCompanyRegistrationRequestLogo,
-  updateCompanySettings
+  updateCompanySettings,
+  updateMembershipBenefit,
+  updateMembershipPlan
 };

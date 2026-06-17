@@ -9,6 +9,13 @@ const allowedRegistrationRequestStatuses = new Set(['pending', 'approved', 'reje
 const allowedInvitationStatuses = new Set(['pending', 'accepted', 'revoked', 'expired']);
 const allowedCompanyUserStatuses = new Set(['invited', 'active', 'disabled']);
 const allowedLogoContentTypes = new Set(['image/png', 'image/jpeg', 'image/webp']);
+const allowedMembershipListStatuses = new Set(['active', 'inactive', 'all']);
+const allowedMembershipStatuses = new Set(['active', 'inactive']);
+const allowedCustomerMembershipListStatuses = new Set(['active', 'expired', 'cancelled', 'all']);
+const allowedMembershipBenefitTypes = new Set(['informational', 'discount', 'allowance', 'free_item']);
+const allowedMembershipAppliesToTypes = new Set(['product', 'service', 'category', 'text']);
+const allowedMembershipUsagePeriods = new Set(['none', 'day', 'week', 'month', 'membership_term']);
+const allowedMembershipPaymentMethods = new Set(['cash', 'card', 'credit', 'transfer', 'other']);
 
 function parsePositiveInteger(value, field) {
   const number = Number(value);
@@ -507,12 +514,503 @@ function validateRedemptionPayload(payload) {
   return { customerId, redemptionDate, pointsRedeemed, note: note || null };
 }
 
+function validateMembershipStatusQuery(query) {
+  const status = normalizeText(query.get('status') || 'active') || 'active';
+
+  if (!allowedMembershipListStatuses.has(status)) {
+    throw validationError([{ field: 'status', message: 'status must be one of active, inactive, all.' }]);
+  }
+
+  return { status };
+}
+
+function validateCustomerMembershipStatusQuery(query) {
+  const status = normalizeText(query.get('status') || 'active') || 'active';
+
+  if (!allowedCustomerMembershipListStatuses.has(status)) {
+    throw validationError([{ field: 'status', message: 'status must be one of active, expired, cancelled, all.' }]);
+  }
+
+  return { status };
+}
+
+function validateExpirationAlertsQuery(query) {
+  const details = [];
+  const status = normalizeText(query.get('status') || 'active') || 'active';
+  const withinDaysValue = query.get('withinDays') || '5';
+  const withinDays = Number(withinDaysValue);
+
+  if (!allowedCustomerMembershipListStatuses.has(status) || status === 'all') {
+    details.push({ field: 'status', message: 'status must be one of active, expired, cancelled.' });
+  }
+
+  if (!Number.isInteger(withinDays) || withinDays < 0 || withinDays > 365) {
+    details.push({ field: 'withinDays', message: 'withinDays must be an integer from 0 to 365.' });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { status, withinDays };
+}
+
+function validateMembershipActivationPayload(payload) {
+  const details = [];
+  const body = payload && typeof payload === 'object' ? payload : {};
+  const rawPlanId = Object.prototype.hasOwnProperty.call(body, 'planId') ? body.planId : body.membershipPlanId;
+  const planId = Number(rawPlanId);
+  const startDate = body.startDate;
+  const amountProvided = Object.prototype.hasOwnProperty.call(body, 'amount') || Object.prototype.hasOwnProperty.call(body, 'pricePaid');
+  const rawAmount = Object.prototype.hasOwnProperty.call(body, 'amount') ? body.amount : body.pricePaid;
+  const amount = amountProvided && rawAmount !== '' && rawAmount != null ? Number(rawAmount) : null;
+  const paymentMethod = normalizeText(body.paymentMethod || '');
+  const note = normalizeText(body.note);
+
+  if (!Number.isInteger(planId) || planId <= 0) {
+    details.push({ field: 'planId', message: 'planId must be a positive integer.' });
+  }
+
+  validateDate(startDate, 'startDate', details);
+  if (startDate && !parseIsoDate(startDate)) {
+    details.push({ field: 'startDate', message: 'startDate must be a valid calendar date.' });
+  }
+
+  if (!allowedMembershipPaymentMethods.has(paymentMethod)) {
+    details.push({ field: 'paymentMethod', message: 'paymentMethod must be cash, card, credit, transfer, or other.' });
+  }
+
+  if (!amountProvided || !Number.isFinite(amount) || amount < 0) {
+    details.push({ field: 'amount', message: 'amount must be zero or greater.' });
+  }
+
+  if (note && note.length > 500) {
+    details.push({ field: 'note', message: 'note must be 500 characters or fewer.' });
+  }
+
+  for (const forbiddenField of ['companyId', 'customerId', 'endDate', 'status', 'transactionType', 'createdByLabel']) {
+    if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
+      details.push({ field: forbiddenField, message: `${forbiddenField} is calculated by the API and must not be sent.` });
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    planId,
+    startDate,
+    pricePaid: amount,
+    paymentMethod,
+    note: note || null
+  };
+}
+
+function validateMembershipRenewalPayload(payload) {
+  const details = [];
+  const body = payload && typeof payload === 'object' ? payload : {};
+  const rawAmount = Object.prototype.hasOwnProperty.call(body, 'amount') ? body.amount : body.pricePaid;
+  const amount = rawAmount !== '' && rawAmount != null ? Number(rawAmount) : null;
+  const paymentMethod = normalizeText(body.paymentMethod || '');
+  const transactionDate = body.transactionDate || new Date().toISOString().slice(0, 10);
+  const note = normalizeText(body.note);
+
+  if (!allowedMembershipPaymentMethods.has(paymentMethod)) {
+    details.push({ field: 'paymentMethod', message: 'paymentMethod must be cash, card, credit, transfer, or other.' });
+  }
+
+  if (!Number.isFinite(amount) || amount < 0) {
+    details.push({ field: 'amount', message: 'amount must be zero or greater.' });
+  }
+
+  validateDate(transactionDate, 'transactionDate', details);
+  if (transactionDate && !parseIsoDate(transactionDate)) {
+    details.push({ field: 'transactionDate', message: 'transactionDate must be a valid calendar date.' });
+  }
+
+  if (note && note.length > 500) {
+    details.push({ field: 'note', message: 'note must be 500 characters or fewer.' });
+  }
+
+  for (const forbiddenField of ['companyId', 'customerId', 'customerMembershipId', 'membershipPlanId', 'transactionType', 'createdByLabel']) {
+    if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
+      details.push({ field: forbiddenField, message: `${forbiddenField} is calculated by the API and must not be sent.` });
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    amount,
+    paymentMethod,
+    transactionDate,
+    note: note || null
+  };
+}
+
+function validateMembershipBenefitUsagePayload(payload) {
+  const details = [];
+  const body = payload && typeof payload === 'object' ? payload : {};
+  const rawBenefitId = Object.prototype.hasOwnProperty.call(body, 'benefitId') ? body.benefitId : body.membershipBenefitId;
+  const benefitId = Number(rawBenefitId);
+  const customerMembershipIdProvided = Object.prototype.hasOwnProperty.call(body, 'customerMembershipId');
+  const customerMembershipId = customerMembershipIdProvided ? Number(body.customerMembershipId) : null;
+  const usageDate = body.usageDate;
+  const quantityProvided = Object.prototype.hasOwnProperty.call(body, 'quantity');
+  const quantity = quantityProvided && body.quantity !== '' && body.quantity != null ? Number(body.quantity) : 1;
+  const note = normalizeText(body.note);
+
+  if (!Number.isInteger(benefitId) || benefitId <= 0) {
+    details.push({ field: 'benefitId', message: 'benefitId must be a positive integer.' });
+  }
+
+  if (customerMembershipIdProvided && (!Number.isInteger(customerMembershipId) || customerMembershipId <= 0)) {
+    details.push({ field: 'customerMembershipId', message: 'customerMembershipId must be a positive integer.' });
+  }
+
+  validateDate(usageDate, 'usageDate', details);
+  if (usageDate && !parseIsoDate(usageDate)) {
+    details.push({ field: 'usageDate', message: 'usageDate must be a valid calendar date.' });
+  }
+
+  if (!Number.isInteger(quantity) || quantity <= 0) {
+    details.push({ field: 'quantity', message: 'quantity must be a positive integer.' });
+  }
+
+  if (note && note.length > 500) {
+    details.push({ field: 'note', message: 'note must be 500 characters or fewer.' });
+  }
+
+  for (const forbiddenField of ['companyId', 'customerId', 'usedAt', 'createdByLabel', 'usagePeriodStartDate']) {
+    if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
+      details.push({ field: forbiddenField, message: `${forbiddenField} is calculated by the API and must not be sent.` });
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    benefitId,
+    customerMembershipId,
+    usageDate,
+    quantity,
+    note: note || null
+  };
+}
+
+function validateMembershipBenefitUsageQuery(query) {
+  const details = [];
+  const from = query.get('from');
+  const to = query.get('to');
+  const fromDate = parseIsoDate(from);
+  const toDate = parseIsoDate(to);
+
+  if (!fromDate) {
+    details.push({ field: 'from', message: 'from is required and must use YYYY-MM-DD format.' });
+  }
+
+  if (!toDate) {
+    details.push({ field: 'to', message: 'to is required and must use YYYY-MM-DD format.' });
+  }
+
+  if (fromDate && toDate) {
+    if (fromDate > toDate) {
+      details.push({ field: 'from', message: 'from must be before or equal to to.' });
+    } else {
+      const rangeDays = ((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
+      if (rangeDays > maxReportRangeDays) {
+        details.push({ field: 'to', message: `Date range must be ${maxReportRangeDays} days or fewer.` });
+      }
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { from, to };
+}
+
+function validateMembershipTransactionsQuery(query) {
+  const details = [];
+  const from = query.get('from');
+  const to = query.get('to');
+  const fromDate = parseIsoDate(from);
+  const toDate = parseIsoDate(to);
+
+  if (!fromDate) {
+    details.push({ field: 'from', message: 'from is required and must use YYYY-MM-DD format.' });
+  }
+
+  if (!toDate) {
+    details.push({ field: 'to', message: 'to is required and must use YYYY-MM-DD format.' });
+  }
+
+  if (fromDate && toDate) {
+    if (fromDate > toDate) {
+      details.push({ field: 'from', message: 'from must be before or equal to to.' });
+    } else {
+      const rangeDays = ((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
+      if (rangeDays > maxReportRangeDays) {
+        details.push({ field: 'to', message: `Date range must be ${maxReportRangeDays} days or fewer.` });
+      }
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { from, to };
+}
+
+function validateMembershipFinancialReportQuery(query) {
+  return validateMembershipTransactionsQuery(query);
+}
+
+function validateMembershipPlanPayload(payload, options = {}) {
+  const details = [];
+  const body = payload && typeof payload === 'object' ? payload : {};
+  const patch = {};
+  const providedFields = [];
+  const partial = Boolean(options.partial);
+  const fields = ['name', 'description', 'durationDays', 'price', 'renewalNoticeDays', 'status'];
+
+  for (const field of fields) {
+    if (!Object.prototype.hasOwnProperty.call(body, field)) {
+      continue;
+    }
+
+    providedFields.push(field);
+
+    if (field === 'name') {
+      patch.name = validateRequiredText(body.name, 'name', 120, details);
+    } else if (field === 'description') {
+      patch.description = validateOptionalText(body.description, 'description', 500, details);
+    } else if (field === 'durationDays') {
+      const durationDays = Number(body.durationDays);
+      if (!Number.isInteger(durationDays) || durationDays <= 0 || durationDays > 3660) {
+        details.push({ field: 'durationDays', message: 'durationDays must be a positive integer.' });
+      } else {
+        patch.durationDays = durationDays;
+      }
+    } else if (field === 'price') {
+      const price = Number(body.price);
+      if (!Number.isFinite(price) || price < 0) {
+        details.push({ field: 'price', message: 'price must be zero or greater.' });
+      } else {
+        patch.price = price;
+      }
+    } else if (field === 'renewalNoticeDays') {
+      const renewalNoticeDays = Number(body.renewalNoticeDays);
+      if (!Number.isInteger(renewalNoticeDays) || renewalNoticeDays < 0 || renewalNoticeDays > 365) {
+        details.push({ field: 'renewalNoticeDays', message: 'renewalNoticeDays must be an integer from 0 to 365.' });
+      } else {
+        patch.renewalNoticeDays = renewalNoticeDays;
+      }
+    } else if (field === 'status') {
+      const status = normalizeText(body.status);
+      if (!allowedMembershipStatuses.has(status)) {
+        details.push({ field: 'status', message: 'status must be active or inactive.' });
+      } else {
+        patch.status = status;
+      }
+    }
+  }
+
+  if (!partial) {
+    if (!Object.prototype.hasOwnProperty.call(body, 'name')) {
+      details.push({ field: 'name', message: 'name is required.' });
+    }
+    if (!Object.prototype.hasOwnProperty.call(body, 'durationDays')) {
+      details.push({ field: 'durationDays', message: 'durationDays is required.' });
+    }
+    if (!Object.prototype.hasOwnProperty.call(body, 'price')) {
+      details.push({ field: 'price', message: 'price is required.' });
+    }
+  }
+
+  if (partial && !providedFields.length) {
+    details.push({ field: 'body', message: 'At least one editable field is required.' });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  if (!partial) {
+    return {
+      name: patch.name,
+      description: patch.description || null,
+      durationDays: patch.durationDays,
+      price: patch.price,
+      renewalNoticeDays: Object.prototype.hasOwnProperty.call(patch, 'renewalNoticeDays') ? patch.renewalNoticeDays : 5,
+      status: patch.status || 'active'
+    };
+  }
+
+  return { patch, providedFields };
+}
+
+function validateMembershipBenefitPayload(payload, options = {}) {
+  const details = [];
+  const body = payload && typeof payload === 'object' ? payload : {};
+  const patch = {};
+  const providedFields = [];
+  const partial = Boolean(options.partial);
+  const fields = [
+    'name',
+    'description',
+    'benefitType',
+    'appliesToType',
+    'appliesToName',
+    'discountPercent',
+    'includedQuantity',
+    'usageLimit',
+    'usagePeriod',
+    'status'
+  ];
+
+  for (const field of fields) {
+    if (!Object.prototype.hasOwnProperty.call(body, field)) {
+      continue;
+    }
+
+    providedFields.push(field);
+
+    if (field === 'name') {
+      patch.name = validateRequiredText(body.name, 'name', 120, details);
+    } else if (field === 'description') {
+      patch.description = validateOptionalText(body.description, 'description', 500, details);
+    } else if (field === 'benefitType') {
+      const benefitType = normalizeText(body.benefitType);
+      if (!allowedMembershipBenefitTypes.has(benefitType)) {
+        details.push({ field: 'benefitType', message: 'benefitType must be informational, discount, allowance, or free_item.' });
+      } else {
+        patch.benefitType = benefitType;
+      }
+    } else if (field === 'appliesToType') {
+      const appliesToType = normalizeText(body.appliesToType);
+      if (!allowedMembershipAppliesToTypes.has(appliesToType)) {
+        details.push({ field: 'appliesToType', message: 'appliesToType must be product, service, category, or text.' });
+      } else {
+        patch.appliesToType = appliesToType;
+      }
+    } else if (field === 'appliesToName') {
+      patch.appliesToName = validateOptionalText(body.appliesToName, 'appliesToName', 160, details);
+    } else if (field === 'discountPercent') {
+      if (body.discountPercent == null || body.discountPercent === '') {
+        patch.discountPercent = null;
+      } else {
+        const discountPercent = Number(body.discountPercent);
+        if (!Number.isFinite(discountPercent) || discountPercent <= 0 || discountPercent > 100) {
+          details.push({ field: 'discountPercent', message: 'discountPercent must be greater than 0 and at most 100.' });
+        } else {
+          patch.discountPercent = discountPercent;
+        }
+      }
+    } else if (field === 'includedQuantity') {
+      if (body.includedQuantity == null || body.includedQuantity === '') {
+        patch.includedQuantity = null;
+      } else {
+        const includedQuantity = Number(body.includedQuantity);
+        if (!Number.isFinite(includedQuantity) || includedQuantity <= 0) {
+          details.push({ field: 'includedQuantity', message: 'includedQuantity must be greater than 0.' });
+        } else {
+          patch.includedQuantity = includedQuantity;
+        }
+      }
+    } else if (field === 'usageLimit') {
+      if (body.usageLimit == null || body.usageLimit === '') {
+        patch.usageLimit = null;
+      } else {
+        const usageLimit = Number(body.usageLimit);
+        if (!Number.isInteger(usageLimit) || usageLimit <= 0) {
+          details.push({ field: 'usageLimit', message: 'usageLimit must be a positive integer.' });
+        } else {
+          patch.usageLimit = usageLimit;
+        }
+      }
+    } else if (field === 'usagePeriod') {
+      const usagePeriod = normalizeText(body.usagePeriod);
+      if (!allowedMembershipUsagePeriods.has(usagePeriod)) {
+        details.push({ field: 'usagePeriod', message: 'usagePeriod must be none, day, week, month, or membership_term.' });
+      } else {
+        patch.usagePeriod = usagePeriod;
+      }
+    } else if (field === 'status') {
+      const status = normalizeText(body.status);
+      if (!allowedMembershipStatuses.has(status)) {
+        details.push({ field: 'status', message: 'status must be active or inactive.' });
+      } else {
+        patch.status = status;
+      }
+    }
+  }
+
+  if (!partial) {
+    if (!Object.prototype.hasOwnProperty.call(body, 'name')) {
+      details.push({ field: 'name', message: 'name is required.' });
+    }
+    if (!Object.prototype.hasOwnProperty.call(body, 'benefitType')) {
+      details.push({ field: 'benefitType', message: 'benefitType is required.' });
+    }
+  }
+
+  const finalBenefitType = patch.benefitType || (partial ? null : 'informational');
+  if (!partial && finalBenefitType === 'discount' && !patch.discountPercent) {
+    details.push({ field: 'discountPercent', message: 'discountPercent is required for discount benefits.' });
+  }
+
+  if (!partial && ['allowance', 'free_item'].includes(finalBenefitType)) {
+    if (!patch.includedQuantity) {
+      details.push({ field: 'includedQuantity', message: 'includedQuantity is required for allowance or free item benefits.' });
+    }
+    if (!patch.usageLimit) {
+      details.push({ field: 'usageLimit', message: 'usageLimit is required for allowance or free item benefits.' });
+    }
+    if (!patch.usagePeriod || patch.usagePeriod === 'none') {
+      details.push({ field: 'usagePeriod', message: 'usagePeriod must not be none for allowance or free item benefits.' });
+    }
+  }
+
+  if (partial && !providedFields.length) {
+    details.push({ field: 'body', message: 'At least one editable field is required.' });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  if (!partial) {
+    return {
+      name: patch.name,
+      description: patch.description || null,
+      benefitType: patch.benefitType,
+      appliesToType: patch.appliesToType || 'text',
+      appliesToName: patch.appliesToName || null,
+      discountPercent: patch.discountPercent || null,
+      includedQuantity: patch.includedQuantity || null,
+      usageLimit: patch.usageLimit || null,
+      usagePeriod: patch.usagePeriod || 'none',
+      status: patch.status || 'active'
+    };
+  }
+
+  return { patch, providedFields };
+}
+
 function validateActivityReportQuery(query) {
   const details = [];
   const from = query.get('from');
   const to = query.get('to');
   const type = query.get('type') || 'all';
-  const allowedTypes = new Set(['all', 'purchase', 'redemption']);
+  const allowedTypes = new Set(['all', 'purchase', 'redemption', 'membership']);
   const fromDate = parseIsoDate(from);
   const toDate = parseIsoDate(to);
 
@@ -610,9 +1108,20 @@ module.exports = {
   validateCompanyRegistrationRequestListQuery,
   validateCompanyRegistrationReviewPayload,
   validateCompanyRole,
+  validateCustomerMembershipStatusQuery,
   validateCustomerPayload,
+  validateExpirationAlertsQuery,
   validateInvitationAcceptPayload,
   validateLogoFileMetadata,
+  validateMembershipActivationPayload,
+  validateMembershipBenefitPayload,
+  validateMembershipBenefitUsagePayload,
+  validateMembershipBenefitUsageQuery,
+  validateMembershipPlanPayload,
+  validateMembershipRenewalPayload,
+  validateMembershipStatusQuery,
+  validateMembershipTransactionsQuery,
+  validateMembershipFinancialReportQuery,
   validateMyCompanyPatchPayload,
   validatePurchasePayload,
   validateRedemptionPayload

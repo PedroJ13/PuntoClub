@@ -7,14 +7,12 @@ Product / Architect / Release coordina. Cada chat especializado trabaja tareas p
 ## Flujo
 
 1. Crear tarea en `tasks/TASK-###.md`.
-2. Registrar o mover la tarea en `docs/TASK_BOARD.md`.
-3. Asignar equipo responsable.
+2. Asignar equipo responsable.
+3. El usuario pega la tarea en el chat correspondiente.
 4. El equipo lee `AGENTS.md`, su `chat-start/*.md`, la tarea y docs necesarios.
-5. El equipo mueve la tarea a `In Progress` cuando la toma, si la tarea lo pide o si el usuario lo autoriza.
-6. El equipo ejecuta o propone dentro del alcance.
-7. El equipo crea `tasks/TASK-###-HANDOFF.md`.
-8. El equipo mueve la tarea a `Needs Review`, `QA` o `Blocked`, segun resultado.
-9. Product / Architect / Release procesa el handoff y actualiza release status, backlog, decision log y tablero.
+5. El equipo ejecuta o propone dentro del alcance.
+6. El equipo crea `tasks/TASK-###-HANDOFF.md`.
+7. Product / Architect / Release procesa el handoff y actualiza release status, backlog o decision log.
 
 ## Chats reales del proyecto
 
@@ -37,16 +35,6 @@ Product / Architect / Release coordina. Cada chat especializado trabaja tareas p
 - `chat-start/WEB_DEV.md`
 - `chat-start/QA.md`
 - `chat-start/DISENO_UX.md`
-
-## Tablero operativo
-
-- Archivo: `docs/TASK_BOARD.md`.
-- Product / Architect / Release crea tareas, asigna equipo, define prioridad y decide cierre en `Done`.
-- Cada chat puede tomar/liberar solo la tarea asignada a su equipo.
-- Cada chat solo toma tareas en `Ready` o `Assigned`, sin dependencias pendientes.
-- Product / Architect / Release controla las rondas moviendo tareas futuras desde `Blocked` hacia `Ready` o `Assigned`.
-- Si hay bloqueo, mover a `Blocked` y escribir motivo concreto.
-- Si hay handoff, enlazar `tasks/TASK-###-HANDOFF.md` en el tablero.
 
 ## Git
 

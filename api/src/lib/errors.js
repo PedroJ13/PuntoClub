@@ -55,6 +55,10 @@ function mapSqlError(error) {
     return new ApiError(409, 'INVITATION_ALREADY_PENDING', 'A company invitation is already pending for this email.');
   }
 
+  if ((number === 2601 || number === 2627) && message.includes('UX_CustomerMemberships_one_active_per_customer')) {
+    return new ApiError(409, 'CUSTOMER_ALREADY_HAS_ACTIVE_MEMBERSHIP', 'Customer already has an active membership.');
+  }
+
   if ((number === 2601 || number === 2627) && (
     message.includes('UX_CompanyUsers_company_email') ||
     message.includes('UX_CompanyUsers_auth_subject') ||

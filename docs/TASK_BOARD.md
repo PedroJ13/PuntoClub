@@ -67,7 +67,6 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Nota |
 | --- | --- | --- | --- | --- | --- |
-| `TASK-118` - Validar menu lateral publicado | QA | P1 | Round 3 | `TASK-117` | `tasks/TASK-118-assignment.md` |
 | `TASK-120` - Preparar habilitacion Azure para email, auth y logos | Infra / Azure | P1 | Round 4 | `TASK-119` | `tasks/TASK-120-assignment.md` |
 | `TASK-121` - Preparar migracion SQL para registro de empresas e invitaciones | SQL DEV | P1 | Round 4 | `TASK-119` | `tasks/TASK-121-assignment.md` |
 
@@ -80,6 +79,9 @@ Product / Architect / Release mantiene la creacion de tareas, prioridad y asigna
 
 | Tarea | Equipo | Prioridad | Round | Depende de | Handoff |
 | --- | --- | --- | --- | --- | --- |
+| `TASK-118` - Validar menu lateral publicado | QA | P1 | Round 3 | `TASK-117` | `tasks/TASK-118-HANDOFF.md` |
+| `TASK-185` - PO Test valida operacion con sesion de empresa | PO Test | P1 | Round 5 | `TASK-183`, `TASK-184` | `tasks/TASK-185-HANDOFF.md` |
+| `TASK-199` - PO Test valida logo con sesion real | PO Test | P1 | Round 6 | `TASK-197`, `TASK-198` | `tasks/TASK-199-HANDOFF.md` |
 
 ## QA
 

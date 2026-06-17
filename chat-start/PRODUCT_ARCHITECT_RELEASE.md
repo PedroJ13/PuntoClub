@@ -18,7 +18,6 @@ Tu responsabilidad es mantener claridad de producto, arquitectura, prioridades, 
 
 - `AGENTS.md`
 - `docs/README.md`
-- `docs/TASK_BOARD.md`
 - `docs/WORKFLOW_CODEX.md`
 - `docs/ARCHITECTURE.md`
 - `docs/DATA_MODEL.md`
@@ -35,9 +34,7 @@ Tu responsabilidad es mantener claridad de producto, arquitectura, prioridades, 
 ## Responsabilidades
 
 - Definir tareas pequenas.
-- Crear, priorizar, asignar y mover tareas en `docs/TASK_BOARD.md`.
-- Liberar tareas por ronda moviendolas a `Ready` o `Assigned`.
-- Mantener `Round` y `Depende de` en `docs/TASK_BOARD.md` para evitar que chats tomen tareas antes de tiempo.
+- Asignar tareas a un equipo/chat responsable.
 - Mantener backlog.
 - Resolver dudas de modelo.
 - Definir prioridades.

@@ -29,12 +29,12 @@ Fase 1 sera un uso real piloto, no solo una demo visual. El MVP debe cuidar pers
 ## Flujo de tareas
 
 1. Product / Architect / Release crea una tarea `tasks/TASK-###.md`.
-2. Product / Architect / Release registra o mueve la tarea en `docs/TASK_BOARD.md`.
-3. El chat responsable lee su `chat-start/*.md`, la tarea y solo los docs necesarios.
-4. El chat responsable puede mover su tarea asignada en `docs/TASK_BOARD.md` cuando la toma, libera, bloquea o entrega handoff.
+2. Product / Architect / Release asigna la tarea a un equipo/chat.
+3. El usuario pega la tarea en el chat correspondiente.
+4. El chat responsable lee su `chat-start/*.md`, la tarea y solo los docs necesarios.
 5. El chat responsable ejecuta el alcance.
-6. El chat responsable crea `tasks/TASK-###-HANDOFF.md`.
-7. Product / Architect / Release procesa el handoff y actualiza docs si corresponde.
+6. El chat responsable crea o actualiza `tasks/TASK-###-HANDOFF.md`.
+7. Product / Architect / Release procesa el handoff y actualiza release status, backlog o decision log si corresponde.
 
 ## Herramientas locales
 
@@ -42,15 +42,13 @@ Fase 1 sera un uso real piloto, no solo una demo visual. El MVP debe cuidar pers
 - Backend/API e Infra pueden usar `func start` dentro de `api/` cuando una tarea requiera prueba local de Azure Functions.
 - QA puede usar la API local levantada con `func` solo cuando la tarea indique validar ambiente local.
 
-## Tablero operativo
+## Uso de Azure SQL
 
-- El tablero versionado vive en `docs/TASK_BOARD.md`.
-- Product / Architect / Release es owner del tablero.
-- Los equipos/chats pueden mover solo tareas asignadas a su equipo y deben dejar nota breve cuando bloquean o liberan una tarea.
-- Las etapas son `Inbox`, `Ready`, `Assigned`, `In Progress`, `Needs Review`, `QA`, `Blocked` y `Done`.
-- Product / Architect / Release libera tareas por ronda moviendolas a `Ready` o `Assigned`.
-- Los chats solo toman tareas de su equipo que esten en `Ready` o `Assigned` y no tengan dependencias pendientes en `Depende de`.
-- Las tareas de rondas futuras o con dependencias pendientes deben quedarse en `Blocked`.
+- Por defecto, no despertar Azure SQL para desarrollo o QA.
+- Leer `docs/AZURE_SQL_COST_GUARDRAILS.md` antes de usar la DB real.
+- Usar Azure SQL solo para migraciones aprobadas, smoke final corto, bugs que solo ocurren en Azure o validaciones de Infra.
+- UI, UX, copy, responsive y pruebas repetitivas deben hacerse con mock, tests locales o API local siempre que sea posible.
+- En handoffs, indicar si se uso Azure SQL y por que.
 
 ## Seguridad
 

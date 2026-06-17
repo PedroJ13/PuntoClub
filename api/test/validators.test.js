@@ -17,9 +17,20 @@ const {
   validateCompanyRole,
   validateCompanySettingsPatchPayload,
   validateCompanyAuthLoginPayload,
+  validateCustomerMembershipStatusQuery,
   validateCustomerPayload,
+  validateExpirationAlertsQuery,
   validateInvitationAcceptPayload,
   validateLogoFileMetadata,
+  validateMembershipActivationPayload,
+  validateMembershipBenefitPayload,
+  validateMembershipBenefitUsagePayload,
+  validateMembershipBenefitUsageQuery,
+  validateMembershipPlanPayload,
+  validateMembershipRenewalPayload,
+  validateMembershipStatusQuery,
+  validateMembershipFinancialReportQuery,
+  validateMembershipTransactionsQuery,
   validateMyCompanyPatchPayload,
   validatePurchasePayload,
   validateRedemptionPayload
@@ -277,10 +288,279 @@ test('redemption payload requires positive integer points', () => {
   );
 });
 
+test('membership status query defaults and validates known statuses', () => {
+  assert.deepEqual(validateMembershipStatusQuery(query({})), { status: 'active' });
+  assert.deepEqual(validateMembershipStatusQuery(query({ status: 'all' })), { status: 'all' });
+
+  assert.throws(
+    () => validateMembershipStatusQuery(query({ status: 'deleted' })),
+    /One or more fields are invalid/
+  );
+});
+
+test('customer membership status query supports lifecycle statuses', () => {
+  assert.deepEqual(validateCustomerMembershipStatusQuery(query({})), { status: 'active' });
+  assert.deepEqual(validateCustomerMembershipStatusQuery(query({ status: 'expired' })), { status: 'expired' });
+  assert.deepEqual(validateCustomerMembershipStatusQuery(query({ status: 'cancelled' })), { status: 'cancelled' });
+  assert.deepEqual(validateCustomerMembershipStatusQuery(query({ status: 'all' })), { status: 'all' });
+
+  assert.throws(
+    () => validateCustomerMembershipStatusQuery(query({ status: 'inactive' })),
+    /One or more fields are invalid/
+  );
+});
+
+test('membership activation payload validates server-owned fields and price', () => {
+  assert.deepEqual(
+    validateMembershipActivationPayload({
+      planId: '10',
+      startDate: '2026-06-13',
+      amount: '12000',
+      paymentMethod: 'card',
+      note: ' Venta inicial '
+    }),
+    {
+      planId: 10,
+      startDate: '2026-06-13',
+      pricePaid: 12000,
+      paymentMethod: 'card',
+      note: 'Venta inicial'
+    }
+  );
+
+  assert.deepEqual(
+    validateMembershipActivationPayload({
+      membershipPlanId: '11',
+      startDate: '2026-06-13',
+      pricePaid: '0',
+      paymentMethod: 'cash'
+    }),
+    {
+      planId: 11,
+      startDate: '2026-06-13',
+      pricePaid: 0,
+      paymentMethod: 'cash',
+      note: null
+    }
+  );
+
+  assert.throws(
+    () => validateMembershipActivationPayload({
+      planId: 10,
+      startDate: '2026-02-31',
+      amount: -1,
+      paymentMethod: 'wire',
+      companyId: 1
+    }),
+    /One or more fields are invalid/
+  );
+});
+
+test('membership renewal payload validates payment and transaction date', () => {
+  assert.deepEqual(
+    validateMembershipRenewalPayload({
+      paymentMethod: 'transfer',
+      amount: '15000',
+      transactionDate: '2026-06-14',
+      note: ' Renovacion '
+    }),
+    {
+      amount: 15000,
+      paymentMethod: 'transfer',
+      transactionDate: '2026-06-14',
+      note: 'Renovacion'
+    }
+  );
+
+  assert.throws(
+    () => validateMembershipRenewalPayload({
+      paymentMethod: 'bitcoin',
+      amount: -1,
+      transactionDate: '2026-02-31',
+      customerId: 20
+    }),
+    /One or more fields are invalid/
+  );
+});
+
+test('expiration alerts query defaults and validates bounded window', () => {
+  assert.deepEqual(validateExpirationAlertsQuery(query({})), { status: 'active', withinDays: 5 });
+  assert.deepEqual(validateExpirationAlertsQuery(query({ status: 'expired', withinDays: '0' })), {
+    status: 'expired',
+    withinDays: 0
+  });
+  assert.deepEqual(validateExpirationAlertsQuery(query({ status: 'cancelled', withinDays: '30' })), {
+    status: 'cancelled',
+    withinDays: 30
+  });
+
+  assert.throws(
+    () => validateExpirationAlertsQuery(query({ status: 'all', withinDays: '366' })),
+    /One or more fields are invalid/
+  );
+});
+
+test('membership plan payload normalizes create and patch contracts', () => {
+  assert.deepEqual(
+    validateMembershipPlanPayload({
+      name: ' Club Oro ',
+      description: '',
+      durationDays: '30',
+      price: '12000',
+      renewalNoticeDays: '7'
+    }),
+    {
+      name: 'Club Oro',
+      description: null,
+      durationDays: 30,
+      price: 12000,
+      renewalNoticeDays: 7,
+      status: 'active'
+    }
+  );
+
+  assert.deepEqual(
+    validateMembershipPlanPayload({ status: 'inactive' }, { partial: true }),
+    { patch: { status: 'inactive' }, providedFields: ['status'] }
+  );
+
+  assert.throws(
+    () => validateMembershipPlanPayload({ name: 'Solo nombre' }),
+    /One or more fields are invalid/
+  );
+});
+
+test('membership benefit payload validates benefit-specific requirements', () => {
+  assert.deepEqual(
+    validateMembershipBenefitPayload({
+      name: ' Descuento cafe ',
+      benefitType: 'discount',
+      appliesToType: 'category',
+      appliesToName: 'Bebidas',
+      discountPercent: '15'
+    }),
+    {
+      name: 'Descuento cafe',
+      description: null,
+      benefitType: 'discount',
+      appliesToType: 'category',
+      appliesToName: 'Bebidas',
+      discountPercent: 15,
+      includedQuantity: null,
+      usageLimit: null,
+      usagePeriod: 'none',
+      status: 'active'
+    }
+  );
+
+  assert.deepEqual(
+    validateMembershipBenefitPayload({ status: 'inactive' }, { partial: true }),
+    { patch: { status: 'inactive' }, providedFields: ['status'] }
+  );
+
+  assert.throws(
+    () => validateMembershipBenefitPayload({
+      name: 'Cafe incluido',
+      benefitType: 'allowance',
+      includedQuantity: 1
+    }),
+    /One or more fields are invalid/
+  );
+});
+
+test('membership benefit usage payload normalizes usage contract', () => {
+  assert.deepEqual(
+    validateMembershipBenefitUsagePayload({
+      membershipBenefitId: '700',
+      customerMembershipId: '900',
+      usageDate: '2026-06-13',
+      quantity: '2',
+      note: ' Cafe entregado '
+    }),
+    {
+      benefitId: 700,
+      customerMembershipId: 900,
+      usageDate: '2026-06-13',
+      quantity: 2,
+      note: 'Cafe entregado'
+    }
+  );
+
+  assert.deepEqual(
+    validateMembershipBenefitUsagePayload({
+      benefitId: '701',
+      usageDate: '2026-06-13'
+    }),
+    {
+      benefitId: 701,
+      customerMembershipId: null,
+      usageDate: '2026-06-13',
+      quantity: 1,
+      note: null
+    }
+  );
+
+  assert.throws(
+    () => validateMembershipBenefitUsagePayload({
+      benefitId: 0,
+      usageDate: '2026-02-31',
+      quantity: 0,
+      customerId: 20
+    }),
+    /One or more fields are invalid/
+  );
+});
+
+test('membership benefit usage query validates bounded date range', () => {
+  assert.deepEqual(
+    validateMembershipBenefitUsageQuery(query({ from: '2026-06-01', to: '2026-06-13' })),
+    { from: '2026-06-01', to: '2026-06-13' }
+  );
+
+  assert.throws(
+    () => validateMembershipBenefitUsageQuery(query({ from: '2026-06-13', to: '2026-06-01' })),
+    /One or more fields are invalid/
+  );
+
+  assert.throws(
+    () => validateMembershipBenefitUsageQuery(query({ from: '2026-06-01', to: '2026-07-02' })),
+    /One or more fields are invalid/
+  );
+});
+
+test('membership transactions query validates bounded date range', () => {
+  assert.deepEqual(
+    validateMembershipTransactionsQuery(query({ from: '2026-06-01', to: '2026-06-13' })),
+    { from: '2026-06-01', to: '2026-06-13' }
+  );
+
+  assert.throws(
+    () => validateMembershipTransactionsQuery(query({ from: '2026-06-13', to: '2026-06-01' })),
+    /One or more fields are invalid/
+  );
+});
+
+test('membership financial report query validates bounded date range', () => {
+  assert.deepEqual(
+    validateMembershipFinancialReportQuery(query({ from: '2026-06-01', to: '2026-06-13' })),
+    { from: '2026-06-01', to: '2026-06-13' }
+  );
+
+  assert.throws(
+    () => validateMembershipFinancialReportQuery(query({ from: '2026-06-13', to: '2026-06-01' })),
+    /One or more fields are invalid/
+  );
+});
+
 test('activity report query defaults type to all', () => {
   assert.deepEqual(
     validateActivityReportQuery(query({ from: '2026-06-01', to: '2026-06-07' })),
     { from: '2026-06-01', to: '2026-06-07', type: 'all' }
+  );
+
+  assert.deepEqual(
+    validateActivityReportQuery(query({ from: '2026-06-01', to: '2026-06-07', type: 'membership' })),
+    { from: '2026-06-01', to: '2026-06-07', type: 'membership' }
   );
 });
 

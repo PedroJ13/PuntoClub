@@ -20,6 +20,7 @@ env:
   AZURE_TENANT_ID: a50d6327-9af1-45f4-ab3e-4a931f70e318
   AZURE_SUBSCRIPTION_ID: ea1a3068-3abc-425a-ad65-53be62bdf0c6
   API_BASE_URL: https://func-puntoclub-prod-br-001.azurewebsites.net/api
+  PILOT_COMPANY_ID: 6
 
 jobs:
   deploy:
@@ -74,6 +75,16 @@ jobs:
             --name "$AZURE_FUNCTIONAPP_NAME" \
             --src api-deploy.zip
 
+      - name: Set active pilot company for smoke and auth fallback
+        run: |
+          az functionapp config appsettings set \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_FUNCTIONAPP_NAME" \
+            --settings "PILOT_COMPANY_ID=${{ env.PILOT_COMPANY_ID }}"
+
       - name: Smoke test stable API
         working-directory: api
+        env:
+          API_BASE_URL: ${{ env.API_BASE_URL }}
+          PILOT_COMPANY_ID: ${{ env.PILOT_COMPANY_ID }}
         run: npm run smoke
