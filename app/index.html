@@ -734,10 +734,10 @@
                 <div>
                   <h2 id="membership-plan-form-title">Crear plan de membresia</h2>
                 </div>
-                <button class="secondary-button" id="reset-membership-plan-button" type="button">Nuevo plan</button>
+                <button class="secondary-button" id="reset-membership-plan-button" type="button">Crear plan</button>
               </div>
 
-              <form id="membership-plan-form" class="membership-form" novalidate>
+              <form id="membership-plan-form" class="membership-form" hidden novalidate>
                 <input id="membership-plan-id" name="planId" type="hidden" />
                 <div class="field-grid membership-controls">
                   <div class="field">
@@ -772,6 +772,7 @@
                 </div>
 
                 <div class="form-actions">
+                  <button class="secondary-button" id="cancel-membership-plan-button" type="button">Cancelar</button>
                   <button id="save-membership-plan-button" type="submit" data-icon="✓">Guardar plan</button>
                 </div>
               </form>
@@ -914,10 +915,10 @@
                 <div>
                   <h2 id="membership-benefit-form-title">Crear beneficio</h2>
                 </div>
-                <button class="secondary-button" id="reset-membership-benefit-button" type="button">Nuevo beneficio</button>
+                <button class="secondary-button" id="reset-membership-benefit-button" type="button">Crear beneficio</button>
               </div>
 
-              <form id="membership-benefit-form" class="membership-form" novalidate>
+              <form id="membership-benefit-form" class="membership-form" hidden novalidate>
                 <input id="membership-benefit-id" name="benefitId" type="hidden" />
                 <div class="field-grid membership-controls">
                   <div class="field">
@@ -992,6 +993,7 @@
                 </div>
 
                 <div class="form-actions">
+                  <button class="secondary-button" id="cancel-membership-benefit-button" type="button">Cancelar</button>
                   <button id="save-membership-benefit-button" type="submit" data-icon="✓">Guardar beneficio</button>
                 </div>
               </form>

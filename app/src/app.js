@@ -224,6 +224,7 @@ const elements = {
   membershipPlanRenewalNoticeDaysError: document.querySelector("#membership-plan-renewal-notice-days-error"),
   saveMembershipPlanButton: document.querySelector("#save-membership-plan-button"),
   resetMembershipPlanButton: document.querySelector("#reset-membership-plan-button"),
+  cancelMembershipPlanButton: document.querySelector("#cancel-membership-plan-button"),
   membershipExpirationForm: document.querySelector("#membership-expiration-form"),
   membershipExpirationWithinDaysInput: document.querySelector("#membership-expiration-within-days"),
   membershipExpirationWithinDaysError: document.querySelector("#membership-expiration-within-days-error"),
@@ -259,6 +260,7 @@ const elements = {
   membershipBenefitUsagePeriodError: document.querySelector("#membership-benefit-usage-period-error"),
   saveMembershipBenefitButton: document.querySelector("#save-membership-benefit-button"),
   resetMembershipBenefitButton: document.querySelector("#reset-membership-benefit-button"),
+  cancelMembershipBenefitButton: document.querySelector("#cancel-membership-benefit-button"),
   membershipCustomerSearchForm: document.querySelector("#membership-activation-search-form"),
   membershipCustomerSearchInput: document.querySelector("#membership-customer-search"),
   searchMembershipCustomerButton: document.querySelector("#search-membership-customer-button"),
@@ -568,7 +570,11 @@ elements.membershipPlanForm.addEventListener("submit", async (event) => {
 });
 
 elements.resetMembershipPlanButton.addEventListener("click", () => {
-  clearMembershipPlanForm();
+  openMembershipPlanForm();
+});
+
+elements.cancelMembershipPlanButton.addEventListener("click", () => {
+  closeMembershipPlanForm();
 });
 
 elements.membershipPlansList.addEventListener("click", async (event) => {
@@ -586,7 +592,11 @@ elements.membershipBenefitForm.addEventListener("submit", async (event) => {
 });
 
 elements.resetMembershipBenefitButton.addEventListener("click", () => {
-  clearMembershipBenefitForm();
+  openMembershipBenefitForm();
+});
+
+elements.cancelMembershipBenefitButton.addEventListener("click", () => {
+  closeMembershipBenefitForm();
 });
 
 elements.membershipBenefitsList.addEventListener("click", async (event) => {
@@ -1657,8 +1667,6 @@ async function loadMembershipPlans() {
 
     if (selectedMembershipPlanId && membershipPlans.some((plan) => String(plan.id) === String(selectedMembershipPlanId))) {
       await loadMembershipBenefits(selectedMembershipPlanId);
-    } else if (membershipPlans.length > 0) {
-      await selectMembershipPlan(membershipPlans[0].id, { edit: false });
     } else {
       selectedMembershipPlanId = null;
       membershipBenefits = [];
@@ -1716,9 +1724,10 @@ async function selectMembershipPlan(planId, options = {}) {
 
   selectedMembershipPlanId = String(plan.id);
   renderMembershipPlans();
+  closeMembershipBenefitForm();
 
   if (options.edit) {
-    fillMembershipPlanForm(plan);
+    openMembershipPlanForm(plan);
   }
 
   await loadMembershipBenefits(plan.id);
@@ -1847,7 +1856,7 @@ async function submitMembershipPlan() {
       : await api.createMembershipPlan(payload);
     await loadMembershipPlans();
     await selectMembershipPlan(saved.id, { edit: false });
-    clearMembershipPlanForm({ focus: false });
+    closeMembershipPlanForm();
     showMembershipPlansStatus(planId ? "Plan actualizado." : "Plan creado.");
   } catch (error) {
     renderMembershipPlanFormError(error);
@@ -1862,6 +1871,10 @@ async function handleMembershipPlanAction(button) {
 
   if (action === "select") {
     await selectMembershipPlan(planId, { edit: false });
+  } else if (action === "create") {
+    openMembershipPlanForm();
+  } else if (action === "retry") {
+    await loadMembershipPlans();
   } else if (action === "edit") {
     await selectMembershipPlan(planId, { edit: true });
   } else if (action === "activate" || action === "deactivate") {
@@ -1914,7 +1927,7 @@ async function submitMembershipBenefit() {
       await api.createMembershipBenefit(selectedMembershipPlanId, payload);
     }
     await loadMembershipBenefits(selectedMembershipPlanId);
-    clearMembershipBenefitForm({ focus: false });
+    closeMembershipBenefitForm();
     showMembershipBenefitsStatus(benefitId ? "Beneficio actualizado." : "Beneficio creado.");
   } catch (error) {
     renderMembershipBenefitFormError(error);
@@ -1928,12 +1941,22 @@ async function handleMembershipBenefitAction(button) {
   const action = button.dataset.membershipBenefitAction;
   const benefit = membershipBenefits.find((item) => String(item.id) === String(benefitId));
 
+  if (action === "create") {
+    openMembershipBenefitForm();
+    return;
+  }
+
+  if (action === "retry") {
+    await loadMembershipBenefits(selectedMembershipPlanId);
+    return;
+  }
+
   if (!benefit) {
     return;
   }
 
   if (action === "edit") {
-    fillMembershipBenefitForm(benefit);
+    openMembershipBenefitForm(benefit);
     return;
   }
 
@@ -3072,12 +3095,17 @@ function renderMembershipExpirationError(error) {
 }
 
 function renderMembershipPlansLoading() {
-  elements.membershipPlansList.innerHTML = '<div class="loading-state">Cargando planes...</div>';
+  elements.membershipPlansList.innerHTML = '<div class="loading-state">Cargando planes de membresia...</div>';
 }
 
 function renderMembershipPlans() {
   if (!membershipPlans.length) {
-    elements.membershipPlansList.innerHTML = '<div class="empty-state">No hay planes de membresia activos. Crea un plan para empezar a vender membresias.</div>';
+    elements.membershipPlansList.innerHTML = renderMembershipEmptyState({
+      title: "No existen planes de membresia",
+      text: "Crea un plan para empezar a ofrecer beneficios a tus clientes.",
+      action: "Crear plan",
+      actionAttribute: "data-membership-plan-action=\"create\"",
+    });
     renderMembershipActivationPlanOptions();
     return;
   }
@@ -3254,7 +3282,7 @@ function renderMembershipPlanCard(plan) {
         </div>
       </div>
       <div class="membership-actions">
-        <button class="secondary-button" type="button" data-icon="⌕" data-membership-plan-action="select" data-membership-plan-id="${escapeHtml(plan.id)}">Ver</button>
+        <button class="secondary-button" type="button" data-membership-plan-action="select" data-membership-plan-id="${escapeHtml(plan.id)}">Gestionar beneficios</button>
         <button class="secondary-button" type="button" data-membership-plan-action="edit" data-membership-plan-id="${escapeHtml(plan.id)}">Editar</button>
         <button class="secondary-button" type="button" data-membership-plan-action="${statusAction}" data-membership-plan-id="${escapeHtml(plan.id)}">${statusLabel}</button>
       </div>
@@ -3263,8 +3291,11 @@ function renderMembershipPlanCard(plan) {
 }
 
 function renderMembershipBenefitsPrompt() {
-  elements.membershipBenefitsContext.textContent = "Selecciona un plan para gestionar sus beneficios.";
-  elements.membershipBenefitsList.innerHTML = '<div class="empty-state">Selecciona un plan para gestionar sus beneficios.</div>';
+  elements.membershipBenefitsContext.textContent = "Selecciona un plan para ver o crear sus beneficios.";
+  elements.membershipBenefitsList.innerHTML = renderMembershipEmptyState({
+    title: "Selecciona un plan",
+    text: "Elige un plan de membresia para ver o crear sus beneficios.",
+  });
 }
 
 function renderMembershipBenefitsLoading() {
@@ -3274,11 +3305,16 @@ function renderMembershipBenefitsLoading() {
 function renderMembershipBenefits() {
   const plan = membershipPlans.find((item) => String(item.id) === String(selectedMembershipPlanId));
   elements.membershipBenefitsContext.textContent = plan
-    ? `Plan seleccionado: ${plan.name}`
-    : "Selecciona un plan para gestionar sus beneficios.";
+    ? `Beneficios de ${plan.name}`
+    : "Selecciona un plan para ver o crear sus beneficios.";
 
   if (!membershipBenefits.length) {
-    elements.membershipBenefitsList.innerHTML = '<div class="empty-state">Este plan aun no tiene beneficios. Crea un beneficio para empezar a ofrecer valor.</div>';
+    elements.membershipBenefitsList.innerHTML = renderMembershipEmptyState({
+      title: "Este plan aun no tiene beneficios",
+      text: "Agrega beneficios para explicar que incluye la membresia y controlar usos limitados.",
+      action: "Crear beneficio",
+      actionAttribute: "data-membership-benefit-action=\"create\"",
+    });
     return;
   }
 
@@ -3311,7 +3347,22 @@ function renderMembershipBenefitCard(benefit) {
   `;
 }
 
+function renderMembershipEmptyState({ title, text, action = "", actionAttribute = "" }) {
+  const actionButton = action && actionAttribute
+    ? `<button class="secondary-button" type="button" ${actionAttribute}>${escapeHtml(action)}</button>`
+    : "";
+
+  return `
+    <div class="empty-state membership-empty-state">
+      <strong>${escapeHtml(title)}</strong>
+      <span>${escapeHtml(text)}</span>
+      ${actionButton}
+    </div>
+  `;
+}
+
 function fillMembershipPlanForm(plan) {
+  elements.membershipPlanForm.hidden = false;
   elements.membershipPlanIdInput.value = plan.id;
   elements.membershipPlanNameInput.value = plan.name || "";
   elements.membershipPlanDescriptionInput.value = plan.description || "";
@@ -3319,6 +3370,25 @@ function fillMembershipPlanForm(plan) {
   elements.membershipPlanPriceInput.value = plan.price ?? "";
   elements.membershipPlanRenewalNoticeDaysInput.value = plan.renewalNoticeDays ?? 5;
   elements.saveMembershipPlanButton.textContent = "Guardar cambios";
+}
+
+function openMembershipPlanForm(plan = null, options = {}) {
+  if (plan) {
+    fillMembershipPlanForm(plan);
+  } else {
+    clearMembershipPlanForm({ focus: false });
+    elements.membershipPlanForm.hidden = false;
+    elements.saveMembershipPlanButton.textContent = "Guardar plan";
+  }
+
+  if (options.focus !== false) {
+    elements.membershipPlanNameInput.focus();
+  }
+}
+
+function closeMembershipPlanForm() {
+  clearMembershipPlanForm({ focus: false });
+  elements.membershipPlanForm.hidden = true;
 }
 
 function clearMembershipPlanForm(options = {}) {
@@ -3334,6 +3404,7 @@ function clearMembershipPlanForm(options = {}) {
 }
 
 function fillMembershipBenefitForm(benefit) {
+  elements.membershipBenefitForm.hidden = false;
   elements.membershipBenefitIdInput.value = benefit.id;
   elements.membershipBenefitNameInput.value = benefit.name || "";
   elements.membershipBenefitDescriptionInput.value = benefit.description || "";
@@ -3345,6 +3416,30 @@ function fillMembershipBenefitForm(benefit) {
   elements.membershipBenefitUsageLimitInput.value = benefit.usageLimit ?? "";
   elements.membershipBenefitUsagePeriodInput.value = benefit.usagePeriod || "none";
   elements.saveMembershipBenefitButton.textContent = "Guardar cambios";
+}
+
+function openMembershipBenefitForm(benefit = null, options = {}) {
+  if (!selectedMembershipPlanId) {
+    showMembershipBenefitsError("Selecciona un plan antes de crear beneficios.");
+    return;
+  }
+
+  if (benefit) {
+    fillMembershipBenefitForm(benefit);
+  } else {
+    clearMembershipBenefitForm({ focus: false });
+    elements.membershipBenefitForm.hidden = false;
+    elements.saveMembershipBenefitButton.textContent = "Guardar beneficio";
+  }
+
+  if (options.focus !== false) {
+    elements.membershipBenefitNameInput.focus();
+  }
+}
+
+function closeMembershipBenefitForm() {
+  clearMembershipBenefitForm({ focus: false });
+  elements.membershipBenefitForm.hidden = true;
 }
 
 function clearMembershipBenefitForm(options = {}) {
@@ -3363,13 +3458,23 @@ function clearMembershipBenefitForm(options = {}) {
 
 function renderMembershipPlansError(error) {
   const message = isAuthRequiredError(error) ? getAuthRequiredMessage() : "No se pudieron cargar los planes.";
-  elements.membershipPlansList.innerHTML = '<div class="empty-state">No hay planes cargados.</div>';
+  elements.membershipPlansList.innerHTML = renderMembershipEmptyState({
+    title: "No se pudieron cargar los planes",
+    text: "Intenta de nuevo para continuar configurando membresias.",
+    action: "Reintentar",
+    actionAttribute: "data-membership-plan-action=\"retry\"",
+  });
   showMembershipPlansError(message);
 }
 
 function renderMembershipBenefitsError(error) {
   const message = isAuthRequiredError(error) ? getAuthRequiredMessage() : "No se pudieron cargar los beneficios.";
-  elements.membershipBenefitsList.innerHTML = '<div class="empty-state">No hay beneficios cargados.</div>';
+  elements.membershipBenefitsList.innerHTML = renderMembershipEmptyState({
+    title: "No se pudieron cargar los beneficios",
+    text: "Intenta de nuevo para continuar gestionando este plan.",
+    action: "Reintentar",
+    actionAttribute: "data-membership-benefit-action=\"retry\"",
+  });
   showMembershipBenefitsError(message);
 }
 
@@ -5150,6 +5255,7 @@ function setMembershipPlanSubmitting(isSubmitting) {
   elements.reloadMembershipPlansButton.disabled = isSubmitting;
   elements.saveMembershipPlanButton.disabled = isSubmitting;
   elements.resetMembershipPlanButton.disabled = isSubmitting;
+  elements.cancelMembershipPlanButton.disabled = isSubmitting;
   elements.saveMembershipPlanButton.textContent = isSubmitting
     ? "Guardando..."
     : (elements.membershipPlanIdInput.value ? "Guardar cambios" : "Guardar plan");
@@ -5158,6 +5264,7 @@ function setMembershipPlanSubmitting(isSubmitting) {
 function setMembershipBenefitSubmitting(isSubmitting) {
   elements.saveMembershipBenefitButton.disabled = isSubmitting;
   elements.resetMembershipBenefitButton.disabled = isSubmitting;
+  elements.cancelMembershipBenefitButton.disabled = isSubmitting;
   elements.saveMembershipBenefitButton.textContent = isSubmitting
     ? "Guardando..."
     : (elements.membershipBenefitIdInput.value ? "Guardar cambios" : "Guardar beneficio");

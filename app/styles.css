@@ -1041,6 +1041,26 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   font-weight: 750;
 }
 
+.membership-empty-state {
+  display: grid;
+  gap: 0.45rem;
+  align-items: start;
+}
+
+.membership-empty-state strong {
+  color: var(--text);
+  font-size: 0.96rem;
+}
+
+.membership-empty-state span {
+  font-weight: 700;
+}
+
+.membership-empty-state button {
+  justify-self: start;
+  margin-top: 0.15rem;
+}
+
 .customer-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 88px auto;
