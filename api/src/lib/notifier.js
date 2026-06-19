@@ -329,6 +329,110 @@ function createRequesterAcknowledgementEmail(registrationRequest, config) {
   };
 }
 
+function createMembershipBenefitUsageCompanyEmail(details, config) {
+  const usage = details.usage || {};
+  const company = details.company || {};
+  const customer = details.customer || {};
+  const benefit = details.benefit || {};
+  const toAddress = normalizeText(company.email);
+  if (!toAddress) {
+    return null;
+  }
+
+  const subject = 'Punto Club - Beneficio utilizado';
+  const benefitName = displayValue(usage.benefitName || benefit.name);
+  const customerName = displayValue(customer.name || usage.customerName);
+  const planName = displayValue(usage.planName || details.membership?.planName);
+  const quantity = displayValue(usage.quantity);
+  const usageDate = displayValue(usage.usageDate);
+  const plainText = [
+    'Punto Club',
+    '',
+    'Se registro el uso efectivo de un beneficio limitado.',
+    '',
+    `Empresa: ${displayValue(company.name)}`,
+    `Cliente: ${customerName}`,
+    `Beneficio: ${benefitName}`,
+    `Plan: ${planName}`,
+    `Fecha de uso: ${usageDate}`,
+    `Cantidad usada: ${quantity}`,
+    '',
+    'Este correo es informativo. Revisa el panel de Punto Club si necesitas validar el historial.'
+  ].join('\n');
+  const html = wrapEmailHtml('Beneficio utilizado', [
+    '<p>Se registro el uso efectivo de un beneficio limitado.</p>',
+    renderEmailTable([
+      ['Empresa', company.name],
+      ['Cliente', customerName],
+      ['Beneficio', benefitName],
+      ['Plan', planName],
+      ['Fecha de uso', usageDate],
+      ['Cantidad usada', quantity]
+    ]),
+    '<p>Este correo es informativo. Revisa el panel de Punto Club si necesitas validar el historial.</p>'
+  ].join(''));
+
+  return {
+    senderAddress: config.senderAddress,
+    senderDisplayName: config.senderDisplayName,
+    to: [{ address: toAddress }],
+    subject,
+    plainText,
+    html
+  };
+}
+
+function createMembershipBenefitUsageCustomerEmail(details, config) {
+  const usage = details.usage || {};
+  const company = details.company || {};
+  const customer = details.customer || {};
+  const benefit = details.benefit || {};
+  const toAddress = normalizeText(customer.email);
+  if (!toAddress) {
+    return null;
+  }
+
+  const subject = 'Punto Club - Beneficio utilizado';
+  const benefitName = displayValue(usage.benefitName || benefit.name);
+  const planName = displayValue(usage.planName || details.membership?.planName);
+  const quantity = displayValue(usage.quantity);
+  const usageDate = displayValue(usage.usageDate);
+  const plainText = [
+    'Punto Club',
+    '',
+    `Hola ${displayValue(customer.name)},`,
+    '',
+    `Se registro el uso efectivo del beneficio ${benefitName}.`,
+    '',
+    `Empresa: ${displayValue(company.name)}`,
+    `Plan: ${planName}`,
+    `Fecha de uso: ${usageDate}`,
+    `Cantidad usada: ${quantity}`,
+    '',
+    'Si no reconoces este movimiento, contacta a la empresa donde tienes tu membresia.'
+  ].join('\n');
+  const html = wrapEmailHtml('Beneficio utilizado', [
+    `<p>Hola ${escapeHtml(displayValue(customer.name))},</p>`,
+    `<p>Se registro el uso efectivo del beneficio <strong>${escapeHtml(benefitName)}</strong>.</p>`,
+    renderEmailTable([
+      ['Empresa', company.name],
+      ['Plan', planName],
+      ['Fecha de uso', usageDate],
+      ['Cantidad usada', quantity]
+    ]),
+    '<p>Si no reconoces este movimiento, contacta a la empresa donde tienes tu membresia.</p>'
+  ].join(''));
+
+  return {
+    senderAddress: config.senderAddress,
+    senderDisplayName: config.senderDisplayName,
+    to: [{ address: toAddress }],
+    subject,
+    plainText,
+    html
+  };
+}
+
 function loadAcsEmailClient() {
   try {
     const { EmailClient } = require('@azure/communication-email');
@@ -437,15 +541,52 @@ async function notifyCompanyInvitationCreated(invitation, token, context, option
   };
 }
 
+async function notifyMembershipBenefitUsed(details, context, options = {}) {
+  const config = options.config || getEmailConfig(options.env || process.env);
+  if (!config.enabled) {
+    return { provider: 'acs-email', status: 'skipped', reason: 'not_configured' };
+  }
+
+  const sendEmail = options.sendEmail || ((message) => sendEmailViaAcs(message, config, options));
+  const messages = [
+    { type: 'company', message: createMembershipBenefitUsageCompanyEmail(details, config) },
+    { type: 'customer', message: createMembershipBenefitUsageCustomerEmail(details, config) }
+  ].filter((item) => item.message);
+
+  if (!messages.length) {
+    return { provider: 'acs-email', status: 'skipped', reason: 'no_recipients' };
+  }
+
+  const results = [];
+  for (const item of messages) {
+    try {
+      const result = await sendEmail(item.message);
+      results.push({ type: item.type, ...result });
+    } catch (error) {
+      safeWarn(context, `Membership benefit usage email was not sent: ${item.type}. ${error && error.message ? error.message : 'Unknown email error.'}`);
+      results.push({ type: item.type, provider: 'acs-email', status: 'failed' });
+    }
+  }
+
+  return {
+    provider: 'acs-email',
+    status: results.some((result) => result.status === 'sent') ? 'sent' : 'skipped',
+    results
+  };
+}
+
 module.exports = {
   createCompanyInvitationEmail,
   createInternalInvitationSentEmail,
   createInternalRegistrationEmail,
+  createMembershipBenefitUsageCompanyEmail,
+  createMembershipBenefitUsageCustomerEmail,
   createRequesterAcknowledgementEmail,
   defaultInternalNotificationEmail,
   escapeHtml,
   getEmailConfig,
   notifyCompanyInvitationCreated,
   notifyCompanyRegistrationSubmitted,
+  notifyMembershipBenefitUsed,
   sendEmailViaAcs
 };

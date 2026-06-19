@@ -1603,6 +1603,22 @@ async function createCustomer(companyId, payload) {
   return mapCustomer(result.recordset[0]);
 }
 
+async function getCustomerById(companyId, customerId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('customer_id', sql.BigInt, customerId)
+    .query(`
+      SELECT id, name, phone, email, created_at, updated_at
+      FROM dbo.Customers
+      WHERE company_id = @company_id
+        AND id = @customer_id
+    `);
+
+  return result.recordset.length ? mapCustomer(result.recordset[0]) : null;
+}
+
 async function customerExists(companyId, customerId) {
   const sql = getSql();
   const pool = await getPool();
@@ -2895,6 +2911,7 @@ module.exports = {
   getCompanyInvitationByTokenHash,
   getCompanyLogoMetadata,
   getCompanySettings,
+  getCustomerById,
   getLocalPasswordUserByEmail,
   getMembershipFinancialReport,
   getActiveCustomerMembership,

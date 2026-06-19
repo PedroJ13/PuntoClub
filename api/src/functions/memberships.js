@@ -16,6 +16,7 @@ const {
   validateMembershipTransactionsQuery
 } = require('../lib/validators');
 const repository = require('../lib/repository');
+const notifier = require('../lib/notifier');
 const { requireSessionIdentity } = require('./companyAuth');
 
 function assertCanManageMemberships(identity) {
@@ -33,6 +34,16 @@ function mergePatch(current, patch) {
 
 function requestId(context) {
   return context && context.invocationId ? context.invocationId : null;
+}
+
+function safeWarn(context, message) {
+  if (context && typeof context.warn === 'function') {
+    context.warn(message);
+  }
+}
+
+function hasLimitedUsage(benefit) {
+  return Number(benefit && benefit.usageLimit) > 0;
 }
 
 async function auditMembershipChange(context, identity, eventType, entityType, entityId, metadata) {
@@ -357,6 +368,24 @@ app.http('createMembershipBenefitUsage', {
       usageDate: usage.usageDate,
       quantity: usage.quantity
     });
+
+    if (hasLimitedUsage(benefit)) {
+      try {
+        const [company, customer] = await Promise.all([
+          repository.getCompanySettings(identity.company.id),
+          repository.getCustomerById(identity.company.id, customerId)
+        ]);
+        await notifier.notifyMembershipBenefitUsed({
+          usage,
+          benefit,
+          customer,
+          company,
+          membership: activeMembership
+        }, context);
+      } catch (error) {
+        safeWarn(context, `Membership benefit usage notification failed. ${error && error.message ? error.message : 'Unknown notification error.'}`);
+      }
+    }
 
     return created(usage);
   })
