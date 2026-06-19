@@ -266,13 +266,13 @@ test('email templates use approved copy and escape HTML content', () => {
   const internal = createInternalRegistrationEmail(request, config);
   const acknowledgement = createRequesterAcknowledgementEmail(request, config);
 
-  assert.equal(internal.subject, 'Nueva solicitud de empresa: <Cafe Central>');
+  assert.equal(internal.subject, 'Punto Club - Nueva solicitud de empresa: <Cafe Central>');
   assert.match(internal.plainText, /Hay una nueva solicitud de empresa/);
   assert.match(internal.plainText, /Logo: Adjunto/);
   assert.match(internal.html, /&lt;Cafe Central&gt;/);
   assert.equal(internal.to[0].address, 'ops@example.test');
 
-  assert.equal(acknowledgement.subject, 'Recibimos tu solicitud en Punto Club');
+  assert.equal(acknowledgement.subject, 'Punto Club - Recibimos tu solicitud');
   assert.match(acknowledgement.plainText, /Recibimos la solicitud para/);
   assert.equal(acknowledgement.to[0].address, 'maria@cafecentral.test');
 });
