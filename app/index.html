@@ -27,6 +27,35 @@
         </div>
       </header>
 
+      <section id="public-home-page" class="public-home-page" aria-labelledby="public-home-title" hidden>
+        <div class="public-home-copy">
+          <p class="eyebrow">Fidelizacion para empresas</p>
+          <h2 id="public-home-title">Punto Club</h2>
+          <p>
+            Gestiona puntos, membresias y beneficios para que tus clientes vuelvan con mas frecuencia.
+          </p>
+          <div class="public-home-actions">
+            <a class="button-link" href="/login">Iniciar sesion</a>
+            <a class="button-link secondary-link" href="/company-registration">Registrar empresa</a>
+          </div>
+        </div>
+
+        <div class="public-home-visual" aria-hidden="true">
+          <div class="loyalty-card loyalty-card-primary">
+            <span>Cliente frecuente</span>
+            <strong>1,240 pts</strong>
+          </div>
+          <div class="loyalty-card loyalty-card-secondary">
+            <span>Beneficio activo</span>
+            <strong>10% descuento</strong>
+          </div>
+          <div class="loyalty-card loyalty-card-tertiary">
+            <span>Membresia</span>
+            <strong>Vence en 5 dias</strong>
+          </div>
+        </div>
+      </section>
+
       <section
         id="invitation-page"
         class="invitation-page"
@@ -35,7 +64,8 @@
       >
         <div class="invitation-card zone-card">
           <p class="eyebrow">Invitacion de empresa</p>
-          <h2 id="invitation-title">Activa el acceso de tu empresa</h2>
+          <h2 id="invitation-title">Crea el acceso de tu empresa</h2>
+          <p class="section-support">Define una contrasena para entrar a Punto Club con el correo invitado.</p>
 
           <div id="invitation-loading" class="loading-state">Validando invitacion...</div>
           <div id="invitation-error" class="form-error" hidden></div>
@@ -52,7 +82,7 @@
                 <strong id="invitation-company-name">No disponible</strong>
               </div>
               <div>
-                <span>Correo</span>
+                <span>Correo de acceso</span>
                 <strong id="invitation-email">No disponible</strong>
               </div>
               <div>
@@ -68,8 +98,9 @@
             <div class="invitation-actions">
               <form id="create-access-form" class="auth-form" novalidate>
                 <div class="field">
-                  <label for="access-display-name">Nombre de contacto</label>
+                  <label for="access-display-name">Nombre para mostrar</label>
                   <input id="access-display-name" name="displayName" maxlength="160" autocomplete="name" />
+                  <p class="field-help">Opcional. Usaremos este nombre para identificar el acceso dentro de la empresa.</p>
                   <p class="field-error" id="access-display-name-error"></p>
                 </div>
 
@@ -110,6 +141,7 @@
         <div class="auth-card zone-card">
           <p class="eyebrow">Acceso de empresa</p>
           <h2 id="login-title">Iniciar sesion</h2>
+          <p class="section-support">Ingresa con el correo usado para crear el acceso de tu empresa.</p>
 
           <div id="login-status" class="success-message" hidden></div>
           <div id="login-error" class="form-error" hidden></div>
@@ -418,10 +450,9 @@
             >
               <div class="section-header">
                 <div>
-                  <h2 id="company-registration-title">Solicitar acceso para empresa</h2>
+                  <h2 id="company-registration-title">Solicita acceso para tu empresa</h2>
                   <p class="section-support">
-                    Completa los datos de la empresa. Revisaremos la solicitud y, si es aprobada, enviaremos una
-                    invitacion para crear el acceso.
+                    Cuentanos los datos principales. Revisaremos la solicitud y enviaremos la invitacion al correo de contacto.
                   </p>
                 </div>
               </div>
@@ -431,6 +462,10 @@
               <div id="registration-result" class="registration-result" hidden></div>
 
               <form id="company-registration-form" class="company-registration-form" novalidate>
+                <div class="form-section-title">
+                  <span>1</span>
+                  <h3>Datos de la empresa</h3>
+                </div>
                 <div class="field-grid company-registration-controls">
                   <div class="field">
                     <label for="registration-company-name">Nombre de empresa</label>
@@ -480,6 +515,13 @@
                     <p class="field-error" id="registration-company-phone-error"></p>
                   </div>
 
+                </div>
+
+                <div class="form-section-title">
+                  <span>2</span>
+                  <h3>Contacto para el acceso</h3>
+                </div>
+                <div class="field-grid company-registration-controls">
                   <div class="field">
                     <label for="registration-contact-name">Nombre de contacto</label>
                     <input
@@ -516,10 +558,11 @@
                 </div>
 
                 <section class="registration-logo-panel" aria-labelledby="registration-logo-title">
-                  <div>
+                  <div class="form-section-title">
+                    <span>3</span>
                     <h3 id="registration-logo-title">Logo de empresa</h3>
-                    <p class="field-help">Opcional. PNG, JPG o WebP hasta 1 MB.</p>
                   </div>
+                  <p class="field-help">Opcional. PNG, JPG o WebP hasta 1 MB.</p>
 
                   <div class="company-logo-grid">
                     <div class="company-logo-preview" id="registration-logo-preview">
@@ -1254,6 +1297,11 @@
             <button id="admin-confirmation-confirm" type="button">Confirmar</button>
           </div>
         </section>
+      </div>
+
+      <div id="global-loading" class="global-loading" role="status" aria-live="polite" hidden>
+        <span class="loading-spinner" aria-hidden="true"></span>
+        <span id="global-loading-message">Estamos trabajando...</span>
       </div>
     </div>
 

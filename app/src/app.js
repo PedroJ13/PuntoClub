@@ -4,6 +4,9 @@ import { ApiError, createCustomerApi } from "./customerApi.js";
 const api = createCustomerApi(config);
 
 const elements = {
+  publicHomePage: document.querySelector("#public-home-page"),
+  globalLoading: document.querySelector("#global-loading"),
+  globalLoadingMessage: document.querySelector("#global-loading-message"),
   dataSourceStatus: document.querySelector("#data-source-status"),
   authStatus: document.querySelector("#auth-status"),
   loginButton: document.querySelector("#login-button"),
@@ -337,6 +340,7 @@ let activeSection = "operations";
 let companyLogoPreviewUrl = "";
 let registrationLogoPreviewUrl = "";
 let pendingAdminConfirmation = null;
+let globalLoadingTimer = null;
 const customerBalances = new Map();
 const invitationToken = getInvitationTokenFromUrl();
 const isInvitationPage = isCompanyInvitationRoute();
@@ -765,10 +769,14 @@ if (isInvitationPage) {
 } else if (isAdminCompaniesPage) {
   showAdminCompaniesPage();
 } else {
-  refreshAuthIdentity({ silent: true }).finally(() => {
-    loadCompanySettings();
+  refreshAuthIdentity({ silent: true }).then((identity) => {
+    if (identity) {
+      return showMainApp({ focus: false, refreshCompany: true });
+    }
+
+    showPublicHomePage();
+    return null;
   });
-  elements.searchInput.focus();
 }
 
 function relocateLoyaltyPanels() {
@@ -1547,6 +1555,7 @@ async function loadCompanySettings() {
   clearCompanyMessages();
   renderCompanyLoading();
   setCompanyLoading(true);
+  const stopLoading = startGlobalLoading("Estamos cargando la empresa...");
 
   try {
     const settings = await api.getCompanySettings();
@@ -1563,6 +1572,7 @@ async function loadCompanySettings() {
     updateMembershipNavigation(null);
     renderCompanySettingsError(error);
   } finally {
+    stopLoading();
     setCompanyLoading(false);
   }
 }
@@ -1570,6 +1580,7 @@ async function loadCompanySettings() {
 async function submitCompanySettings() {
   clearCompanyMessages();
   setCompanySubmitting(true);
+  const stopLoading = startGlobalLoading("Estamos guardando los cambios...");
 
   const payload = {
     name: elements.companyNameInput.value,
@@ -1588,6 +1599,7 @@ async function submitCompanySettings() {
   } catch (error) {
     renderCompanySettingsError(error);
   } finally {
+    stopLoading();
     setCompanySubmitting(false);
   }
 }
@@ -1605,6 +1617,7 @@ async function submitCompanyLogo() {
   }
 
   setCompanyLogoSubmitting(true);
+  const stopLoading = startGlobalLoading("Estamos guardando los cambios...");
 
   try {
     const result = await api.uploadCompanyLogo(file);
@@ -1622,6 +1635,7 @@ async function submitCompanyLogo() {
   } catch (error) {
     renderCompanyLogoError(error);
   } finally {
+    stopLoading();
     setCompanyLogoSubmitting(false);
   }
 }
@@ -1953,6 +1967,7 @@ async function submitCompanyRegistrationRequest() {
   }
 
   setCompanyRegistrationSubmitting(true);
+  const stopLoading = startGlobalLoading("Estamos enviando la solicitud...");
 
   const payload = {
     companyName: elements.registrationCompanyNameInput.value,
@@ -1971,6 +1986,7 @@ async function submitCompanyRegistrationRequest() {
   } catch (error) {
     renderCompanyRegistrationError(error);
   } finally {
+    stopLoading();
     setCompanyRegistrationSubmitting(false);
   }
 }
@@ -2015,6 +2031,7 @@ async function loadAdminRequests() {
 
   setAdminLoading(true);
   renderAdminListLoading();
+  const stopLoading = startGlobalLoading("Estamos cargando solicitudes...");
 
   try {
     const result = await api.listCompanyRegistrationRequests(
@@ -2041,6 +2058,7 @@ async function loadAdminRequests() {
     renderAdminListError(error);
     renderAdminDetailPrompt();
   } finally {
+    stopLoading();
     setAdminLoading(false);
   }
 }
@@ -2067,6 +2085,7 @@ async function approveSelectedAdminRequest() {
 
   clearAdminMessages({ keepTokenStatus: true });
   setAdminActionLoading(true, "approve");
+  const stopLoading = startGlobalLoading("Estamos aprobando la solicitud...");
 
   try {
     const result = await api.approveCompanyRegistrationRequest(
@@ -2087,6 +2106,7 @@ async function approveSelectedAdminRequest() {
   } catch (error) {
     renderAdminActionError(error);
   } finally {
+    stopLoading();
     setAdminActionLoading(false);
   }
 }
@@ -2123,6 +2143,7 @@ async function rejectSelectedAdminRequest() {
 
   clearAdminMessages({ keepTokenStatus: true });
   setAdminActionLoading(true, "reject");
+  const stopLoading = startGlobalLoading("Estamos rechazando la solicitud...");
 
   try {
     const result = await api.rejectCompanyRegistrationRequest(
@@ -2141,6 +2162,7 @@ async function rejectSelectedAdminRequest() {
   } catch (error) {
     renderAdminActionError(error);
   } finally {
+    stopLoading();
     setAdminActionLoading(false);
   }
 }
@@ -2169,6 +2191,7 @@ async function resendSelectedAdminInvitation() {
 
   clearAdminMessages({ keepTokenStatus: true });
   setAdminActionLoading(true, "resend");
+  const stopLoading = startGlobalLoading("Estamos reenviando la invitacion...");
 
   try {
     const result = await api.resendCompanyInvitation(invitation.id, adminToken);
@@ -2185,6 +2208,7 @@ async function resendSelectedAdminInvitation() {
   } catch (error) {
     renderAdminActionError(error);
   } finally {
+    stopLoading();
     setAdminActionLoading(false);
   }
 }
@@ -2225,6 +2249,7 @@ async function submitCreateAccess() {
   }
 
   setCreateAccessSubmitting(true);
+  const stopLoading = startGlobalLoading("Estamos creando tu acceso...");
 
   try {
     const result = await api.acceptCompanyInvitation({
@@ -2236,6 +2261,7 @@ async function submitCreateAccess() {
   } catch (error) {
     renderCreateAccessError(error);
   } finally {
+    stopLoading();
     setCreateAccessSubmitting(false);
   }
 }
@@ -2243,6 +2269,7 @@ async function submitCreateAccess() {
 async function submitCompanyLogin() {
   clearLoginMessages();
   setLoginSubmitting(true);
+  const stopLoading = startGlobalLoading("Estamos iniciando sesion...");
 
   try {
     const identity = await api.loginCompany({
@@ -2256,6 +2283,7 @@ async function submitCompanyLogin() {
   } catch (error) {
     renderLoginError(error);
   } finally {
+    stopLoading();
     setLoginSubmitting(false);
   }
 }
@@ -2269,6 +2297,8 @@ async function refreshAuthIdentity(options = {}) {
     if (isLoginPage) {
       await showMainApp({ replaceLoginRoute: true, refreshCompany: true });
     }
+
+    return identity;
   } catch (error) {
     currentAuthIdentity = null;
     renderSignedOut();
@@ -2276,6 +2306,8 @@ async function refreshAuthIdentity(options = {}) {
     if (!options.silent && error instanceof ApiError && error.code === "UNAUTHORIZED") {
       showLoginError("La sesion expiro. Inicie sesion de nuevo.");
     }
+
+    return null;
   }
 }
 
@@ -3930,23 +3962,45 @@ function renderAdminDetail() {
   elements.adminDetailEmpty.hidden = true;
   elements.adminRequestDetail.hidden = false;
   elements.adminRequestDetail.innerHTML = `
-    <div class="admin-detail-grid">
-      ${renderAdminDetailItem("Empresa", request.companyName)}
-      ${renderAdminDetailItem("Correo de empresa", request.companyEmail)}
-      ${renderAdminDetailItem("Telefono", request.companyPhone)}
-      ${renderAdminDetailItem("Direccion", request.companyAddress)}
-      ${renderAdminDetailItem("Contacto", request.contactName)}
-      ${renderAdminDetailItem("Correo de contacto", request.contactEmail)}
-      ${renderAdminDetailItem("Telefono de contacto", request.contactPhone)}
-      ${renderAdminDetailItem("Estado", getRegistrationStatusLabel(request.status))}
-      ${renderAdminDetailItem("Logo", request.requestedLogo?.available ? "Incluido" : "No incluido")}
-      ${renderAdminDetailItem("Solicitud", formatDateTime(request.createdAt))}
-      ${renderAdminDetailItem("Actualizacion", formatDateTime(request.updatedAt))}
+    <div class="admin-detail-heading">
+      <div>
+        <p class="eyebrow">Solicitud de empresa</p>
+        <h3>${escapeHtml(request.companyName || "Empresa sin nombre")}</h3>
+      </div>
+      <span>${escapeHtml(getRegistrationStatusLabel(request.status))}</span>
     </div>
 
     <div class="admin-state-note">
       ${escapeHtml(getAdminRequestStateMessage(request.status))}
     </div>
+
+    <section class="admin-detail-section" aria-label="Empresa">
+      <h3>Empresa</h3>
+      <div class="admin-detail-grid">
+        ${renderAdminDetailItem("Correo de empresa", request.companyEmail)}
+        ${renderAdminDetailItem("Telefono", request.companyPhone)}
+        ${renderAdminDetailItem("Direccion", request.companyAddress)}
+        ${renderAdminDetailItem("Logo", request.requestedLogo?.available ? "Incluido" : "No incluido")}
+      </div>
+    </section>
+
+    <section class="admin-detail-section" aria-label="Contacto">
+      <h3>Contacto</h3>
+      <div class="admin-detail-grid">
+        ${renderAdminDetailItem("Nombre", request.contactName)}
+        ${renderAdminDetailItem("Correo de contacto", request.contactEmail)}
+        ${renderAdminDetailItem("Telefono de contacto", request.contactPhone)}
+      </div>
+    </section>
+
+    <section class="admin-detail-section" aria-label="Solicitud">
+      <h3>Solicitud</h3>
+      <div class="admin-detail-grid">
+        ${renderAdminDetailItem("Estado", getRegistrationStatusLabel(request.status))}
+        ${renderAdminDetailItem("Solicitud", formatDateTime(request.createdAt))}
+        ${renderAdminDetailItem("Actualizacion", formatDateTime(request.updatedAt))}
+      </div>
+    </section>
 
     ${renderAdminInvitationPanel(request.invitation)}
 
@@ -4203,11 +4257,16 @@ function renderInvitationServiceError(error) {
 }
 
 function renderAccessCreated(result) {
+  const email = result.email || currentInvitation?.email || "";
   elements.createAccessForm.hidden = true;
   elements.accessStatus.hidden = false;
-  elements.accessStatus.textContent =
-    "Acceso creado correctamente. Ya puedes iniciar sesion con el correo de la invitacion.";
-  elements.loginEmailInput.value = result.email || currentInvitation?.email || "";
+  elements.accessStatus.textContent = "Acceso creado correctamente. Ya puedes iniciar sesion.";
+  if (email) {
+    window.sessionStorage.setItem("puntoclubLoginEmail", email);
+  }
+  window.setTimeout(() => {
+    window.location.assign("/login");
+  }, 900);
 }
 
 function renderCreateAccessError(error) {
@@ -5192,9 +5251,28 @@ function setLoginSubmitting(isSubmitting) {
   elements.submitLoginButton.textContent = isSubmitting ? "Entrando..." : "Iniciar sesion";
 }
 
-function showInvitationPage() {
+function showPublicHomePage() {
+  document.body.classList.add("public-home-mode");
   document.body.classList.remove("public-registration-mode");
   document.body.classList.remove("admin-companies-page-mode");
+  elements.publicHomePage.hidden = false;
+  elements.appBody.hidden = true;
+  elements.authPage.hidden = true;
+  elements.invitationPage.hidden = true;
+  elements.loginButton.hidden = false;
+  elements.logoutButton.hidden = true;
+  elements.authStatus.hidden = true;
+  elements.dataSourceStatus.hidden = true;
+  renderActiveCompanyIdentity(null);
+}
+
+function showInvitationPage() {
+  document.body.classList.remove("public-home-mode");
+  document.body.classList.remove("public-registration-mode");
+  document.body.classList.remove("admin-companies-page-mode");
+  elements.publicHomePage.hidden = true;
+  elements.authStatus.hidden = false;
+  elements.dataSourceStatus.hidden = false;
   elements.appBody.hidden = true;
   elements.authPage.hidden = true;
   elements.invitationPage.hidden = false;
@@ -5202,13 +5280,22 @@ function showInvitationPage() {
 }
 
 function showLoginPage(options = {}) {
+  document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-registration-mode");
   document.body.classList.remove("admin-companies-page-mode");
+  elements.publicHomePage.hidden = true;
+  elements.authStatus.hidden = false;
+  elements.dataSourceStatus.hidden = false;
   elements.appBody.hidden = true;
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = false;
   if (options.replaceRoute && !isCompanyLoginRoute()) {
     window.history.replaceState({}, "", "/login");
+  }
+  const pendingEmail = window.sessionStorage.getItem("puntoclubLoginEmail");
+  if (pendingEmail && !elements.loginEmailInput.value) {
+    elements.loginEmailInput.value = pendingEmail;
+    window.sessionStorage.removeItem("puntoclubLoginEmail");
   }
   window.requestAnimationFrame(() => {
     elements.loginEmailInput.focus();
@@ -5216,8 +5303,12 @@ function showLoginPage(options = {}) {
 }
 
 async function showMainApp(options = {}) {
+  document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-registration-mode");
   document.body.classList.remove("admin-companies-page-mode");
+  elements.publicHomePage.hidden = true;
+  elements.authStatus.hidden = false;
+  elements.dataSourceStatus.hidden = false;
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = true;
   elements.appBody.hidden = false;
@@ -5233,8 +5324,12 @@ async function showMainApp(options = {}) {
 }
 
 function showPublicCompanyRegistrationPage() {
+  document.body.classList.remove("public-home-mode");
   document.body.classList.add("public-registration-mode");
   document.body.classList.remove("admin-companies-page-mode");
+  elements.publicHomePage.hidden = true;
+  elements.authStatus.hidden = false;
+  elements.dataSourceStatus.hidden = false;
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = true;
   elements.appBody.hidden = false;
@@ -5258,8 +5353,12 @@ function isolatePublicCompanyRegistrationView() {
 }
 
 function showAdminCompaniesPage() {
+  document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-registration-mode");
   document.body.classList.add("admin-companies-page-mode");
+  elements.publicHomePage.hidden = true;
+  elements.authStatus.hidden = false;
+  elements.dataSourceStatus.hidden = false;
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = true;
   elements.appBody.hidden = false;
@@ -5284,6 +5383,25 @@ function isolateAdminCompaniesView() {
   elements.sectionPanels.forEach((panel) => {
     panel.hidden = panel.dataset.section !== "adminCompanies";
   });
+}
+
+function startGlobalLoading(message, options = {}) {
+  const delay = Number.isFinite(Number(options.delay)) ? Number(options.delay) : 3000;
+  stopGlobalLoading();
+  globalLoadingTimer = window.setTimeout(() => {
+    elements.globalLoadingMessage.textContent = message;
+    elements.globalLoading.hidden = false;
+  }, Math.max(0, delay));
+  return stopGlobalLoading;
+}
+
+function stopGlobalLoading() {
+  if (globalLoadingTimer) {
+    window.clearTimeout(globalLoadingTimer);
+    globalLoadingTimer = null;
+  }
+
+  elements.globalLoading.hidden = true;
 }
 
 function validateCreateAccessForm() {
