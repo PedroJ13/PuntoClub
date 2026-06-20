@@ -5,6 +5,7 @@ const api = createCustomerApi(config);
 
 const elements = {
   publicHomePage: document.querySelector("#public-home-page"),
+  publicProductPage: document.querySelector("#public-product-page"),
   globalLoading: document.querySelector("#global-loading"),
   globalLoadingMessage: document.querySelector("#global-loading-message"),
   dataSourceStatus: document.querySelector("#data-source-status"),
@@ -349,6 +350,7 @@ let globalLoadingTimer = null;
 const customerBalances = new Map();
 const invitationToken = getInvitationTokenFromUrl();
 const isInvitationPage = isCompanyInvitationRoute();
+const isProductPage = isProductRoute();
 const isLoginPage = isCompanyLoginRoute();
 const isRegistrationPage = isCompanyRegistrationRoute();
 const isAdminCompaniesPage = isAdminCompaniesRoute();
@@ -774,6 +776,8 @@ renderAdminPrompt();
 if (isInvitationPage) {
   showInvitationPage();
   validateCompanyInvitation(invitationToken);
+} else if (isProductPage) {
+  showProductPage();
 } else if (isLoginPage) {
   showLoginPage();
   refreshAuthIdentity({ silent: true });
@@ -5527,9 +5531,28 @@ function setLoginSubmitting(isSubmitting) {
 
 function showPublicHomePage() {
   document.body.classList.add("public-home-mode");
+  document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = false;
+  elements.publicProductPage.hidden = true;
+  elements.appBody.hidden = true;
+  elements.authPage.hidden = true;
+  elements.invitationPage.hidden = true;
+  elements.loginButton.hidden = false;
+  elements.logoutButton.hidden = true;
+  elements.authStatus.hidden = true;
+  elements.dataSourceStatus.hidden = true;
+  renderActiveCompanyIdentity(null);
+}
+
+function showProductPage() {
+  document.body.classList.remove("public-home-mode");
+  document.body.classList.add("public-product-mode");
+  document.body.classList.remove("public-registration-mode");
+  document.body.classList.remove("admin-companies-page-mode");
+  elements.publicHomePage.hidden = true;
+  elements.publicProductPage.hidden = false;
   elements.appBody.hidden = true;
   elements.authPage.hidden = true;
   elements.invitationPage.hidden = true;
@@ -5542,9 +5565,11 @@ function showPublicHomePage() {
 
 function showInvitationPage() {
   document.body.classList.remove("public-home-mode");
+  document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
+  elements.publicProductPage.hidden = true;
   elements.authStatus.hidden = false;
   elements.dataSourceStatus.hidden = false;
   elements.appBody.hidden = true;
@@ -5555,9 +5580,11 @@ function showInvitationPage() {
 
 function showLoginPage(options = {}) {
   document.body.classList.remove("public-home-mode");
+  document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
+  elements.publicProductPage.hidden = true;
   elements.authStatus.hidden = false;
   elements.dataSourceStatus.hidden = false;
   elements.appBody.hidden = true;
@@ -5578,9 +5605,11 @@ function showLoginPage(options = {}) {
 
 async function showMainApp(options = {}) {
   document.body.classList.remove("public-home-mode");
+  document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
+  elements.publicProductPage.hidden = true;
   elements.authStatus.hidden = false;
   elements.dataSourceStatus.hidden = false;
   elements.invitationPage.hidden = true;
@@ -5599,9 +5628,11 @@ async function showMainApp(options = {}) {
 
 function showPublicCompanyRegistrationPage() {
   document.body.classList.remove("public-home-mode");
+  document.body.classList.remove("public-product-mode");
   document.body.classList.add("public-registration-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
+  elements.publicProductPage.hidden = true;
   elements.authStatus.hidden = false;
   elements.dataSourceStatus.hidden = false;
   elements.invitationPage.hidden = true;
@@ -5628,9 +5659,11 @@ function isolatePublicCompanyRegistrationView() {
 
 function showAdminCompaniesPage() {
   document.body.classList.remove("public-home-mode");
+  document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
   document.body.classList.add("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
+  elements.publicProductPage.hidden = true;
   elements.authStatus.hidden = false;
   elements.dataSourceStatus.hidden = false;
   elements.invitationPage.hidden = true;
@@ -6111,6 +6144,10 @@ function getInvitationUnavailableState(reason) {
 
 function isCompanyInvitationRoute() {
   return window.location.pathname.replace(/\/$/, "") === "/company-invitations/accept";
+}
+
+function isProductRoute() {
+  return window.location.pathname.replace(/\/$/, "") === "/producto";
 }
 
 function isCompanyLoginRoute() {
