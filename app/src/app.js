@@ -341,6 +341,9 @@ let selectedAdminRequest = null;
 let activeSection = "operations";
 let companyLogoPreviewUrl = "";
 let registrationLogoPreviewUrl = "";
+let adminRequestLogoPreviewUrl = "";
+let adminRequestLogoPreviewRequestId = null;
+let adminRequestLogoPreviewLoadId = 0;
 let pendingAdminConfirmation = null;
 let globalLoadingTimer = null;
 const customerBalances = new Map();
@@ -4047,6 +4050,7 @@ function selectAdminRequest(request) {
 }
 
 function renderAdminDetailPrompt() {
+  revokeAdminRequestLogoPreview();
   elements.adminCompaniesSection.classList.remove("is-admin-drawer-open");
   elements.backAdminListButton.hidden = true;
   elements.adminDetailEmpty.hidden = false;
@@ -4085,7 +4089,7 @@ function renderAdminDetail() {
         ${renderAdminDetailItem("Correo de empresa", request.companyEmail)}
         ${renderAdminDetailItem("Telefono", request.companyPhone)}
         ${renderAdminDetailItem("Direccion", request.companyAddress)}
-        ${renderAdminDetailItem("Logo", request.requestedLogo?.available ? "Incluido" : "No incluido")}
+        ${renderAdminLogoDetailItem(request)}
       </div>
     </section>
 
@@ -4146,6 +4150,7 @@ function renderAdminDetail() {
         : ""
     }
   `;
+  loadAdminRequestLogoPreview(request);
 }
 
 function renderAdminDetailItem(label, value) {
@@ -4155,6 +4160,81 @@ function renderAdminDetailItem(label, value) {
       <strong>${escapeHtml(value || "No disponible")}</strong>
     </div>
   `;
+}
+
+function renderAdminLogoDetailItem(request) {
+  if (!request.requestedLogo?.available) {
+    return renderAdminDetailItem("Logo", "No incluido");
+  }
+
+  return `
+    <div class="admin-logo-detail-item">
+      <span>Logo</span>
+      <figure class="admin-logo-preview" data-admin-logo-preview="${escapeHtml(request.id)}">
+        <span>Cargando logo...</span>
+      </figure>
+    </div>
+  `;
+}
+
+async function loadAdminRequestLogoPreview(request) {
+  revokeAdminRequestLogoPreview();
+
+  if (!request?.requestedLogo?.available || !adminToken) {
+    return;
+  }
+
+  const requestId = String(request.id);
+  const loadId = adminRequestLogoPreviewLoadId + 1;
+  adminRequestLogoPreviewLoadId = loadId;
+  adminRequestLogoPreviewRequestId = requestId;
+  const target = getAdminLogoPreviewTarget(requestId);
+  if (!target) {
+    return;
+  }
+
+  try {
+    const blob = await api.getCompanyRegistrationRequestLogo(request.id, adminToken);
+    if (!isSelectedAdminRequest(requestId) || adminRequestLogoPreviewLoadId !== loadId) {
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(blob);
+    adminRequestLogoPreviewUrl = previewUrl;
+    adminRequestLogoPreviewRequestId = requestId;
+    target.innerHTML = '<img alt="Logo solicitado" loading="lazy" />';
+    const image = target.querySelector("img");
+    image.addEventListener("error", () => {
+      if (isSelectedAdminRequest(requestId)) {
+        revokeAdminRequestLogoPreview();
+        target.innerHTML = "<span>Logo no disponible</span>";
+      }
+    }, { once: true });
+    image.src = previewUrl;
+  } catch (error) {
+    if (isSelectedAdminRequest(requestId) && adminRequestLogoPreviewLoadId === loadId) {
+      target.innerHTML = "<span>Logo no disponible</span>";
+    }
+  }
+}
+
+function getAdminLogoPreviewTarget(requestId) {
+  return [...elements.adminRequestDetail.querySelectorAll("[data-admin-logo-preview]")]
+    .find((target) => target.dataset.adminLogoPreview === requestId) || null;
+}
+
+function isSelectedAdminRequest(requestId) {
+  return selectedAdminRequest && String(selectedAdminRequest.id) === String(requestId);
+}
+
+function revokeAdminRequestLogoPreview() {
+  if (adminRequestLogoPreviewUrl) {
+    URL.revokeObjectURL(adminRequestLogoPreviewUrl);
+  }
+
+  adminRequestLogoPreviewUrl = "";
+  adminRequestLogoPreviewRequestId = null;
+  adminRequestLogoPreviewLoadId += 1;
 }
 
 function renderAdminInvitationPanel(invitation) {

@@ -15,6 +15,7 @@ const {
   formatCompanyRegistrationApprovedAuditEvent,
   formatCompanyRegistrationApprovedResponse,
   formatCompanyRegistrationCreatedResponse,
+  formatCompanyRegistrationLogoResponse,
   formatCompanyRegistrationRequestListResponse,
   formatCompanyRegistrationRejectedResponse,
   getCompanyRegistrationReviewActorLabel
@@ -227,6 +228,25 @@ test('formatCompanyRegistrationRequestListResponse includes safe invitation summ
   });
   assert.equal(JSON.stringify(response).includes('raw-token'), false);
   assert.equal(JSON.stringify(response).includes('hash'), false);
+});
+
+test('formatCompanyRegistrationLogoResponse returns private binary image response', () => {
+  const body = Buffer.from([1, 2, 3, 4]);
+  const response = formatCompanyRegistrationLogoResponse(body, {
+    contentType: 'image/png',
+    blobPath: 'registration-requests/123/logo/private.png'
+  });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body, body);
+  assert.deepEqual(response.headers, {
+    'Cache-Control': 'private, no-store',
+    'Content-Length': '4',
+    'Content-Type': 'image/png',
+    'Pragma': 'no-cache',
+    'X-Content-Type-Options': 'nosniff'
+  });
+  assert.equal(JSON.stringify(response).includes('registration-requests/123/logo/private.png'), false);
 });
 
 test('getEmailConfig enables ACS email only when required settings exist', () => {

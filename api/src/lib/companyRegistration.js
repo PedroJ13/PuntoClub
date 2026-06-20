@@ -115,6 +115,22 @@ function formatCompanyRegistrationRequestListResponse(result) {
   };
 }
 
+function formatCompanyRegistrationLogoResponse(buffer, logo) {
+  const body = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer || '');
+
+  return {
+    status: 200,
+    body,
+    headers: {
+      'Cache-Control': 'private, no-store',
+      'Content-Length': String(body.length),
+      'Content-Type': logo.contentType,
+      'Pragma': 'no-cache',
+      'X-Content-Type-Options': 'nosniff'
+    }
+  };
+}
+
 function formatCompanyRegistrationApprovedAuditEvent(result, context) {
   return {
     companyId: result.company.id,
@@ -134,6 +150,7 @@ module.exports = {
   formatCompanyRegistrationApprovedAuditEvent,
   formatCompanyRegistrationApprovedResponse,
   formatCompanyRegistrationCreatedResponse,
+  formatCompanyRegistrationLogoResponse,
   formatCompanyRegistrationRequestListItem,
   formatCompanyRegistrationRequestListResponse,
   formatCompanyRegistrationRejectedResponse,

@@ -194,6 +194,13 @@ let nextMembershipBenefitId = 803;
 let nextCustomerMembershipId = 901;
 let nextMembershipBenefitUsageId = 1001;
 let nextMembershipTransactionId = 1101;
+const mockCompanyRegistrationLogoPng = [
+  137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82,
+  0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196,
+  137, 0, 0, 0, 13, 73, 68, 65, 84, 120, 156, 99, 96, 248, 207,
+  192, 0, 0, 3, 1, 1, 0, 24, 221, 141, 181, 0, 0, 0, 0,
+  73, 69, 78, 68, 174, 66, 96, 130,
+];
 
 export class ApiError extends Error {
   constructor(code, message, details = []) {
@@ -336,6 +343,13 @@ function createHttpCustomerApi(config) {
       });
 
       return parseResponse(response);
+    },
+    async getCompanyRegistrationRequestLogo(requestId, adminToken) {
+      const response = await fetch(`${companyRegistrationRequestsUrl}/${encodeURIComponent(requestId)}/logo`, {
+        headers: buildAdminHeaders(adminToken),
+      });
+
+      return parseBlobResponse(response);
     },
     async approveCompanyRegistrationRequest(requestId, payload, adminToken) {
       const response = await fetch(`${companyRegistrationRequestsUrl}/${encodeURIComponent(requestId)}/approve`, {
@@ -784,6 +798,21 @@ function createMockCustomerApi() {
         .map(cloneMockRegistrationRequest);
 
       return { status, limit, items };
+    },
+    async getCompanyRegistrationRequestLogo(requestId, adminToken) {
+      await wait(250);
+      validateMockAdminToken(adminToken);
+      const request = mockCompanyRegistrationRequests.find((item) => String(item.id) === String(requestId));
+
+      if (!request) {
+        throw new ApiError("COMPANY_REGISTRATION_REQUEST_NOT_FOUND", "Solicitud no encontrada.");
+      }
+
+      if (!request.requestedLogo?.available) {
+        throw new ApiError("COMPANY_REGISTRATION_LOGO_NOT_FOUND", "Logo no disponible.");
+      }
+
+      return createMockCompanyRegistrationLogoBlob();
     },
     async approveCompanyRegistrationRequest(requestId, payload, adminToken) {
       await wait(450);
@@ -1598,6 +1627,14 @@ async function parseResponse(response) {
   return body;
 }
 
+async function parseBlobResponse(response) {
+  if (!response.ok) {
+    return parseResponse(response);
+  }
+
+  return response.blob();
+}
+
 function validateMembershipPlan(payload) {
   const details = [];
   const name = String(payload?.name ?? "").trim();
@@ -2139,6 +2176,10 @@ function cloneMockRegistrationRequest(request) {
     ...request,
     invitation: request.invitation ? { ...request.invitation } : null,
   };
+}
+
+function createMockCompanyRegistrationLogoBlob() {
+  return new Blob([new Uint8Array(mockCompanyRegistrationLogoPng)], { type: "image/png" });
 }
 
 function addDaysIso(value, days) {

@@ -836,6 +836,35 @@ async function updateCompanyRegistrationRequestLogo(requestId, logo) {
   return mapCompanyRegistrationRequest(result.recordset[0]);
 }
 
+async function getCompanyRegistrationRequestLogoMetadata(requestId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('request_id', sql.BigInt, requestId)
+    .query(`
+      SELECT
+        id,
+        requested_logo_blob_path,
+        requested_logo_content_type
+      FROM dbo.CompanyRegistrationRequests
+      WHERE id = @request_id
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'COMPANY_REGISTRATION_REQUEST_NOT_FOUND', 'Company registration request was not found.');
+  }
+
+  const row = result.recordset[0];
+  if (!row.requested_logo_blob_path) {
+    throw new ApiError(404, 'COMPANY_REGISTRATION_LOGO_NOT_FOUND', 'Company registration request logo was not found.');
+  }
+
+  return {
+    blobPath: row.requested_logo_blob_path,
+    contentType: row.requested_logo_content_type
+  };
+}
+
 async function approveCompanyRegistrationRequest(requestId, payload, options = {}) {
   const sql = getSql();
   const pool = await getPool();
@@ -2910,6 +2939,7 @@ module.exports = {
   getCompanyInvitationById,
   getCompanyInvitationByTokenHash,
   getCompanyLogoMetadata,
+  getCompanyRegistrationRequestLogoMetadata,
   getCompanySettings,
   getCustomerById,
   getLocalPasswordUserByEmail,

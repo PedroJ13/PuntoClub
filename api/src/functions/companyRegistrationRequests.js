@@ -5,6 +5,7 @@ const {
   formatCompanyRegistrationApprovedAuditEvent,
   formatCompanyRegistrationApprovedResponse,
   formatCompanyRegistrationCreatedResponse,
+  formatCompanyRegistrationLogoResponse,
   formatCompanyRegistrationRequestListResponse,
   formatCompanyRegistrationRejectedResponse,
   getCompanyRegistrationReviewActorLabel
@@ -19,6 +20,7 @@ const { created, handle, ok, readJson } = require('../lib/http');
 const { assertInternalAdminAuthorized } = require('../lib/internalAdmin');
 const {
   buildRegistrationRequestLogoBlobPath,
+  downloadLogoBlob,
   getLogoConfig,
   parseMultipartFile,
   uploadLogoBlob,
@@ -171,6 +173,22 @@ app.http('listCompanyRegistrationRequests', {
     const result = await repository.listCompanyRegistrationRequests(filters);
 
     return ok(formatCompanyRegistrationRequestListResponse(result));
+  })
+});
+
+app.http('getCompanyRegistrationRequestLogo', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'company-registration-requests/{requestId}/logo',
+  handler: handle(async (request) => {
+    assertCompanyRegistrationReviewEnabled();
+    assertInternalAdminAuthorized(request);
+
+    const requestId = parsePositiveInteger(request.params.requestId, 'requestId');
+    const logo = await repository.getCompanyRegistrationRequestLogoMetadata(requestId);
+    const buffer = await downloadLogoBlob(logo.blobPath, { config: getLogoConfig() });
+
+    return formatCompanyRegistrationLogoResponse(buffer, logo);
   })
 });
 

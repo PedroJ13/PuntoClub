@@ -1650,6 +1650,35 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   overflow-wrap: anywhere;
 }
 
+.admin-logo-preview {
+  display: grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  margin: 8px 0 0;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: 8px;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.admin-logo-preview img {
+  display: block;
+  max-width: 92px;
+  max-height: 92px;
+  object-fit: contain;
+}
+
+.admin-logo-preview span {
+  padding: 8px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  text-transform: none;
+}
+
 .admin-requests-list {
   display: grid;
   gap: 10px;
