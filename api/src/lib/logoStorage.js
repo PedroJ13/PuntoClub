@@ -62,7 +62,7 @@ function trimTrailingCrlf(buffer) {
 function parseMultipartFile(buffer, contentType, fieldName = 'file') {
   const boundary = getBoundary(contentType);
   if (!boundary) {
-    throw validationError([{ field: 'file', message: 'Logo upload must be multipart/form-data.' }]);
+    throw validationError([{ field: 'logoFile', message: 'Logo upload must be multipart/form-data.' }]);
   }
 
   const delimiter = Buffer.from(`--${boundary}`);
@@ -101,7 +101,7 @@ function parseMultipartFile(buffer, contentType, fieldName = 'file') {
     position = nextDelimiter;
   }
 
-  throw validationError([{ field: 'file', message: 'Logo file is required.' }]);
+  throw validationError([{ field: 'logoFile', message: 'Logo file is required.' }]);
 }
 
 function getLogoExtension(contentType) {
@@ -161,25 +161,35 @@ function validateLogoFile(file, options = {}) {
   const extension = getFilenameExtension(file && file.filename);
 
   if (!allowedMimeTypes.includes(contentType)) {
-    throw new ApiError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Logo must be a PNG, JPEG, or WebP image.');
+    throw new ApiError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Logo must be a PNG, JPEG, or WebP image.', [
+      { field: 'logoFile', message: 'Logo must be a PNG, JPEG, or WebP image.' }
+    ]);
   }
 
   if (Number.isInteger(size) && size > Number(options.maxBytes || defaultMaxBytes)) {
-    throw new ApiError(413, 'UPLOAD_TOO_LARGE', 'Logo file exceeds the allowed size.');
+    throw new ApiError(413, 'UPLOAD_TOO_LARGE', 'Logo file exceeds the allowed size.', [
+      { field: 'logoFile', message: 'Logo file exceeds the allowed size.' }
+    ]);
   }
 
   if (extension === 'svg') {
-    throw new ApiError(415, 'UNSUPPORTED_MEDIA_TYPE', 'SVG logos are not allowed.');
+    throw new ApiError(415, 'UNSUPPORTED_MEDIA_TYPE', 'SVG logos are not allowed.', [
+      { field: 'logoFile', message: 'Logo must be a PNG, JPEG, or WebP image.' }
+    ]);
   }
 
   if (!isMatchingExtension(contentType, extension)) {
-    throw validationError([{ field: 'file', message: 'Logo file extension does not match its content type.' }]);
+    throw new ApiError(415, 'UNSUPPORTED_MEDIA_TYPE', 'Logo file extension does not match its content type.', [
+      { field: 'logoFile', message: 'Logo must be a PNG, JPEG, or WebP image.' }
+    ]);
   }
 
   const metadata = validateLogoFileMetadata(file, options);
 
   if (!hasValidMagicBytes(metadata.contentType, file.buffer || Buffer.alloc(0))) {
-    throw validationError([{ field: 'file', message: 'Logo file content does not match its content type.' }]);
+    throw new ApiError(400, 'LOGO_FILE_UNREADABLE', 'Logo file could not be read as an image.', [
+      { field: 'logoFile', message: 'Logo file content does not match its content type.' }
+    ]);
   }
 
   return metadata;

@@ -7,6 +7,7 @@ const {
   getLogoConfig,
   getLogoExtension,
   parseMultipartFile,
+  uploadLogoBlob,
   validateLogoFile
 } = require('../src/lib/logoStorage');
 
@@ -58,7 +59,9 @@ test('validateLogoFile rejects SVG logos with unsupported media type', () => {
       filename: 'logo.svg',
       contentType: 'image/svg+xml'
     }),
-    (error) => error.status === 415 && error.code === 'UNSUPPORTED_MEDIA_TYPE'
+    (error) => error.status === 415 &&
+      error.code === 'UNSUPPORTED_MEDIA_TYPE' &&
+      error.details[0].field === 'logoFile'
   );
 });
 
@@ -70,7 +73,9 @@ test('validateLogoFile rejects oversize logos', () => {
       filename: 'logo.png',
       contentType: 'image/png'
     }, { maxBytes: pngBytes.length - 1 }),
-    (error) => error.status === 413 && error.code === 'UPLOAD_TOO_LARGE'
+    (error) => error.status === 413 &&
+      error.code === 'UPLOAD_TOO_LARGE' &&
+      error.details[0].field === 'logoFile'
   );
 });
 
@@ -82,7 +87,9 @@ test('validateLogoFile rejects content type and extension mismatch', () => {
       filename: 'logo.jpg',
       contentType: 'image/png'
     }),
-    (error) => error.status === 400 && error.code === 'VALIDATION_ERROR'
+    (error) => error.status === 415 &&
+      error.code === 'UNSUPPORTED_MEDIA_TYPE' &&
+      error.details[0].field === 'logoFile'
   );
 });
 
@@ -94,8 +101,30 @@ test('validateLogoFile rejects magic byte mismatch', () => {
       filename: 'logo.png',
       contentType: 'image/png'
     }),
-    (error) => error.status === 400 && error.code === 'VALIDATION_ERROR'
+    (error) => error.status === 400 &&
+      error.code === 'LOGO_FILE_UNREADABLE' &&
+      error.details[0].field === 'logoFile'
   );
+});
+
+test('uploadLogoBlob maps storage failure to safe logo storage error', async () => {
+  const originalFetch = global.fetch;
+  global.fetch = async () => ({ ok: false });
+
+  try {
+    await assert.rejects(
+      () => uploadLogoBlob('registration-requests/1/logo/private.png', pngBytes, 'image/png', {
+        config: { account: 'stlogos', container: 'company-logos' },
+        token: 'synthetic-token'
+      }),
+      (error) => error.status === 503 &&
+        error.code === 'LOGO_STORAGE_UNAVAILABLE' &&
+        !JSON.stringify(error).includes('registration-requests/1/logo/private.png') &&
+        !JSON.stringify(error).includes('synthetic-token')
+    );
+  } finally {
+    global.fetch = originalFetch;
+  }
 });
 
 test('buildLogoBlobPath scopes generated paths by company id', () => {

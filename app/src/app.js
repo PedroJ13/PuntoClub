@@ -529,8 +529,8 @@ elements.companyRegistrationForm.addEventListener("submit", async (event) => {
   await submitCompanyRegistrationRequest();
 });
 
-elements.registrationLogoFileInput.addEventListener("change", () => {
-  previewSelectedRegistrationLogo();
+elements.registrationLogoFileInput.addEventListener("change", async () => {
+  await previewSelectedRegistrationLogo();
 });
 
 elements.clearRegistrationLogoButton.addEventListener("click", () => {
@@ -1984,11 +1984,11 @@ async function handleMembershipBenefitAction(button) {
 async function submitCompanyRegistrationRequest() {
   clearCompanyRegistrationMessages();
   const [logoFile] = elements.registrationLogoFileInput.files;
-  const logoValidationMessage = logoFile ? getCompanyLogoValidationMessage(logoFile) : "";
+  const logoValidationMessage = logoFile ? await getRegistrationLogoValidationMessage(logoFile) : "";
 
   if (logoValidationMessage) {
     elements.registrationLogoFileError.textContent = logoValidationMessage;
-    showCompanyRegistrationError(logoValidationMessage);
+    showCompanyRegistrationError("Revisa el logo antes de enviar la solicitud.");
     return;
   }
 
@@ -3787,15 +3787,21 @@ function revokeCompanyLogoPreviewUrl() {
   }
 }
 
-function previewSelectedRegistrationLogo() {
+async function previewSelectedRegistrationLogo() {
   const [file] = elements.registrationLogoFileInput.files;
-  const validationMessage = file ? getCompanyLogoValidationMessage(file) : "";
   elements.registrationLogoFileError.textContent = "";
 
   if (!file) {
     clearSelectedRegistrationLogo();
     return;
   }
+
+  elements.registrationLogoPreviewText.hidden = false;
+  elements.registrationLogoPreviewText.textContent = "Revisando logo...";
+  elements.registrationLogoPreviewImage.hidden = true;
+  elements.registrationLogoPreviewImage.removeAttribute("src");
+
+  const validationMessage = await getRegistrationLogoValidationMessage(file);
 
   if (validationMessage) {
     elements.registrationLogoFileError.textContent = validationMessage;
@@ -3912,6 +3918,20 @@ function renderCompanyRegistrationError(error) {
     return;
   }
 
+  if (error instanceof ApiError && ["UNSUPPORTED_MEDIA_TYPE", "UPLOAD_TOO_LARGE", "LOGO_FILE_UNREADABLE"].includes(error.code)) {
+    const message = getCompanyRegistrationLogoErrorMessage(error);
+    elements.registrationLogoFileError.textContent = message;
+    showCompanyRegistrationError("Revisa el logo antes de enviar la solicitud.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "LOGO_STORAGE_UNAVAILABLE") {
+    const message = getCompanyRegistrationLogoErrorMessage(error);
+    elements.registrationLogoFileError.textContent = message;
+    showCompanyRegistrationError(message);
+    return;
+  }
+
   if (error instanceof ApiError && error.code === "COMPANY_ALREADY_EXISTS") {
     showCompanyRegistrationError(
       "Ya existe una empresa registrada con ese correo. Inicia sesion o contacta al equipo de Punto Club si necesitas recuperar el acceso.",
@@ -3940,6 +3960,11 @@ function renderCompanyRegistrationError(error) {
 
   if (error instanceof ApiError && error.code === "SERVICE_UNAVAILABLE") {
     showCompanyRegistrationError("El servicio no esta disponible en este momento. Intenta mas tarde.");
+    return;
+  }
+
+  if (error instanceof TypeError) {
+    showCompanyRegistrationError("No pudimos enviar la solicitud por un problema de conexion. Revisa tu internet e intenta de nuevo.");
     return;
   }
 
@@ -4739,7 +4764,7 @@ function getCompanyLogoValidationMessage(file) {
   }
 
   if (!allowedTypes.has(file.type)) {
-    return "Use una imagen PNG, JPG o WebP.";
+    return "El logo debe ser una imagen PNG, JPG o WebP.";
   }
 
   if (file.size > 1048576) {
@@ -4747,6 +4772,56 @@ function getCompanyLogoValidationMessage(file) {
   }
 
   return "";
+}
+
+async function getRegistrationLogoValidationMessage(file) {
+  const validationMessage = getCompanyLogoValidationMessage(file);
+
+  if (validationMessage) {
+    return validationMessage;
+  }
+
+  if (file.size <= 0) {
+    return "No pudimos leer el archivo. Descargalo en este equipo y vuelve a seleccionarlo.";
+  }
+
+  try {
+    await file.slice(0, Math.min(file.size, 4096)).arrayBuffer();
+  } catch (error) {
+    return "No pudimos leer el archivo. Descargalo en este equipo y vuelve a seleccionarlo.";
+  }
+
+  try {
+    await validateReadableImageFile(file);
+  } catch (error) {
+    return "No pudimos leer la imagen. Guarda una copia nueva en PNG, JPG o WebP y vuelve a intentarlo.";
+  }
+
+  return "";
+}
+
+async function validateReadableImageFile(file) {
+  if (typeof createImageBitmap === "function") {
+    try {
+      const bitmap = await createImageBitmap(file);
+      bitmap.close?.();
+      return;
+    } catch (error) {
+      // Fall back to the same rendering path used by the preview image.
+    }
+  }
+
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    await new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = resolve;
+      image.onerror = reject;
+      image.src = objectUrl;
+    });
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
 }
 
 function getCompanyRegistrationValidationMessage(detail) {
@@ -4758,9 +4833,21 @@ function getCompanyRegistrationValidationMessage(detail) {
     contactName: "El nombre de contacto debe tener 160 caracteres o menos.",
     contactEmail: "Ingresa un correo de contacto valido.",
     contactPhone: "El telefono de contacto debe tener 32 caracteres o menos.",
+    logoFile: "No pudimos procesar el logo. Quitalo o selecciona otra imagen para continuar.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
+}
+
+function getCompanyRegistrationLogoErrorMessage(error) {
+  const messagesByCode = {
+    LOGO_FILE_UNREADABLE: "No pudimos leer la imagen. Guarda una copia nueva en PNG, JPG o WebP y vuelve a intentarlo.",
+    LOGO_STORAGE_UNAVAILABLE: "No pudimos guardar el logo en este momento. Puedes intentar de nuevo o enviar la solicitud sin logo.",
+    UNSUPPORTED_MEDIA_TYPE: "El logo debe ser una imagen PNG, JPG o WebP.",
+    UPLOAD_TOO_LARGE: "El logo debe pesar 1 MB o menos.",
+  };
+
+  return messagesByCode[error.code] || "No pudimos procesar el logo. Quitalo o selecciona otra imagen para continuar.";
 }
 
 function getCreateAccessValidationMessage(detail) {
