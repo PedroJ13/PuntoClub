@@ -2,6 +2,8 @@ const { ApiError } = require('./errors');
 const { getFailedAttemptUpdate } = require('./authRateLimit');
 const { getPool, getSql } = require('./db');
 
+const CUSTOMER_SEARCH_COLLATION = 'Latin1_General_100_CI_AI';
+
 function toIsoTimestamp(value) {
   return value instanceof Date ? value.toISOString() : value;
 }
@@ -1606,8 +1608,8 @@ async function listCustomers(companyId, search) {
         AND (
           @search IS NULL
           OR phone = @search
-          OR email = @search
-          OR name LIKE @search_like
+          OR email COLLATE ${CUSTOMER_SEARCH_COLLATION} = @search COLLATE ${CUSTOMER_SEARCH_COLLATION}
+          OR name COLLATE ${CUSTOMER_SEARCH_COLLATION} LIKE @search_like COLLATE ${CUSTOMER_SEARCH_COLLATION}
         )
       ORDER BY name ASC, id ASC
     `);
