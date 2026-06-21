@@ -1139,6 +1139,115 @@ Errores esperados:
 - `404 COMPANY_NOT_FOUND`.
 - `400 VALIDATION_ERROR`.
 
+### GET `/api/companies/{companyId}/reports/customer?search=...&from=YYYY-MM-DD&to=YYYY-MM-DD&type=all|purchase|redemption|membership|benefit`
+
+Devuelve reporte operativo de un cliente por busqueda de telefono, nombre o email.
+
+Query params:
+
+- `search` requerido, maximo 254 caracteres. Busca telefono exacto, email exacto y nombre parcial con collation `Latin1_General_100_CI_AI`.
+- `from` requerido, formato `YYYY-MM-DD`.
+- `to` requerido, formato `YYYY-MM-DD`.
+- `type` opcional, default `all`; valores permitidos: `all`, `purchase`, `redemption`, `membership`, `benefit`.
+- Rango maximo inicial: 31 dias.
+
+Respuesta `200` con cliente resuelto:
+
+```json
+{
+  "status": "resolved",
+  "search": "maria",
+  "from": "2026-06-01",
+  "to": "2026-06-07",
+  "type": "all",
+  "customer": {
+    "id": "10",
+    "name": "Maria Soto",
+    "phone": "+50688887777",
+    "email": "maria@example.com"
+  },
+  "candidates": [],
+  "summary": {
+    "movementCount": 3,
+    "purchaseCount": 1,
+    "purchaseAmountTotal": 25000,
+    "pointsEarnedTotal": 1250,
+    "redemptionCount": 1,
+    "pointsRedeemedTotal": 500,
+    "membershipCount": 0,
+    "membershipAmountTotal": 0,
+    "benefitUsageCount": 1,
+    "benefitQuantityTotal": 1
+  },
+  "items": [
+    {
+      "type": "purchase",
+      "id": "50",
+      "date": "2026-06-06",
+      "customerId": "10",
+      "customerName": "Maria Soto",
+      "customerPhone": "+50688887777",
+      "customerEmail": "maria@example.com",
+      "invoiceNumber": "FAC-1001",
+      "amount": 25000,
+      "points": 1250
+    }
+  ]
+}
+```
+
+Respuesta `200` sin cliente:
+
+```json
+{
+  "status": "not_found",
+  "search": "sin-match",
+  "from": "2026-06-01",
+  "to": "2026-06-07",
+  "type": "all",
+  "customer": null,
+  "candidates": [],
+  "summary": {
+    "movementCount": 0
+  },
+  "items": []
+}
+```
+
+Respuesta `200` ambigua:
+
+```json
+{
+  "status": "ambiguous",
+  "search": "maria",
+  "customer": null,
+  "candidates": [
+    {
+      "id": "10",
+      "name": "Maria Soto",
+      "phone": "+50688887777",
+      "email": "maria@example.com"
+    }
+  ],
+  "summary": {
+    "movementCount": 0
+  },
+  "items": []
+}
+```
+
+Validaciones:
+
+- `companyId` mantiene aislamiento por empresa.
+- `from <= to`.
+- `type` debe ser `all`, `purchase`, `redemption`, `membership` o `benefit`.
+- No se debe elegir primer resultado cuando la busqueda sea ambigua.
+
+Errores esperados:
+
+- `404 COMPANY_NOT_FOUND`.
+- `400 VALIDATION_ERROR`.
+
 ## Operational audit
 
 ### GET `/api/companies/{companyId}/audit/events?from=YYYY-MM-DD&to=YYYY-MM-DD&limit=10|25|50`

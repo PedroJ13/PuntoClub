@@ -1,0 +1,101 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+
+test('getCustomerReport returns ambiguous candidates with CI_AI search before movements query', async () => {
+  const repositoryPath = require.resolve('../src/lib/repository');
+  const dbPath = require.resolve('../src/lib/db');
+  const originalRepository = require.cache[repositoryPath];
+  const originalDb = require.cache[dbPath];
+  const captured = {
+    inputs: [],
+    queries: []
+  };
+
+  delete require.cache[repositoryPath];
+  require.cache[dbPath] = {
+    id: dbPath,
+    filename: dbPath,
+    loaded: true,
+    exports: {
+      getSql() {
+        return {
+          BigInt: 'BigInt',
+          Date: 'Date',
+          VarChar: (length) => `VarChar(${length})`,
+          NVarChar: (length) => `NVarChar(${length})`
+        };
+      },
+      async getPool() {
+        return {
+          request() {
+            return {
+              input(name, type, value) {
+                captured.inputs.push({ name, type, value });
+                return this;
+              },
+              async query(queryText) {
+                captured.queries.push(queryText);
+                return {
+                  recordset: [
+                    {
+                      id: 12,
+                      name: 'Maria Soto',
+                      phone: '+50688887777',
+                      email: 'maria@example.test',
+                      created_at: new Date('2026-06-20T10:00:00Z'),
+                      updated_at: new Date('2026-06-20T10:00:00Z')
+                    },
+                    {
+                      id: 13,
+                      name: 'Maria Solis',
+                      phone: '+50688886666',
+                      email: 'marias@example.test',
+                      created_at: new Date('2026-06-20T10:00:00Z'),
+                      updated_at: new Date('2026-06-20T10:00:00Z')
+                    }
+                  ]
+                };
+              }
+            };
+          }
+        };
+      }
+    }
+  };
+
+  try {
+    const repository = require('../src/lib/repository');
+    const result = await repository.getCustomerReport(6, {
+      search: ' maria ',
+      from: '2026-06-01',
+      to: '2026-06-07',
+      type: 'all'
+    });
+
+    assert.equal(result.status, 'ambiguous');
+    assert.equal(result.customer, null);
+    assert.equal(result.candidates.length, 2);
+    assert.equal(captured.queries.length, 1);
+    assert.match(captured.queries[0], /Latin1_General_100_CI_AI/);
+    assert.deepEqual(
+      captured.inputs.map((input) => [input.name, input.type, input.value]),
+      [
+        ['company_id', 'BigInt', 6],
+        ['search', 'NVarChar(254)', 'maria'],
+        ['search_like', 'NVarChar(260)', '%maria%']
+      ]
+    );
+  } finally {
+    if (originalRepository) {
+      require.cache[repositoryPath] = originalRepository;
+    } else {
+      delete require.cache[repositoryPath];
+    }
+
+    if (originalDb) {
+      require.cache[dbPath] = originalDb;
+    } else {
+      delete require.cache[dbPath];
+    }
+  }
+});

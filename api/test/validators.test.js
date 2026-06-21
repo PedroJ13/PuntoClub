@@ -10,6 +10,7 @@ const {
   normalizeEmail,
   validateAuditEventsQuery,
   validateActivityReportQuery,
+  validateCustomerReportQuery,
   validateCompanyInvitationPayload,
   validateCompanyRegistrationRequestPayload,
   validateCompanyRegistrationRequestListQuery,
@@ -579,6 +580,43 @@ test('activity report query validates date order and max range', () => {
 
   assert.throws(
     () => validateActivityReportQuery(query({ from: '2026-06-01', to: '2026-07-02' })),
+    /One or more fields are invalid/
+  );
+});
+
+test('customer report query validates search, type and bounded date range', () => {
+  assert.deepEqual(
+    validateCustomerReportQuery(query({
+      search: ' Maria ',
+      from: '2026-06-01',
+      to: '2026-06-07',
+      type: 'benefit'
+    })),
+    { search: 'Maria', from: '2026-06-01', to: '2026-06-07', type: 'benefit' }
+  );
+
+  assert.deepEqual(
+    validateCustomerReportQuery(query({ search: '+50688887777', from: '2026-06-01', to: '2026-06-07' })),
+    { search: '+50688887777', from: '2026-06-01', to: '2026-06-07', type: 'all' }
+  );
+
+  assert.throws(
+    () => validateCustomerReportQuery(query({ search: '', from: '2026-06-01', to: '2026-06-07' })),
+    /One or more fields are invalid/
+  );
+
+  assert.throws(
+    () => validateCustomerReportQuery(query({
+      search: 'Maria',
+      from: '2026-06-01',
+      to: '2026-06-07',
+      type: 'refund'
+    })),
+    /One or more fields are invalid/
+  );
+
+  assert.throws(
+    () => validateCustomerReportQuery(query({ search: 'Maria', from: '2026-06-01', to: '2026-07-02' })),
     /One or more fields are invalid/
   );
 });

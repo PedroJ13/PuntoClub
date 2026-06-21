@@ -1860,6 +1860,210 @@ async function getActivityReport(companyId, filters) {
   };
 }
 
+function buildCustomerReportSummary(items) {
+  return items.reduce(
+    (summary, item) => {
+      if (item.type === 'purchase') {
+        summary.purchaseCount += 1;
+        summary.purchaseAmountTotal += Number(item.amount || 0);
+        summary.pointsEarnedTotal += Number(item.points || 0);
+      }
+
+      if (item.type === 'redemption') {
+        summary.redemptionCount += 1;
+        summary.pointsRedeemedTotal += Math.abs(Number(item.points || 0));
+      }
+
+      if (item.type === 'membership') {
+        summary.membershipCount += 1;
+        summary.membershipAmountTotal += Number(item.amount || 0);
+      }
+
+      if (item.type === 'benefit') {
+        summary.benefitUsageCount += 1;
+        summary.benefitQuantityTotal += Number(item.quantity || 0);
+      }
+
+      summary.movementCount += 1;
+      return summary;
+    },
+    {
+      movementCount: 0,
+      purchaseCount: 0,
+      purchaseAmountTotal: 0,
+      pointsEarnedTotal: 0,
+      redemptionCount: 0,
+      pointsRedeemedTotal: 0,
+      membershipCount: 0,
+      membershipAmountTotal: 0,
+      benefitUsageCount: 0,
+      benefitQuantityTotal: 0
+    }
+  );
+}
+
+async function getCustomerReport(companyId, filters) {
+  const sql = getSql();
+  const pool = await getPool();
+  const search = filters.search.trim();
+  const candidatesResult = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('search', sql.NVarChar(254), search)
+    .input('search_like', sql.NVarChar(260), `%${search}%`)
+    .query(`
+      SELECT TOP (6) id, name, phone, email, created_at, updated_at
+      FROM dbo.Customers
+      WHERE company_id = @company_id
+        AND (
+          phone = @search
+          OR email COLLATE ${CUSTOMER_SEARCH_COLLATION} = @search COLLATE ${CUSTOMER_SEARCH_COLLATION}
+          OR name COLLATE ${CUSTOMER_SEARCH_COLLATION} LIKE @search_like COLLATE ${CUSTOMER_SEARCH_COLLATION}
+        )
+      ORDER BY
+        CASE
+          WHEN phone = @search THEN 0
+          WHEN email COLLATE ${CUSTOMER_SEARCH_COLLATION} = @search COLLATE ${CUSTOMER_SEARCH_COLLATION} THEN 1
+          WHEN name COLLATE ${CUSTOMER_SEARCH_COLLATION} = @search COLLATE ${CUSTOMER_SEARCH_COLLATION} THEN 2
+          ELSE 3
+        END,
+        name ASC,
+        id ASC
+    `);
+
+  const candidates = candidatesResult.recordset.map(mapCustomer);
+  const baseReport = {
+    search,
+    from: filters.from,
+    to: filters.to,
+    type: filters.type,
+    summary: buildCustomerReportSummary([]),
+    items: []
+  };
+
+  if (candidates.length === 0) {
+    return {
+      ...baseReport,
+      status: 'not_found',
+      customer: null,
+      candidates: []
+    };
+  }
+
+  if (candidates.length > 1) {
+    return {
+      ...baseReport,
+      status: 'ambiguous',
+      customer: null,
+      candidates
+    };
+  }
+
+  const customer = candidates[0];
+  const movementsResult = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('customer_id', sql.BigInt, customer.id)
+    .input('from', sql.Date, filters.from)
+    .input('to', sql.Date, filters.to)
+    .input('type', sql.VarChar(20), filters.type)
+    .query(`
+      SELECT 'purchase' AS type, purchases.id, purchases.purchase_date AS movement_date,
+             purchases.created_at, purchases.invoice_number, purchases.amount,
+             purchases.points_earned AS points,
+             CAST(NULL AS int) AS quantity,
+             CAST(NULL AS nvarchar(120)) AS plan_name,
+             CAST(NULL AS nvarchar(120)) AS benefit_name,
+             CAST(NULL AS nvarchar(500)) AS note
+      FROM dbo.Purchases AS purchases
+      WHERE purchases.company_id = @company_id
+        AND purchases.customer_id = @customer_id
+        AND purchases.purchase_date >= @from
+        AND purchases.purchase_date <= @to
+        AND @type IN ('all', 'purchase')
+      UNION ALL
+      SELECT 'redemption' AS type, redemptions.id, redemptions.redemption_date AS movement_date,
+             redemptions.created_at, CAST(NULL AS nvarchar(80)) AS invoice_number,
+             CAST(NULL AS decimal(18,2)) AS amount,
+             -redemptions.points_redeemed AS points,
+             CAST(NULL AS int) AS quantity,
+             CAST(NULL AS nvarchar(120)) AS plan_name,
+             CAST(NULL AS nvarchar(120)) AS benefit_name,
+             redemptions.note
+      FROM dbo.Redemptions AS redemptions
+      WHERE redemptions.company_id = @company_id
+        AND redemptions.customer_id = @customer_id
+        AND redemptions.redemption_date >= @from
+        AND redemptions.redemption_date <= @to
+        AND @type IN ('all', 'redemption')
+      UNION ALL
+      SELECT 'membership' AS type, transactions.id, transactions.transaction_date AS movement_date,
+             transactions.created_at, CAST(NULL AS nvarchar(80)) AS invoice_number,
+             transactions.amount,
+             CAST(0 AS int) AS points,
+             CAST(NULL AS int) AS quantity,
+             plans.name AS plan_name,
+             CAST(NULL AS nvarchar(120)) AS benefit_name,
+             transactions.note
+      FROM dbo.MembershipTransactions AS transactions
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.company_id = transactions.company_id
+       AND plans.id = transactions.membership_plan_id
+      WHERE transactions.company_id = @company_id
+        AND transactions.customer_id = @customer_id
+        AND transactions.transaction_date >= @from
+        AND transactions.transaction_date <= @to
+        AND @type IN ('all', 'membership')
+      UNION ALL
+      SELECT 'benefit' AS type, usages.id, usages.usage_date AS movement_date,
+             usages.used_at AS created_at, CAST(NULL AS nvarchar(80)) AS invoice_number,
+             CAST(NULL AS decimal(18,2)) AS amount,
+             CAST(0 AS int) AS points,
+             usages.quantity,
+             plans.name AS plan_name,
+             benefits.name AS benefit_name,
+             usages.note
+      FROM dbo.MembershipBenefitUsages AS usages
+      INNER JOIN dbo.MembershipBenefits AS benefits
+        ON benefits.company_id = usages.company_id
+       AND benefits.id = usages.membership_benefit_id
+      INNER JOIN dbo.MembershipPlans AS plans
+        ON plans.company_id = usages.company_id
+       AND plans.id = benefits.membership_plan_id
+      WHERE usages.company_id = @company_id
+        AND usages.customer_id = @customer_id
+        AND usages.usage_date >= @from
+        AND usages.usage_date <= @to
+        AND @type IN ('all', 'benefit')
+      ORDER BY movement_date DESC, created_at DESC, id DESC
+    `);
+
+  const items = movementsResult.recordset.map((row) => ({
+    type: row.type,
+    id: toApiId(row.id),
+    date: toIsoDate(row.movement_date),
+    createdAt: toIsoTimestamp(row.created_at),
+    customerId: customer.id,
+    customerName: customer.name,
+    customerPhone: customer.phone,
+    customerEmail: customer.email,
+    invoiceNumber: row.invoice_number || undefined,
+    amount: row.amount == null ? undefined : Number(row.amount),
+    points: row.points == null ? 0 : Number(row.points),
+    quantity: row.quantity == null ? undefined : Number(row.quantity),
+    planName: row.plan_name || undefined,
+    benefitName: row.benefit_name || undefined,
+    note: row.note || undefined
+  }));
+
+  return {
+    ...baseReport,
+    status: 'resolved',
+    customer,
+    candidates: [],
+    summary: buildCustomerReportSummary(items),
+    items
+  };
+}
+
 async function createRedemption(companyId, payload) {
   const sql = getSql();
   const pool = await getPool();
@@ -2943,6 +3147,7 @@ module.exports = {
   getCompanyLogoMetadata,
   getCompanyRegistrationRequestLogoMetadata,
   getCompanySettings,
+  getCustomerReport,
   getCustomerById,
   getLocalPasswordUserByEmail,
   getMembershipFinancialReport,

@@ -147,6 +147,22 @@ const elements = {
   membershipFinancialReportTableBody: document.querySelector("#membership-financial-report-table-body"),
   loadMembershipFinancialReportButton: document.querySelector("#load-membership-financial-report-button"),
   exportMembershipFinancialReportButton: document.querySelector("#export-membership-financial-report-button"),
+  reportTabs: document.querySelectorAll("[data-report-view]"),
+  reportPanels: document.querySelectorAll("[data-report-panel]"),
+  customerReportForm: document.querySelector("#customer-report-form"),
+  customerReportSearchInput: document.querySelector("#customer-report-search"),
+  customerReportFromInput: document.querySelector("#customer-report-from"),
+  customerReportToInput: document.querySelector("#customer-report-to"),
+  customerReportTypeInput: document.querySelector("#customer-report-type"),
+  customerReportError: document.querySelector("#customer-report-error"),
+  customerReportStatus: document.querySelector("#customer-report-status"),
+  customerReportSummary: document.querySelector("#customer-report-summary"),
+  customerReportCandidates: document.querySelector("#customer-report-candidates"),
+  customerReportEmpty: document.querySelector("#customer-report-empty"),
+  customerReportTableWrap: document.querySelector("#customer-report-table-wrap"),
+  customerReportTableBody: document.querySelector("#customer-report-table-body"),
+  loadCustomerReportButton: document.querySelector("#load-customer-report-button"),
+  exportCustomerReportButton: document.querySelector("#export-customer-report-button"),
   auditForm: document.querySelector("#audit-form"),
   auditFromInput: document.querySelector("#audit-from"),
   auditToInput: document.querySelector("#audit-to"),
@@ -157,6 +173,7 @@ const elements = {
   auditTableWrap: document.querySelector("#audit-table-wrap"),
   auditTableBody: document.querySelector("#audit-table-body"),
   loadAuditButton: document.querySelector("#load-audit-button"),
+  exportAuditButton: document.querySelector("#export-audit-button"),
   companyForm: document.querySelector("#company-form"),
   companyNameInput: document.querySelector("#company-name"),
   companyEmailInput: document.querySelector("#company-email"),
@@ -321,6 +338,8 @@ let currentCustomers = [];
 let selectedCustomer = null;
 let currentReport = null;
 let currentMembershipFinancialReport = null;
+let currentCustomerReport = null;
+let currentAuditEvents = null;
 let currentCompanySettings = null;
 let currentAuthIdentity = null;
 let currentInvitation = null;
@@ -364,6 +383,8 @@ elements.reportFromInput.value = getToday();
 elements.reportToInput.value = getToday();
 elements.membershipFinancialReportFromInput.value = getToday();
 elements.membershipFinancialReportToInput.value = getToday();
+elements.customerReportFromInput.value = getToday();
+elements.customerReportToInput.value = getToday();
 elements.auditFromInput.value = getToday();
 elements.auditToInput.value = getToday();
 elements.membershipActivationStartDateInput.value = getToday();
@@ -486,9 +507,28 @@ elements.exportMembershipFinancialReportButton.addEventListener("click", () => {
   exportMembershipFinancialReportCsv();
 });
 
+elements.reportTabs.forEach((tab) => {
+  tab.addEventListener("click", () => {
+    setActiveReportView(tab.dataset.reportView);
+  });
+});
+
+elements.customerReportForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await loadCustomerReport();
+});
+
+elements.exportCustomerReportButton.addEventListener("click", () => {
+  exportCustomerReportCsv();
+});
+
 elements.auditForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   await loadAuditEvents();
+});
+
+elements.exportAuditButton.addEventListener("click", () => {
+  exportAuditCsv();
 });
 
 elements.loginForm.addEventListener("submit", async (event) => {
@@ -770,6 +810,7 @@ renderSearchPrompt();
 resetOperation();
 renderReportPrompt();
 renderMembershipFinancialReportPrompt();
+renderCustomerReportPrompt();
 renderAuditPrompt();
 renderAdminPrompt();
 
@@ -1536,6 +1577,59 @@ async function loadMembershipFinancialReport() {
   }
 }
 
+function setActiveReportView(view) {
+  const activeView = view || "activity";
+  elements.reportTabs.forEach((tab) => {
+    const isActive = tab.dataset.reportView === activeView;
+    tab.classList.toggle("active", isActive);
+    tab.setAttribute("aria-selected", isActive ? "true" : "false");
+  });
+
+  elements.reportPanels.forEach((panel) => {
+    panel.hidden = panel.dataset.reportPanel !== activeView;
+  });
+}
+
+async function loadCustomerReport() {
+  const filters = {
+    search: elements.customerReportSearchInput.value.trim(),
+    from: elements.customerReportFromInput.value,
+    to: elements.customerReportToInput.value,
+    type: elements.customerReportTypeInput.value,
+  };
+
+  clearCustomerReportMessages();
+
+  if (!filters.search) {
+    showCustomerReportError("Ingresa telefono, nombre o correo del cliente.");
+    return;
+  }
+
+  if (!filters.from || !filters.to) {
+    showCustomerReportError("Selecciona fecha desde y fecha hasta.");
+    return;
+  }
+
+  if (filters.from > filters.to) {
+    showCustomerReportError("La fecha hasta debe ser igual o posterior a fecha desde.");
+    return;
+  }
+
+  setCustomerReportSubmitting(true);
+  renderCustomerReportLoading();
+
+  try {
+    const report = await api.getCustomerReport(filters);
+    currentCustomerReport = report;
+    renderCustomerReport(report);
+  } catch (error) {
+    currentCustomerReport = null;
+    renderCustomerReportError(error);
+  } finally {
+    setCustomerReportSubmitting(false);
+  }
+}
+
 async function loadAuditEvents() {
   const filters = {
     from: elements.auditFromInput.value,
@@ -1560,8 +1654,10 @@ async function loadAuditEvents() {
 
   try {
     const result = await api.getAuditEvents(filters);
+    currentAuditEvents = result;
     renderAuditEvents(result);
   } catch (error) {
+    currentAuditEvents = null;
     renderAuditError(error);
   } finally {
     setAuditSubmitting(false);
@@ -2779,8 +2875,16 @@ function renderReportDetail(item) {
   }
 
   if (item.type === "membership") {
+    const label = item.planName ? `Membresia: ${item.planName}` : (item.note || "Evento de membresia");
     const amount = Number.isFinite(Number(item.amount)) ? `<span>${formatMoney(item.amount)}</span>` : "";
-    return `${escapeHtml(item.note || "Evento de membresia")}${amount}`;
+    return `${escapeHtml(label)}${amount}`;
+  }
+
+  if (item.type === "benefit") {
+    const quantity = item.quantity ? ` x${item.quantity}` : "";
+    const label = item.benefitName ? `Beneficio usado: ${item.benefitName}${quantity}` : (item.note || "Beneficio usado");
+    const plan = item.planName ? `<span>${escapeHtml(item.planName)}</span>` : "";
+    return `${escapeHtml(label)}${plan}`;
   }
 
   return escapeHtml(item.note || "Sin nota");
@@ -2805,6 +2909,125 @@ function renderReportError(error) {
   }
 
   showReportError("No pudimos cargar el reporte. Intenta de nuevo.");
+}
+
+function renderCustomerReportPrompt() {
+  currentCustomerReport = null;
+  elements.customerReportSummary.hidden = true;
+  elements.customerReportSummary.innerHTML = "";
+  elements.customerReportCandidates.hidden = true;
+  elements.customerReportCandidates.innerHTML = "";
+  elements.customerReportTableWrap.hidden = true;
+  elements.customerReportTableBody.innerHTML = "";
+  elements.customerReportEmpty.hidden = false;
+  elements.customerReportEmpty.textContent = "Busca un cliente y selecciona un rango para ver sus movimientos.";
+  elements.exportCustomerReportButton.disabled = true;
+}
+
+function renderCustomerReportLoading() {
+  elements.customerReportSummary.hidden = true;
+  elements.customerReportCandidates.hidden = true;
+  elements.customerReportCandidates.innerHTML = "";
+  elements.customerReportTableWrap.hidden = true;
+  elements.customerReportEmpty.hidden = false;
+  elements.customerReportEmpty.textContent = "Cargando reporte por cliente...";
+  elements.exportCustomerReportButton.disabled = true;
+}
+
+function renderCustomerReport(report) {
+  const items = Array.isArray(report.items) ? report.items : [];
+  const summary = report.summary ?? {};
+
+  elements.customerReportCandidates.hidden = true;
+  elements.customerReportCandidates.innerHTML = "";
+  elements.customerReportTableWrap.hidden = true;
+  elements.customerReportTableBody.innerHTML = "";
+  elements.exportCustomerReportButton.disabled = true;
+
+  if (report.status === "not_found") {
+    elements.customerReportSummary.hidden = true;
+    elements.customerReportSummary.innerHTML = "";
+    elements.customerReportEmpty.hidden = false;
+    elements.customerReportEmpty.textContent = "No encontramos un cliente con ese dato. Revisa telefono, nombre o correo.";
+    showCustomerReportStatus("Sin cliente encontrado para la busqueda.");
+    return;
+  }
+
+  if (report.status === "ambiguous") {
+    elements.customerReportSummary.hidden = true;
+    elements.customerReportSummary.innerHTML = "";
+    elements.customerReportEmpty.hidden = false;
+    elements.customerReportEmpty.textContent = "Hay varios clientes posibles. Refina la busqueda con telefono o correo exacto.";
+    elements.customerReportCandidates.hidden = false;
+    elements.customerReportCandidates.innerHTML = (report.candidates || []).map((candidate) => `
+      <div>
+        <strong>${escapeHtml(candidate.name || "Cliente sin nombre")}</strong>
+        <span>${escapeHtml(candidate.phone || "Sin telefono")} · ${escapeHtml(candidate.email || "Sin correo")}</span>
+      </div>
+    `).join("");
+    showCustomerReportStatus(`Coincidencias encontradas: ${formatReportNumber((report.candidates || []).length)}.`);
+    return;
+  }
+
+  elements.customerReportSummary.hidden = false;
+  elements.customerReportSummary.innerHTML = `
+    <div>
+      <span>Movimientos</span>
+      <strong>${formatReportNumber(summary.movementCount)}</strong>
+    </div>
+    <div>
+      <span>Compras</span>
+      <strong>${formatReportNumber(summary.purchaseCount)}</strong>
+    </div>
+    <div>
+      <span>Monto compras</span>
+      <strong>${formatMoney(summary.purchaseAmountTotal)}</strong>
+    </div>
+    <div>
+      <span>Puntos ganados</span>
+      <strong>${formatReportNumber(summary.pointsEarnedTotal)}</strong>
+    </div>
+    <div>
+      <span>Puntos redimidos</span>
+      <strong>${formatReportNumber(summary.pointsRedeemedTotal)}</strong>
+    </div>
+    <div>
+      <span>Membresias</span>
+      <strong>${formatReportNumber(summary.membershipCount)}</strong>
+    </div>
+    <div>
+      <span>Beneficios</span>
+      <strong>${formatReportNumber(summary.benefitUsageCount)}</strong>
+    </div>
+  `;
+
+  if (items.length === 0) {
+    elements.customerReportEmpty.hidden = false;
+    elements.customerReportEmpty.textContent = "Cliente encontrado, sin movimientos para el rango seleccionado.";
+    return;
+  }
+
+  elements.customerReportEmpty.hidden = true;
+  elements.customerReportTableWrap.hidden = false;
+  elements.customerReportTableBody.innerHTML = items.map((item) => renderReportRow(item)).join("");
+  elements.exportCustomerReportButton.disabled = false;
+  showCustomerReportStatus(`Reporte cargado: ${formatReportNumber(items.length)} movimientos.`);
+}
+
+function renderCustomerReportError(error) {
+  renderCustomerReportPrompt();
+
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    showCustomerReportError("Revisa busqueda, rango de fechas y tipo de reporte.");
+    return;
+  }
+
+  if (isAuthRequiredError(error)) {
+    showCustomerReportError(getAuthRequiredMessage());
+    return;
+  }
+
+  showCustomerReportError("No pudimos cargar el reporte por cliente. Intenta de nuevo.");
 }
 
 function renderMembershipFinancialReportPrompt() {
@@ -2925,16 +3148,19 @@ function renderMembershipFinancialReportError(error) {
 }
 
 function renderAuditPrompt() {
+  currentAuditEvents = null;
   elements.auditTableWrap.hidden = true;
   elements.auditTableBody.innerHTML = "";
   elements.auditEmpty.hidden = false;
   elements.auditEmpty.textContent = "Selecciona un rango de fechas para ver eventos recientes.";
+  elements.exportAuditButton.disabled = true;
 }
 
 function renderAuditLoading() {
   elements.auditTableWrap.hidden = true;
   elements.auditEmpty.hidden = false;
   elements.auditEmpty.textContent = "Cargando auditoria...";
+  elements.exportAuditButton.disabled = true;
 }
 
 function renderAuditEvents(result) {
@@ -2945,12 +3171,14 @@ function renderAuditEvents(result) {
     elements.auditTableBody.innerHTML = "";
     elements.auditEmpty.hidden = false;
     elements.auditEmpty.textContent = "Sin eventos para el rango seleccionado.";
+    elements.exportAuditButton.disabled = true;
     return;
   }
 
   elements.auditEmpty.hidden = true;
   elements.auditTableWrap.hidden = false;
   elements.auditTableBody.innerHTML = items.map((item) => renderAuditRow(item)).join("");
+  elements.exportAuditButton.disabled = false;
   showAuditStatus(`Auditoria cargada: ${formatReportNumber(items.length)} eventos.`);
 }
 
@@ -2980,6 +3208,7 @@ function renderAuditError(error) {
   elements.auditTableBody.innerHTML = "";
   elements.auditEmpty.hidden = false;
   elements.auditEmpty.textContent = "No hay auditoria cargada.";
+  elements.exportAuditButton.disabled = true;
 
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
     showAuditError("Revisa el rango de fechas y el limite de eventos.");
@@ -4938,6 +5167,16 @@ function showMembershipFinancialReportError(message) {
   elements.membershipFinancialReportError.textContent = message;
 }
 
+function showCustomerReportStatus(message) {
+  elements.customerReportStatus.hidden = false;
+  elements.customerReportStatus.textContent = message;
+}
+
+function showCustomerReportError(message) {
+  elements.customerReportError.hidden = false;
+  elements.customerReportError.textContent = message;
+}
+
 function showAuditStatus(message) {
   elements.auditStatus.hidden = false;
   elements.auditStatus.textContent = message;
@@ -5149,6 +5388,13 @@ function clearMembershipFinancialReportMessages() {
   elements.membershipFinancialReportError.textContent = "";
   elements.membershipFinancialReportStatus.hidden = true;
   elements.membershipFinancialReportStatus.textContent = "";
+}
+
+function clearCustomerReportMessages() {
+  elements.customerReportError.hidden = true;
+  elements.customerReportError.textContent = "";
+  elements.customerReportStatus.hidden = true;
+  elements.customerReportStatus.textContent = "";
 }
 
 function clearAuditMessages() {
@@ -5392,9 +5638,16 @@ function setMembershipFinancialReportSubmitting(isSubmitting) {
   elements.loadMembershipFinancialReportButton.textContent = isSubmitting ? "Consultando..." : "Consultar";
 }
 
+function setCustomerReportSubmitting(isSubmitting) {
+  elements.loadCustomerReportButton.disabled = isSubmitting;
+  elements.exportCustomerReportButton.disabled = isSubmitting || !currentCustomerReport?.items?.length;
+  elements.loadCustomerReportButton.textContent = isSubmitting ? "Consultando..." : "Consultar";
+}
+
 function setAuditSubmitting(isSubmitting) {
   elements.loadAuditButton.disabled = isSubmitting;
-  elements.loadAuditButton.textContent = isSubmitting ? "Consultando..." : "Consultar auditoria";
+  elements.exportAuditButton.disabled = isSubmitting || !currentAuditEvents?.items?.length;
+  elements.loadAuditButton.textContent = isSubmitting ? "Consultando..." : "Consultar";
 }
 
 function setCompanyLoading(isLoading) {
@@ -5860,6 +6113,10 @@ function getReportTypeLabel(type, item = {}) {
       : "Membresia activada";
   }
 
+  if (type === "benefit") {
+    return "Beneficio usado";
+  }
+
   return "Redencion";
 }
 
@@ -6277,6 +6534,69 @@ function exportMembershipFinancialReportCsv() {
   link.remove();
   URL.revokeObjectURL(url);
   showMembershipFinancialReportStatus("CSV de membresias exportado desde los datos cargados.");
+}
+
+function exportCustomerReportCsv() {
+  if (
+    !currentCustomerReport
+    || currentCustomerReport.status !== "resolved"
+    || !Array.isArray(currentCustomerReport.items)
+    || currentCustomerReport.items.length === 0
+  ) {
+    showCustomerReportError("Consulte un reporte por cliente con movimientos antes de exportar.");
+    return;
+  }
+
+  const csv = buildReportCsv(currentCustomerReport);
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  const customer = currentCustomerReport.customer?.id || "cliente";
+  link.href = url;
+  link.download = `punto-club-reporte-cliente-${customer}-${currentCustomerReport.from}-${currentCustomerReport.to}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showCustomerReportStatus("CSV exportado desde los datos cargados.");
+}
+
+function exportAuditCsv() {
+  if (!currentAuditEvents || !Array.isArray(currentAuditEvents.items) || currentAuditEvents.items.length === 0) {
+    showAuditError("Consulte una auditoria con eventos antes de exportar.");
+    return;
+  }
+
+  const rows = [
+    ["fecha_hora", "evento", "cliente", "entidad", "entidad_id", "resumen"],
+    ...currentAuditEvents.items.map((item) => {
+      const eventType = item.eventType || item.event_type || "";
+      const entityType = item.entityType || item.entity_type || "";
+      const entityId = item.entityId || item.entity_id || "";
+      const customerName = item.customerName || item.customer_name || "";
+      const customerId = item.customerId || item.customer_id || "";
+      return [
+        item.occurredAt || item.occurred_at || "",
+        getAuditEventLabel(eventType),
+        customerName || (customerId ? `Cliente ${customerId}` : "No aplica"),
+        getAuditEntityLabel(entityType),
+        entityId,
+        getAuditSummary(item, eventType),
+      ];
+    }),
+  ];
+
+  const csv = rows.map((row) => row.map(escapeCsvValue).join(",")).join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `punto-club-auditoria-${currentAuditEvents.from || "desde"}-${currentAuditEvents.to || "hasta"}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+  showAuditStatus("CSV de auditoria exportado desde los datos cargados.");
 }
 
 function buildMembershipFinancialReportCsv(report) {

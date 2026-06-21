@@ -862,6 +862,26 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   grid-area: report;
 }
 
+.report-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.report-tab {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.report-tab.active,
+.report-tab[aria-selected="true"] {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: var(--brand-contrast);
+}
+
 .audit-panel {
   grid-area: audit;
 }
@@ -1823,11 +1843,23 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 }
 
 .report-controls {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(180px, 0.48fr);
+  grid-template-columns: minmax(132px, 0.7fr) minmax(132px, 0.7fr) minmax(160px, 0.52fr) minmax(120px, 0.36fr);
+  align-items: end;
 }
 
 .audit-controls {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(160px, 0.4fr);
+  grid-template-columns: minmax(132px, 0.7fr) minmax(132px, 0.7fr) minmax(150px, 0.42fr) minmax(120px, 0.36fr);
+  align-items: end;
+}
+
+.customer-report-controls {
+  grid-template-columns: minmax(220px, 1.1fr) minmax(132px, 0.58fr) minmax(132px, 0.58fr) minmax(150px, 0.46fr) minmax(120px, 0.34fr);
+  align-items: end;
+}
+
+.report-action-field button {
+  width: 100%;
+  min-height: 43px;
 }
 
 .admin-token-form,
@@ -2120,6 +2152,30 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   font-size: 1rem;
 }
 
+.customer-report-candidates {
+  display: grid;
+  gap: 8px;
+}
+
+.customer-report-candidates div {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 10px;
+  background: #ffffff;
+}
+
+.customer-report-candidates strong,
+.customer-report-candidates span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.customer-report-candidates span {
+  margin-top: 2px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 .report-table-wrap,
 .audit-table-wrap {
   max-width: 100%;
@@ -2379,6 +2435,7 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   .admin-detail-grid,
   .admin-request-card,
   .report-controls,
+  .customer-report-controls,
   .audit-controls,
   .report-summary,
   .history-row {

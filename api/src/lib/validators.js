@@ -773,6 +773,30 @@ function validateMembershipFinancialReportQuery(query) {
   return validateMembershipTransactionsQuery(query);
 }
 
+function validateReportDateRange(from, to, details) {
+  const fromDate = parseIsoDate(from);
+  const toDate = parseIsoDate(to);
+
+  if (!fromDate) {
+    details.push({ field: 'from', message: 'from is required and must use YYYY-MM-DD format.' });
+  }
+
+  if (!toDate) {
+    details.push({ field: 'to', message: 'to is required and must use YYYY-MM-DD format.' });
+  }
+
+  if (fromDate && toDate) {
+    if (fromDate > toDate) {
+      details.push({ field: 'from', message: 'from must be before or equal to to.' });
+    } else {
+      const rangeDays = ((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
+      if (rangeDays > maxReportRangeDays) {
+        details.push({ field: 'to', message: `Date range must be ${maxReportRangeDays} days or fewer.` });
+      }
+    }
+  }
+}
+
 function validateMembershipPlanPayload(payload, options = {}) {
   const details = [];
   const body = payload && typeof payload === 'object' ? payload : {};
@@ -1011,37 +1035,43 @@ function validateActivityReportQuery(query) {
   const to = query.get('to');
   const type = query.get('type') || 'all';
   const allowedTypes = new Set(['all', 'purchase', 'redemption', 'membership']);
-  const fromDate = parseIsoDate(from);
-  const toDate = parseIsoDate(to);
-
-  if (!fromDate) {
-    details.push({ field: 'from', message: 'from is required and must use YYYY-MM-DD format.' });
-  }
-
-  if (!toDate) {
-    details.push({ field: 'to', message: 'to is required and must use YYYY-MM-DD format.' });
-  }
 
   if (!allowedTypes.has(type)) {
-    details.push({ field: 'type', message: 'type must be one of all, purchase, redemption.' });
+    details.push({ field: 'type', message: 'type must be one of all, purchase, redemption, membership.' });
   }
 
-  if (fromDate && toDate) {
-    if (fromDate > toDate) {
-      details.push({ field: 'from', message: 'from must be before or equal to to.' });
-    } else {
-      const rangeDays = ((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
-      if (rangeDays > maxReportRangeDays) {
-        details.push({ field: 'to', message: `Date range must be ${maxReportRangeDays} days or fewer.` });
-      }
-    }
-  }
+  validateReportDateRange(from, to, details);
 
   if (details.length) {
     throw validationError(details);
   }
 
   return { from, to, type };
+}
+
+function validateCustomerReportQuery(query) {
+  const details = [];
+  const search = normalizeText(query.get('search'));
+  const from = query.get('from');
+  const to = query.get('to');
+  const type = query.get('type') || 'all';
+  const allowedTypes = new Set(['all', 'purchase', 'redemption', 'membership', 'benefit']);
+
+  if (!search || search.length > 254) {
+    details.push({ field: 'search', message: 'search is required and must be 254 characters or fewer.' });
+  }
+
+  if (!allowedTypes.has(type)) {
+    details.push({ field: 'type', message: 'type must be one of all, purchase, redemption, membership, benefit.' });
+  }
+
+  validateReportDateRange(from, to, details);
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { search, from, to, type };
 }
 
 function validateAuditEventsQuery(query) {
@@ -1101,6 +1131,7 @@ module.exports = {
   parsePositiveInteger,
   validateAuditEventsQuery,
   validateActivityReportQuery,
+  validateCustomerReportQuery,
   validateCompanySettingsPatchPayload,
   validateCompanyAuthLoginPayload,
   validateCompanyInvitationPayload,

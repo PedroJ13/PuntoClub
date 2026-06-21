@@ -2,6 +2,7 @@ const { app } = require('@azure/functions');
 const { getCompanyId, handle, ok } = require('../lib/http');
 const {
   validateActivityReportQuery,
+  validateCustomerReportQuery,
   validateMembershipFinancialReportQuery
 } = require('../lib/validators');
 const repository = require('../lib/repository');
@@ -29,6 +30,19 @@ app.http('getMembershipFinancialReport', {
     await repository.ensureActiveCompany(identity.company.id);
     const filters = validateMembershipFinancialReportQuery(new URL(request.url).searchParams);
     const report = await repository.getMembershipFinancialReport(identity.company.id, filters);
+    return ok(report);
+  })
+});
+
+app.http('getCustomerReport', {
+  methods: ['GET'],
+  authLevel: 'anonymous',
+  route: 'companies/{companyId}/reports/customer',
+  handler: handle(async (request) => {
+    const companyId = await getCompanyId(request);
+    await repository.ensureActiveCompany(companyId);
+    const filters = validateCustomerReportQuery(request.query);
+    const report = await repository.getCustomerReport(companyId, filters);
     return ok(report);
   })
 });

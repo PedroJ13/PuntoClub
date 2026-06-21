@@ -1138,7 +1138,22 @@
           >
             <h2 id="reports-section-title" class="sr-only">Reportes</h2>
 
-            <section id="report-panel" class="report-panel zone-card" aria-labelledby="report-title">
+            <div class="report-tabs" role="tablist" aria-label="Reportes disponibles">
+              <button class="report-tab active" type="button" data-report-view="activity" aria-selected="true">
+                Actividad
+              </button>
+              <button class="report-tab" type="button" data-report-view="memberships" aria-selected="false">
+                Membresias
+              </button>
+              <button class="report-tab" type="button" data-report-view="audit" aria-selected="false">
+                Auditoria
+              </button>
+              <button class="report-tab" type="button" data-report-view="customer" aria-selected="false">
+                Cliente
+              </button>
+            </div>
+
+            <section id="report-panel" class="report-panel zone-card" data-report-panel="activity" aria-labelledby="report-title">
               <div class="section-header">
                 <div>
                   <h2 id="report-title">Reporte de actividad</h2>
@@ -1166,6 +1181,11 @@
                       <option value="membership">Membresias</option>
                     </select>
                   </div>
+
+                  <div class="field report-action-field">
+                    <label aria-hidden="true">&nbsp;</label>
+                    <button id="load-report-button" type="submit">Consultar</button>
+                  </div>
                 </div>
 
                 <div id="report-error" class="form-error" hidden></div>
@@ -1174,7 +1194,6 @@
                   <button class="secondary-button" id="export-report-button" type="button" data-icon="↓" disabled>
                     Exportar CSV
                   </button>
-                  <button id="load-report-button" type="submit" data-icon="⌕">Consultar reporte</button>
                 </div>
               </form>
 
@@ -1199,7 +1218,7 @@
               </div>
             </section>
 
-            <section id="membership-financial-report-panel" class="report-panel zone-card" aria-labelledby="membership-financial-report-title">
+            <section id="membership-financial-report-panel" class="report-panel zone-card" data-report-panel="memberships" aria-labelledby="membership-financial-report-title" hidden>
               <div class="section-header">
                 <div>
                   <h2 id="membership-financial-report-title">Reporte diario de membresias</h2>
@@ -1217,6 +1236,11 @@
                     <label for="membership-financial-report-to">Fecha hasta</label>
                     <input id="membership-financial-report-to" name="to" type="date" />
                   </div>
+
+                  <div class="field report-action-field">
+                    <label aria-hidden="true">&nbsp;</label>
+                    <button id="load-membership-financial-report-button" type="submit">Consultar</button>
+                  </div>
                 </div>
 
                 <div id="membership-financial-report-error" class="form-error" hidden></div>
@@ -1225,7 +1249,6 @@
                   <button class="secondary-button" id="export-membership-financial-report-button" type="button" data-icon="↓" disabled>
                     Exportar CSV
                   </button>
-                  <button id="load-membership-financial-report-button" type="submit" data-icon="⌕">Consultar reporte</button>
                 </div>
               </form>
 
@@ -1252,7 +1275,7 @@
               </div>
             </section>
 
-            <section id="audit-panel" class="audit-panel zone-card" aria-labelledby="audit-title">
+            <section id="audit-panel" class="audit-panel zone-card" data-report-panel="audit" aria-labelledby="audit-title" hidden>
               <div class="section-header">
                 <div>
                   <h2 id="audit-title">Auditoria operativa</h2>
@@ -1279,12 +1302,19 @@
                       <option value="50">50</option>
                     </select>
                   </div>
+
+                  <div class="field report-action-field">
+                    <label aria-hidden="true">&nbsp;</label>
+                    <button id="load-audit-button" type="submit">Consultar</button>
+                  </div>
                 </div>
 
                 <div id="audit-error" class="form-error" hidden></div>
 
                 <div class="form-actions">
-                  <button id="load-audit-button" type="submit" data-icon="⌕">Consultar auditoria</button>
+                  <button class="secondary-button" id="export-audit-button" type="button" disabled>
+                    Exportar CSV
+                  </button>
                 </div>
               </form>
 
@@ -1304,6 +1334,84 @@
                     </tr>
                   </thead>
                   <tbody id="audit-table-body"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section id="customer-report-panel" class="report-panel zone-card" data-report-panel="customer" aria-labelledby="customer-report-title" hidden>
+              <div class="section-header">
+                <div>
+                  <h2 id="customer-report-title">Reporte por cliente</h2>
+                </div>
+              </div>
+
+              <form id="customer-report-form" class="report-form" novalidate>
+                <div class="field-grid customer-report-controls">
+                  <div class="field customer-report-search-field">
+                    <label for="customer-report-search">Cliente</label>
+                    <input
+                      id="customer-report-search"
+                      name="search"
+                      maxlength="254"
+                      autocomplete="off"
+                      placeholder="Telefono, nombre o correo"
+                    />
+                  </div>
+
+                  <div class="field">
+                    <label for="customer-report-from">Fecha desde</label>
+                    <input id="customer-report-from" name="from" type="date" />
+                  </div>
+
+                  <div class="field">
+                    <label for="customer-report-to">Fecha hasta</label>
+                    <input id="customer-report-to" name="to" type="date" />
+                  </div>
+
+                  <div class="field">
+                    <label for="customer-report-type">Tipo</label>
+                    <select id="customer-report-type" name="type">
+                      <option value="all">Todos</option>
+                      <option value="purchase">Compras</option>
+                      <option value="redemption">Puntos redimidos</option>
+                      <option value="membership">Membresias</option>
+                      <option value="benefit">Beneficios</option>
+                    </select>
+                  </div>
+
+                  <div class="field report-action-field">
+                    <label aria-hidden="true">&nbsp;</label>
+                    <button id="load-customer-report-button" type="submit">Consultar</button>
+                  </div>
+                </div>
+
+                <div id="customer-report-error" class="form-error" hidden></div>
+
+                <div class="form-actions">
+                  <button class="secondary-button" id="export-customer-report-button" type="button" disabled>
+                    Exportar CSV
+                  </button>
+                </div>
+              </form>
+
+              <div id="customer-report-status" class="success-message" hidden></div>
+              <div id="customer-report-summary" class="report-summary" hidden></div>
+              <div id="customer-report-candidates" class="customer-report-candidates" hidden></div>
+              <div id="customer-report-empty" class="empty-state">
+                Busca un cliente y selecciona un rango para ver sus movimientos.
+              </div>
+              <div id="customer-report-table-wrap" class="report-table-wrap" hidden>
+                <table class="report-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Tipo</th>
+                      <th>Cliente</th>
+                      <th>Detalle</th>
+                      <th>Puntos</th>
+                    </tr>
+                  </thead>
+                  <tbody id="customer-report-table-body"></tbody>
                 </table>
               </div>
             </section>

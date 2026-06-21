@@ -438,6 +438,17 @@ function createHttpCustomerApi(config) {
       });
       return parseResponse(response);
     },
+    async getCustomerReport(filters) {
+      const url = new URL(buildCompanyUrl("/reports/customer"), window.location.origin);
+      url.searchParams.set("search", filters.search);
+      url.searchParams.set("from", filters.from);
+      url.searchParams.set("to", filters.to);
+      url.searchParams.set("type", filters.type || "all");
+      const response = await fetch(url, {
+        credentials: "include",
+      });
+      return parseResponse(response);
+    },
     async getAuditEvents(filters) {
       const url = new URL(buildCompanyUrl("/audit/events"), window.location.origin);
       url.searchParams.set("from", filters.from);
@@ -1178,6 +1189,48 @@ function createMockCustomerApi() {
         from: filters.from,
         to: filters.to,
         summary: buildMembershipFinancialReportSummary(items),
+        items,
+      };
+    },
+    async getCustomerReport(filters) {
+      await wait(300);
+      validateReportFilters(filters);
+      const candidates = findCustomerReportCandidates(filters.search);
+      const baseReport = {
+        search: String(filters.search ?? "").trim(),
+        from: filters.from,
+        to: filters.to,
+        type: filters.type || "all",
+        summary: buildReportSummary([]),
+        items: [],
+      };
+
+      if (candidates.length === 0) {
+        return {
+          ...baseReport,
+          status: "not_found",
+          customer: null,
+          candidates: [],
+        };
+      }
+
+      if (candidates.length > 1) {
+        return {
+          ...baseReport,
+          status: "ambiguous",
+          customer: null,
+          candidates: candidates.map((candidate) => ({ ...candidate })),
+        };
+      }
+
+      const customer = candidates[0];
+      const items = getMockCustomerReportMovements(customer, filters);
+      return {
+        ...baseReport,
+        status: "resolved",
+        customer: { ...customer },
+        candidates: [],
+        summary: buildReportSummary(items),
         items,
       };
     },
@@ -2445,7 +2498,11 @@ function validateReportFilters(filters) {
     details.push({ field: "to", message: "La fecha hasta debe ser igual o posterior a desde." });
   }
 
-  if (!["all", "purchase", "redemption", "membership"].includes(type)) {
+  if (isDateOnly(from) && isDateOnly(to) && getDateRangeDays(from, to) > 31) {
+    details.push({ field: "to", message: "El rango maximo es de 31 dias." });
+  }
+
+  if (!["all", "purchase", "redemption", "membership", "benefit"].includes(type)) {
     details.push({ field: "type", message: "El tipo de reporte no es valido." });
   }
 
@@ -2551,6 +2608,70 @@ function normalizeReportItem(customer, item) {
   };
 }
 
+function normalizeCustomerReportSearch(value) {
+  return String(value ?? "")
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function findCustomerReportCandidates(search) {
+  const rawSearch = String(search ?? "").trim();
+  const normalizedSearch = normalizeCustomerReportSearch(rawSearch);
+  return mockCustomers
+    .filter((customer) => {
+      const phone = String(customer.phone ?? "").trim();
+      const email = normalizeCustomerReportSearch(customer.email);
+      const name = normalizeCustomerReportSearch(customer.name);
+      return phone === rawSearch || email === normalizedSearch || name.includes(normalizedSearch);
+    })
+    .slice(0, 6);
+}
+
+function getMockCustomerReportMovements(customer, filters) {
+  const type = filters.type || "all";
+  const customerId = String(customer.id);
+  const activityItems = (mockActivity.get(customerId) ?? [])
+    .map((item) => normalizeReportItem(customer, item));
+  const membershipItems = mockMembershipTransactions
+    .filter((transaction) => String(transaction.customerId) === customerId)
+    .map((transaction) => normalizeReportItem(customer, {
+      type: "membership",
+      id: transaction.id,
+      date: transaction.transactionDate,
+      createdAt: transaction.createdAt,
+      amount: transaction.amount,
+      points: 0,
+      planName: transaction.planName,
+      note: transaction.note,
+    }));
+  const benefitItems = mockMembershipBenefitUsages
+    .filter((usage) => String(usage.customerId) === customerId)
+    .map((usage) => normalizeReportItem(customer, {
+      type: "benefit",
+      id: usage.id,
+      date: usage.usageDate,
+      createdAt: usage.usedAt,
+      points: 0,
+      quantity: usage.quantity,
+      planName: usage.planName,
+      benefitName: usage.benefitName,
+      note: usage.note,
+    }));
+
+  return [...activityItems, ...membershipItems, ...benefitItems]
+    .filter((item) => item.date >= filters.from && item.date <= filters.to)
+    .filter((item) => type === "all" || item.type === type)
+    .sort((left, right) => {
+      if (left.date === right.date) {
+        return Number(right.id) - Number(left.id);
+      }
+
+      return right.date.localeCompare(left.date);
+    });
+}
+
 function buildReportSummary(items) {
   const activeCustomers = new Set(items.map((item) => String(item.customerId)));
 
@@ -2569,18 +2690,29 @@ function buildReportSummary(items) {
 
       if (item.type === "membership") {
         summary.membershipCount += 1;
+        summary.membershipAmountTotal += Number(item.amount ?? 0);
       }
 
+      if (item.type === "benefit") {
+        summary.benefitUsageCount += 1;
+        summary.benefitQuantityTotal += Number(item.quantity ?? 0);
+      }
+
+      summary.movementCount += 1;
       summary.activeCustomerCount = activeCustomers.size;
       return summary;
     },
     {
+      movementCount: 0,
       purchaseCount: 0,
       purchaseAmountTotal: 0,
       pointsEarnedTotal: 0,
       redemptionCount: 0,
       pointsRedeemedTotal: 0,
       membershipCount: 0,
+      membershipAmountTotal: 0,
+      benefitUsageCount: 0,
+      benefitQuantityTotal: 0,
       activeCustomerCount: 0,
     },
   );
