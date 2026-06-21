@@ -370,6 +370,7 @@ const customerBalances = new Map();
 const invitationToken = getInvitationTokenFromUrl();
 const isInvitationPage = isCompanyInvitationRoute();
 const isProductPage = isProductRoute();
+const isOperationalAppPage = isOperationalAppRoute();
 const isLoginPage = isCompanyLoginRoute();
 const isRegistrationPage = isCompanyRegistrationRoute();
 const isAdminCompaniesPage = isAdminCompaniesRoute();
@@ -819,6 +820,15 @@ if (isInvitationPage) {
   validateCompanyInvitation(invitationToken);
 } else if (isProductPage) {
   showProductPage();
+} else if (isOperationalAppPage) {
+  refreshAuthIdentity({ silent: true }).then((identity) => {
+    if (identity) {
+      return showMainApp({ focus: false, refreshCompany: true });
+    }
+
+    showLoginPage({ replaceRoute: true });
+    return null;
+  });
 } else if (isLoginPage) {
   showLoginPage();
   refreshAuthIdentity({ silent: true });
@@ -5871,7 +5881,7 @@ async function showMainApp(options = {}) {
   setActiveSection(getDefaultLoyaltySection(), { focus: options.focus !== false });
 
   if (options.replaceLoginRoute && isCompanyLoginRoute()) {
-    window.history.replaceState({}, "", "/");
+    window.history.replaceState({}, "", "/app");
   }
 
   if (options.refreshCompany) {
@@ -6404,7 +6414,12 @@ function isCompanyInvitationRoute() {
 }
 
 function isProductRoute() {
-  return window.location.pathname.replace(/\/$/, "") === "/producto";
+  const route = window.location.pathname.replace(/\/$/, "") || "/";
+  return route === "/" || route === "/producto";
+}
+
+function isOperationalAppRoute() {
+  return window.location.pathname.replace(/\/$/, "") === "/app";
 }
 
 function isCompanyLoginRoute() {
