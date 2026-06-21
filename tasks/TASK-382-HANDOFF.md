@@ -9,12 +9,16 @@ Verificacion ejecutada:
 - TASK-380 revisado: QA local aprobo sin P0/P1.
 - `node --check app/src/customerApi.js`: OK.
 - `node --check app/src/app.js`: OK.
-- Pendiente en esta version del handoff: commit/push, workflow Static Web Apps y verificacion publicada con cache busting.
+- Commit publicado: `4c6b50015e06f8f30abeb94b3bba04ff7cbd9c7b`.
+- Workflow Static Web Apps: `Deploy Punto Club frontend`, run `27893136360`, resultado `success`.
+- `GET https://calm-dune-075dc5c0f.7.azurestaticapps.net/src/customerApi.js?v=4c6b500`: `200`, contiene `Mar\u00eda Soto`, `Jos\u00e9 Vega`, `.normalize("NFD")` y remocion de diacriticos.
+- `GET https://calm-dune-075dc5c0f.7.azurestaticapps.net/src/app.js?v=4c6b500`: `200`, contiene `.normalize("NFD")` y remocion de diacriticos.
 Resultado:
-- Publicacion Web en espera hasta completar la publicacion API separada.
+- Ajuste Web/mock publicado por flujo habitual.
+- El mock publicado ya no diferencia mayusculas/minusculas ni acentos en la normalizacion local.
+- La normalizacion local de `app/src/app.js` tambien quedo publicada para filtros/comparaciones en memoria.
 Uso DB cloud: No
 Riesgos o pendientes:
-- Confirmar workflow `Deploy Punto Club frontend`.
-- Confirmar bundle publicado con cache busting.
+- No se hizo prueba visual manual; el cambio es de normalizacion mock/local y no modifica layout.
 Siguiente recomendado:
-- Actualizar este handoff con SHA, workflow y evidencia publicada al finalizar el deploy Web.
+- Ejecutar TASK-383 para QA publicado de API/Web y no regresion de busqueda.
