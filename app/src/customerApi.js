@@ -1,7 +1,7 @@
 const initialCustomers = [
   {
     id: 10,
-    name: "Maria Soto",
+    name: "Mar\u00eda Soto",
     phone: "+50688887777",
     email: "maria@example.com",
     createdAt: "2026-06-02T15:20:00Z",
@@ -9,9 +9,9 @@ const initialCustomers = [
   },
   {
     id: 11,
-    name: "Carlos Vega",
+    name: "Jos\u00e9 Vega",
     phone: "+50622223333",
-    email: "carlos@example.com",
+    email: "jose@example.com",
     createdAt: "2026-06-02T15:28:00Z",
     updatedAt: "2026-06-02T15:28:00Z",
   },
@@ -2632,6 +2632,8 @@ function getDateRangeDays(from, to) {
 function normalize(value) {
   return String(value ?? "")
     .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 }
 
