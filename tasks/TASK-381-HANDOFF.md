@@ -10,13 +10,19 @@ Verificacion ejecutada:
 - TASK-380 revisado: QA local aprobo sin P0/P1.
 - `node --check api/src/lib/repository.js`: OK.
 - `node --test test/repository-customer-search.test.js`: OK.
-- Pendiente en esta version del handoff: commit/push, workflow API y verificacion publicada.
+- Commit publicado: `ec00934298714aa679bed30873eab07199a7cbeb`.
+- Workflow API: `Deploy Punto Club API`, run `27893003429`, resultado `success`.
+- El workflow ejecuto `npm test`, deploy de Azure Functions y `npm run smoke` contra API publicada.
+- `GET https://func-puntoclub-prod-br-001.azurewebsites.net/api/companies/6/customers`: `200`.
+- Verificacion publicada segura con datos existentes sin imprimirlos:
+  - busqueda por nombre existente en mayusculas y sin acentos: `200`, `Count=1`;
+  - busqueda por correo existente en mayusculas: `200`, `Count=1`.
 Resultado:
-- Publicacion API en proceso por flujo habitual.
+- API publicada por flujo habitual.
 - El alcance publicado mantiene busqueda exacta por telefono y busqueda `CI_AI` para nombre/correo.
-Uso DB cloud: No en verificaciones locales; pendiente actualizar si el workflow API ejecuta smoke publicado contra DB cloud.
+- `repository.listCustomers` publicado con `COLLATE Latin1_General_100_CI_AI` para `email` y `name`.
+Uso DB cloud: Si, motivo: workflow API ejecuto smoke publicado y verificacion segura contra endpoint real, alcance: lectura/listado de clientes de `PILOT_COMPANY_ID=6` sin imprimir datos sensibles.
 Riesgos o pendientes:
-- Confirmar workflow `Deploy Punto Club API`.
-- Confirmar endpoint publicado con prueba segura.
+- La prueba publicada confirma case-insensitive con datos existentes; accent-insensitive queda cubierto por test automatizado del workflow porque la data viva actual no necesariamente contiene el par exacto con acento buscado.
 Siguiente recomendado:
-- Actualizar este handoff con SHA, workflow y evidencia publicada al finalizar el deploy.
+- Ejecutar TASK-382 para publicar el ajuste Web mock separado y luego TASK-383 para QA publicado.
