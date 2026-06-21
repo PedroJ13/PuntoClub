@@ -2125,7 +2125,7 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 
 .report-summary {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 8px;
   margin: 12px 0;
 }
@@ -2133,7 +2133,7 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 .report-summary div {
   border: 1px solid var(--line);
   border-radius: 8px;
-  padding: 10px;
+  padding: 9px 10px;
   background: var(--surface-strong);
 }
 
@@ -2149,7 +2149,8 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 .report-summary strong {
   display: block;
   margin-top: 2px;
-  font-size: 1rem;
+  font-size: 0.98rem;
+  overflow-wrap: anywhere;
 }
 
 .customer-report-candidates {
