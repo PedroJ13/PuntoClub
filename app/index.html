@@ -22,7 +22,15 @@
           </div>
           <div class="status-pill" id="auth-status">Sesion no iniciada</div>
           <button class="secondary-button" id="login-button" type="button" data-icon="→">Acceder a mi panel</button>
-          <button class="secondary-button" id="logout-button" type="button" data-icon="×" hidden>Cerrar sesion</button>
+          <button
+            class="secondary-button icon-button logout-icon-button"
+            id="logout-button"
+            type="button"
+            data-icon="×"
+            aria-label="Cerrar sesion"
+            title="Cerrar sesion"
+            hidden
+          ></button>
           <div class="status-pill data-source-pill" id="data-source-status">Modo de prueba</div>
         </div>
       </header>
@@ -355,7 +363,19 @@
             </div>
           </form>
 
-          <form id="password-reset-request-form" class="auth-form compact-auth-form" novalidate>
+          <div class="auth-secondary-action">
+            <button
+              class="secondary-button link-button"
+              id="toggle-password-reset-request"
+              type="button"
+              aria-controls="password-reset-request-form"
+              aria-expanded="false"
+            >
+              Recuperar acceso
+            </button>
+          </div>
+
+          <form id="password-reset-request-form" class="auth-form compact-auth-form" novalidate hidden>
             <div class="field">
               <label for="password-reset-email">Recuperar acceso</label>
               <input

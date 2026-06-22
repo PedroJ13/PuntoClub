@@ -33,6 +33,7 @@ const elements = {
   passwordResetRequestError: document.querySelector("#password-reset-request-error"),
   passwordResetRequestStatus: document.querySelector("#password-reset-request-status"),
   submitPasswordResetRequestButton: document.querySelector("#submit-password-reset-request-button"),
+  togglePasswordResetRequestButton: document.querySelector("#toggle-password-reset-request"),
   passwordResetPage: document.querySelector("#password-reset-page"),
   passwordResetLoading: document.querySelector("#password-reset-loading"),
   passwordResetError: document.querySelector("#password-reset-error"),
@@ -577,6 +578,10 @@ elements.passwordResetRequestForm.addEventListener("submit", async (event) => {
   await submitPasswordResetRequest();
 });
 
+elements.togglePasswordResetRequestButton.addEventListener("click", () => {
+  togglePasswordResetRequestPanel();
+});
+
 elements.passwordResetForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   await submitPasswordResetComplete();
@@ -1005,7 +1010,16 @@ function setActiveSection(section, options = {}) {
   }[nextSection];
 
   window.requestAnimationFrame(() => {
-    focusTarget?.focus();
+    if (!focusTarget) {
+      return;
+    }
+
+    if (isCompactViewport()) {
+      focusTarget.focus({ preventScroll: true });
+      return;
+    }
+
+    focusTarget.focus();
   });
 }
 
@@ -5156,7 +5170,9 @@ function renderAuthIdentity(identity) {
   const companyName = identity?.company?.name || "Empresa";
   const email = identity?.user?.email || "Sesion iniciada";
   api.setActiveCompanyId?.(identity?.company?.id);
-  elements.authStatus.textContent = `Empresa activa: ${companyName} - ${email}`;
+  elements.authStatus.textContent = email && email !== companyName
+    ? email
+    : "Sesion iniciada";
   elements.loginButton.hidden = true;
   elements.logoutButton.hidden = false;
   renderActiveCompanyIdentity(identity?.company || null);
@@ -5186,8 +5202,9 @@ function renderActiveCompanyIdentity(company) {
   elements.activeCompanyName.textContent = companyName;
   elements.activeCompanyLogoFallback.textContent = getCompanyInitials(companyName);
 
-  const logoUrl = company?.logoUrl ? api.getCompanyLogoUrl?.(company.logoUrl) : "";
-  const updatedAt = company?.logoUpdatedAt || company?.updatedAt;
+  const logoSource = company?.logoUrl ? company : currentCompanySettings;
+  const logoUrl = logoSource?.logoUrl ? api.getCompanyLogoUrl?.(logoSource.logoUrl) : "";
+  const updatedAt = logoSource?.logoUpdatedAt || logoSource?.updatedAt;
 
   if (!logoUrl) {
     elements.activeCompanyLogoFallback.hidden = false;
@@ -6068,6 +6085,31 @@ function clearPasswordResetRequestMessages() {
   elements.passwordResetRequestStatus.textContent = "";
 }
 
+function setPasswordResetRequestPanelVisible(isVisible, options = {}) {
+  elements.passwordResetRequestForm.hidden = !isVisible;
+  elements.togglePasswordResetRequestButton.setAttribute("aria-expanded", String(isVisible));
+  elements.togglePasswordResetRequestButton.textContent = isVisible
+    ? "Ocultar recuperacion"
+    : "Recuperar acceso";
+
+  if (!isVisible && !options.keepMessages) {
+    clearPasswordResetRequestMessages();
+  }
+
+  if (isVisible) {
+    if (!elements.passwordResetEmailInput.value && elements.loginEmailInput.value) {
+      elements.passwordResetEmailInput.value = elements.loginEmailInput.value;
+    }
+    window.requestAnimationFrame(() => {
+      elements.passwordResetEmailInput.focus();
+    });
+  }
+}
+
+function togglePasswordResetRequestPanel() {
+  setPasswordResetRequestPanelVisible(elements.passwordResetRequestForm.hidden);
+}
+
 function clearPasswordResetCompleteMessages() {
   elements.newPasswordError.textContent = "";
   elements.newPasswordConfirmationError.textContent = "";
@@ -6360,6 +6402,7 @@ function showLoginPage(options = {}) {
   elements.invitationPage.hidden = true;
   elements.passwordResetPage.hidden = true;
   elements.authPage.hidden = false;
+  setPasswordResetRequestPanelVisible(false, { keepMessages: Boolean(options.keepPasswordResetMessages) });
   if (options.replaceRoute && !isCompanyLoginRoute()) {
     window.history.replaceState({}, "", "/login");
   }
@@ -6386,6 +6429,9 @@ async function showMainApp(options = {}) {
   elements.authPage.hidden = true;
   elements.passwordResetPage.hidden = true;
   elements.appBody.hidden = false;
+  if (isCompactViewport()) {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }
   setActiveSection(getDefaultLoyaltySection(), { focus: options.focus !== false });
 
   if (options.replaceLoginRoute && isCompanyLoginRoute()) {
@@ -6463,6 +6509,10 @@ function isolateAdminCompaniesView() {
   elements.sectionPanels.forEach((panel) => {
     panel.hidden = panel.dataset.section !== "adminCompanies";
   });
+}
+
+function isCompactViewport() {
+  return window.matchMedia?.("(max-width: 860px)").matches ?? window.innerWidth <= 860;
 }
 
 function startGlobalLoading(message, options = {}) {

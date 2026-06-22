@@ -206,7 +206,7 @@ textarea:focus {
 .active-company-identity {
   display: inline-flex;
   align-items: center;
-  max-width: 280px;
+  max-width: 340px;
   min-height: 38px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -230,8 +230,8 @@ textarea:focus {
 
 .active-company-logo,
 .active-company-identity img {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   flex: 0 0 auto;
   border-radius: 999px;
 }
@@ -247,6 +247,35 @@ textarea:focus {
 .active-company-identity img {
   object-fit: contain;
   background: #ffffff;
+}
+
+.icon-button {
+  width: 40px;
+  min-width: 40px;
+  padding: 0;
+}
+
+.logout-icon-button {
+  border-color: rgba(15, 118, 110, 0.2);
+}
+
+.auth-secondary-action {
+  display: flex;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.link-button {
+  min-height: 36px;
+  border-color: transparent;
+  background: transparent;
+  color: var(--accent-strong);
+  box-shadow: none;
+}
+
+.link-button:hover {
+  border-color: rgba(15, 118, 110, 0.18);
+  background: var(--surface-strong);
 }
 
 .active-company-logo[hidden],
@@ -2750,6 +2779,12 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   button,
   .button-link {
     width: 100%;
+  }
+
+  .topbar .icon-button {
+    width: 40px;
+    min-width: 40px;
+    align-self: flex-start;
   }
 
   .public-home-actions {
