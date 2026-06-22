@@ -21,7 +21,7 @@
             <span id="active-company-name">Empresa</span>
           </div>
           <div class="status-pill" id="auth-status">Sesion no iniciada</div>
-          <button class="secondary-button" id="login-button" type="button" data-icon="→">Iniciar sesion</button>
+          <button class="secondary-button" id="login-button" type="button" data-icon="→">Acceder a mi panel</button>
           <button class="secondary-button" id="logout-button" type="button" data-icon="×" hidden>Cerrar sesion</button>
           <div class="status-pill data-source-pill" id="data-source-status">Modo de prueba</div>
         </div>
@@ -43,7 +43,7 @@
 
         <div class="public-home-visual" aria-hidden="true">
           <div class="loyalty-card loyalty-card-primary">
-            <span>Cliente frecuente</span>
+            <span>Ejemplo visual</span>
             <strong>1,240 pts</strong>
           </div>
           <div class="loyalty-card loyalty-card-secondary">
@@ -60,56 +60,90 @@
       <section id="public-product-page" class="public-product-page" aria-labelledby="public-product-title" hidden>
         <nav class="product-nav" aria-label="Navegacion publica">
           <a href="/">Inicio</a>
-          <a href="/company-registration">Registrar empresa</a>
-          <a href="/login">Iniciar sesion</a>
+          <a href="#product-benefits">Beneficios</a>
+          <a href="#product-features">Funciones</a>
+          <a href="#product-pricing">Precios</a>
+          <a href="#product-contact">Contacto</a>
+          <a class="product-nav-panel" href="/login">Acceder a mi panel</a>
+          <a class="product-nav-cta" href="/company-registration">Crear programa</a>
         </nav>
 
         <section class="product-hero" aria-label="Punto Club comercial">
           <div class="product-hero-copy">
-            <p class="eyebrow">Fidelizacion para empresas</p>
-            <h2 id="public-product-title">Punto Club</h2>
+            <p class="eyebrow">Punto Club para empresas</p>
+            <h2 id="public-product-title">Haz crecer tu negocio fidelizando clientes</h2>
             <p>
-              Convierte compras repetidas en una relacion medible con puntos, membresias y beneficios faciles de operar.
+              Con Punto Club puedes crear programas de puntos, membresias y beneficios para que tus clientes regresen.
             </p>
             <div class="public-home-actions">
-              <a class="button-link" href="/company-registration">Registrar mi empresa</a>
-              <a class="button-link secondary-link" href="/login">Iniciar sesion</a>
-              <a class="button-link secondary-link" href="mailto:pj13eros_business@outlook.com?subject=Quiero%20conocer%20Punto%20Club">Contactenos</a>
+              <a class="button-link product-primary-cta" href="/company-registration">Crear programa</a>
+              <a class="button-link product-secondary-cta" href="#product-steps">Ver como funciona</a>
+              <a class="product-panel-link" href="/login">Acceder a mi panel</a>
+            </div>
+            <div class="product-trust-row" aria-label="Confianza operativa">
+              <span>Piloto operativo en marcha</span>
+              <span>Datos persistentes desde el MVP</span>
+              <span>Reportes y auditoria</span>
             </div>
           </div>
 
           <div class="product-dashboard" aria-label="Vista resumida de Punto Club">
             <div class="product-dashboard-header">
-              <span>Punto Club</span>
-              <strong>Programa activo</strong>
-            </div>
-            <div class="product-metric-row">
               <div>
-                <span>Puntos entregados</span>
-                <strong>18,420</strong>
+                <span>Panel Punto Club</span>
+                <strong>Programa de ejemplo</strong>
               </div>
+              <small>Datos de ejemplo</small>
+            </div>
+            <p class="product-example-note">Ejemplo visual. Los numeros ilustran el panel y no representan metricas reales.</p>
+            <div class="product-metric-row">
               <div>
                 <span>Clientes activos</span>
                 <strong>342</strong>
               </div>
+              <div>
+                <span>Puntos ganados</span>
+                <strong>18,420</strong>
+              </div>
+              <div>
+                <span>Membresias</span>
+                <strong>86</strong>
+              </div>
+              <div>
+                <span>Beneficios</span>
+                <strong>124</strong>
+              </div>
             </div>
-            <div class="product-benefit-card">
-              <span>Beneficio aplicado</span>
-              <strong>10% descuento</strong>
-              <p>Membresia Cliente Frecuente</p>
+            <div class="product-chart-card" aria-hidden="true">
+              <div class="product-chart-bars">
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <p>Actividad semanal</p>
             </div>
-            <div class="product-progress" aria-hidden="true">
-              <span></span>
-              <span></span>
-              <span></span>
+            <div class="product-dashboard-lower">
+              <div class="product-member-card">
+                <span>Cliente frecuente</span>
+                <strong>Cliente ejemplo</strong>
+                <p>1,240 puntos disponibles</p>
+              </div>
+              <div class="product-qr-card" aria-label="Validacion QR de beneficio">
+                <span></span>
+                <strong>QR</strong>
+                <p>Validar beneficio</p>
+              </div>
             </div>
           </div>
         </section>
 
-        <section class="product-section product-problem" aria-label="Problema que resuelve">
+        <section id="product-benefits" class="product-section product-problem" aria-label="Problema que resuelve">
           <div>
-            <p class="eyebrow">Problema</p>
-            <h3>Fidelizar no deberia depender de hojas sueltas</h3>
+            <p class="eyebrow">Beneficios</p>
+            <h3>Fideliza con control, no con hojas sueltas</h3>
           </div>
           <p>
             Punto Club centraliza puntos, membresias y beneficios para que el equipo sepa que ofrecer, cuando aplicarlo
@@ -117,34 +151,42 @@
           </p>
         </section>
 
-        <section class="product-section" aria-label="Beneficios para empresas">
+        <section id="product-features" class="product-section" aria-label="Funciones para empresas">
           <div class="section-header compact-header">
             <div>
-              <p class="eyebrow">Beneficios</p>
-              <h3>Control diario para programas de fidelizacion</h3>
+              <p class="eyebrow">Funciones</p>
+              <h3>Todo lo necesario para operar un programa real</h3>
             </div>
           </div>
           <div class="product-benefits-grid">
             <article>
-              <span>Puntos claros</span>
-              <p>Cada compra puede sumar puntos y dejar historial.</p>
+              <span>Puntos por compra</span>
+              <p>Registra compras, acumula puntos y consulta historial por cliente.</p>
+            </article>
+            <article>
+              <span>Membresias</span>
+              <p>Activa membresias, controla vigencia y acompana renovaciones.</p>
             </article>
             <article>
               <span>Beneficios controlados</span>
-              <p>Define beneficios por membresia y evita usos ambiguos.</p>
+              <p>Aplica beneficios con reglas claras y trazabilidad operativa.</p>
             </article>
             <article>
-              <span>Operacion diaria</span>
-              <p>Atiende clientes, registra compras y aplica beneficios desde una misma pantalla.</p>
+              <span>Reportes</span>
+              <p>Consulta actividad, clientes y resultados para tomar mejores decisiones.</p>
             </article>
             <article>
-              <span>Seguimiento</span>
-              <p>Reportes e historial ayudan a ver actividad real del programa.</p>
+              <span>Correos transaccionales</span>
+              <p>Comunica invitaciones, accesos y eventos importantes con formato profesional.</p>
+            </article>
+            <article>
+              <span>Multiempresa controlado</span>
+              <p>Administra empresas del piloto sin mezclar datos ni accesos.</p>
             </article>
           </div>
         </section>
 
-        <section class="product-section" aria-label="Como funciona">
+        <section id="product-steps" class="product-section" aria-label="Como funciona">
           <div class="section-header compact-header">
             <div>
               <p class="eyebrow">Como funciona</p>
@@ -170,16 +212,27 @@
           </div>
         </section>
 
-        <section class="product-contact" aria-label="Contactenos">
+        <section id="product-pricing" class="product-section product-pricing" aria-label="Precios">
           <div>
-            <p class="eyebrow">Contactenos</p>
+            <p class="eyebrow">Precios</p>
+            <h3>Piloto controlado para negocios que quieren aumentar recompra</h3>
+          </div>
+          <p>
+            La fase actual se coordina como piloto operativo. Revisamos tu caso, configuramos el acceso y validamos el
+            uso con datos reales de tu empresa.
+          </p>
+        </section>
+
+        <section id="product-contact" class="product-contact" aria-label="Contacto">
+          <div>
+            <p class="eyebrow">Contacto</p>
             <h3>Hablemos de tu programa de fidelizacion</h3>
             <p>
               Si quieres probar Punto Club en tu empresa, dejanos tus datos por correo y te contactamos para coordinar
               el piloto.
             </p>
           </div>
-          <a class="button-link" href="mailto:pj13eros_business@outlook.com?subject=Quiero%20conocer%20Punto%20Club">Escribir a Punto Club</a>
+          <a class="button-link product-primary-cta" href="mailto:pj13eros_business@outlook.com?subject=Quiero%20conocer%20Punto%20Club">Escribir a Punto Club</a>
         </section>
       </section>
 
