@@ -358,6 +358,41 @@ function validateCompanyAuthLoginPayload(payload) {
   };
 }
 
+function validateCompanyPasswordChangePayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const currentPassword = typeof body.currentPassword === 'string' ? body.currentPassword : '';
+  const newPassword = validatePassword(body.newPassword, 'newPassword', details);
+  const passwordConfirmation = typeof body.passwordConfirmation === 'string' ? body.passwordConfirmation : '';
+
+  if (!currentPassword || currentPassword.length > 128) {
+    details.push({ field: 'currentPassword', message: 'currentPassword is required and must be 128 characters or fewer.' });
+  }
+
+  if (newPassword && currentPassword && newPassword === currentPassword) {
+    details.push({ field: 'newPassword', message: 'newPassword must be different from currentPassword.' });
+  }
+
+  if (!passwordConfirmation || passwordConfirmation !== newPassword) {
+    details.push({ field: 'passwordConfirmation', message: 'passwordConfirmation must match newPassword.' });
+  }
+
+  for (const forbiddenField of ['email', 'companyId', 'userId']) {
+    if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
+      details.push({ field: forbiddenField, message: `${forbiddenField} must not be sent by the frontend.` });
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    currentPassword,
+    newPassword
+  };
+}
+
 function validateMyCompanyPatchPayload(payload) {
   const details = [];
   const body = payload || {};
@@ -773,6 +808,37 @@ function validateMembershipFinancialReportQuery(query) {
   return validateMembershipTransactionsQuery(query);
 }
 
+function validateCompanyPasswordResetRequestPayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const email = validateEmailField(body.email, 'email', details);
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { email };
+}
+
+function validateCompanyPasswordResetCompletePayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const token = validateRequiredText(body.token, 'token', 2048, details);
+  const password = validatePassword(body.password, 'password', details);
+
+  for (const forbiddenField of ['email', 'companyId', 'userId']) {
+    if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
+      details.push({ field: forbiddenField, message: `${forbiddenField} must not be sent by the frontend.` });
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { token, password };
+}
+
 function validateReportDateRange(from, to, details) {
   const fromDate = parseIsoDate(from);
   const toDate = parseIsoDate(to);
@@ -1134,6 +1200,9 @@ module.exports = {
   validateCustomerReportQuery,
   validateCompanySettingsPatchPayload,
   validateCompanyAuthLoginPayload,
+  validateCompanyPasswordChangePayload,
+  validateCompanyPasswordResetCompletePayload,
+  validateCompanyPasswordResetRequestPayload,
   validateCompanyInvitationPayload,
   validateCompanyRegistrationRequestPayload,
   validateCompanyRegistrationRequestListQuery,

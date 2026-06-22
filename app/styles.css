@@ -1811,6 +1811,28 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   min-width: 0;
 }
 
+.compact-auth-form {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.password-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+  align-items: center;
+}
+
+.password-field input {
+  min-width: 0;
+}
+
+.password-toggle {
+  min-height: 43px;
+  white-space: nowrap;
+}
+
 .company-future {
   display: grid;
   grid-template-columns: minmax(0, 1fr);

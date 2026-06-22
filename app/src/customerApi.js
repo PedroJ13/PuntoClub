@@ -166,6 +166,7 @@ let mockCompanyRegistrationRequests = [
   },
 ];
 let mockAcceptedInvitationTokens = new Set();
+let mockPasswordResetTokens = new Map();
 let mockLocalCompanyUsers = [
   {
     id: "399",
@@ -188,6 +189,7 @@ let nextRedemptionId = 70;
 let nextAuditEventId = 1;
 let nextCompanyRegistrationRequestId = 201;
 let nextCompanyInvitationId = 301;
+let nextCompanyPasswordResetId = 601;
 let nextCompanyUserId = 400;
 let nextMembershipPlanId = 502;
 let nextMembershipBenefitId = 803;
@@ -224,8 +226,10 @@ function createHttpCustomerApi(config) {
   const companyRegistrationRequestsUrl = buildApiUrl(config, "/api/company-registration-requests");
   const companyInvitationsValidateUrl = buildApiUrl(config, "/api/company-invitations/validate");
   const companyInvitationsAcceptUrl = buildApiUrl(config, "/api/company-invitations/accept");
+  const companyPasswordResetsUrl = buildApiUrl(config, "/api/company-password-resets");
   const companyAuthLoginUrl = buildApiUrl(config, "/api/company-auth/login");
   const companyAuthLogoutUrl = buildApiUrl(config, "/api/company-auth/logout");
+  const companyAuthPasswordUrl = buildApiUrl(config, "/api/company-auth/password");
   const companyLogoUrl = buildApiUrl(config, "/api/my-company/logo");
   const meUrl = buildApiUrl(config, "/api/me");
   const getActiveCompanyId = () => activeCompanyId || normalizeCompanyId(config.companyId);
@@ -277,10 +281,47 @@ function createHttpCustomerApi(config) {
 
       return parseResponse(response);
     },
+    async changeCompanyPassword(payload) {
+      const response = await fetch(companyAuthPasswordUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+
+      return parseResponse(response);
+    },
     async validateCompanyInvitation(token) {
       const url = new URL(companyInvitationsValidateUrl, window.location.origin);
       url.searchParams.set("token", token);
       const response = await fetch(url);
+      return parseResponse(response);
+    },
+    async requestCompanyPasswordReset(payload, adminToken = "") {
+      const response = await fetch(companyPasswordResetsUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...buildAdminHeaders(adminToken),
+        },
+        body: JSON.stringify(payload),
+      });
+
+      return parseResponse(response);
+    },
+    async validateCompanyPasswordReset(token) {
+      const url = new URL(`${companyPasswordResetsUrl}/validate`, window.location.origin);
+      url.searchParams.set("token", token);
+      const response = await fetch(url);
+      return parseResponse(response);
+    },
+    async completeCompanyPasswordReset(payload) {
+      const response = await fetch(`${companyPasswordResetsUrl}/complete`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
       return parseResponse(response);
     },
     async getCompanySettings() {
@@ -673,9 +714,25 @@ function createMockCustomerApi() {
 
       return mockAuthIdentity;
     },
+    async changeCompanyPassword(payload) {
+      await wait(350);
+      return changeMockCompanyPassword(payload);
+    },
     async validateCompanyInvitation(token) {
       await wait(350);
       return validateMockCompanyInvitation(token);
+    },
+    async requestCompanyPasswordReset(payload, adminToken = "") {
+      await wait(350);
+      return requestMockCompanyPasswordReset(payload, adminToken);
+    },
+    async validateCompanyPasswordReset(token) {
+      await wait(250);
+      return validateMockCompanyPasswordReset(token);
+    },
+    async completeCompanyPasswordReset(payload) {
+      await wait(450);
+      return completeMockCompanyPasswordReset(payload);
     },
     async getCompanySettings() {
       await wait(250);
@@ -2284,6 +2341,121 @@ function validateMockCompanyInvitation(token) {
   };
 }
 
+function requestMockCompanyPasswordReset(payload, adminToken = "") {
+  validateCompanyPasswordResetRequestPayload(payload);
+  const isAdminRequest = String(adminToken ?? "").trim().length > 0;
+  if (isAdminRequest) {
+    validateMockAdminToken(adminToken);
+  }
+
+  const email = normalize(payload.email);
+  const user = mockLocalCompanyUsers.find((item) => normalize(item.email) === email);
+  if (!user) {
+    if (isAdminRequest) {
+      throw new ApiError("COMPANY_USER_NOT_FOUND", "No hay un acceso activo para ese correo.");
+    }
+
+    return {
+      email: String(payload.email || "").trim().toLowerCase(),
+      status: "accepted",
+      sentAt: new Date().toISOString(),
+    };
+  }
+
+  const now = new Date().toISOString();
+  const token = `mock-reset-${nextCompanyPasswordResetId}`;
+  const reset = {
+    id: String(nextCompanyPasswordResetId),
+    token,
+    email: user.email,
+    companyId: user.company.id,
+    companyName: user.company.name,
+    status: "pending",
+    createdAt: now,
+    sentAt: now,
+    expiresAt: addDaysIso(now, 1),
+  };
+  nextCompanyPasswordResetId += 1;
+  mockPasswordResetTokens.set(normalize(token), reset);
+
+  return {
+    id: reset.id,
+    email: reset.email,
+    companyId: reset.companyId,
+    companyName: reset.companyName,
+    status: reset.status,
+    sentAt: reset.sentAt,
+    expiresAt: reset.expiresAt,
+  };
+}
+
+function validateMockCompanyPasswordReset(token) {
+  const normalizedToken = normalize(token);
+
+  if (!normalizedToken || normalizedToken === "invalid" || normalizedToken === "invalid-token") {
+    return { valid: false, reason: "invalid" };
+  }
+
+  if (["expired", "expired-token"].includes(normalizedToken)) {
+    return { valid: false, reason: "expired" };
+  }
+
+  if (["used", "used-token"].includes(normalizedToken)) {
+    return { valid: false, reason: "used" };
+  }
+
+  const reset = mockPasswordResetTokens.get(normalizedToken);
+  if (!reset) {
+    return { valid: false, reason: "invalid" };
+  }
+
+  if (reset.status === "used") {
+    return { valid: false, reason: "used" };
+  }
+
+  if (Date.parse(reset.expiresAt) <= Date.now()) {
+    reset.status = "expired";
+    return { valid: false, reason: "expired" };
+  }
+
+  return {
+    valid: true,
+    email: reset.email,
+    companyId: reset.companyId,
+    companyName: reset.companyName,
+    expiresAt: reset.expiresAt,
+  };
+}
+
+function completeMockCompanyPasswordReset(payload) {
+  validateCompanyPasswordResetCompletePayload(payload);
+  const validation = validateMockCompanyPasswordReset(payload.token);
+  if (!validation.valid) {
+    throw new ApiError(
+      validation.reason === "expired" ? "PASSWORD_RESET_EXPIRED" : "PASSWORD_RESET_INVALID",
+      "El enlace de recuperacion no es valido.",
+    );
+  }
+
+  const reset = mockPasswordResetTokens.get(normalize(payload.token));
+  const user = mockLocalCompanyUsers.find((item) => normalize(item.email) === normalize(reset.email));
+  if (!user) {
+    throw new ApiError("COMPANY_USER_NOT_FOUND", "No hay un acceso activo para ese correo.");
+  }
+
+  user.password = String(payload.password);
+  reset.status = "used";
+  reset.usedAt = new Date().toISOString();
+  mockAuthIdentity = null;
+
+  return {
+    email: user.email,
+    companyId: user.company.id,
+    companyName: user.company.name,
+    completedAt: reset.usedAt,
+  };
+}
+
 function acceptMockCompanyInvitation(payload) {
   validateInvitationAcceptPayload(payload);
   const normalizedToken = normalize(payload.token);
@@ -2355,6 +2527,26 @@ function loginMockCompany(payload) {
   return mockAuthIdentity;
 }
 
+function changeMockCompanyPassword(payload) {
+  validateCompanyPasswordChangePayload(payload);
+
+  if (!mockAuthIdentity) {
+    throw new ApiError("UNAUTHORIZED", "Authentication is required.");
+  }
+
+  const user = mockLocalCompanyUsers.find((item) => String(item.id) === String(mockAuthIdentity.user.id));
+  if (!user || user.status !== "active" || user.password !== payload.currentPassword) {
+    throw new ApiError("INVALID_CURRENT_PASSWORD", "Current password is invalid.");
+  }
+
+  user.password = String(payload.newPassword);
+
+  return {
+    ok: true,
+    passwordUpdatedAt: new Date().toISOString(),
+  };
+}
+
 function validateInvitationAcceptPayload(payload) {
   const details = [];
   const body = payload || {};
@@ -2398,6 +2590,76 @@ function validateCompanyAuthLoginPayload(payload) {
   if (!password || password.length > 128) {
     details.push({ field: "password", message: "Ingresa la contraseña." });
   }
+
+  if (details.length > 0) {
+    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+  }
+}
+
+function validateCompanyPasswordChangePayload(payload) {
+  const details = [];
+  const currentPassword = String(payload?.currentPassword || "");
+  const newPassword = String(payload?.newPassword || "");
+  const passwordConfirmation = String(payload?.passwordConfirmation || "");
+
+  if (!currentPassword || currentPassword.length > 128) {
+    details.push({ field: "currentPassword", message: "Ingresa la contraseña actual." });
+  }
+
+  if (!isStrongPassword(newPassword)) {
+    details.push({ field: "newPassword", message: "Usa una contraseña segura." });
+  } else if (newPassword === currentPassword) {
+    details.push({ field: "newPassword", message: "La nueva contraseña debe ser distinta." });
+  }
+
+  if (!passwordConfirmation || passwordConfirmation !== newPassword) {
+    details.push({ field: "passwordConfirmation", message: "La confirmacion debe coincidir." });
+  }
+
+  ["email", "companyId", "userId"].forEach((field) => {
+    if (hasOwn(payload || {}, field)) {
+      details.push({ field, message: "El campo no debe enviarse desde el frontend." });
+    }
+  });
+
+  if (details.length > 0) {
+    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+  }
+}
+
+function validateCompanyPasswordResetRequestPayload(payload) {
+  const details = [];
+  const email = String(payload?.email || "").trim();
+
+  if (!email || !isEmail(email) || email.length > 254) {
+    details.push({ field: "email", message: "Ingresa un correo valido." });
+  }
+
+  if (details.length > 0) {
+    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+  }
+}
+
+function validateCompanyPasswordResetCompletePayload(payload) {
+  const details = [];
+  const password = String(payload?.password || "");
+
+  if (!String(payload?.token || "").trim()) {
+    details.push({ field: "token", message: "El enlace no es valido." });
+  }
+
+  if (!isStrongPassword(password)) {
+    details.push({
+      field: "password",
+      message: "La contrasena debe tener 10 a 128 caracteres e incluir letras y numeros.",
+    });
+  }
+
+  ["companyId", "userId", "email"].forEach((field) => {
+    if (hasOwn(payload || {}, field)) {
+      details.push({ field, message: "El campo no debe enviarse desde el frontend." });
+    }
+  });
 
   if (details.length > 0) {
     throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);

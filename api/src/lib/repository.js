@@ -838,6 +838,21 @@ async function updateCompanyRegistrationRequestLogo(requestId, logo) {
   return mapCompanyRegistrationRequest(result.recordset[0]);
 }
 
+function mapCompanyPasswordReset(row) {
+  return {
+    id: toApiId(row.id),
+    companyId: toApiId(row.company_id),
+    companyUserId: toApiId(row.company_user_id),
+    email: row.email,
+    status: row.status,
+    expiresAt: toIsoTimestamp(row.expires_at),
+    sentAt: toIsoTimestamp(row.sent_at),
+    usedAt: toIsoTimestamp(row.used_at),
+    createdByLabel: row.created_by_label,
+    companyName: row.company_name || null
+  };
+}
+
 async function getCompanyRegistrationRequestLogoMetadata(requestId) {
   const sql = getSql();
   const pool = await getPool();
@@ -1491,6 +1506,94 @@ async function getLocalPasswordUserByEmail(email) {
   return result.recordset.length ? result.recordset[0] : null;
 }
 
+async function getLocalPasswordUserById(companyId, companyUserId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('company_user_id', sql.BigInt, companyUserId)
+    .query(`
+      SELECT TOP (1)
+        users.id,
+        users.company_id,
+        users.email,
+        users.display_name,
+        users.role,
+        users.status,
+        users.auth_provider,
+        users.password_hash,
+        users.password_algorithm,
+        users.password_params,
+        users.password_locked_until,
+        users.last_login_at,
+        users.created_at,
+        users.updated_at,
+        companies.name AS company_name,
+        companies.status AS company_status
+      FROM dbo.CompanyUsers AS users
+      INNER JOIN dbo.Companies AS companies
+        ON companies.id = users.company_id
+      WHERE users.company_id = @company_id
+        AND users.id = @company_user_id
+        AND users.auth_provider = 'local_password'
+    `);
+
+  return result.recordset.length ? result.recordset[0] : null;
+}
+
+async function updateCompanyUserPassword(companyId, companyUserId, passwordCredentials, currentSessionTokenHash = null) {
+  const sql = getSql();
+  const pool = await getPool();
+  const request = pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('company_user_id', sql.BigInt, companyUserId)
+    .input('password_hash', sql.NVarChar(512), passwordCredentials.passwordHash)
+    .input('password_algorithm', sql.VarChar(40), passwordCredentials.passwordAlgorithm)
+    .input('password_params', sql.NVarChar(300), passwordCredentials.passwordParams);
+
+  await request.query(`
+    UPDATE dbo.CompanyUsers
+    SET
+      password_hash = @password_hash,
+      password_algorithm = @password_algorithm,
+      password_params = @password_params,
+      password_updated_at = SYSUTCDATETIME(),
+      updated_at = SYSUTCDATETIME()
+    WHERE company_id = @company_id
+      AND id = @company_user_id
+      AND status = 'active'
+      AND auth_provider = 'local_password'
+  `);
+
+  const revokeRequest = pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('company_user_id', sql.BigInt, companyUserId);
+  const keepCurrentSessionPredicate = currentSessionTokenHash
+    ? 'AND token_hash <> @current_session_token_hash'
+    : '';
+
+  if (currentSessionTokenHash) {
+    revokeRequest.input('current_session_token_hash', sql.VarBinary(32), currentSessionTokenHash);
+  }
+
+  await revokeRequest.query(`
+    UPDATE dbo.CompanySessions
+    SET
+      status = 'revoked',
+      revoked_at = SYSUTCDATETIME()
+    WHERE company_id = @company_id
+      AND company_user_id = @company_user_id
+      AND status = 'active'
+      ${keepCurrentSessionPredicate}
+  `);
+
+  return {
+    companyId: toApiId(companyId),
+    userId: toApiId(companyUserId),
+    passwordUpdatedAt: new Date().toISOString()
+  };
+}
+
 async function createCompanySession(companyId, companyUserId, tokenHash, expiresAt) {
   const sql = getSql();
   const pool = await getPool();
@@ -1632,6 +1735,204 @@ async function createCustomer(companyId, payload) {
     `);
 
   return mapCustomer(result.recordset[0]);
+}
+
+async function createCompanyPasswordReset(email, tokenHash, expiresAt, options = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const user = await getLocalPasswordUserByEmail(email);
+
+  if (!user || user.status !== 'active' || user.company_status !== 'active') {
+    throw new ApiError(404, 'COMPANY_USER_NOT_FOUND', 'Company user was not found.');
+  }
+
+  await pool.request()
+    .input('company_id', sql.BigInt, user.company_id)
+    .input('company_user_id', sql.BigInt, user.id)
+    .query(`
+      UPDATE dbo.CompanyPasswordResets
+      SET status = 'revoked'
+      WHERE company_id = @company_id
+        AND company_user_id = @company_user_id
+        AND status = 'pending'
+    `);
+
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, user.company_id)
+    .input('company_user_id', sql.BigInt, user.id)
+    .input('email', sql.NVarChar(254), user.email)
+    .input('token_hash', sql.VarBinary(32), tokenHash)
+    .input('expires_at', sql.DateTime2, expiresAt)
+    .input('created_by_label', sql.NVarChar(120), options.actorLabel || 'internal')
+    .query(`
+      INSERT INTO dbo.CompanyPasswordResets (
+        company_id,
+        company_user_id,
+        email,
+        token_hash,
+        expires_at,
+        created_by_label
+      )
+      OUTPUT
+        INSERTED.id,
+        INSERTED.company_id,
+        INSERTED.company_user_id,
+        INSERTED.email,
+        INSERTED.status,
+        INSERTED.expires_at,
+        INSERTED.sent_at,
+        INSERTED.used_at,
+        INSERTED.created_by_label
+      VALUES (
+        @company_id,
+        @company_user_id,
+        @email,
+        @token_hash,
+        @expires_at,
+        @created_by_label
+      )
+    `);
+
+  return {
+    ...mapCompanyPasswordReset(result.recordset[0]),
+    companyName: user.company_name
+  };
+}
+
+async function getCompanyPasswordResetByTokenHash(tokenHash) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('token_hash', sql.VarBinary(32), tokenHash)
+    .query(`
+      SELECT TOP (1)
+        resets.id,
+        resets.company_id,
+        resets.company_user_id,
+        resets.email,
+        resets.status,
+        resets.expires_at,
+        resets.sent_at,
+        resets.used_at,
+        resets.created_by_label,
+        companies.name AS company_name
+      FROM dbo.CompanyPasswordResets AS resets
+      INNER JOIN dbo.Companies AS companies
+        ON companies.id = resets.company_id
+      WHERE resets.token_hash = @token_hash
+    `);
+
+  return result.recordset.length ? mapCompanyPasswordReset(result.recordset[0]) : null;
+}
+
+async function completeCompanyPasswordReset(tokenHash, passwordCredentials) {
+  const sql = getSql();
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+
+  await transaction.begin();
+
+  try {
+    const resetResult = await new sql.Request(transaction)
+      .input('token_hash', sql.VarBinary(32), tokenHash)
+      .query(`
+        SELECT TOP (1)
+          resets.id,
+          resets.company_id,
+          resets.company_user_id,
+          resets.email,
+          resets.status,
+          resets.expires_at,
+          companies.name AS company_name
+        FROM dbo.CompanyPasswordResets AS resets WITH (UPDLOCK, HOLDLOCK)
+        INNER JOIN dbo.Companies AS companies WITH (UPDLOCK, HOLDLOCK)
+          ON companies.id = resets.company_id
+        WHERE resets.token_hash = @token_hash
+      `);
+
+    if (!resetResult.recordset.length) {
+      throw new ApiError(404, 'PASSWORD_RESET_NOT_FOUND', 'Password reset was not found.');
+    }
+
+    const reset = resetResult.recordset[0];
+    if (reset.status === 'used') {
+      throw new ApiError(409, 'PASSWORD_RESET_ALREADY_USED', 'Password reset was already used.');
+    }
+
+    if (reset.status !== 'pending') {
+      throw new ApiError(404, 'PASSWORD_RESET_NOT_FOUND', 'Password reset was not found.');
+    }
+
+    if (reset.expires_at < new Date()) {
+      await new sql.Request(transaction)
+        .input('reset_id', sql.BigInt, reset.id)
+        .query(`
+          UPDATE dbo.CompanyPasswordResets
+          SET status = 'expired'
+          WHERE id = @reset_id
+            AND status = 'pending'
+        `);
+      throw new ApiError(409, 'PASSWORD_RESET_EXPIRED', 'Password reset is expired.');
+    }
+
+    await new sql.Request(transaction)
+      .input('company_id', sql.BigInt, reset.company_id)
+      .input('company_user_id', sql.BigInt, reset.company_user_id)
+      .input('password_hash', sql.NVarChar(512), passwordCredentials.passwordHash)
+      .input('password_algorithm', sql.VarChar(40), passwordCredentials.passwordAlgorithm)
+      .input('password_params', sql.NVarChar(300), passwordCredentials.passwordParams)
+      .query(`
+        UPDATE dbo.CompanyUsers
+        SET
+          password_hash = @password_hash,
+          password_algorithm = @password_algorithm,
+          password_params = @password_params,
+          password_updated_at = SYSUTCDATETIME(),
+          updated_at = SYSUTCDATETIME()
+        WHERE company_id = @company_id
+          AND id = @company_user_id
+          AND status = 'active'
+      `);
+
+    await new sql.Request(transaction)
+      .input('reset_id', sql.BigInt, reset.id)
+      .query(`
+        UPDATE dbo.CompanyPasswordResets
+        SET
+          status = 'used',
+          used_at = SYSUTCDATETIME()
+        WHERE id = @reset_id
+          AND status = 'pending'
+      `);
+
+    await new sql.Request(transaction)
+      .input('company_id', sql.BigInt, reset.company_id)
+      .input('company_user_id', sql.BigInt, reset.company_user_id)
+      .query(`
+        UPDATE dbo.CompanySessions
+        SET
+          status = 'revoked',
+          revoked_at = SYSUTCDATETIME()
+        WHERE company_id = @company_id
+          AND company_user_id = @company_user_id
+          AND status = 'active'
+      `);
+
+    await transaction.commit();
+
+    return {
+      email: reset.email,
+      companyName: reset.company_name,
+      completedAt: new Date().toISOString()
+    };
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch {
+      // Preserve the original failure.
+    }
+    throw error;
+  }
 }
 
 async function getCustomerById(companyId, customerId) {
@@ -3127,6 +3428,7 @@ module.exports = {
   clearAuthAttemptLimit,
   createCompanySession,
   createCompanyInvitation,
+  createCompanyPasswordReset,
   createCompanyRegistrationRequest,
   createCustomer,
   createCustomerMembership,
@@ -3144,6 +3446,8 @@ module.exports = {
   getBalance,
   getCompanyInvitationById,
   getCompanyInvitationByTokenHash,
+  getCompanyPasswordResetByTokenHash,
+  getLocalPasswordUserById,
   getCompanyLogoMetadata,
   getCompanyRegistrationRequestLogoMetadata,
   getCompanySettings,
@@ -3167,6 +3471,7 @@ module.exports = {
   mapCompanyInvitationWithCompany,
   mapCompanyRegistrationRequest,
   mapCompanySettings,
+  mapCompanyPasswordReset,
   mapCompanyUser,
   mapMembershipBenefit,
   mapMembershipBenefitUsage,
@@ -3179,6 +3484,7 @@ module.exports = {
   recordAuthAttemptFailure,
   rejectCompanyRegistrationRequest,
   revokeCompanySession,
+  completeCompanyPasswordReset,
   rotateCompanyInvitationToken,
   renewCustomerMembership,
   toApiId,
@@ -3186,6 +3492,7 @@ module.exports = {
   updateCompanyLogo,
   updateCompanyRegistrationRequestLogo,
   updateCompanySettings,
+  updateCompanyUserPassword,
   updateMembershipBenefit,
   updateMembershipPlan
 };

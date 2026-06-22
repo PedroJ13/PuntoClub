@@ -176,6 +176,17 @@ function createInternalRegistrationEmail(registrationRequest, config) {
   };
 }
 
+function createPasswordResetLink(token, config) {
+  const publicBaseUrl = normalizeText(config.publicBaseUrl);
+  if (!publicBaseUrl) {
+    return null;
+  }
+
+  const url = new URL('/company-password-reset', publicBaseUrl.endsWith('/') ? publicBaseUrl : `${publicBaseUrl}/`);
+  url.searchParams.set('token', token);
+  return url.toString();
+}
+
 function createCompanyInvitationEmail(invitation, token, config) {
   const inviteLink = createInvitationLink(token, config);
   if (!inviteLink) {
@@ -275,6 +286,84 @@ function createInternalInvitationSentEmail(invitation, config) {
     subject,
     plainText,
     html: createInternalInvitationSentHtml(invitation)
+  };
+}
+
+function createCompanyPasswordResetEmail(reset, token, config) {
+  const resetLink = createPasswordResetLink(token, config);
+  if (!resetLink) {
+    return null;
+  }
+
+  const subject = 'Punto Club - Recupera el acceso de tu empresa';
+  const plainText = [
+    'Punto Club',
+    '',
+    'Hola,',
+    '',
+    `Se solicito recuperar el acceso de ${displayValue(reset.companyName)}.`,
+    '',
+    'Crea una nueva contrasena desde este enlace:',
+    resetLink,
+    '',
+    `Este enlace vence el ${displayValue(reset.expiresAt)} y solo puede usarse una vez.`,
+    'Si no solicitaste este correo, ignora el mensaje o contacta al equipo de Punto Club.',
+    '',
+    'Gracias,',
+    'Equipo Punto Club'
+  ].join('\n');
+  const html = wrapEmailHtml('Recupera el acceso de tu empresa', [
+    `<p>Se solicito recuperar el acceso de <strong>${escapeHtml(displayValue(reset.companyName))}</strong>.</p>`,
+    renderEmailTable([
+      ['Empresa', reset.companyName],
+      ['Correo de acceso', reset.email],
+      ['Vence', reset.expiresAt]
+    ]),
+    renderEmailButton(resetLink, 'Crear nueva contrasena'),
+    '<p>Este enlace solo puede usarse una vez. Si no solicitaste este correo, ignora el mensaje o contacta al equipo de Punto Club.</p>',
+    '<p>Gracias,<br />Equipo Punto Club</p>'
+  ].join(''));
+
+  return {
+    senderAddress: config.senderAddress,
+    senderDisplayName: config.senderDisplayName,
+    to: [{ address: reset.email }],
+    subject,
+    plainText,
+    html
+  };
+}
+
+function createInternalPasswordResetSentEmail(reset, config) {
+  const subject = `Punto Club - Reset de password enviado: ${reset.companyName}`;
+  const plainText = [
+    'Se envio un correo de recuperacion de acceso en Punto Club.',
+    '',
+    `Empresa: ${displayValue(reset.companyName)}`,
+    `Correo: ${displayValue(reset.email)}`,
+    `Estado: ${displayValue(reset.status)}`,
+    `Vence: ${displayValue(reset.expiresAt)}`,
+    '',
+    'No se muestra enlace ni token por seguridad.'
+  ].join('\n');
+  const html = wrapEmailHtml('Reset de password enviado', [
+    '<p>Se envio un correo de recuperacion de acceso en Punto Club.</p>',
+    renderEmailTable([
+      ['Empresa', reset.companyName],
+      ['Correo', reset.email],
+      ['Estado', reset.status],
+      ['Vence', reset.expiresAt]
+    ]),
+    '<p>No se muestra enlace ni token por seguridad.</p>'
+  ].join(''));
+
+  return {
+    senderAddress: config.senderAddress,
+    senderDisplayName: config.senderDisplayName,
+    to: [{ address: config.internalNotificationEmail }],
+    subject,
+    plainText,
+    html
   };
 }
 
@@ -541,6 +630,41 @@ async function notifyCompanyInvitationCreated(invitation, token, context, option
   };
 }
 
+async function notifyCompanyPasswordResetCreated(reset, token, context, options = {}) {
+  const config = options.config || getEmailConfig(options.env || process.env);
+  if (!config.enabled) {
+    return { provider: 'acs-email', status: 'skipped', reason: 'not_configured' };
+  }
+
+  const resetMessage = createCompanyPasswordResetEmail(reset, token, config);
+  if (!resetMessage) {
+    return { provider: 'acs-email', status: 'skipped', reason: 'public_base_url_not_configured' };
+  }
+
+  const sendEmail = options.sendEmail || ((message) => sendEmailViaAcs(message, config, options));
+  const messages = [
+    { type: 'password_reset', message: resetMessage },
+    { type: 'internal_password_reset_sent', message: createInternalPasswordResetSentEmail(reset, config) }
+  ];
+
+  const results = [];
+  for (const item of messages) {
+    try {
+      const result = await sendEmail(item.message);
+      results.push({ type: item.type, ...result });
+    } catch (error) {
+      safeWarn(context, `Company password reset email was not sent: ${item.type}. ${error && error.message ? error.message : 'Unknown email error.'}`);
+      results.push({ type: item.type, provider: 'acs-email', status: 'failed' });
+    }
+  }
+
+  return {
+    provider: 'acs-email',
+    status: results.some((result) => result.status === 'sent') ? 'sent' : 'skipped',
+    results
+  };
+}
+
 async function notifyMembershipBenefitUsed(details, context, options = {}) {
   const config = options.config || getEmailConfig(options.env || process.env);
   if (!config.enabled) {
@@ -577,6 +701,8 @@ async function notifyMembershipBenefitUsed(details, context, options = {}) {
 
 module.exports = {
   createCompanyInvitationEmail,
+  createCompanyPasswordResetEmail,
+  createInternalPasswordResetSentEmail,
   createInternalInvitationSentEmail,
   createInternalRegistrationEmail,
   createMembershipBenefitUsageCompanyEmail,
@@ -586,6 +712,7 @@ module.exports = {
   escapeHtml,
   getEmailConfig,
   notifyCompanyInvitationCreated,
+  notifyCompanyPasswordResetCreated,
   notifyCompanyRegistrationSubmitted,
   notifyMembershipBenefitUsed,
   sendEmailViaAcs

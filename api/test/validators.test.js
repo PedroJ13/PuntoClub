@@ -18,6 +18,7 @@ const {
   validateCompanyRole,
   validateCompanySettingsPatchPayload,
   validateCompanyAuthLoginPayload,
+  validateCompanyPasswordChangePayload,
   validateCustomerMembershipStatusQuery,
   validateCustomerPayload,
   validateExpirationAlertsQuery,
@@ -191,6 +192,36 @@ test('company auth login payload normalizes email and keeps password opaque', ()
 
   assert.throws(
     () => validateCompanyAuthLoginPayload({ email: 'bad', password: '' }),
+    /One or more fields are invalid/
+  );
+});
+
+test('company password change requires current, strong new and matching confirmation', () => {
+  assert.deepEqual(
+    validateCompanyPasswordChangePayload({
+      currentPassword: 'Password123',
+      newPassword: 'Password456',
+      passwordConfirmation: 'Password456'
+    }),
+    { currentPassword: 'Password123', newPassword: 'Password456' }
+  );
+
+  assert.throws(
+    () => validateCompanyPasswordChangePayload({
+      currentPassword: 'Password123',
+      newPassword: 'Password123',
+      passwordConfirmation: 'Password123',
+      email: 'owner@example.com'
+    }),
+    /One or more fields are invalid/
+  );
+
+  assert.throws(
+    () => validateCompanyPasswordChangePayload({
+      currentPassword: '',
+      newPassword: 'short',
+      passwordConfirmation: 'different'
+    }),
     /One or more fields are invalid/
   );
 });

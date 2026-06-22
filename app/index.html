@@ -282,12 +282,105 @@
 
             <div class="field">
               <label for="login-password">Contraseña</label>
-              <input id="login-password" name="password" type="password" maxlength="128" autocomplete="current-password" />
+              <div class="password-field">
+                <input id="login-password" name="password" type="password" maxlength="128" autocomplete="current-password" />
+                <button
+                  class="secondary-button password-toggle"
+                  id="toggle-login-password"
+                  type="button"
+                  aria-controls="login-password"
+                  aria-pressed="false"
+                >
+                  Ver
+                </button>
+              </div>
               <p class="field-error" id="login-password-error"></p>
             </div>
 
             <div class="form-actions">
               <button id="submit-login-button" type="submit" data-icon="→">Iniciar sesion</button>
+            </div>
+          </form>
+
+          <form id="password-reset-request-form" class="auth-form compact-auth-form" novalidate>
+            <div class="field">
+              <label for="password-reset-email">Recuperar acceso</label>
+              <input
+                id="password-reset-email"
+                name="email"
+                maxlength="254"
+                autocomplete="email"
+                inputmode="email"
+                placeholder="Correo de la empresa"
+              />
+              <p class="field-help">Si el correo esta registrado, enviaremos instrucciones para restablecer la contraseña.</p>
+              <p class="field-error" id="password-reset-email-error"></p>
+            </div>
+            <div id="password-reset-request-error" class="form-error" hidden></div>
+            <div id="password-reset-request-status" class="success-message" hidden></div>
+            <div class="form-actions">
+              <button class="secondary-button" id="submit-password-reset-request-button" type="submit">
+                Enviar instrucciones
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <section id="password-reset-page" class="auth-page" aria-labelledby="password-reset-title" hidden>
+        <div class="auth-card zone-card">
+          <p class="eyebrow">Acceso de empresa</p>
+          <h2 id="password-reset-title">Crear nueva contraseña</h2>
+          <p class="section-support">Usa una contraseña segura para recuperar el acceso de tu empresa.</p>
+
+          <div id="password-reset-loading" class="empty-state">Validando enlace...</div>
+          <div id="password-reset-error" class="form-error" hidden></div>
+          <div id="password-reset-status" class="success-message" hidden></div>
+
+          <form id="password-reset-form" class="auth-form" novalidate hidden>
+            <div class="field">
+              <label for="new-password">Nueva contraseña</label>
+              <div class="password-field">
+                <input id="new-password" name="password" type="password" maxlength="128" autocomplete="new-password" />
+                <button
+                  class="secondary-button password-toggle"
+                  id="toggle-new-password"
+                  type="button"
+                  aria-controls="new-password"
+                  aria-pressed="false"
+                >
+                  Ver
+                </button>
+              </div>
+              <p class="field-help">Usa de 10 a 128 caracteres, con letras y numeros.</p>
+              <p class="field-error" id="new-password-error"></p>
+            </div>
+
+            <div class="field">
+              <label for="new-password-confirmation">Confirmar contraseña</label>
+              <div class="password-field">
+                <input
+                  id="new-password-confirmation"
+                  name="passwordConfirmation"
+                  type="password"
+                  maxlength="128"
+                  autocomplete="new-password"
+                />
+                <button
+                  class="secondary-button password-toggle"
+                  id="toggle-new-password-confirmation"
+                  type="button"
+                  aria-controls="new-password-confirmation"
+                  aria-pressed="false"
+                >
+                  Ver
+                </button>
+              </div>
+              <p class="field-error" id="new-password-confirmation-error"></p>
+            </div>
+
+            <div class="form-actions">
+              <button id="submit-password-reset-button" type="submit">Guardar contraseña</button>
             </div>
           </form>
         </div>
@@ -827,6 +920,95 @@
 
                 <div class="form-actions">
                   <button id="save-company-button" type="submit" data-icon="✓">Guardar configuracion</button>
+                </div>
+              </form>
+
+              <form id="company-password-form" class="company-form compact-auth-form" novalidate hidden>
+                <div class="section-header compact-header">
+                  <div>
+                    <h3>Cambiar contraseña</h3>
+                    <p class="section-support">Actualiza el acceso de esta empresa sin compartir contraseñas por chat.</p>
+                  </div>
+                </div>
+
+                <div class="field-grid company-controls">
+                  <div class="field">
+                    <label for="company-current-password">Contraseña actual</label>
+                    <div class="password-field">
+                      <input
+                        id="company-current-password"
+                        name="currentPassword"
+                        type="password"
+                        maxlength="128"
+                        autocomplete="current-password"
+                      />
+                      <button
+                        class="secondary-button password-toggle"
+                        id="toggle-company-current-password"
+                        type="button"
+                        aria-controls="company-current-password"
+                        aria-pressed="false"
+                      >
+                        Ver
+                      </button>
+                    </div>
+                    <p class="field-error" id="company-current-password-error"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="company-new-password">Nueva contraseña</label>
+                    <div class="password-field">
+                      <input
+                        id="company-new-password"
+                        name="newPassword"
+                        type="password"
+                        maxlength="128"
+                        autocomplete="new-password"
+                      />
+                      <button
+                        class="secondary-button password-toggle"
+                        id="toggle-company-new-password"
+                        type="button"
+                        aria-controls="company-new-password"
+                        aria-pressed="false"
+                      >
+                        Ver
+                      </button>
+                    </div>
+                    <p class="field-help">Usa de 10 a 128 caracteres, con letras y numeros.</p>
+                    <p class="field-error" id="company-new-password-error"></p>
+                  </div>
+
+                  <div class="field">
+                    <label for="company-new-password-confirmation">Confirmar nueva contraseña</label>
+                    <div class="password-field">
+                      <input
+                        id="company-new-password-confirmation"
+                        name="passwordConfirmation"
+                        type="password"
+                        maxlength="128"
+                        autocomplete="new-password"
+                      />
+                      <button
+                        class="secondary-button password-toggle"
+                        id="toggle-company-new-password-confirmation"
+                        type="button"
+                        aria-controls="company-new-password-confirmation"
+                        aria-pressed="false"
+                      >
+                        Ver
+                      </button>
+                    </div>
+                    <p class="field-error" id="company-new-password-confirmation-error"></p>
+                  </div>
+                </div>
+
+                <div id="company-password-status" class="success-message" hidden></div>
+                <div id="company-password-error" class="form-error" hidden></div>
+
+                <div class="form-actions">
+                  <button class="secondary-button" id="reset-company-password-form-button" type="button">Limpiar</button>
+                  <button id="save-company-password-button" type="submit">Actualizar contraseña</button>
                 </div>
               </form>
             </section>

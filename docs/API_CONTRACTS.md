@@ -554,6 +554,162 @@ Errores esperados:
 - `403 FORBIDDEN`.
 - `429 TOO_MANY_ATTEMPTS`.
 
+### POST `/api/company-auth/password`
+
+Cambia la contrasena del usuario de empresa autenticado desde `Mi empresa`.
+
+Auth:
+
+- Requiere cookie de sesion valida.
+
+Payload:
+
+```json
+{
+  "currentPassword": "Password123",
+  "newPassword": "Password456",
+  "passwordConfirmation": "Password456"
+}
+```
+
+Respuesta `200`:
+
+```json
+{
+  "ok": true,
+  "passwordUpdatedAt": "2026-06-22T12:00:00Z"
+}
+```
+
+Reglas:
+
+- Validar `currentPassword` contra el hash del usuario autenticado.
+- Validar fortaleza de `newPassword`.
+- Rechazar `newPassword` igual a `currentPassword`.
+- Requerir `passwordConfirmation` igual a `newPassword`.
+- Actualizar hash/parametros y `password_updated_at`.
+- Mantener la sesion actual y revocar otras sesiones activas del mismo usuario.
+- No aceptar `email`, `companyId` ni `userId` desde frontend.
+
+Errores esperados:
+
+- `400 VALIDATION_ERROR`.
+- `401 UNAUTHORIZED`.
+- `401 INVALID_CURRENT_PASSWORD`.
+- `403 FORBIDDEN`.
+
+### POST `/api/company-password-resets`
+
+Solicita un correo de recuperacion de acceso para usuario de empresa.
+
+Auth:
+
+- Desde Admin interno: enviar header `x-puntoclub-admin-token`.
+- Desde login publico: sin header, siempre responder de forma generica para no revelar si el correo existe.
+
+Payload:
+
+```json
+{
+  "email": "hola@cafecentral.test"
+}
+```
+
+Respuesta `200`:
+
+```json
+{
+  "id": "700",
+  "email": "hola@cafecentral.test",
+  "companyId": "10",
+  "companyUserId": "400",
+  "status": "pending",
+  "sentAt": "2026-06-21T12:00:00Z",
+  "expiresAt": "2026-06-22T12:00:00Z"
+}
+```
+
+Reglas:
+
+- Requiere `COMPANY_PASSWORD_RESET_ENABLED=true`.
+- Generar token aleatorio de un solo uso y guardar solo `token_hash`.
+- Revocar resets pendientes previos para el mismo correo antes de crear uno nuevo.
+- Enviar correo al usuario con link de reset; no devolver token ni link completo en API.
+- Para solicitud publica sin usuario encontrado, devolver aceptacion generica y no enviar correo.
+
+Errores esperados:
+
+- `400 VALIDATION_ERROR`.
+- `403 FORBIDDEN` cuando falla el token interno.
+- `404 COMPANY_USER_NOT_FOUND` solo para solicitud admin.
+- `503 FEATURE_DISABLED`.
+
+### GET `/api/company-password-resets/validate?token=...`
+
+Valida un token de reset sin cambiar password.
+
+Respuesta `200`:
+
+```json
+{
+  "valid": true,
+  "email": "hola@cafecentral.test",
+  "companyId": "10",
+  "companyName": "Cafe Central",
+  "expiresAt": "2026-06-22T12:00:00Z"
+}
+```
+
+Si no es valido:
+
+```json
+{
+  "valid": false,
+  "reason": "expired"
+}
+```
+
+Razones esperadas: `invalid`, `expired`, `used`.
+
+### POST `/api/company-password-resets/complete`
+
+Completa el reset con una nueva contrasena.
+
+Payload:
+
+```json
+{
+  "token": "token-recibido-por-correo",
+  "password": "Password123"
+}
+```
+
+Respuesta `200`:
+
+```json
+{
+  "email": "hola@cafecentral.test",
+  "companyId": "10",
+  "companyName": "Cafe Central",
+  "completedAt": "2026-06-21T12:10:00Z"
+}
+```
+
+Reglas:
+
+- Validar fortaleza del password en Backend/API.
+- Hashear el nuevo password con el mecanismo de `CompanyUsers`.
+- Marcar reset como `used`.
+- Revocar sesiones activas del usuario.
+- No aceptar `email`, `companyId` ni `userId` desde frontend.
+
+Errores esperados:
+
+- `400 VALIDATION_ERROR`.
+- `404 PASSWORD_RESET_NOT_FOUND`.
+- `409 PASSWORD_RESET_ALREADY_USED`.
+- `409 PASSWORD_RESET_EXPIRED`.
+
 ### POST `/api/company-auth/logout`
 
 Cierra la sesion actual invalidando la sesion server-side y limpiando cookie.

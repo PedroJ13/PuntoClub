@@ -13,12 +13,13 @@ const {
   formatAuthIdentity,
   generateSessionToken,
   getSessionExpiresAt,
+  hashPassword,
   hashSessionToken,
   readSessionTokenFromRequest,
   verifyPassword
 } = require('../lib/companyAuth');
 const { handle, jsonWithHeaders, ok, readJson } = require('../lib/http');
-const { validateCompanyAuthLoginPayload } = require('../lib/validators');
+const { validateCompanyAuthLoginPayload, validateCompanyPasswordChangePayload } = require('../lib/validators');
 const repository = require('../lib/repository');
 
 async function requireSessionIdentity(request) {
@@ -91,6 +92,48 @@ app.http('companyAuthLogout', {
 
     return jsonWithHeaders(200, { ok: true }, {
       'Set-Cookie': buildClearSessionCookie()
+    });
+  })
+});
+
+app.http('changeCompanyPassword', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  route: 'company-auth/password',
+  handler: handle(async (request) => {
+    const token = readSessionTokenFromRequest(request);
+    if (!token) {
+      throw new ApiError(401, 'UNAUTHORIZED', 'Authentication is required.');
+    }
+
+    const tokenHash = hashSessionToken(token);
+    const identity = await repository.getAuthIdentityBySessionTokenHash(tokenHash);
+    const payload = validateCompanyPasswordChangePayload(await readJson(request));
+    const user = await repository.getLocalPasswordUserById(identity.company.id, identity.user.id);
+
+    if (
+      !user ||
+      user.status !== 'active' ||
+      user.company_status !== 'active' ||
+      !verifyPassword(payload.currentPassword, {
+        passwordAlgorithm: user.password_algorithm,
+        passwordHash: user.password_hash,
+        passwordParams: user.password_params
+      })
+    ) {
+      throw new ApiError(401, 'INVALID_CURRENT_PASSWORD', 'Current password is invalid.');
+    }
+
+    const result = await repository.updateCompanyUserPassword(
+      identity.company.id,
+      identity.user.id,
+      hashPassword(payload.newPassword),
+      tokenHash
+    );
+
+    return ok({
+      ok: true,
+      passwordUpdatedAt: result.passwordUpdatedAt
     });
   })
 });

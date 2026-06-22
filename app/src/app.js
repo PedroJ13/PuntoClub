@@ -26,6 +26,25 @@ const elements = {
   loginError: document.querySelector("#login-error"),
   loginStatus: document.querySelector("#login-status"),
   submitLoginButton: document.querySelector("#submit-login-button"),
+  toggleLoginPasswordButton: document.querySelector("#toggle-login-password"),
+  passwordResetRequestForm: document.querySelector("#password-reset-request-form"),
+  passwordResetEmailInput: document.querySelector("#password-reset-email"),
+  passwordResetEmailError: document.querySelector("#password-reset-email-error"),
+  passwordResetRequestError: document.querySelector("#password-reset-request-error"),
+  passwordResetRequestStatus: document.querySelector("#password-reset-request-status"),
+  submitPasswordResetRequestButton: document.querySelector("#submit-password-reset-request-button"),
+  passwordResetPage: document.querySelector("#password-reset-page"),
+  passwordResetLoading: document.querySelector("#password-reset-loading"),
+  passwordResetError: document.querySelector("#password-reset-error"),
+  passwordResetStatus: document.querySelector("#password-reset-status"),
+  passwordResetForm: document.querySelector("#password-reset-form"),
+  newPasswordInput: document.querySelector("#new-password"),
+  newPasswordConfirmationInput: document.querySelector("#new-password-confirmation"),
+  newPasswordError: document.querySelector("#new-password-error"),
+  newPasswordConfirmationError: document.querySelector("#new-password-confirmation-error"),
+  submitPasswordResetButton: document.querySelector("#submit-password-reset-button"),
+  toggleNewPasswordButton: document.querySelector("#toggle-new-password"),
+  toggleNewPasswordConfirmationButton: document.querySelector("#toggle-new-password-confirmation"),
   invitationPage: document.querySelector("#invitation-page"),
   invitationLoading: document.querySelector("#invitation-loading"),
   invitationError: document.querySelector("#invitation-error"),
@@ -199,6 +218,20 @@ const elements = {
   companyCurrentLogo: document.querySelector("#company-current-logo"),
   reloadCompanyButton: document.querySelector("#reload-company-button"),
   saveCompanyButton: document.querySelector("#save-company-button"),
+  companyPasswordForm: document.querySelector("#company-password-form"),
+  companyCurrentPasswordInput: document.querySelector("#company-current-password"),
+  companyNewPasswordInput: document.querySelector("#company-new-password"),
+  companyNewPasswordConfirmationInput: document.querySelector("#company-new-password-confirmation"),
+  companyCurrentPasswordError: document.querySelector("#company-current-password-error"),
+  companyNewPasswordError: document.querySelector("#company-new-password-error"),
+  companyNewPasswordConfirmationError: document.querySelector("#company-new-password-confirmation-error"),
+  companyPasswordStatus: document.querySelector("#company-password-status"),
+  companyPasswordError: document.querySelector("#company-password-error"),
+  saveCompanyPasswordButton: document.querySelector("#save-company-password-button"),
+  resetCompanyPasswordFormButton: document.querySelector("#reset-company-password-form-button"),
+  toggleCompanyCurrentPasswordButton: document.querySelector("#toggle-company-current-password"),
+  toggleCompanyNewPasswordButton: document.querySelector("#toggle-company-new-password"),
+  toggleCompanyNewPasswordConfirmationButton: document.querySelector("#toggle-company-new-password-confirmation"),
   companyRegistrationForm: document.querySelector("#company-registration-form"),
   registrationCompanyNameInput: document.querySelector("#registration-company-name"),
   registrationCompanyEmailInput: document.querySelector("#registration-company-email"),
@@ -368,7 +401,9 @@ let pendingAdminConfirmation = null;
 let globalLoadingTimer = null;
 const customerBalances = new Map();
 const invitationToken = getInvitationTokenFromUrl();
+const passwordResetToken = getPasswordResetTokenFromUrl();
 const isInvitationPage = isCompanyInvitationRoute();
+const isPasswordResetPage = isCompanyPasswordResetRoute();
 const isProductPage = isProductRoute();
 const isOperationalAppPage = isOperationalAppRoute();
 const isLoginPage = isCompanyLoginRoute();
@@ -537,6 +572,28 @@ elements.loginForm.addEventListener("submit", async (event) => {
   await submitCompanyLogin();
 });
 
+elements.passwordResetRequestForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitPasswordResetRequest();
+});
+
+elements.passwordResetForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitPasswordResetComplete();
+});
+
+elements.toggleLoginPasswordButton.addEventListener("click", () => {
+  togglePasswordVisibility(elements.loginPasswordInput, elements.toggleLoginPasswordButton);
+});
+
+elements.toggleNewPasswordButton.addEventListener("click", () => {
+  togglePasswordVisibility(elements.newPasswordInput, elements.toggleNewPasswordButton);
+});
+
+elements.toggleNewPasswordConfirmationButton.addEventListener("click", () => {
+  togglePasswordVisibility(elements.newPasswordConfirmationInput, elements.toggleNewPasswordConfirmationButton);
+});
+
 elements.loginButton.addEventListener("click", () => {
   window.location.href = "/login";
 });
@@ -553,6 +610,30 @@ elements.createAccessForm.addEventListener("submit", async (event) => {
 elements.companyForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   await submitCompanySettings();
+});
+
+elements.companyPasswordForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  await submitCompanyPasswordChange();
+});
+
+elements.resetCompanyPasswordFormButton.addEventListener("click", () => {
+  clearCompanyPasswordForm();
+});
+
+elements.toggleCompanyCurrentPasswordButton.addEventListener("click", () => {
+  togglePasswordVisibility(elements.companyCurrentPasswordInput, elements.toggleCompanyCurrentPasswordButton);
+});
+
+elements.toggleCompanyNewPasswordButton.addEventListener("click", () => {
+  togglePasswordVisibility(elements.companyNewPasswordInput, elements.toggleCompanyNewPasswordButton);
+});
+
+elements.toggleCompanyNewPasswordConfirmationButton.addEventListener("click", () => {
+  togglePasswordVisibility(
+    elements.companyNewPasswordConfirmationInput,
+    elements.toggleCompanyNewPasswordConfirmationButton,
+  );
 });
 
 elements.companyLogoFileInput.addEventListener("change", () => {
@@ -772,6 +853,8 @@ elements.adminRequestDetail.addEventListener("click", async (event) => {
     await rejectSelectedAdminRequest();
   } else if (action === "resend") {
     await resendSelectedAdminInvitation();
+  } else if (action === "reset-password") {
+    await sendSelectedAdminPasswordReset();
   }
 });
 
@@ -818,6 +901,9 @@ renderAdminPrompt();
 if (isInvitationPage) {
   showInvitationPage();
   validateCompanyInvitation(invitationToken);
+} else if (isPasswordResetPage) {
+  showPasswordResetPage();
+  validateCompanyPasswordReset(passwordResetToken);
 } else if (isProductPage) {
   showProductPage();
 } else if (isOperationalAppPage) {
@@ -1727,6 +1813,32 @@ async function submitCompanySettings() {
   }
 }
 
+async function submitCompanyPasswordChange() {
+  clearCompanyPasswordMessages();
+
+  if (!validateCompanyPasswordChangeForm()) {
+    return;
+  }
+
+  setCompanyPasswordSubmitting(true);
+  const stopLoading = startGlobalLoading("Estamos actualizando la contraseña...");
+
+  try {
+    await api.changeCompanyPassword({
+      currentPassword: elements.companyCurrentPasswordInput.value,
+      newPassword: elements.companyNewPasswordInput.value,
+      passwordConfirmation: elements.companyNewPasswordConfirmationInput.value,
+    });
+    clearCompanyPasswordForm({ keepStatus: true });
+    showCompanyPasswordStatus("Contraseña actualizada correctamente.");
+  } catch (error) {
+    renderCompanyPasswordChangeError(error);
+  } finally {
+    stopLoading();
+    setCompanyPasswordSubmitting(false);
+  }
+}
+
 async function submitCompanyLogo() {
   clearCompanyLogoMessages();
 
@@ -2349,6 +2461,60 @@ async function resendSelectedAdminInvitation() {
   }
 }
 
+async function sendSelectedAdminPasswordReset() {
+  const email = selectedAdminRequest?.invitation?.email || selectedAdminRequest?.companyEmail;
+
+  if (!email || !adminToken) {
+    showAdminDetailError("No hay un correo de empresa disponible para enviar el reset.");
+    return;
+  }
+
+  const confirmed = await requestAdminConfirmation({
+    title: "Enviar reset de acceso",
+    message: `Se enviara un correo para restablecer la contraseña de ${email}. No se mostrara el enlace en pantalla.`,
+    confirmLabel: "Enviar reset",
+  });
+  if (!confirmed) {
+    return;
+  }
+
+  clearAdminMessages({ keepTokenStatus: true });
+  setAdminActionLoading(true, "reset-password");
+  const stopLoading = startGlobalLoading("Estamos enviando el reset...");
+
+  try {
+    const result = await api.requestCompanyPasswordReset({ email }, adminToken);
+    showAdminDetailStatus(`Reset enviado a ${result.email || email}.`);
+  } catch (error) {
+    renderAdminActionError(error);
+  } finally {
+    stopLoading();
+    setAdminActionLoading(false);
+  }
+}
+
+async function validateCompanyPasswordReset(token) {
+  renderPasswordResetLoading();
+
+  if (!token) {
+    renderPasswordResetUnavailable("invalid");
+    return;
+  }
+
+  try {
+    const result = await api.validateCompanyPasswordReset(token);
+
+    if (result.valid) {
+      renderPasswordResetValid(result);
+      return;
+    }
+
+    renderPasswordResetUnavailable(result.reason || "invalid");
+  } catch (error) {
+    renderPasswordResetUnavailable("service");
+  }
+}
+
 async function validateCompanyInvitation(token) {
   renderInvitationLoading();
 
@@ -2424,6 +2590,62 @@ async function submitCompanyLogin() {
   }
 }
 
+async function submitPasswordResetRequest() {
+  clearPasswordResetRequestMessages();
+  const email = elements.passwordResetEmailInput.value.trim();
+
+  if (!isEmail(email)) {
+    elements.passwordResetEmailError.textContent = "Ingresa un correo valido.";
+    showPasswordResetRequestError("Revise los datos ingresados.");
+    return;
+  }
+
+  setPasswordResetRequestSubmitting(true);
+  const stopLoading = startGlobalLoading("Estamos enviando instrucciones...");
+
+  try {
+    await api.requestCompanyPasswordReset({ email });
+    showPasswordResetRequestStatus(
+      "Si el correo esta registrado, enviaremos instrucciones para restablecer la contraseña.",
+    );
+  } catch (error) {
+    renderPasswordResetRequestError(error);
+  } finally {
+    stopLoading();
+    setPasswordResetRequestSubmitting(false);
+  }
+}
+
+async function submitPasswordResetComplete() {
+  clearPasswordResetCompleteMessages();
+
+  if (!validatePasswordResetCompleteForm()) {
+    return;
+  }
+
+  setPasswordResetSubmitting(true);
+  const stopLoading = startGlobalLoading("Estamos guardando la nueva contraseña...");
+
+  try {
+    await api.completeCompanyPasswordReset({
+      token: passwordResetToken,
+      password: elements.newPasswordInput.value,
+    });
+    elements.passwordResetForm.hidden = true;
+    showPasswordResetStatus("Contraseña actualizada. Ya puedes iniciar sesion con tu nuevo acceso.");
+    window.history.replaceState({}, "", "/login");
+    window.requestAnimationFrame(() => {
+      showLoginPage();
+      showLoginStatus("Contraseña actualizada. Inicia sesion con tu nuevo acceso.");
+    });
+  } catch (error) {
+    renderPasswordResetCompleteError(error);
+  } finally {
+    stopLoading();
+    setPasswordResetSubmitting(false);
+  }
+}
+
 async function refreshAuthIdentity(options = {}) {
   try {
     const identity = await api.getCurrentCompanyUser();
@@ -2440,7 +2662,7 @@ async function refreshAuthIdentity(options = {}) {
     renderSignedOut();
 
     if (!options.silent && error instanceof ApiError && error.code === "UNAUTHORIZED") {
-      showLoginError("La sesion expiro. Inicie sesion de nuevo.");
+      showLoginError("Su sesion expiro. Inicie sesion nuevamente.");
     }
 
     return null;
@@ -3910,6 +4132,7 @@ function mapMembershipBenefitUsageErrors(details = []) {
 
 function renderCompanyLoading() {
   elements.companyForm.hidden = true;
+  elements.companyPasswordForm.hidden = true;
   elements.companyEmpty.hidden = false;
   elements.companyEmpty.textContent = "Cargando configuracion...";
 }
@@ -3917,6 +4140,7 @@ function renderCompanyLoading() {
 function renderCompanySettings(settings) {
   elements.companyEmpty.hidden = true;
   elements.companyForm.hidden = false;
+  elements.companyPasswordForm.hidden = false;
   elements.companyNameInput.value = settings.name ?? "";
   elements.companyEmailInput.value = settings.email ?? "";
   elements.companyPhoneInput.value = settings.phone ?? "";
@@ -3950,6 +4174,7 @@ function renderCompanySettingsError(error) {
     renderCompanySettings(currentCompanySettings);
   } else {
     elements.companyForm.hidden = true;
+    elements.companyPasswordForm.hidden = true;
     elements.companyEmpty.hidden = false;
     elements.companyEmpty.textContent = "No hay configuracion cargada.";
   }
@@ -3965,6 +4190,37 @@ function renderCompanySettingsError(error) {
   }
 
   showCompanyError("No pudimos cargar la informacion de la empresa.");
+}
+
+function renderCompanyPasswordChangeError(error) {
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    error.details.forEach((detail) => {
+      const target = {
+        currentPassword: elements.companyCurrentPasswordError,
+        newPassword: elements.companyNewPasswordError,
+        passwordConfirmation: elements.companyNewPasswordConfirmationError,
+      }[detail.field];
+
+      if (target) {
+        target.textContent = getCompanyPasswordValidationMessage(detail);
+      }
+    });
+    showCompanyPasswordError("Revise los datos ingresados.");
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "INVALID_CURRENT_PASSWORD") {
+    elements.companyCurrentPasswordError.textContent = "La contraseña actual no coincide.";
+    showCompanyPasswordError("No pudimos actualizar la contraseña. Revise la contraseña actual.");
+    return;
+  }
+
+  if (isAuthRequiredError(error)) {
+    showCompanyPasswordError("Su sesion expiro. Inicie sesion nuevamente.");
+    return;
+  }
+
+  showCompanyPasswordError("No pudimos actualizar la contraseña. Intente de nuevo.");
 }
 
 function renderCompanyLogo(settings) {
@@ -4552,6 +4808,18 @@ function renderAdminInvitationPanel(invitation) {
           `
           : ""
       }
+
+      <div class="form-actions">
+        <button
+          class="secondary-button"
+          id="send-admin-password-reset-button"
+          type="button"
+          data-icon="→"
+          data-admin-action="reset-password"
+        >
+          Enviar reset de acceso
+        </button>
+      </div>
     </section>
   `;
 }
@@ -4654,6 +4922,11 @@ function renderAdminActionError(error) {
     return;
   }
 
+  if (error instanceof ApiError && error.code === "COMPANY_USER_NOT_FOUND") {
+    showAdminDetailError("No encontramos un acceso activo con ese correo.");
+    return;
+  }
+
   showAdminDetailError("No pudimos completar la accion. Intenta de nuevo.");
 }
 
@@ -4707,6 +4980,41 @@ function renderInvitationServiceError(error) {
 
   elements.invitationError.hidden = false;
   elements.invitationError.textContent = "El servicio no esta disponible en este momento. Intenta mas tarde.";
+}
+
+function renderPasswordResetLoading() {
+  elements.passwordResetLoading.hidden = false;
+  elements.passwordResetLoading.textContent = "Validando enlace...";
+  elements.passwordResetForm.hidden = true;
+  clearPasswordResetCompleteMessages();
+}
+
+function renderPasswordResetValid(result) {
+  elements.passwordResetLoading.hidden = true;
+  elements.passwordResetForm.hidden = false;
+  clearPasswordResetCompleteMessages();
+  elements.newPasswordInput.value = "";
+  elements.newPasswordConfirmationInput.value = "";
+  elements.passwordResetStatus.hidden = false;
+  elements.passwordResetStatus.textContent = `Enlace valido para ${result.email || "la empresa"}.`;
+  window.requestAnimationFrame(() => {
+    elements.newPasswordInput.focus();
+  });
+}
+
+function renderPasswordResetUnavailable(reason) {
+  const states = {
+    invalid: "El enlace de recuperacion no es valido. Solicita un nuevo correo de restablecimiento.",
+    expired: "El enlace de recuperacion expiro. Solicita un nuevo correo de restablecimiento.",
+    used: "Este enlace ya fue utilizado. Inicia sesion o solicita un nuevo correo si lo necesitas.",
+    service: "No pudimos validar el enlace en este momento. Intenta de nuevo mas tarde.",
+  };
+  elements.passwordResetLoading.hidden = true;
+  elements.passwordResetForm.hidden = true;
+  elements.passwordResetStatus.hidden = true;
+  elements.passwordResetStatus.textContent = "";
+  elements.passwordResetError.hidden = false;
+  elements.passwordResetError.textContent = states[reason] || states.invalid;
 }
 
 function renderAccessCreated(result) {
@@ -4768,21 +5076,80 @@ function renderLoginError(error) {
         target.textContent = getLoginValidationMessage(detail);
       }
     });
-    showLoginError("Revisa los campos marcados antes de continuar.");
+    showLoginError("Complete el correo y la contraseña para iniciar sesion.");
     return;
   }
 
-  if (error instanceof ApiError && ["UNAUTHORIZED", "FORBIDDEN"].includes(error.code)) {
-    showLoginError("Correo o contraseña incorrectos.");
+  if (error instanceof ApiError && error.code === "UNAUTHORIZED") {
+    showLoginError("Correo o contraseña incorrectos. Revise los datos o recupere el acceso.");
     return;
   }
 
-  if (error instanceof ApiError && error.code === "RATE_LIMITED") {
-    showLoginError("Hay demasiados intentos recientes. Espera unos minutos e intenta de nuevo.");
+  if (error instanceof ApiError && error.code === "FORBIDDEN") {
+    showLoginError("El acceso no esta activo. Contacte al administrador de Punto Club.");
+    return;
+  }
+
+  if (error instanceof ApiError && ["RATE_LIMITED", "TOO_MANY_ATTEMPTS"].includes(error.code)) {
+    showLoginError("Hay demasiados intentos recientes. Espere unos minutos o recupere el acceso.");
+    return;
+  }
+
+  if (!(error instanceof ApiError)) {
+    showLoginError("No pudimos conectar con Punto Club. Verifique internet o intente de nuevo.");
     return;
   }
 
   showLoginError("No pudimos iniciar sesion. Intenta de nuevo.");
+}
+
+function renderPasswordResetRequestError(error) {
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    error.details.forEach((detail) => {
+      if (detail.field === "email") {
+        elements.passwordResetEmailError.textContent = "Ingresa un correo valido.";
+      }
+    });
+    showPasswordResetRequestError("Revise los datos ingresados.");
+    return;
+  }
+
+  showPasswordResetRequestError("No pudimos enviar las instrucciones. Intente de nuevo mas tarde.");
+}
+
+function renderPasswordResetCompleteError(error) {
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    error.details.forEach((detail) => {
+      const target = {
+        password: elements.newPasswordError,
+        token: elements.passwordResetError,
+      }[detail.field];
+
+      if (target) {
+        target.textContent = detail.field === "password"
+          ? "Usa de 10 a 128 caracteres, con letras y numeros."
+          : "El enlace no es valido. Solicita un nuevo correo de restablecimiento.";
+      }
+    });
+    showPasswordResetError("Revise los datos ingresados.");
+    return;
+  }
+
+  if (
+    error instanceof ApiError &&
+    ["PASSWORD_RESET_NOT_FOUND", "PASSWORD_RESET_ALREADY_USED", "PASSWORD_RESET_EXPIRED"].includes(error.code)
+  ) {
+    renderPasswordResetUnavailable(
+      error.code === "PASSWORD_RESET_EXPIRED"
+        ? "expired"
+        : error.code === "PASSWORD_RESET_ALREADY_USED"
+          ? "used"
+          : "invalid",
+    );
+    return;
+  }
+
+  showPasswordResetError("No pudimos guardar la nueva contraseña. Intente de nuevo.");
 }
 
 function renderAuthIdentity(identity) {
@@ -4999,6 +5366,16 @@ function getCompanyValidationMessage(detail) {
   return messagesByField[detail.field] ?? detail.message;
 }
 
+function getCompanyPasswordValidationMessage(detail) {
+  const messagesByField = {
+    currentPassword: "Ingresa la contraseña actual.",
+    newPassword: "Usa de 10 a 128 caracteres, con letras y numeros, distinta a la actual.",
+    passwordConfirmation: "La confirmacion debe coincidir con la nueva contraseña.",
+  };
+
+  return messagesByField[detail.field] ?? detail.message;
+}
+
 function getCompanyLogoValidationMessage(file) {
   const allowedTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
 
@@ -5207,6 +5584,16 @@ function showCompanyError(message) {
   elements.companyError.textContent = message;
 }
 
+function showCompanyPasswordStatus(message) {
+  elements.companyPasswordStatus.hidden = false;
+  elements.companyPasswordStatus.textContent = message;
+}
+
+function showCompanyPasswordError(message) {
+  elements.companyPasswordError.hidden = false;
+  elements.companyPasswordError.textContent = message;
+}
+
 function showCompanyLogoStatus(message) {
   elements.companyLogoStatus.hidden = false;
   elements.companyLogoStatus.textContent = message;
@@ -5327,6 +5714,26 @@ function showLoginStatus(message) {
   elements.loginStatus.textContent = message;
 }
 
+function showPasswordResetRequestError(message) {
+  elements.passwordResetRequestError.hidden = false;
+  elements.passwordResetRequestError.textContent = message;
+}
+
+function showPasswordResetRequestStatus(message) {
+  elements.passwordResetRequestStatus.hidden = false;
+  elements.passwordResetRequestStatus.textContent = message;
+}
+
+function showPasswordResetError(message) {
+  elements.passwordResetError.hidden = false;
+  elements.passwordResetError.textContent = message;
+}
+
+function showPasswordResetStatus(message) {
+  elements.passwordResetStatus.hidden = false;
+  elements.passwordResetStatus.textContent = message;
+}
+
 function clearForm(options = {}) {
   elements.form.reset();
   clearFormMessages(options);
@@ -5423,6 +5830,37 @@ function clearCompanyMessages() {
   elements.companyError.textContent = "";
   elements.companyStatus.hidden = true;
   elements.companyStatus.textContent = "";
+}
+
+function clearCompanyPasswordMessages() {
+  elements.companyCurrentPasswordError.textContent = "";
+  elements.companyNewPasswordError.textContent = "";
+  elements.companyNewPasswordConfirmationError.textContent = "";
+  elements.companyPasswordError.hidden = true;
+  elements.companyPasswordError.textContent = "";
+  elements.companyPasswordStatus.hidden = true;
+  elements.companyPasswordStatus.textContent = "";
+}
+
+function clearCompanyPasswordForm(options = {}) {
+  elements.companyPasswordForm.reset();
+  setPasswordInputHidden(elements.companyCurrentPasswordInput, elements.toggleCompanyCurrentPasswordButton);
+  setPasswordInputHidden(elements.companyNewPasswordInput, elements.toggleCompanyNewPasswordButton);
+  setPasswordInputHidden(
+    elements.companyNewPasswordConfirmationInput,
+    elements.toggleCompanyNewPasswordConfirmationButton,
+  );
+
+  if (options.keepStatus) {
+    const message = elements.companyPasswordStatus.textContent;
+    clearCompanyPasswordMessages();
+    if (message) {
+      showCompanyPasswordStatus(message);
+    }
+    return;
+  }
+
+  clearCompanyPasswordMessages();
 }
 
 function clearCompanyLogoMessages() {
@@ -5622,6 +6060,23 @@ function clearLoginMessages() {
   elements.loginStatus.textContent = "";
 }
 
+function clearPasswordResetRequestMessages() {
+  elements.passwordResetEmailError.textContent = "";
+  elements.passwordResetRequestError.hidden = true;
+  elements.passwordResetRequestError.textContent = "";
+  elements.passwordResetRequestStatus.hidden = true;
+  elements.passwordResetRequestStatus.textContent = "";
+}
+
+function clearPasswordResetCompleteMessages() {
+  elements.newPasswordError.textContent = "";
+  elements.newPasswordConfirmationError.textContent = "";
+  elements.passwordResetError.hidden = true;
+  elements.passwordResetError.textContent = "";
+  elements.passwordResetStatus.hidden = true;
+  elements.passwordResetStatus.textContent = "";
+}
+
 function setSubmitting(isSubmitting) {
   elements.saveButton.disabled = isSubmitting;
   elements.saveButton.textContent = isSubmitting ? "Registrando..." : "Registrar cliente";
@@ -5670,6 +6125,18 @@ function setCompanySubmitting(isSubmitting) {
   elements.saveCompanyButton.textContent = isSubmitting
     ? "Guardando..."
     : "Guardar configuracion";
+}
+
+function setCompanyPasswordSubmitting(isSubmitting) {
+  elements.saveCompanyPasswordButton.disabled = isSubmitting;
+  elements.resetCompanyPasswordFormButton.disabled = isSubmitting;
+  elements.companyCurrentPasswordInput.disabled = isSubmitting;
+  elements.companyNewPasswordInput.disabled = isSubmitting;
+  elements.companyNewPasswordConfirmationInput.disabled = isSubmitting;
+  elements.toggleCompanyCurrentPasswordButton.disabled = isSubmitting;
+  elements.toggleCompanyNewPasswordButton.disabled = isSubmitting;
+  elements.toggleCompanyNewPasswordConfirmationButton.disabled = isSubmitting;
+  elements.saveCompanyPasswordButton.textContent = isSubmitting ? "Actualizando..." : "Actualizar contraseña";
 }
 
 function setCompanyLogoSubmitting(isSubmitting) {
@@ -5756,8 +6223,9 @@ function setAdminActionLoading(isLoading, action = "") {
   const approveButton = elements.adminRequestDetail.querySelector("#approve-admin-request-button");
   const rejectButton = elements.adminRequestDetail.querySelector("#reject-admin-request-button");
   const resendButton = elements.adminRequestDetail.querySelector("#resend-admin-invitation-button");
+  const resetPasswordButton = elements.adminRequestDetail.querySelector("#send-admin-password-reset-button");
 
-  [approveButton, rejectButton, resendButton].forEach((button) => {
+  [approveButton, rejectButton, resendButton, resetPasswordButton].forEach((button) => {
     if (button) {
       button.disabled = isLoading;
     }
@@ -5780,6 +6248,12 @@ function setAdminActionLoading(isLoading, action = "") {
       ? "Reenviando invitacion..."
       : "Reenviar invitacion";
   }
+
+  if (resetPasswordButton) {
+    resetPasswordButton.textContent = isLoading && action === "reset-password"
+      ? "Enviando reset..."
+      : "Enviar reset de acceso";
+  }
 }
 
 function setCreateAccessSubmitting(isSubmitting) {
@@ -5792,6 +6266,16 @@ function setLoginSubmitting(isSubmitting) {
   elements.submitLoginButton.textContent = isSubmitting ? "Entrando..." : "Iniciar sesion";
 }
 
+function setPasswordResetRequestSubmitting(isSubmitting) {
+  elements.submitPasswordResetRequestButton.disabled = isSubmitting;
+  elements.submitPasswordResetRequestButton.textContent = isSubmitting ? "Enviando..." : "Enviar instrucciones";
+}
+
+function setPasswordResetSubmitting(isSubmitting) {
+  elements.submitPasswordResetButton.disabled = isSubmitting;
+  elements.submitPasswordResetButton.textContent = isSubmitting ? "Guardando..." : "Guardar contraseña";
+}
+
 function showPublicHomePage() {
   document.body.classList.add("public-home-mode");
   document.body.classList.remove("public-product-mode");
@@ -5801,6 +6285,7 @@ function showPublicHomePage() {
   elements.publicProductPage.hidden = true;
   elements.appBody.hidden = true;
   elements.authPage.hidden = true;
+  elements.passwordResetPage.hidden = true;
   elements.invitationPage.hidden = true;
   elements.loginButton.hidden = false;
   elements.logoutButton.hidden = true;
@@ -5818,6 +6303,7 @@ function showProductPage() {
   elements.publicProductPage.hidden = false;
   elements.appBody.hidden = true;
   elements.authPage.hidden = true;
+  elements.passwordResetPage.hidden = true;
   elements.invitationPage.hidden = true;
   elements.loginButton.hidden = false;
   elements.logoutButton.hidden = true;
@@ -5837,7 +6323,27 @@ function showInvitationPage() {
   elements.dataSourceStatus.hidden = false;
   elements.appBody.hidden = true;
   elements.authPage.hidden = true;
+  elements.passwordResetPage.hidden = true;
   elements.invitationPage.hidden = false;
+  renderActiveCompanyIdentity(null);
+}
+
+function showPasswordResetPage() {
+  document.body.classList.remove("public-home-mode");
+  document.body.classList.remove("public-product-mode");
+  document.body.classList.remove("public-registration-mode");
+  document.body.classList.remove("admin-companies-page-mode");
+  elements.publicHomePage.hidden = true;
+  elements.publicProductPage.hidden = true;
+  elements.authStatus.hidden = false;
+  elements.dataSourceStatus.hidden = false;
+  elements.appBody.hidden = true;
+  elements.invitationPage.hidden = true;
+  elements.authPage.hidden = true;
+  elements.passwordResetPage.hidden = false;
+  elements.loginButton.hidden = false;
+  elements.logoutButton.hidden = true;
+  elements.authStatus.textContent = "Recuperacion de acceso";
   renderActiveCompanyIdentity(null);
 }
 
@@ -5852,6 +6358,7 @@ function showLoginPage(options = {}) {
   elements.dataSourceStatus.hidden = false;
   elements.appBody.hidden = true;
   elements.invitationPage.hidden = true;
+  elements.passwordResetPage.hidden = true;
   elements.authPage.hidden = false;
   if (options.replaceRoute && !isCompanyLoginRoute()) {
     window.history.replaceState({}, "", "/login");
@@ -5877,6 +6384,7 @@ async function showMainApp(options = {}) {
   elements.dataSourceStatus.hidden = false;
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = true;
+  elements.passwordResetPage.hidden = true;
   elements.appBody.hidden = false;
   setActiveSection(getDefaultLoyaltySection(), { focus: options.focus !== false });
 
@@ -5900,6 +6408,7 @@ function showPublicCompanyRegistrationPage() {
   elements.dataSourceStatus.hidden = false;
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = true;
+  elements.passwordResetPage.hidden = true;
   elements.appBody.hidden = false;
   elements.loginButton.hidden = true;
   elements.logoutButton.hidden = true;
@@ -5931,6 +6440,7 @@ function showAdminCompaniesPage() {
   elements.dataSourceStatus.hidden = false;
   elements.invitationPage.hidden = true;
   elements.authPage.hidden = true;
+  elements.passwordResetPage.hidden = true;
   elements.appBody.hidden = false;
   elements.loginButton.hidden = true;
   elements.logoutButton.hidden = true;
@@ -5994,6 +6504,78 @@ function validateCreateAccessForm() {
   }
 
   return isValid;
+}
+
+function validatePasswordResetCompleteForm() {
+  const password = elements.newPasswordInput.value;
+  const confirmation = elements.newPasswordConfirmationInput.value;
+  let isValid = true;
+
+  if (!isStrongPassword(password)) {
+    elements.newPasswordError.textContent = "Usa de 10 a 128 caracteres, con letras y numeros.";
+    isValid = false;
+  }
+
+  if (password !== confirmation) {
+    elements.newPasswordConfirmationError.textContent = "Las contraseñas no coinciden.";
+    isValid = false;
+  }
+
+  if (!passwordResetToken) {
+    showPasswordResetError("El enlace no es valido. Solicita un nuevo correo de restablecimiento.");
+    isValid = false;
+  }
+
+  if (!isValid) {
+    showPasswordResetError("Revise los datos ingresados.");
+  }
+
+  return isValid;
+}
+
+function validateCompanyPasswordChangeForm() {
+  const currentPassword = elements.companyCurrentPasswordInput.value;
+  const newPassword = elements.companyNewPasswordInput.value;
+  const confirmation = elements.companyNewPasswordConfirmationInput.value;
+  let isValid = true;
+
+  if (!currentPassword || currentPassword.length > 128) {
+    elements.companyCurrentPasswordError.textContent = "Ingresa la contraseña actual.";
+    isValid = false;
+  }
+
+  if (!isStrongPassword(newPassword)) {
+    elements.companyNewPasswordError.textContent = "Usa de 10 a 128 caracteres, con letras y numeros.";
+    isValid = false;
+  } else if (newPassword === currentPassword) {
+    elements.companyNewPasswordError.textContent = "La nueva contraseña debe ser distinta a la actual.";
+    isValid = false;
+  }
+
+  if (newPassword !== confirmation) {
+    elements.companyNewPasswordConfirmationError.textContent = "Las contraseñas no coinciden.";
+    isValid = false;
+  }
+
+  if (!isValid) {
+    showCompanyPasswordError("Revise los datos ingresados.");
+  }
+
+  return isValid;
+}
+
+function togglePasswordVisibility(input, button) {
+  const isVisible = input.type === "text";
+  input.type = isVisible ? "password" : "text";
+  button.setAttribute("aria-pressed", String(!isVisible));
+  button.textContent = isVisible ? "Ver" : "Ocultar";
+  input.focus();
+}
+
+function setPasswordInputHidden(input, button) {
+  input.type = "password";
+  button.setAttribute("aria-pressed", "false");
+  button.textContent = "Ver";
 }
 
 function getBalanceValue(balance) {
@@ -6413,6 +6995,10 @@ function isCompanyInvitationRoute() {
   return window.location.pathname.replace(/\/$/, "") === "/company-invitations/accept";
 }
 
+function isCompanyPasswordResetRoute() {
+  return window.location.pathname.replace(/\/$/, "") === "/company-password-reset";
+}
+
 function isProductRoute() {
   const route = window.location.pathname.replace(/\/$/, "") || "/";
   return route === "/" || route === "/producto";
@@ -6435,6 +7021,10 @@ function isAdminCompaniesRoute() {
 }
 
 function getInvitationTokenFromUrl() {
+  return new URLSearchParams(window.location.search).get("token") || "";
+}
+
+function getPasswordResetTokenFromUrl() {
   return new URLSearchParams(window.location.search).get("token") || "";
 }
 
@@ -6679,6 +7269,10 @@ function normalize(value) {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
+}
+
+function isEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value ?? "").trim());
 }
 
 function escapeHtml(value) {

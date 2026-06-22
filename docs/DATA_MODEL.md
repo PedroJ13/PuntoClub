@@ -119,6 +119,24 @@ Regla: persistir solo `token_hash`, nunca token plano.
 
 Regla piloto: `auth_provider = local_password`. El password nunca se guarda plano.
 
+### CompanyPasswordResets
+
+- id
+- company_id
+- company_user_id
+- email
+- token_hash
+- status
+- expires_at
+- sent_at
+- used_at
+- created_by_label
+- created_at
+
+Estados: `pending`, `used`, `expired`, `revoked`.
+
+Regla: persistir solo `token_hash`; el token plano existe solo para construir el correo al destinatario. Al completar reset, marcar `used` y revocar sesiones activas del usuario.
+
 ### CompanySessions
 
 - id
