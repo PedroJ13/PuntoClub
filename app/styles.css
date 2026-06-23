@@ -114,16 +114,28 @@ button,
   background: var(--surface-strong);
 }
 
-button[data-icon]::before {
-  content: attr(data-icon);
+button[data-icon],
+.button-link[data-icon] {
+  gap: 8px;
+}
+
+.button-icon {
   display: inline-grid;
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
   place-items: center;
-  width: 1rem;
-  height: 1rem;
-  flex: 0 0 auto;
-  font-size: 0.9rem;
-  font-weight: 900;
-  line-height: 1;
+}
+
+.ui-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
 }
 
 button:hover {
@@ -249,10 +261,13 @@ textarea:focus {
   background: #ffffff;
 }
 
-.icon-button {
+.icon-button,
+.is-icon-only {
   width: 40px;
   min-width: 40px;
   padding: 0;
+  gap: 0;
+  justify-content: center;
 }
 
 .logout-icon-button {
@@ -1439,10 +1454,6 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   background: var(--surface-strong);
 }
 
-.secondary-button[data-icon="★"] {
-  color: var(--loyalty-strong);
-}
-
 .danger-button {
   border-color: rgba(180, 35, 24, 0.28);
   background: #ffffff;
@@ -2179,8 +2190,12 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 }
 
 .password-toggle {
+  width: 43px;
+  min-width: 43px;
   min-height: 43px;
-  white-space: nowrap;
+  padding: 0;
+  gap: 0;
+  justify-content: center;
 }
 
 .company-future strong {

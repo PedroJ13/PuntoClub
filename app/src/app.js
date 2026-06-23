@@ -369,6 +369,109 @@ const elements = {
   adminConfirmationConfirm: document.querySelector("#admin-confirmation-confirm"),
 };
 
+const ICON_PATHS = {
+  "arrow-left": '<path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path>',
+  "arrow-right": '<path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>',
+  "bar-chart": '<path d="M4 19V5"></path><path d="M4 19h16"></path><path d="M8 16v-5"></path><path d="M13 16V8"></path><path d="M18 16v-3"></path>',
+  "check": '<path d="m5 12 4 4L19 6"></path>',
+  "circle-minus": '<circle cx="12" cy="12" r="9"></circle><path d="M8 12h8"></path>',
+  "clipboard-list": '<path d="M9 5h6"></path><path d="M9 3h6v4H9z"></path><path d="M7 5H5v16h14V5h-2"></path><path d="M8 12h.01"></path><path d="M11 12h5"></path><path d="M8 16h.01"></path><path d="M11 16h5"></path>',
+  "crown": '<path d="m3 7 4 5 5-7 5 7 4-5-2 11H5z"></path><path d="M5 21h14"></path>',
+  "download": '<path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path>',
+  "eye": '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path><circle cx="12" cy="12" r="3"></circle>',
+  "eye-off": '<path d="m3 3 18 18"></path><path d="M10.6 10.6a3 3 0 0 0 2.8 2.8"></path><path d="M9.9 5.2A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-3.1 4.1"></path><path d="M6.1 6.8C3.4 8.6 2 12 2 12s3.5 7 10 7c1.2 0 2.3-.2 3.3-.6"></path>',
+  "gift": '<path d="M20 12v8H4v-8"></path><path d="M2 7h20v5H2z"></path><path d="M12 22V7"></path><path d="M12 7H8.5A2.5 2.5 0 1 1 11 4.5c0 1.4 1 2.5 1 2.5Z"></path><path d="M12 7h3.5A2.5 2.5 0 1 0 13 4.5c0 1.4-1 2.5-1 2.5Z"></path>',
+  "key": '<circle cx="8" cy="15" r="4"></circle><path d="m11 12 8-8"></path><path d="m17 6 2 2"></path>',
+  "log-in": '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path>',
+  "log-out": '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path>',
+  "mail": '<rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path>',
+  "plus": '<path d="M12 5v14"></path><path d="M5 12h14"></path>',
+  "receipt": '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6"></path><path d="M9 12h6"></path><path d="M9 16h4"></path>',
+  "refresh": '<path d="M20 12a8 8 0 0 1-13.7 5.7L4 15"></path><path d="M4 20v-5h5"></path><path d="M4 12A8 8 0 0 1 17.7 6.3L20 9"></path><path d="M20 4v5h-5"></path>',
+  "save": '<path d="M5 3h12l2 2v16H5z"></path><path d="M8 3v6h8"></path><path d="M8 21v-7h8v7"></path>',
+  "search": '<circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path>',
+  "send": '<path d="m22 2-7 20-4-9-9-4z"></path><path d="M22 2 11 13"></path>',
+  "shield-check": '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path><path d="m9 12 2 2 4-4"></path>',
+  "upload": '<path d="M12 21V9"></path><path d="m7 14 5-5 5 5"></path><path d="M5 3h14"></path>',
+  "user": '<circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path>',
+  "user-plus": '<circle cx="10" cy="8" r="4"></circle><path d="M3 21a7 7 0 0 1 14 0"></path><path d="M19 8v6"></path><path d="M16 11h6"></path>',
+  "x": '<path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>',
+};
+
+const LEGACY_ICON_NAMES = {
+  "+": "plus",
+  "✓": "check",
+  "×": "x",
+  "⌕": "search",
+  "↻": "refresh",
+  "★": "gift",
+  "↑": "upload",
+  "↓": "download",
+  "→": "arrow-right",
+  "←": "arrow-left",
+};
+
+function getIconName(value) {
+  const iconName = String(value || "").trim();
+  return LEGACY_ICON_NAMES[iconName] || iconName;
+}
+
+function createIconMarkup(iconName) {
+  const paths = ICON_PATHS[getIconName(iconName)];
+  if (!paths) {
+    return "";
+  }
+
+  return `<span class="button-icon" data-rendered-icon aria-hidden="true"><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths}</svg></span>`;
+}
+
+function applyButtonIcon(button) {
+  if (!button) {
+    return;
+  }
+
+  button.querySelectorAll("[data-rendered-icon]").forEach((icon) => icon.remove());
+  const iconMarkup = createIconMarkup(button.dataset.icon);
+
+  if (!iconMarkup) {
+    button.classList.remove("has-svg-icon", "is-icon-only");
+    return;
+  }
+
+  button.insertAdjacentHTML("afterbegin", iconMarkup);
+  button.classList.add("has-svg-icon");
+  button.classList.toggle("is-icon-only", button.textContent.trim() === "");
+}
+
+function applyButtonIcons(root = document) {
+  root.querySelectorAll("button[data-icon], .button-link[data-icon]").forEach(applyButtonIcon);
+}
+
+function setButtonText(button, text) {
+  button.textContent = text;
+  applyButtonIcon(button);
+}
+
+function observeIconButtons() {
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (!(node instanceof Element)) {
+          return;
+        }
+
+        if (node.matches("button[data-icon], .button-link[data-icon]")) {
+          applyButtonIcon(node);
+        }
+
+        applyButtonIcons(node);
+      });
+    });
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
 let currentCustomers = [];
 let selectedCustomer = null;
 let currentReport = null;
@@ -427,6 +530,8 @@ elements.auditFromInput.value = getToday();
 elements.auditToInput.value = getToday();
 elements.membershipActivationStartDateInput.value = getToday();
 elements.membershipExpirationWithinDaysInput.value = "5";
+applyButtonIcons();
+observeIconButtons();
 
 elements.searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
@@ -1076,7 +1181,7 @@ async function submitCustomer() {
     setCustomersFeedback("");
     renderCustomers(currentCustomers, customer.phone);
     await selectCustomer(customerWithBalance);
-    showSuccess(`Cliente registrado: ${customer.name}. Ya puedes continuar la atencion.`);
+    showSuccess(`Cliente registrado: ${customer.name}. Ya puedes continuar la atención.`);
     clearForm({ keepSuccess: true, focus: false });
     elements.selectedCustomerCard.focus?.();
   } catch (error) {
@@ -1096,7 +1201,7 @@ async function handleDuplicateCustomer(payload) {
 
   if (!match) {
     showFormError(
-      "Este cliente ya existe. Buscalo para continuar la atencion.",
+      "Este cliente ya existe. Búscalo para continuar la atención.",
     );
     return;
   }
@@ -1108,9 +1213,9 @@ async function handleDuplicateCustomer(payload) {
   renderCustomers(currentCustomers, elements.searchInput.value);
   await selectCustomer(
     customerWithBalance,
-    "Este cliente ya existe. Lo seleccionamos para continuar la atencion.",
+    "Este cliente ya existe. Lo seleccionamos para continuar la atención.",
   );
-  showSuccess("Este cliente ya existe. Lo seleccionamos para continuar la atencion.");
+  showSuccess("Este cliente ya existe. Lo seleccionamos para continuar la atención.");
   clearForm({ keepSuccess: true, focus: false });
   elements.selectedCustomerCard.focus?.();
 }
@@ -1268,7 +1373,7 @@ function renderLoading() {
 function renderCustomers(customers, search) {
   if (customers.length === 0) {
     const text = search
-      ? "No encontramos clientes con esa busqueda. Puedes registrar uno nuevo para continuar."
+      ? "No encontramos clientes con esa búsqueda. Puedes registrar uno nuevo para continuar."
       : "Busca un cliente para atenderlo o registra uno nuevo.";
     elements.customersList.innerHTML = `<div class="empty-state">${escapeHtml(text)}</div>`;
     return;
@@ -1286,7 +1391,7 @@ function renderCustomers(customers, search) {
 
       if (customer) {
         button.disabled = true;
-        button.textContent = "Cargando...";
+        setButtonText(button, "Cargando...");
         selectCustomer(customer)
           .catch((error) => {
             console.error("No se pudo completar la seleccion del cliente.", error);
@@ -1294,7 +1399,7 @@ function renderCustomers(customers, search) {
           })
           .finally(() => {
             button.disabled = false;
-            button.textContent = "Atender";
+            setButtonText(button, "Atender");
           });
       }
     });
@@ -1316,7 +1421,7 @@ function renderCustomer(customer) {
         <strong>${formatBalance(customer.balance)}</strong>
       </div>
       <div class="row-actions">
-        <button type="button" data-icon="→" data-action="attend" data-customer-id="${escapeHtml(customer.id)}">Atender</button>
+        <button type="button" data-icon="arrow-right" data-action="attend" data-customer-id="${escapeHtml(customer.id)}">Atender</button>
       </div>
     </article>
   `;
@@ -1388,7 +1493,7 @@ function goToPointsWithCustomer(customer) {
   currentCustomers = [selectedCustomer];
   elements.searchInput.value = customer.name || "";
   setActiveSection("operations");
-  resetOperation("Cliente conservado desde Membresias. Selecciona compra, historial o redimir puntos.");
+  resetOperation("Cliente conservado desde Membresías. Selecciona compra, historial o redimir puntos.");
   renderCustomers(currentCustomers, elements.searchInput.value.trim());
   renderSelectedCustomer();
   renderPointsMembershipContext();
@@ -1434,7 +1539,7 @@ function resetOperation(message = "") {
   clearOperationMessages();
   elements.operationTitle.textContent = "Ficha del cliente";
   elements.operationEmpty.hidden = false;
-  elements.operationEmpty.textContent = message || "Selecciona un cliente para ver su resumen y operar puntos o membresias.";
+  elements.operationEmpty.textContent = message || "Selecciona un cliente para ver su resumen y operar puntos o membresías.";
   elements.selectedCustomerCard.hidden = true;
   elements.purchaseForm.hidden = true;
   elements.redemptionForm.hidden = true;
@@ -1545,7 +1650,7 @@ async function loadOperationMembershipPanel(options = {}) {
 async function submitMembershipRenewal() {
   const operationCustomer = getMembershipOperationCustomer();
   if (!operationCustomer || !selectedCustomerActiveMembership) {
-    showMembershipOperationError("Selecciona una membresia antes de renovar.");
+    showMembershipOperationError("Selecciona una membresía antes de renovar.");
     return;
   }
 
@@ -1563,7 +1668,7 @@ async function submitMembershipRenewal() {
     await api.renewCustomerMembership(operationCustomer.id, selectedCustomerActiveMembership.id, payload);
     clearMembershipRenewalForm();
     await loadOperationMembershipPanel();
-    showMembershipOperationStatus("Membresia renovada.");
+    showMembershipOperationStatus("Membresía renovada.");
   } catch (error) {
     renderMembershipRenewalError(error);
   } finally {
@@ -1716,7 +1821,7 @@ async function loadCustomerReport() {
   clearCustomerReportMessages();
 
   if (!filters.search) {
-    showCustomerReportError("Ingresa telefono, nombre o correo del cliente.");
+    showCustomerReportError("Ingresa teléfono, nombre o correo del cliente.");
     return;
   }
 
@@ -1950,7 +2055,7 @@ async function loadMembershipExpirationAlerts() {
     };
     renderMembershipExpirationAlerts();
     showMembershipExpirationStatus(
-      `${formatReportNumber(membershipExpirationAlerts.active.length)} proximas, ${formatReportNumber(membershipExpirationAlerts.expired.length)} vencidas.`,
+      `${formatReportNumber(membershipExpirationAlerts.active.length)} próximas, ${formatReportNumber(membershipExpirationAlerts.expired.length)} vencidas.`,
     );
   } catch (error) {
     membershipExpirationAlerts = { active: [], expired: [] };
@@ -1998,8 +2103,8 @@ async function searchMembershipCustomers() {
   const search = elements.membershipCustomerSearchInput.value.trim();
 
   if (!search) {
-    showMembershipCustomerSearchError("Ingresa nombre, telefono o correo.");
-    elements.membershipCustomerResults.innerHTML = '<div class="empty-state">Busca un cliente existente para pagar una membresia.</div>';
+    showMembershipCustomerSearchError("Ingresa nombre, teléfono o correo.");
+    elements.membershipCustomerResults.innerHTML = '<div class="empty-state">Busca un cliente existente para activar una membresía.</div>';
     return;
   }
 
@@ -2037,7 +2142,7 @@ async function loadSelectedCustomerMemberships() {
   }
 
   clearMembershipCustomerMembershipMessages();
-  elements.membershipCustomerMembershipsList.innerHTML = '<div class="loading-state">Cargando membresias...</div>';
+  elements.membershipCustomerMembershipsList.innerHTML = '<div class="loading-state">Cargando membresías...</div>';
   elements.reloadCustomerMembershipsButton.disabled = true;
 
   try {
@@ -2056,7 +2161,7 @@ async function submitMembershipActivation() {
   clearMembershipActivationMessages();
 
   if (!selectedMembershipCustomer) {
-    showMembershipActivationError("Selecciona un cliente antes de pagar la membresia.");
+    showMembershipActivationError("Selecciona un cliente antes de activar la membresía.");
     return;
   }
 
@@ -2073,7 +2178,7 @@ async function submitMembershipActivation() {
     await api.createCustomerMembership(selectedMembershipCustomer.id, payload);
     await loadSelectedCustomerMemberships();
     await loadOperationMembershipPanel();
-    showMembershipOperationStatus("Membresia pagada.");
+    showMembershipOperationStatus("Membresía activada.");
   } catch (error) {
     renderMembershipActivationError(error);
   } finally {
@@ -2229,12 +2334,12 @@ async function submitCompanyRegistrationRequest() {
 
   if (logoValidationMessage) {
     elements.registrationLogoFileError.textContent = logoValidationMessage;
-    showCompanyRegistrationError("Revisa el logo antes de enviar la solicitud.");
+    showCompanyRegistrationError("Revisa el logo antes de enviar los datos.");
     return;
   }
 
   setCompanyRegistrationSubmitting(true);
-  const stopLoading = startGlobalLoading("Estamos enviando la solicitud...");
+  const stopLoading = startGlobalLoading("Estamos enviando los datos...");
 
   const payload = {
     companyName: elements.registrationCompanyNameInput.value,
@@ -2263,14 +2368,14 @@ async function submitAdminToken() {
   const nextToken = elements.adminTokenInput.value.trim();
 
   if (!nextToken) {
-    elements.adminTokenError.textContent = "Ingresa el token interno para cargar solicitudes.";
+    elements.adminTokenError.textContent = "Ingresa el token interno para cargar empresas por activar.";
     showAdminGlobalError("Token interno requerido.");
     return;
   }
 
   adminToken = nextToken;
   elements.adminTokenInput.value = "";
-  showAdminTokenStatus("Acceso interno activo en esta pestana.");
+  showAdminTokenStatus("Acceso interno activo en esta pestaña.");
   updateAdminAccessState();
   await loadAdminRequests();
 }
@@ -2291,14 +2396,14 @@ async function loadAdminRequests() {
 
   if (!adminToken) {
     renderAdminPrompt();
-    elements.adminTokenError.textContent = "Ingresa el token interno para cargar solicitudes.";
-    showAdminGlobalError("Ingresa el token interno para cargar solicitudes.");
+    elements.adminTokenError.textContent = "Ingresa el token interno para cargar empresas por activar.";
+    showAdminGlobalError("Ingresa el token interno para cargar empresas por activar.");
     return;
   }
 
   setAdminLoading(true);
   renderAdminListLoading();
-  const stopLoading = startGlobalLoading("Estamos cargando solicitudes...");
+  const stopLoading = startGlobalLoading("Estamos cargando empresas...");
 
   try {
     const result = await api.listCompanyRegistrationRequests(
@@ -2312,7 +2417,7 @@ async function loadAdminRequests() {
     selectedAdminRequest = reconcileSelectedAdminRequest(selectedAdminRequest, adminRequests);
     renderAdminRequestsList();
     renderAdminDetail();
-    showAdminListStatus(`Solicitudes cargadas: ${formatReportNumber(adminRequests.length)}.`);
+    showAdminListStatus(`Empresas cargadas: ${formatReportNumber(adminRequests.length)}.`);
   } catch (error) {
     if (isAdminPermissionError(error)) {
       adminToken = "";
@@ -2332,19 +2437,19 @@ async function loadAdminRequests() {
 
 async function approveSelectedAdminRequest() {
   if (!selectedAdminRequest || !adminToken) {
-    showAdminDetailError("Selecciona una solicitud y confirma el token interno.");
+    showAdminDetailError("Selecciona una empresa y confirma el token interno.");
     return;
   }
 
   if (selectedAdminRequest.status !== "pending") {
-    showAdminDetailError("Esta solicitud ya fue procesada. Actualice la lista.");
+    showAdminDetailError("Esta empresa ya fue procesada. Actualiza la lista.");
     return;
   }
 
   const confirmed = await requestAdminConfirmation({
-    title: "Aprobar solicitud",
-    message: `Vas a aprobar la solicitud de ${selectedAdminRequest.companyName || "esta empresa"} y enviar una invitacion al correo ${selectedAdminRequest.companyEmail || "registrado"}.`,
-    confirmLabel: "Aprobar y enviar",
+    title: "Activar empresa",
+    message: `Vas a activar ${selectedAdminRequest.companyName || "esta empresa"} y enviar un acceso al correo ${selectedAdminRequest.companyEmail || "registrado"}.`,
+    confirmLabel: "Activar y enviar",
   });
   if (!confirmed) {
     return;
@@ -2352,12 +2457,12 @@ async function approveSelectedAdminRequest() {
 
   clearAdminMessages({ keepTokenStatus: true });
   setAdminActionLoading(true, "approve");
-  const stopLoading = startGlobalLoading("Estamos aprobando la solicitud...");
+  const stopLoading = startGlobalLoading("Estamos activando la empresa...");
 
   try {
     const result = await api.approveCompanyRegistrationRequest(
       selectedAdminRequest.id,
-      { reviewNote: "Aprobada desde panel interno." },
+      { reviewNote: "Activada desde panel interno." },
       adminToken,
     );
     selectedAdminRequest = {
@@ -2369,7 +2474,7 @@ async function approveSelectedAdminRequest() {
       companyName: selectedAdminRequest.companyName,
     };
     await loadAdminRequests();
-    showAdminDetailStatus(`Solicitud aprobada. La invitacion fue enviada a ${selectedAdminRequest.companyEmail}.`);
+    showAdminDetailStatus(`Empresa activada. El acceso fue enviado a ${selectedAdminRequest.companyEmail}.`);
   } catch (error) {
     renderAdminActionError(error);
   } finally {
@@ -2380,12 +2485,12 @@ async function approveSelectedAdminRequest() {
 
 async function rejectSelectedAdminRequest() {
   if (!selectedAdminRequest || !adminToken) {
-    showAdminDetailError("Selecciona una solicitud y confirma el token interno.");
+    showAdminDetailError("Selecciona una empresa y confirma el token interno.");
     return;
   }
 
   if (selectedAdminRequest.status !== "pending") {
-    showAdminDetailError("Esta solicitud ya fue procesada. Actualice la lista.");
+    showAdminDetailError("Esta empresa ya fue procesada. Actualiza la lista.");
     return;
   }
 
@@ -2393,15 +2498,15 @@ async function rejectSelectedAdminRequest() {
   const reviewNote = noteInput?.value.trim() || "";
 
   if (!reviewNote) {
-    showAdminDetailError("Ingresa un motivo para rechazar la solicitud.");
+    showAdminDetailError("Ingresa una nota interna para continuar.");
     noteInput?.focus();
     return;
   }
 
   const confirmed = await requestAdminConfirmation({
-    title: "Rechazar solicitud",
-    message: "Vas a rechazar esta solicitud. El motivo quedara como referencia interna.",
-    confirmLabel: "Rechazar",
+    title: "No continuar",
+    message: "Vas a marcar esta empresa como no continuada. La nota queda como referencia interna.",
+    confirmLabel: "No continuar",
     danger: true,
   });
   if (!confirmed) {
@@ -2410,7 +2515,7 @@ async function rejectSelectedAdminRequest() {
 
   clearAdminMessages({ keepTokenStatus: true });
   setAdminActionLoading(true, "reject");
-  const stopLoading = startGlobalLoading("Estamos rechazando la solicitud...");
+  const stopLoading = startGlobalLoading("Estamos guardando la nota interna...");
 
   try {
     const result = await api.rejectCompanyRegistrationRequest(
@@ -2425,7 +2530,7 @@ async function rejectSelectedAdminRequest() {
       reviewNote,
     };
     await loadAdminRequests();
-    showAdminDetailStatus("Solicitud rechazada.");
+    showAdminDetailStatus("Empresa marcada como no continuada.");
   } catch (error) {
     renderAdminActionError(error);
   } finally {
@@ -2438,18 +2543,18 @@ async function resendSelectedAdminInvitation() {
   const invitation = selectedAdminRequest?.invitation;
 
   if (!invitation || !adminToken) {
-    showAdminDetailError("No hay una invitacion pendiente para reenviar.");
+    showAdminDetailError("No hay un acceso pendiente para reenviar.");
     return;
   }
 
   if (invitation.status === "accepted") {
-    showAdminDetailError("La invitacion ya fue aceptada. No es necesario reenviarla.");
+    showAdminDetailError("El acceso ya fue creado. No es necesario reenviarlo.");
     return;
   }
 
   const confirmed = await requestAdminConfirmation({
-    title: "Reenviar invitacion",
-    message: `Se reenviara la invitacion al correo ${invitation.email || selectedAdminRequest.companyEmail}. No se mostrara el link en pantalla.`,
+    title: "Reenviar acceso",
+    message: `Se reenviará el acceso al correo ${invitation.email || selectedAdminRequest.companyEmail}. No se mostrará el enlace en pantalla.`,
     confirmLabel: "Reenviar",
   });
   if (!confirmed) {
@@ -2458,7 +2563,7 @@ async function resendSelectedAdminInvitation() {
 
   clearAdminMessages({ keepTokenStatus: true });
   setAdminActionLoading(true, "resend");
-  const stopLoading = startGlobalLoading("Estamos reenviando la invitacion...");
+  const stopLoading = startGlobalLoading("Estamos reenviando el acceso...");
 
   try {
     const result = await api.resendCompanyInvitation(invitation.id, adminToken);
@@ -2471,7 +2576,7 @@ async function resendSelectedAdminInvitation() {
       },
     };
     await loadAdminRequests();
-    showAdminDetailStatus(`Invitacion reenviada a ${result.email || invitation.email}.`);
+    showAdminDetailStatus(`Acceso reenviado a ${result.email || invitation.email}.`);
   } catch (error) {
     renderAdminActionError(error);
   } finally {
@@ -2490,7 +2595,7 @@ async function sendSelectedAdminPasswordReset() {
 
   const confirmed = await requestAdminConfirmation({
     title: "Enviar reset de acceso",
-    message: `Se enviara un correo para restablecer la contraseña de ${email}. No se mostrara el enlace en pantalla.`,
+    message: `Se enviará un correo para restablecer la contraseña de ${email}. No se mostrará el enlace en pantalla.`,
     confirmLabel: "Enviar reset",
   });
   if (!confirmed) {
@@ -2590,7 +2695,7 @@ async function submitCreateAccess() {
 async function submitCompanyLogin() {
   clearLoginMessages();
   setLoginSubmitting(true);
-  const stopLoading = startGlobalLoading("Estamos iniciando sesion...");
+  const stopLoading = startGlobalLoading("Estamos accediendo a tu panel...");
 
   try {
     const identity = await api.loginCompany({
@@ -2614,8 +2719,8 @@ async function submitPasswordResetRequest() {
   const email = elements.passwordResetEmailInput.value.trim();
 
   if (!isEmail(email)) {
-    elements.passwordResetEmailError.textContent = "Ingresa un correo valido.";
-    showPasswordResetRequestError("Revise los datos ingresados.");
+    elements.passwordResetEmailError.textContent = "Ingresa un correo válido.";
+    showPasswordResetRequestError("Revisa los datos ingresados.");
     return;
   }
 
@@ -2625,7 +2730,7 @@ async function submitPasswordResetRequest() {
   try {
     await api.requestCompanyPasswordReset({ email });
     showPasswordResetRequestStatus(
-      "Si el correo esta registrado, enviaremos instrucciones para restablecer la contraseña.",
+      "Si el correo está registrado, enviaremos instrucciones para restablecer la contraseña.",
     );
   } catch (error) {
     renderPasswordResetRequestError(error);
@@ -2651,11 +2756,11 @@ async function submitPasswordResetComplete() {
       password: elements.newPasswordInput.value,
     });
     elements.passwordResetForm.hidden = true;
-    showPasswordResetStatus("Contraseña actualizada. Ya puedes iniciar sesion con tu nuevo acceso.");
+    showPasswordResetStatus("Contraseña actualizada. Ya puedes acceder a tu panel con tu nuevo acceso.");
     window.history.replaceState({}, "", "/login");
     window.requestAnimationFrame(() => {
       showLoginPage();
-      showLoginStatus("Contraseña actualizada. Inicia sesion con tu nuevo acceso.");
+      showLoginStatus("Contraseña actualizada. Accede a tu panel con tu nuevo acceso.");
     });
   } catch (error) {
     renderPasswordResetCompleteError(error);
@@ -2681,7 +2786,7 @@ async function refreshAuthIdentity(options = {}) {
     renderSignedOut();
 
     if (!options.silent && error instanceof ApiError && error.code === "UNAUTHORIZED") {
-      showLoginError("Su sesion expiro. Inicie sesion nuevamente.");
+      showLoginError("Tu sesión expiró. Accede nuevamente a tu panel.");
     }
 
     return null;
@@ -2699,7 +2804,7 @@ async function logoutCompany() {
   renderSignedOut();
   showLoginPage({ replaceRoute: true });
   clearLoginMessages();
-  showLoginStatus("Sesion cerrada.");
+  showLoginStatus("Sesión cerrada.");
 }
 
 function renderSelectedCustomer() {
@@ -2743,7 +2848,7 @@ function renderSelectedCustomer() {
         ${
           membershipsEnabled
             ? `<div class="points-badge strong">
-                <span>Membresia</span>
+                <span>Membresía</span>
                 <strong>${selectedCustomerActiveMembership ? escapeHtml(getCustomerMembershipStatusLabel(selectedCustomerActiveMembership.status)) : "Sin activa"}</strong>
               </div>`
             : ""
@@ -2758,14 +2863,14 @@ function renderSelectedCustomer() {
     <div class="profile-actions">
       ${
         pointsEnabled
-          ? `<button type="button" data-icon="+" data-profile-action="purchase">Registrar compra</button>
-             <button class="secondary-button" type="button" data-icon="⌕" data-profile-action="history">Ver historial</button>
-             ${canRedeem ? '<button class="secondary-button" type="button" data-icon="★" data-profile-action="redemption">Redimir puntos</button>' : ""}`
+          ? `<button type="button" data-icon="receipt" data-profile-action="purchase">Registrar compra</button>
+             <button class="secondary-button" type="button" data-icon="clipboard-list" data-profile-action="history">Ver historial</button>
+             ${canRedeem ? '<button class="secondary-button" type="button" data-icon="gift" data-profile-action="redemption">Redimir puntos</button>' : ""}`
           : ""
       }
       ${
         membershipsEnabled
-          ? `<button class="secondary-button" type="button" data-icon="★" data-profile-membership-action="payment">${membershipAction}</button>`
+          ? `<button class="secondary-button" type="button" data-icon="crown" data-profile-membership-action="payment">${membershipAction}</button>`
           : ""
       }
     </div>
@@ -2831,7 +2936,7 @@ function renderHistoryError(error) {
     isAuthRequiredError(error)
       ? getAuthRequiredMessage()
       : error instanceof ApiError && error.code === "CUSTOMER_NOT_FOUND"
-      ? "El cliente seleccionado ya no esta disponible."
+      ? "El cliente seleccionado ya no está disponible."
       : "No pudimos cargar el historial. Intenta de nuevo.";
   elements.historySummary.innerHTML = "";
   elements.historyList.innerHTML = "";
@@ -2840,14 +2945,14 @@ function renderHistoryError(error) {
 }
 
 function renderOperationMembershipLoading() {
-  elements.membershipOperationActive.innerHTML = '<div class="loading-state">Cargando membresia...</div>';
+  elements.membershipOperationActive.innerHTML = '<div class="loading-state">Cargando membresía...</div>';
   elements.membershipOperationBenefits.innerHTML = "";
   elements.membershipOperationUsages.innerHTML = "";
   elements.membershipOperationTransactions.innerHTML = "";
 }
 
 function renderOperationMembershipDisabled() {
-  elements.membershipOperationActive.innerHTML = '<div class="empty-state">Membresias no esta habilitado para esta empresa.</div>';
+  elements.membershipOperationActive.innerHTML = '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
   elements.membershipOperationBenefits.innerHTML = "";
   elements.membershipOperationUsages.innerHTML = "";
   elements.membershipOperationTransactions.innerHTML = "";
@@ -2881,7 +2986,7 @@ function renderOperationMembershipPanel() {
     <article class="membership-card membership-operation-card">
       <div>
         <div class="membership-card-title">
-          <h3>${escapeHtml(selectedCustomerActiveMembership.planName || selectedCustomerActiveMembership.plan?.name || "Membresia")}</h3>
+          <h3>${escapeHtml(selectedCustomerActiveMembership.planName || selectedCustomerActiveMembership.plan?.name || "Membresía")}</h3>
           <span class="status-pill">${getCustomerMembershipStatusLabel(selectedCustomerActiveMembership.status)}</span>
         </div>
         <p>${escapeHtml(getExpirationAlertLabel(alert))}</p>
@@ -2893,7 +2998,7 @@ function renderOperationMembershipPanel() {
       ${
         canRenew
           ? `<div class="membership-actions">
-              <button class="secondary-button" type="button" data-icon="↻" data-membership-renew-action="open">Renovar membresia</button>
+              <button class="secondary-button" type="button" data-icon="refresh" data-membership-renew-action="open">Renovar membresía</button>
             </div>`
           : ""
       }
@@ -2903,7 +3008,7 @@ function renderOperationMembershipPanel() {
   if (canUseBenefits) {
     renderOperationMembershipBenefits();
   } else {
-    elements.membershipOperationBenefits.innerHTML = '<div class="empty-state">Renueva la membresia antes de aplicar beneficios.</div>';
+    elements.membershipOperationBenefits.innerHTML = '<div class="empty-state">Renueva la membresía antes de aplicar beneficios.</div>';
   }
   renderOperationMembershipUsages();
   renderOperationMembershipTransactions();
@@ -2928,11 +3033,11 @@ function renderOperationMembershipBenefits() {
           <div class="membership-meta">
             <span>${escapeHtml(benefit.appliesToName || getAppliesToTypeLabel(benefit.appliesToType))}</span>
             <span>${escapeHtml(getUsagePeriodLabel(benefit.usagePeriod))}</span>
-            ${benefit.usageLimit ? `<span>Limite ${formatReportNumber(benefit.usageLimit)}</span>` : "<span>Sin limite</span>"}
+            ${benefit.usageLimit ? `<span>Límite ${formatReportNumber(benefit.usageLimit)}</span>` : "<span>Sin límite</span>"}
           </div>
         </div>
         <div class="membership-actions">
-          <button class="secondary-button" type="button" data-icon="★" data-membership-usage-benefit-id="${escapeHtml(benefit.id)}">Aplicar beneficio</button>
+          <button class="secondary-button" type="button" data-icon="gift" data-membership-usage-benefit-id="${escapeHtml(benefit.id)}">Aplicar beneficio</button>
         </div>
       </article>
     `)
@@ -2965,7 +3070,7 @@ function renderOperationMembershipTransactions() {
     return;
   }
 
-  const header = '<h3 class="section-subtitle">Transacciones de membresia</h3>';
+  const header = '<h3 class="section-subtitle">Transacciones de membresía</h3>';
   elements.membershipOperationTransactions.innerHTML = `
     ${header}
     ${selectedCustomerMembershipTransactions
@@ -2975,7 +3080,7 @@ function renderOperationMembershipTransactions() {
           <div>
             <h3>${escapeHtml(getMembershipTransactionTypeLabel(transaction.transactionType))}</h3>
             <p>${formatDate(transaction.transactionDate)} - ${escapeHtml(getPaymentMethodLabel(transaction.paymentMethod))}</p>
-            <p>${escapeHtml(transaction.planName || transaction.note || "Membresia")}</p>
+            <p>${escapeHtml(transaction.planName || transaction.note || "Membresía")}</p>
           </div>
           <strong class="history-points">${formatMoney(transaction.amount)}</strong>
         </article>
@@ -3014,7 +3119,7 @@ function openMembershipBenefitUsageConfirmation(benefitId) {
   elements.membershipBenefitUsageSummary.innerHTML = `
     <div><strong>${escapeHtml(benefit.name)}</strong></div>
     <div>${escapeHtml(getMembershipBenefitSummary(benefit))}</div>
-    <div>Plan: ${escapeHtml(selectedCustomerActiveMembership.planName || "Membresia activa")}</div>
+    <div>Plan: ${escapeHtml(selectedCustomerActiveMembership.planName || "Membresía activa")}</div>
   `;
   elements.membershipBenefitUsageForm.hidden = false;
   elements.membershipBenefitUsageDateInput.focus();
@@ -3023,8 +3128,8 @@ function openMembershipBenefitUsageConfirmation(benefitId) {
 function renderOperationMembershipError(error) {
   const message = isAuthRequiredError(error)
     ? getAuthRequiredMessage()
-    : "No pudimos cargar la membresia activa del cliente.";
-  elements.membershipOperationActive.innerHTML = '<div class="empty-state">Membresia no disponible.</div>';
+    : "No pudimos cargar la membresía activa del cliente.";
+  elements.membershipOperationActive.innerHTML = '<div class="empty-state">Membresía no disponible.</div>';
   elements.membershipOperationBenefits.innerHTML = "";
   elements.membershipOperationUsages.innerHTML = "";
   elements.membershipOperationTransactions.innerHTML = "";
@@ -3073,7 +3178,7 @@ function renderReport(report) {
       <strong>${formatReportNumber(summary.redemptionCount)}</strong>
     </div>
     <div>
-      <span>Membresias</span>
+      <span>Membresías</span>
       <strong>${formatReportNumber(summary.membershipCount)}</strong>
     </div>
     <div>
@@ -3126,7 +3231,7 @@ function renderReportDetail(item) {
   }
 
   if (item.type === "membership") {
-    const label = item.planName ? `Membresia: ${item.planName}` : (item.note || "Evento de membresia");
+    const label = item.planName ? `Membresía: ${item.planName}` : (item.note || "Evento de membresía");
     const amount = Number.isFinite(Number(item.amount)) ? `<span>${formatMoney(item.amount)}</span>` : "";
     return `${escapeHtml(label)}${amount}`;
   }
@@ -3199,8 +3304,8 @@ function renderCustomerReport(report) {
     elements.customerReportSummary.hidden = true;
     elements.customerReportSummary.innerHTML = "";
     elements.customerReportEmpty.hidden = false;
-    elements.customerReportEmpty.textContent = "No encontramos un cliente con ese dato. Revisa telefono, nombre o correo.";
-    showCustomerReportStatus("Sin cliente encontrado para la busqueda.");
+    elements.customerReportEmpty.textContent = "No encontramos un cliente con ese dato. Revisa teléfono, nombre o correo.";
+    showCustomerReportStatus("Sin cliente encontrado para la búsqueda.");
     return;
   }
 
@@ -3208,12 +3313,12 @@ function renderCustomerReport(report) {
     elements.customerReportSummary.hidden = true;
     elements.customerReportSummary.innerHTML = "";
     elements.customerReportEmpty.hidden = false;
-    elements.customerReportEmpty.textContent = "Hay varios clientes posibles. Refina la busqueda con telefono o correo exacto.";
+    elements.customerReportEmpty.textContent = "Hay varios clientes posibles. Refina la búsqueda con teléfono o correo exacto.";
     elements.customerReportCandidates.hidden = false;
     elements.customerReportCandidates.innerHTML = (report.candidates || []).map((candidate) => `
       <div>
         <strong>${escapeHtml(candidate.name || "Cliente sin nombre")}</strong>
-        <span>${escapeHtml(candidate.phone || "Sin telefono")} · ${escapeHtml(candidate.email || "Sin correo")}</span>
+        <span>${escapeHtml(candidate.phone || "Sin teléfono")} · ${escapeHtml(candidate.email || "Sin correo")}</span>
       </div>
     `).join("");
     showCustomerReportStatus(`Coincidencias encontradas: ${formatReportNumber((report.candidates || []).length)}.`);
@@ -3243,7 +3348,7 @@ function renderCustomerReport(report) {
       <strong>${formatReportNumber(summary.pointsRedeemedTotal)}</strong>
     </div>
     <div>
-      <span>Membresias</span>
+      <span>Membresías</span>
       <strong>${formatReportNumber(summary.membershipCount)}</strong>
     </div>
     <div>
@@ -3269,7 +3374,7 @@ function renderCustomerReportError(error) {
   renderCustomerReportPrompt();
 
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
-    showCustomerReportError("Revisa busqueda, rango de fechas y tipo de reporte.");
+    showCustomerReportError("Revisa búsqueda, rango de fechas y tipo de reporte.");
     return;
   }
 
@@ -3299,7 +3404,7 @@ function renderMembershipFinancialReportLoading() {
   elements.membershipFinancialPaymentSummary.hidden = true;
   elements.membershipFinancialReportTableWrap.hidden = true;
   elements.membershipFinancialReportEmpty.hidden = false;
-  elements.membershipFinancialReportEmpty.textContent = "Cargando reporte de membresias...";
+  elements.membershipFinancialReportEmpty.textContent = "Cargando reporte de membresías...";
   elements.exportMembershipFinancialReportButton.disabled = true;
 }
 
@@ -3310,7 +3415,7 @@ function renderMembershipFinancialReport(report) {
   elements.membershipFinancialReportSummary.hidden = false;
   elements.membershipFinancialReportSummary.innerHTML = `
     <div>
-      <span>Membresias nuevas</span>
+      <span>Membresías nuevas</span>
       <strong>${formatReportNumber(summary.newMembershipCount)}</strong>
     </div>
     <div>
@@ -3331,7 +3436,7 @@ function renderMembershipFinancialReport(report) {
   elements.membershipFinancialPaymentSummary.hidden = false;
   elements.membershipFinancialPaymentSummary.innerHTML = `
     <div>
-      <span>Monto por metodo de pago</span>
+      <span>Monto por método de pago</span>
       <strong>${paymentMethods.length ? formatReportNumber(paymentMethods.length) : "0"}</strong>
     </div>
     ${paymentMethods
@@ -3346,7 +3451,7 @@ function renderMembershipFinancialReport(report) {
 
   if (!items.length) {
     elements.membershipFinancialReportEmpty.hidden = false;
-    elements.membershipFinancialReportEmpty.textContent = "Sin transacciones de membresia para el rango seleccionado.";
+    elements.membershipFinancialReportEmpty.textContent = "Sin transacciones de membresía para el rango seleccionado.";
     elements.membershipFinancialReportTableWrap.hidden = true;
     elements.membershipFinancialReportTableBody.innerHTML = "";
     elements.exportMembershipFinancialReportButton.disabled = true;
@@ -3357,7 +3462,7 @@ function renderMembershipFinancialReport(report) {
   elements.membershipFinancialReportTableWrap.hidden = false;
   elements.membershipFinancialReportTableBody.innerHTML = items.map(renderMembershipFinancialReportRow).join("");
   elements.exportMembershipFinancialReportButton.disabled = false;
-  showMembershipFinancialReportStatus(`Reporte de membresias cargado: ${formatReportNumber(items.length)} transacciones.`);
+  showMembershipFinancialReportStatus(`Reporte de membresías cargado: ${formatReportNumber(items.length)} transacciones.`);
 }
 
 function renderMembershipFinancialReportRow(item) {
@@ -3368,7 +3473,7 @@ function renderMembershipFinancialReportRow(item) {
         <strong>${escapeHtml(item.customerName || "Cliente sin nombre")}</strong>
         <span>${escapeHtml(item.customerPhone || item.customerEmail || "Sin contacto")}</span>
       </td>
-      <td>${escapeHtml(item.planName || "Membresia")}</td>
+      <td>${escapeHtml(item.planName || "Membresía")}</td>
       <td>${escapeHtml(getMembershipTransactionTypeLabel(item.transactionType))}</td>
       <td>${escapeHtml(getPaymentMethodLabel(item.paymentMethod))}</td>
       <td>${formatMoney(item.amount)}</td>
@@ -3382,7 +3487,7 @@ function renderMembershipFinancialReportError(error) {
   elements.membershipFinancialReportTableWrap.hidden = true;
   elements.membershipFinancialReportTableBody.innerHTML = "";
   elements.membershipFinancialReportEmpty.hidden = false;
-  elements.membershipFinancialReportEmpty.textContent = "No hay reporte de membresias cargado.";
+  elements.membershipFinancialReportEmpty.textContent = "No hay reporte de membresías cargado.";
   elements.exportMembershipFinancialReportButton.disabled = true;
 
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
@@ -3395,7 +3500,7 @@ function renderMembershipFinancialReportError(error) {
     return;
   }
 
-  showMembershipFinancialReportError("No pudimos cargar el reporte de membresias.");
+  showMembershipFinancialReportError("No pudimos cargar el reporte de membresías.");
 }
 
 function renderAuditPrompt() {
@@ -3410,7 +3515,7 @@ function renderAuditPrompt() {
 function renderAuditLoading() {
   elements.auditTableWrap.hidden = true;
   elements.auditEmpty.hidden = false;
-  elements.auditEmpty.textContent = "Cargando auditoria...";
+  elements.auditEmpty.textContent = "Cargando historial...";
   elements.exportAuditButton.disabled = true;
 }
 
@@ -3430,7 +3535,7 @@ function renderAuditEvents(result) {
   elements.auditTableWrap.hidden = false;
   elements.auditTableBody.innerHTML = items.map((item) => renderAuditRow(item)).join("");
   elements.exportAuditButton.disabled = false;
-  showAuditStatus(`Auditoria cargada: ${formatReportNumber(items.length)} eventos.`);
+  showAuditStatus(`Historial cargado: ${formatReportNumber(items.length)} eventos.`);
 }
 
 function renderAuditRow(item) {
@@ -3458,11 +3563,11 @@ function renderAuditError(error) {
   elements.auditTableWrap.hidden = true;
   elements.auditTableBody.innerHTML = "";
   elements.auditEmpty.hidden = false;
-  elements.auditEmpty.textContent = "No hay auditoria cargada.";
+  elements.auditEmpty.textContent = "No hay historial cargado.";
   elements.exportAuditButton.disabled = true;
 
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
-    showAuditError("Revisa el rango de fechas y el limite de eventos.");
+    showAuditError("Revisa el rango de fechas y el límite de eventos.");
     return;
   }
 
@@ -3472,7 +3577,7 @@ function renderAuditError(error) {
   }
 
   showAuditError(
-    "No pudimos consultar auditoria. Revisa el rango e intenta de nuevo despues del deploy.",
+    "No pudimos consultar el historial. Revisa el rango e intenta de nuevo despues del deploy.",
   );
 }
 
@@ -3517,19 +3622,19 @@ function getDefaultLoyaltySection() {
 }
 
 function renderMembershipDisabled() {
-  elements.membershipPlansList.innerHTML = '<div class="empty-state">Membresias no esta habilitado para esta empresa.</div>';
-  elements.membershipBenefitsContext.textContent = "Habilita membresias para configurar beneficios.";
+  elements.membershipPlansList.innerHTML = '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
+  elements.membershipBenefitsContext.textContent = "Habilita membresías para configurar beneficios.";
   elements.membershipBenefitsList.innerHTML = '<div class="empty-state">Selecciona un plan para gestionar sus beneficios.</div>';
-  elements.membershipCustomerResults.innerHTML = '<div class="empty-state">Membresias no esta habilitado para esta empresa.</div>';
-  elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Selecciona un cliente para ver sus membresias.</div>';
-  elements.membershipExpiringList.innerHTML = '<div class="empty-state">Membresias no esta habilitado para esta empresa.</div>';
-  elements.membershipExpiredList.innerHTML = '<div class="empty-state">Membresias no esta habilitado para esta empresa.</div>';
+  elements.membershipCustomerResults.innerHTML = '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
+  elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Selecciona un cliente para ver sus membresías.</div>';
+  elements.membershipExpiringList.innerHTML = '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
+  elements.membershipExpiredList.innerHTML = '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
   membershipExpirationAlerts = { active: [], expired: [] };
   renderMembershipActivationPlanOptions();
 }
 
 function renderMembershipExpirationLoading() {
-  elements.membershipExpiringList.innerHTML = '<div class="loading-state">Cargando proximas a vencer...</div>';
+  elements.membershipExpiringList.innerHTML = '<div class="loading-state">Cargando próximas a vencer...</div>';
   elements.membershipExpiredList.innerHTML = '<div class="loading-state">Cargando vencidas...</div>';
 }
 
@@ -3539,10 +3644,10 @@ function renderMembershipExpirationAlerts() {
 
   elements.membershipExpiringList.innerHTML = activeItems.length
     ? activeItems.map(renderMembershipExpirationCard).join("")
-    : '<div class="empty-state">No hay membresias proximas a vencer para este periodo.</div>';
+    : '<div class="empty-state">No hay membresías próximas a vencer para este periodo.</div>';
   elements.membershipExpiredList.innerHTML = expiredItems.length
     ? expiredItems.map(renderMembershipExpirationCard).join("")
-    : '<div class="empty-state">No hay membresias vencidas para este periodo.</div>';
+    : '<div class="empty-state">No hay membresías vencidas para este periodo.</div>';
 }
 
 function renderMembershipExpirationCard(item) {
@@ -3553,7 +3658,7 @@ function renderMembershipExpirationCard(item) {
           <h3>${escapeHtml(item.customerName || "Cliente sin nombre")}</h3>
           <span class="status-pill">${escapeHtml(getMembershipExpirationStateLabel(item))}</span>
         </div>
-        <p>${escapeHtml(item.planName || "Membresia")}</p>
+        <p>${escapeHtml(item.planName || "Membresía")}</p>
         <div class="membership-meta">
           <span>Inicio ${formatDate(item.startDate)}</span>
           <span>Vence ${formatDate(item.endDate)}</span>
@@ -3574,21 +3679,21 @@ function renderMembershipExpirationError(error) {
   }
 
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
-    showMembershipExpirationError("Revisa los dias antes de vencer.");
+    showMembershipExpirationError("Revisa los días antes de vencer.");
     return;
   }
 
-  showMembershipExpirationError("No pudimos cargar las alertas de membresias.");
+  showMembershipExpirationError("No pudimos cargar las alertas de membresías.");
 }
 
 function renderMembershipPlansLoading() {
-  elements.membershipPlansList.innerHTML = '<div class="loading-state">Cargando planes de membresia...</div>';
+  elements.membershipPlansList.innerHTML = '<div class="loading-state">Cargando planes de membresía...</div>';
 }
 
 function renderMembershipPlans() {
   if (!membershipPlans.length) {
     elements.membershipPlansList.innerHTML = renderMembershipEmptyState({
-      title: "No existen planes de membresia",
+      title: "No existen planes de membresía",
       text: "Crea un plan para empezar a ofrecer beneficios a tus clientes.",
       action: "Crear plan",
       actionAttribute: "data-membership-plan-action=\"create\"",
@@ -3633,7 +3738,7 @@ function syncMembershipActivationPlanFields() {
 
 function renderMembershipCustomerResults() {
   if (!membershipCustomerResults.length) {
-    elements.membershipCustomerResults.innerHTML = '<div class="empty-state">No encontramos clientes con esa busqueda. Puedes registrarlo desde Atender cliente.</div>';
+    elements.membershipCustomerResults.innerHTML = '<div class="empty-state">No encontramos clientes con esa búsqueda. Puedes registrarlo desde Atender cliente.</div>';
     return;
   }
 
@@ -3644,12 +3749,12 @@ function renderMembershipCustomerResults() {
           <h3>${escapeHtml(customer.name)}</h3>
         </div>
         <div class="membership-meta">
-          <span>${escapeHtml(customer.phone || "Sin telefono")}</span>
+          <span>${escapeHtml(customer.phone || "Sin teléfono")}</span>
           <span>${escapeHtml(customer.email || "Sin correo")}</span>
         </div>
       </div>
       <div class="membership-actions">
-        <button class="secondary-button" type="button" data-icon="→" data-membership-customer-id="${escapeHtml(customer.id)}">Seleccionar</button>
+        <button class="secondary-button" type="button" data-icon="arrow-right" data-membership-customer-id="${escapeHtml(customer.id)}">Seleccionar</button>
       </div>
     </article>
   `).join("");
@@ -3708,19 +3813,19 @@ function renderMembershipActivationPreview() {
   const expectedEndDate = startDate ? calculateExpectedMembershipEndDate(startDate, plan.durationDays) : null;
   elements.membershipActivationPreview.innerHTML = `
     <div><strong>${escapeHtml(plan.name)}</strong></div>
-    <div>Duracion: ${formatReportNumber(plan.durationDays)} dias</div>
+    <div>Duracion: ${formatReportNumber(plan.durationDays)} días</div>
     <div>Precio: ${formatMoney(elements.membershipActivationPricePaidInput.value || plan.price)}</div>
     <div>Vence: ${expectedEndDate ? formatDate(expectedEndDate) : "Selecciona fecha de inicio"}</div>
   `;
 }
 
 function renderCustomerMembershipsPrompt() {
-  elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Selecciona un cliente para ver sus membresias.</div>';
+  elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Selecciona un cliente para ver sus membresías.</div>';
 }
 
 function renderCustomerMemberships() {
   if (!selectedCustomerMemberships.length) {
-    elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Este cliente no tiene una membresia activa. Puedes pagar una membresia para activar sus beneficios.</div>';
+    elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Este cliente no tiene una membresía activa. Puedes activar una membresía para habilitar sus beneficios.</div>';
     return;
   }
 
@@ -3735,7 +3840,7 @@ function renderCustomerMembershipCard(membership) {
     <article class="membership-card">
       <div>
         <div class="membership-card-title">
-          <h3>${escapeHtml(membership.planName || membership.plan?.name || "Membresia")}</h3>
+          <h3>${escapeHtml(membership.planName || membership.plan?.name || "Membresía")}</h3>
           <span class="status-pill">${getCustomerMembershipStatusLabel(membership.status)}</span>
         </div>
         <p>${escapeHtml(alertLabel)}</p>
@@ -3763,15 +3868,15 @@ function renderMembershipPlanCard(plan) {
         </div>
         <p>${escapeHtml(plan.description || "Sin descripcion")}</p>
         <div class="membership-meta">
-          <span>${formatReportNumber(plan.durationDays)} dias</span>
+          <span>${formatReportNumber(plan.durationDays)} días</span>
           <span>${formatMoney(plan.price)}</span>
           <span>${formatReportNumber(plan.benefitCount || 0)} beneficios</span>
         </div>
       </div>
       <div class="membership-actions">
-        <button class="secondary-button" type="button" data-membership-plan-action="select" data-membership-plan-id="${escapeHtml(plan.id)}">Gestionar beneficios</button>
-        <button class="secondary-button" type="button" data-membership-plan-action="edit" data-membership-plan-id="${escapeHtml(plan.id)}">Editar</button>
-        <button class="secondary-button" type="button" data-membership-plan-action="${statusAction}" data-membership-plan-id="${escapeHtml(plan.id)}">${statusLabel}</button>
+        <button class="secondary-button" type="button" data-icon="gift" data-membership-plan-action="select" data-membership-plan-id="${escapeHtml(plan.id)}">Gestionar beneficios</button>
+        <button class="secondary-button" type="button" data-icon="clipboard-list" data-membership-plan-action="edit" data-membership-plan-id="${escapeHtml(plan.id)}">Editar</button>
+        <button class="secondary-button" type="button" data-icon="${plan.status === "active" ? "circle-minus" : "check"}" data-membership-plan-action="${statusAction}" data-membership-plan-id="${escapeHtml(plan.id)}">${statusLabel}</button>
       </div>
     </article>
   `;
@@ -3781,7 +3886,7 @@ function renderMembershipBenefitsPrompt() {
   elements.membershipBenefitsContext.textContent = "Selecciona un plan para ver o crear sus beneficios.";
   elements.membershipBenefitsList.innerHTML = renderMembershipEmptyState({
     title: "Selecciona un plan",
-    text: "Elige un plan de membresia para ver o crear sus beneficios.",
+    text: "Elige un plan de membresía para ver o crear sus beneficios.",
   });
 }
 
@@ -3797,8 +3902,8 @@ function renderMembershipBenefits() {
 
   if (!membershipBenefits.length) {
     elements.membershipBenefitsList.innerHTML = renderMembershipEmptyState({
-      title: "Este plan aun no tiene beneficios",
-      text: "Agrega beneficios para explicar que incluye la membresia y controlar usos limitados.",
+      title: "Este plan aún no tiene beneficios",
+      text: "Agrega beneficios para explicar que incluye la membresía y controlar usos limitados.",
       action: "Crear beneficio",
       actionAttribute: "data-membership-benefit-action=\"create\"",
     });
@@ -3827,8 +3932,8 @@ function renderMembershipBenefitCard(benefit) {
         </div>
       </div>
       <div class="membership-actions">
-        <button class="secondary-button" type="button" data-membership-benefit-action="edit" data-membership-benefit-id="${escapeHtml(benefit.id)}">Editar</button>
-        <button class="secondary-button" type="button" data-membership-benefit-action="${statusAction}" data-membership-benefit-id="${escapeHtml(benefit.id)}">${statusLabel}</button>
+        <button class="secondary-button" type="button" data-icon="clipboard-list" data-membership-benefit-action="edit" data-membership-benefit-id="${escapeHtml(benefit.id)}">Editar</button>
+        <button class="secondary-button" type="button" data-icon="${benefit.status === "active" ? "circle-minus" : "check"}" data-membership-benefit-action="${statusAction}" data-membership-benefit-id="${escapeHtml(benefit.id)}">${statusLabel}</button>
       </div>
     </article>
   `;
@@ -3836,7 +3941,7 @@ function renderMembershipBenefitCard(benefit) {
 
 function renderMembershipEmptyState({ title, text, action = "", actionAttribute = "" }) {
   const actionButton = action && actionAttribute
-    ? `<button class="secondary-button" type="button" ${actionAttribute}>${escapeHtml(action)}</button>`
+    ? `<button class="secondary-button" type="button" data-icon="plus" ${actionAttribute}>${escapeHtml(action)}</button>`
     : "";
 
   return `
@@ -3856,7 +3961,7 @@ function fillMembershipPlanForm(plan) {
   elements.membershipPlanDurationDaysInput.value = plan.durationDays ?? "";
   elements.membershipPlanPriceInput.value = plan.price ?? "";
   elements.membershipPlanRenewalNoticeDaysInput.value = plan.renewalNoticeDays ?? 5;
-  elements.saveMembershipPlanButton.textContent = "Guardar cambios";
+  setButtonText(elements.saveMembershipPlanButton, "Guardar cambios");
 }
 
 function openMembershipPlanForm(plan = null, options = {}) {
@@ -3865,7 +3970,7 @@ function openMembershipPlanForm(plan = null, options = {}) {
   } else {
     clearMembershipPlanForm({ focus: false });
     elements.membershipPlanForm.hidden = false;
-    elements.saveMembershipPlanButton.textContent = "Guardar plan";
+    setButtonText(elements.saveMembershipPlanButton, "Guardar plan");
   }
 
   if (options.focus !== false) {
@@ -3882,7 +3987,7 @@ function clearMembershipPlanForm(options = {}) {
   elements.membershipPlanForm.reset();
   elements.membershipPlanIdInput.value = "";
   elements.membershipPlanRenewalNoticeDaysInput.value = "5";
-  elements.saveMembershipPlanButton.textContent = "Guardar plan";
+  setButtonText(elements.saveMembershipPlanButton, "Guardar plan");
   clearMembershipPlanMessages();
 
   if (options.focus !== false) {
@@ -3902,7 +4007,7 @@ function fillMembershipBenefitForm(benefit) {
   elements.membershipBenefitIncludedQuantityInput.value = benefit.includedQuantity ?? "";
   elements.membershipBenefitUsageLimitInput.value = benefit.usageLimit ?? "";
   elements.membershipBenefitUsagePeriodInput.value = benefit.usagePeriod || "none";
-  elements.saveMembershipBenefitButton.textContent = "Guardar cambios";
+  setButtonText(elements.saveMembershipBenefitButton, "Guardar cambios");
 }
 
 function openMembershipBenefitForm(benefit = null, options = {}) {
@@ -3916,7 +4021,7 @@ function openMembershipBenefitForm(benefit = null, options = {}) {
   } else {
     clearMembershipBenefitForm({ focus: false });
     elements.membershipBenefitForm.hidden = false;
-    elements.saveMembershipBenefitButton.textContent = "Guardar beneficio";
+    setButtonText(elements.saveMembershipBenefitButton, "Guardar beneficio");
   }
 
   if (options.focus !== false) {
@@ -3935,7 +4040,7 @@ function clearMembershipBenefitForm(options = {}) {
   elements.membershipBenefitTypeInput.value = "informational";
   elements.membershipBenefitAppliesToTypeInput.value = "text";
   elements.membershipBenefitUsagePeriodInput.value = "none";
-  elements.saveMembershipBenefitButton.textContent = "Guardar beneficio";
+  setButtonText(elements.saveMembershipBenefitButton, "Guardar beneficio");
   clearMembershipBenefitMessages();
 
   if (options.focus !== false) {
@@ -3947,7 +4052,7 @@ function renderMembershipPlansError(error) {
   const message = isAuthRequiredError(error) ? getAuthRequiredMessage() : "No se pudieron cargar los planes.";
   elements.membershipPlansList.innerHTML = renderMembershipEmptyState({
     title: "No se pudieron cargar los planes",
-    text: "Intenta de nuevo para continuar configurando membresias.",
+    text: "Intenta de nuevo para continuar configurando membresías.",
     action: "Reintentar",
     actionAttribute: "data-membership-plan-action=\"retry\"",
   });
@@ -3992,29 +4097,29 @@ function renderMembershipCustomerSearchError(error) {
 }
 
 function renderCustomerMembershipsError(error) {
-  const message = isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos cargar las membresias del cliente.";
-  elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Sin membresias cargadas.</div>';
+  const message = isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos cargar las membresías del cliente.";
+  elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Sin membresías cargadas.</div>';
   showMembershipCustomerMembershipsError(message);
 }
 
 function renderMembershipActivationError(error) {
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
     mapMembershipActivationErrors(error.details);
-    showMembershipActivationError("Revisa los campos del pago de membresia.");
+    showMembershipActivationError("Revisa los campos de activación de la membresía.");
     return;
   }
 
   if (error instanceof ApiError && error.code === "CUSTOMER_ALREADY_HAS_ACTIVE_MEMBERSHIP") {
-    showMembershipActivationError("Este cliente ya tiene una membresia activa.");
+    showMembershipActivationError("Este cliente ya tiene una membresía activa.");
     return;
   }
 
   if (error instanceof ApiError && error.code === "MEMBERSHIP_PLAN_INACTIVE") {
-    showMembershipActivationError("Este plan esta inactivo. Activa el plan o selecciona otro.");
+    showMembershipActivationError("Este plan está inactivo. Activa el plan o selecciona otro.");
     return;
   }
 
-  showMembershipActivationError(isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos pagar la membresia. Intenta de nuevo.");
+  showMembershipActivationError(isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos activar la membresía. Intenta de nuevo.");
 }
 
 function renderMembershipBenefitUsageError(error) {
@@ -4025,12 +4130,12 @@ function renderMembershipBenefitUsageError(error) {
   }
 
   if (error instanceof ApiError && error.code === "CUSTOMER_MEMBERSHIP_NOT_ACTIVE") {
-    showMembershipOperationError("Este cliente no tiene una membresia activa. Renueva o paga una membresia antes de aplicar beneficios.");
+    showMembershipOperationError("Este cliente no tiene una membresía activa. Renueva o activa una membresía antes de aplicar beneficios.");
     return;
   }
 
   if (error instanceof ApiError && error.code === "MEMBERSHIP_BENEFIT_INACTIVE") {
-    showMembershipOperationError("Este beneficio esta inactivo.");
+    showMembershipOperationError("Este beneficio está inactivo.");
     return;
   }
 
@@ -4040,7 +4145,7 @@ function renderMembershipBenefitUsageError(error) {
   }
 
   if (error instanceof ApiError && error.code === "MEMBERSHIP_BENEFIT_USAGE_LIMIT_EXCEEDED") {
-    showMembershipOperationError("Este beneficio ya alcanzo su limite de uso para el periodo.");
+    showMembershipOperationError("Este beneficio ya alcanzo su límite de uso para el periodo.");
     return;
   }
 
@@ -4055,16 +4160,16 @@ function renderMembershipRenewalError(error) {
   }
 
   if (error instanceof ApiError && error.code === "CUSTOMER_MEMBERSHIP_CANCELLED") {
-    showMembershipOperationError("No se puede renovar una membresia cancelada.");
+    showMembershipOperationError("No se puede renovar una membresía cancelada.");
     return;
   }
 
   if (error instanceof ApiError && error.code === "CUSTOMER_MEMBERSHIP_NOT_FOUND") {
-    showMembershipOperationError("La membresia seleccionada ya no esta disponible.");
+    showMembershipOperationError("La membresía seleccionada ya no está disponible.");
     return;
   }
 
-  showMembershipOperationError(isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos renovar la membresia. Intenta de nuevo.");
+  showMembershipOperationError(isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos renovar la membresía. Intenta de nuevo.");
 }
 
 function mapMembershipPlanErrors(details = []) {
@@ -4153,7 +4258,7 @@ function renderCompanyLoading() {
   elements.companyForm.hidden = true;
   elements.companyPasswordForm.hidden = true;
   elements.companyEmpty.hidden = false;
-  elements.companyEmpty.textContent = "Cargando configuracion...";
+  elements.companyEmpty.textContent = "Cargando configuración...";
 }
 
 function renderCompanySettings(settings) {
@@ -4195,11 +4300,11 @@ function renderCompanySettingsError(error) {
     elements.companyForm.hidden = true;
     elements.companyPasswordForm.hidden = true;
     elements.companyEmpty.hidden = false;
-    elements.companyEmpty.textContent = "No hay configuracion cargada.";
+    elements.companyEmpty.textContent = "No hay configuración cargada.";
   }
 
   if (error instanceof ApiError && error.code === "COMPANY_NOT_FOUND") {
-    showCompanyError("La empresa piloto no esta disponible.");
+    showCompanyError("La empresa piloto no está disponible.");
     return;
   }
 
@@ -4224,22 +4329,22 @@ function renderCompanyPasswordChangeError(error) {
         target.textContent = getCompanyPasswordValidationMessage(detail);
       }
     });
-    showCompanyPasswordError("Revise los datos ingresados.");
+    showCompanyPasswordError("Revisa los datos ingresados.");
     return;
   }
 
   if (error instanceof ApiError && error.code === "INVALID_CURRENT_PASSWORD") {
     elements.companyCurrentPasswordError.textContent = "La contraseña actual no coincide.";
-    showCompanyPasswordError("No pudimos actualizar la contraseña. Revise la contraseña actual.");
+    showCompanyPasswordError("No pudimos actualizar la contraseña. Revisa la contraseña actual.");
     return;
   }
 
   if (isAuthRequiredError(error)) {
-    showCompanyPasswordError("Su sesion expiro. Inicie sesion nuevamente.");
+    showCompanyPasswordError("Tu sesión expiró. Accede nuevamente a tu panel.");
     return;
   }
 
-  showCompanyPasswordError("No pudimos actualizar la contraseña. Intente de nuevo.");
+  showCompanyPasswordError("No pudimos actualizar la contraseña. Intenta de nuevo.");
 }
 
 function renderCompanyLogo(settings) {
@@ -4389,24 +4494,24 @@ function renderCompanyRegistrationSuccess(result) {
   const hasLogo = Boolean(result.requestedLogo?.available || elements.registrationLogoFileInput.files.length);
 
   elements.registrationStatus.hidden = false;
-  elements.registrationStatus.textContent = "Solicitud recibida";
+  elements.registrationStatus.textContent = "Datos recibidos";
   elements.registrationResult.hidden = false;
   elements.registrationResult.innerHTML = `
-    <h3>Solicitud recibida</h3>
+    <h3>Datos recibidos</h3>
     <p>
-      Recibimos la solicitud de ${escapeHtml(companyName)}. Revisaremos los datos y, si es aprobada, enviaremos
-      una invitacion para crear el acceso.
+      Recibimos los datos de ${escapeHtml(companyName)}. Prepararemos el programa y enviaremos
+      los siguientes pasos al correo de contacto cuando el acceso este listo.
     </p>
     <div class="registration-summary">
       ${renderAdminDetailItem("Empresa", companyName)}
       ${renderAdminDetailItem("Correo de empresa", companyEmail)}
       ${renderAdminDetailItem("Correo de contacto", contactEmail)}
-      ${renderAdminDetailItem("Estado", getRegistrationStatusLabel(result.status || "pending"))}
+      ${renderAdminDetailItem("Estado del programa", getRegistrationStatusLabel(result.status || "pending"))}
       ${renderAdminDetailItem("Logo", hasLogo ? "Incluido" : "No incluido")}
     </div>
     <p>Tambien notificamos internamente al equipo de Punto Club para dar seguimiento.</p>
     <div class="form-actions">
-      <button class="secondary-button" id="new-registration-button" type="button" data-icon="→">Enviar otra solicitud</button>
+      <button class="secondary-button" id="new-registration-button" type="button" data-icon="send">Enviar otros datos</button>
     </div>
   `;
   elements.companyRegistrationForm.hidden = true;
@@ -4432,14 +4537,14 @@ function renderCompanyRegistrationError(error) {
         target.textContent = getCompanyRegistrationValidationMessage(detail);
       }
     });
-    showCompanyRegistrationError("Revisa los campos marcados antes de enviar la solicitud.");
+    showCompanyRegistrationError("Revisa los campos marcados antes de enviar los datos.");
     return;
   }
 
   if (error instanceof ApiError && ["UNSUPPORTED_MEDIA_TYPE", "UPLOAD_TOO_LARGE", "LOGO_FILE_UNREADABLE"].includes(error.code)) {
     const message = getCompanyRegistrationLogoErrorMessage(error);
     elements.registrationLogoFileError.textContent = message;
-    showCompanyRegistrationError("Revisa el logo antes de enviar la solicitud.");
+    showCompanyRegistrationError("Revisa el logo antes de enviar los datos.");
     return;
   }
 
@@ -4452,21 +4557,21 @@ function renderCompanyRegistrationError(error) {
 
   if (error instanceof ApiError && error.code === "COMPANY_ALREADY_EXISTS") {
     showCompanyRegistrationError(
-      "Ya existe una empresa registrada con ese correo. Inicia sesion o contacta al equipo de Punto Club si necesitas recuperar el acceso.",
+      "Ya existe una empresa registrada con ese correo. Accede a tu panel o contacta al equipo de Punto Club si necesitas recuperar el acceso.",
     );
     return;
   }
 
   if (error instanceof ApiError && error.code === "REGISTRATION_ALREADY_PENDING") {
     showCompanyRegistrationError(
-      "Ya hay una solicitud pendiente para ese correo. Revisaremos la solicitud y enviaremos la invitacion cuando quede aprobada.",
+      "Ya hay datos recibidos para ese correo. Prepararemos el acceso y enviaremos los siguientes pasos cuando este listo.",
     );
     return;
   }
 
   if (error instanceof ApiError && error.code === "INVITATION_ALREADY_PENDING") {
     showCompanyRegistrationError(
-      "Ya hay una invitacion pendiente para ese correo. Revisa la bandeja de entrada o solicita un reenvio si Product lo habilita.",
+      "Ya hay un acceso pendiente para ese correo. Revisa la bandeja de entrada o solicita un reenvió si está disponible.",
     );
     return;
   }
@@ -4477,16 +4582,16 @@ function renderCompanyRegistrationError(error) {
   }
 
   if (error instanceof ApiError && error.code === "SERVICE_UNAVAILABLE") {
-    showCompanyRegistrationError("El servicio no esta disponible en este momento. Intenta mas tarde.");
+    showCompanyRegistrationError("El servicio no está disponible en este momento. Intenta más tarde.");
     return;
   }
 
   if (error instanceof TypeError) {
-    showCompanyRegistrationError("No pudimos enviar la solicitud por un problema de conexion. Revisa tu internet e intenta de nuevo.");
+    showCompanyRegistrationError("No pudimos enviar los datos por un problema de conexion. Revisa tu internet e intenta de nuevo.");
     return;
   }
 
-  showCompanyRegistrationError("No pudimos enviar la solicitud. Intenta de nuevo.");
+  showCompanyRegistrationError("No pudimos enviar los datos. Intenta de nuevo.");
 }
 
 function renderAdminPrompt() {
@@ -4494,14 +4599,14 @@ function renderAdminPrompt() {
   elements.adminSummary.hidden = true;
   elements.adminSummary.innerHTML = "";
   elements.adminRequestsList.innerHTML =
-    '<div class="empty-state">Ingresa el token interno para cargar solicitudes.</div>';
+    '<div class="empty-state">Ingresa el token interno para cargar empresas por activar.</div>';
   renderAdminDetailPrompt();
 }
 
 function renderAdminListLoading() {
   elements.adminSummary.hidden = true;
   elements.adminSummary.innerHTML = "";
-  elements.adminRequestsList.innerHTML = '<div class="loading-state">Cargando solicitudes...</div>';
+  elements.adminRequestsList.innerHTML = '<div class="loading-state">Cargando empresas...</div>';
 }
 
 function renderAdminRequestsList() {
@@ -4518,7 +4623,7 @@ function renderAdminRequestsList() {
       <strong>${formatReportNumber(adminRequests.length)}</strong>
     </div>
     <div>
-      <span>Pendientes</span>
+      <span>Por revisar</span>
       <strong>${formatReportNumber(adminRequests.filter((item) => item.status === "pending").length)}</strong>
     </div>
     <div>
@@ -4529,10 +4634,10 @@ function renderAdminRequestsList() {
 
   if (filteredRequests.length === 0) {
     const message = search
-      ? "No encontramos solicitudes con esos datos."
+      ? "No encontramos empresas con esos datos."
       : elements.adminRequestStatusInput.value === "pending"
-        ? "No hay solicitudes pendientes."
-        : "No hay solicitudes para revisar.";
+        ? "No hay empresas por revisar."
+        : "No hay empresas para revisar.";
     elements.adminRequestsList.innerHTML = `<div class="empty-state">${escapeHtml(message)}</div>`;
     return;
   }
@@ -4564,22 +4669,22 @@ function renderAdminRequestCard(request) {
               <button
                 type="button"
                 data-admin-request-id="${escapeHtml(request.id)}"
-                data-icon="✓"
+                data-icon="check"
                 data-admin-card-action="approve"
               >
-                Aprobar
+                Activar
               </button>
             `
             : ""
         }
         <button
-          class="secondary-button"
+          class="secondary-button icon-button"
           type="button"
-          data-icon="⌕"
+          data-icon="eye"
           data-admin-request-id="${escapeHtml(request.id)}"
-        >
-          Ver detalle
-        </button>
+          aria-label="Ver detalle de ${escapeHtml(request.companyName || "empresa")}"
+          title="Ver detalle"
+        ></button>
       </div>
     </article>
   `;
@@ -4597,7 +4702,7 @@ function renderAdminDetailPrompt() {
   elements.adminCompaniesSection.classList.remove("is-admin-drawer-open");
   elements.backAdminListButton.hidden = true;
   elements.adminDetailEmpty.hidden = false;
-  elements.adminDetailEmpty.textContent = "Selecciona una solicitud para revisar sus datos.";
+  elements.adminDetailEmpty.textContent = "Selecciona una empresa para revisar sus datos.";
   elements.adminRequestDetail.hidden = true;
   elements.adminRequestDetail.innerHTML = "";
 }
@@ -4616,7 +4721,7 @@ function renderAdminDetail() {
   elements.adminRequestDetail.innerHTML = `
     <div class="admin-detail-heading">
       <div>
-        <p class="eyebrow">Solicitud de empresa</p>
+        <p class="eyebrow">Empresa por activar</p>
         <h3>${escapeHtml(request.companyName || "Empresa sin nombre")}</h3>
       </div>
       <span>${escapeHtml(getRegistrationStatusLabel(request.status))}</span>
@@ -4630,8 +4735,8 @@ function renderAdminDetail() {
       <h3>Empresa</h3>
       <div class="admin-detail-grid">
         ${renderAdminDetailItem("Correo de empresa", request.companyEmail)}
-        ${renderAdminDetailItem("Telefono", request.companyPhone)}
-        ${renderAdminDetailItem("Direccion", request.companyAddress)}
+        ${renderAdminDetailItem("Teléfono", request.companyPhone)}
+        ${renderAdminDetailItem("Dirección", request.companyAddress)}
         ${renderAdminLogoDetailItem(request)}
       </div>
     </section>
@@ -4641,15 +4746,15 @@ function renderAdminDetail() {
       <div class="admin-detail-grid">
         ${renderAdminDetailItem("Nombre", request.contactName)}
         ${renderAdminDetailItem("Correo de contacto", request.contactEmail)}
-        ${renderAdminDetailItem("Telefono de contacto", request.contactPhone)}
+        ${renderAdminDetailItem("Teléfono de contacto", request.contactPhone)}
       </div>
     </section>
 
-    <section class="admin-detail-section" aria-label="Solicitud">
-      <h3>Solicitud</h3>
+    <section class="admin-detail-section" aria-label="Seguimiento">
+      <h3>Seguimiento</h3>
       <div class="admin-detail-grid">
-        ${renderAdminDetailItem("Estado", getRegistrationStatusLabel(request.status))}
-        ${renderAdminDetailItem("Solicitud", formatDateTime(request.createdAt))}
+        ${renderAdminDetailItem("Estado del programa", getRegistrationStatusLabel(request.status))}
+        ${renderAdminDetailItem("Datos recibidos", formatDateTime(request.createdAt))}
         ${renderAdminDetailItem("Actualizacion", formatDateTime(request.updatedAt))}
       </div>
     </section>
@@ -4661,20 +4766,20 @@ function renderAdminDetail() {
         ? `
           <div class="admin-action-panel">
             <div class="form-actions">
-              <button id="approve-admin-request-button" type="button" data-icon="✓" data-admin-action="approve">
-                Aprobar y enviar invitacion
+              <button id="approve-admin-request-button" type="button" data-icon="check" data-admin-action="approve">
+                Activar y enviar acceso
               </button>
             </div>
 
             <div class="field">
-              <label for="admin-reject-note">Motivo del rechazo</label>
+              <label for="admin-reject-note">Nota interna</label>
               <textarea
                 id="admin-reject-note"
                 maxlength="500"
                 rows="3"
                 placeholder="Ej. Datos incompletos, correo no corresponde o empresa fuera del piloto."
               ></textarea>
-              <p class="field-help">Este motivo queda como referencia interna.</p>
+              <p class="field-help">Esta nota queda como referencia interna.</p>
             </div>
 
             <div class="form-actions">
@@ -4682,10 +4787,10 @@ function renderAdminDetail() {
                 class="secondary-button danger-button"
                 id="reject-admin-request-button"
                 type="button"
-                data-icon="×"
+                data-icon="x"
                 data-admin-action="reject"
               >
-                Rechazar solicitud
+                No continuar
               </button>
             </div>
           </div>
@@ -4783,9 +4888,9 @@ function revokeAdminRequestLogoPreview() {
 function renderAdminInvitationPanel(invitation) {
   if (!invitation) {
     return `
-      <section class="admin-invitation-panel" aria-label="Invitacion">
-        <h3>Invitacion</h3>
-        <p>Esta solicitud aun no tiene invitacion asociada.</p>
+      <section class="admin-invitation-panel" aria-label="Acceso">
+        <h3>Acceso</h3>
+        <p>Esta empresa aún no tiene acceso asociado.</p>
       </section>
     `;
   }
@@ -4793,21 +4898,21 @@ function renderAdminInvitationPanel(invitation) {
   const canResend = ["pending", "expired"].includes(invitation.status);
 
   return `
-    <section class="admin-invitation-panel" aria-label="Invitacion">
+    <section class="admin-invitation-panel" aria-label="Acceso">
       <div class="section-header compact-header">
         <div>
-          <h3>Invitacion</h3>
-          <p class="section-support">Link generado y enviado por correo. No se muestra el link en pantalla.</p>
+          <h3>Acceso</h3>
+          <p class="section-support">Enlace generado y enviado por correo. No se muestra el enlace en pantalla.</p>
         </div>
       </div>
 
       <div class="admin-detail-grid">
-        ${renderAdminDetailItem("Estado", getInvitationStatusLabel(invitation.status))}
-        ${renderAdminDetailItem("Correo invitado", invitation.email)}
+        ${renderAdminDetailItem("Estado del acceso", getInvitationStatusLabel(invitation.status))}
+        ${renderAdminDetailItem("Correo de acceso", invitation.email)}
         ${renderAdminDetailItem("Rol", getInvitationRoleLabel(invitation.role))}
-        ${renderAdminDetailItem("Envio", formatDateTime(invitation.createdAt))}
+        ${renderAdminDetailItem("Enviado", formatDateTime(invitation.createdAt))}
         ${renderAdminDetailItem("Expira", formatDateTime(invitation.expiresAt))}
-        ${renderAdminDetailItem("Aceptada", invitation.acceptedAt ? formatDateTime(invitation.acceptedAt) : "No")}
+        ${renderAdminDetailItem("Acceso creado", invitation.acceptedAt ? formatDateTime(invitation.acceptedAt) : "No")}
       </div>
 
       ${
@@ -4818,10 +4923,10 @@ function renderAdminInvitationPanel(invitation) {
                 class="secondary-button"
                 id="resend-admin-invitation-button"
                 type="button"
-                data-icon="→"
+                data-icon="mail"
                 data-admin-action="resend"
               >
-                Reenviar invitacion
+                Reenviar acceso
               </button>
             </div>
           `
@@ -4833,7 +4938,7 @@ function renderAdminInvitationPanel(invitation) {
           class="secondary-button"
           id="send-admin-password-reset-button"
           type="button"
-          data-icon="→"
+          data-icon="key"
           data-admin-action="reset-password"
         >
           Enviar reset de acceso
@@ -4854,10 +4959,10 @@ function reconcileSelectedAdminRequest(selected, requests) {
 function renderAdminListError(error) {
   elements.adminSummary.hidden = true;
   elements.adminSummary.innerHTML = "";
-  elements.adminRequestsList.innerHTML = '<div class="empty-state">No hay solicitudes cargadas.</div>';
+  elements.adminRequestsList.innerHTML = '<div class="empty-state">No hay empresas cargadas.</div>';
 
   if (isAdminPermissionError(error)) {
-    showAdminListError("El token interno no es valido o vencio. Ingresalo de nuevo.");
+    showAdminListError("El token interno no es válido o venció. Ingrésalo de nuevo.");
     return;
   }
 
@@ -4866,7 +4971,7 @@ function renderAdminListError(error) {
     return;
   }
 
-  showAdminListError("No pudimos cargar las solicitudes. Revisa el token interno e intenta de nuevo.");
+  showAdminListError("No pudimos cargar las empresas. Revisa el token interno e intenta de nuevo.");
 }
 
 function updateAdminAccessState() {
@@ -4912,7 +5017,7 @@ function renderAdminActionError(error) {
     error instanceof ApiError &&
     ["COMPANY_REGISTRATION_REQUEST_NOT_FOUND", "COMPANY_NOT_FOUND"].includes(error.code)
   ) {
-    showAdminDetailError("La solicitud ya fue procesada por otro flujo. Actualiza la lista.");
+    showAdminDetailError("La empresa ya fue procesada por otro flujo. Actualiza la lista.");
     return;
   }
 
@@ -4927,17 +5032,17 @@ function renderAdminActionError(error) {
   }
 
   if (error instanceof ApiError && error.code === "INVITATION_ALREADY_ACCEPTED") {
-    showAdminDetailError("La invitacion ya fue aceptada. No es necesario reenviarla.");
+    showAdminDetailError("El acceso ya fue creado. No es necesario reenviarlo.");
     return;
   }
 
   if (error instanceof ApiError && error.code === "INVITATION_EXPIRED") {
-    showAdminDetailError("La invitacion expiro. Actualiza la lista antes de reenviar.");
+    showAdminDetailError("El acceso venció. Actualiza la lista antes de reenviar.");
     return;
   }
 
   if (error instanceof ApiError && error.code === "INVITATION_NOT_FOUND") {
-    showAdminDetailError("No hay una invitacion pendiente para reenviar.");
+    showAdminDetailError("No hay un acceso pendiente para reenviar.");
     return;
   }
 
@@ -4952,7 +5057,7 @@ function renderAdminActionError(error) {
 function renderInvitationLoading() {
   currentInvitation = null;
   elements.invitationLoading.hidden = false;
-  elements.invitationLoading.textContent = "Validando invitacion...";
+  elements.invitationLoading.textContent = "Revisando acceso...";
   elements.invitationError.hidden = true;
   elements.invitationError.textContent = "";
   elements.invitationValid.hidden = true;
@@ -4998,12 +5103,12 @@ function renderInvitationServiceError(error) {
   }
 
   elements.invitationError.hidden = false;
-  elements.invitationError.textContent = "El servicio no esta disponible en este momento. Intenta mas tarde.";
+  elements.invitationError.textContent = "El servicio no está disponible en este momento. Intenta más tarde.";
 }
 
 function renderPasswordResetLoading() {
   elements.passwordResetLoading.hidden = false;
-  elements.passwordResetLoading.textContent = "Validando enlace...";
+  elements.passwordResetLoading.textContent = "Revisando enlace...";
   elements.passwordResetForm.hidden = true;
   clearPasswordResetCompleteMessages();
 }
@@ -5015,7 +5120,7 @@ function renderPasswordResetValid(result) {
   elements.newPasswordInput.value = "";
   elements.newPasswordConfirmationInput.value = "";
   elements.passwordResetStatus.hidden = false;
-  elements.passwordResetStatus.textContent = `Enlace valido para ${result.email || "la empresa"}.`;
+  elements.passwordResetStatus.textContent = `Enlace válido para ${result.email || "la empresa"}.`;
   window.requestAnimationFrame(() => {
     elements.newPasswordInput.focus();
   });
@@ -5023,10 +5128,10 @@ function renderPasswordResetValid(result) {
 
 function renderPasswordResetUnavailable(reason) {
   const states = {
-    invalid: "El enlace de recuperacion no es valido. Solicita un nuevo correo de restablecimiento.",
-    expired: "El enlace de recuperacion expiro. Solicita un nuevo correo de restablecimiento.",
-    used: "Este enlace ya fue utilizado. Inicia sesion o solicita un nuevo correo si lo necesitas.",
-    service: "No pudimos validar el enlace en este momento. Intenta de nuevo mas tarde.",
+    invalid: "El enlace de recuperación no es válido. Solicita un nuevo correo de restablecimiento.",
+    expired: "El enlace de recuperación expiró. Solicita un nuevo correo de restablecimiento.",
+    used: "Este enlace ya fue utilizado. Accede a tu panel o solicita un nuevo correo si lo necesitas.",
+    service: "No pudimos revisar el enlace en este momento. Intenta de nuevo más tarde.",
   };
   elements.passwordResetLoading.hidden = true;
   elements.passwordResetForm.hidden = true;
@@ -5040,7 +5145,7 @@ function renderAccessCreated(result) {
   const email = result.email || currentInvitation?.email || "";
   elements.createAccessForm.hidden = true;
   elements.accessStatus.hidden = false;
-  elements.accessStatus.textContent = "Acceso creado correctamente. Ya puedes iniciar sesion.";
+  elements.accessStatus.textContent = "Acceso creado correctamente. Ya puedes acceder a tu panel.";
   if (email) {
     window.sessionStorage.setItem("puntoclubLoginEmail", email);
   }
@@ -5076,7 +5181,7 @@ function renderCreateAccessError(error) {
   }
 
   if (error instanceof ApiError && error.code === "COMPANY_USER_ALREADY_EXISTS") {
-    showAccessError("Ya existe un acceso para ese correo. Inicia sesion.");
+    showAccessError("Ya existe un acceso para ese correo. Accede a tu panel.");
     return;
   }
 
@@ -5095,17 +5200,17 @@ function renderLoginError(error) {
         target.textContent = getLoginValidationMessage(detail);
       }
     });
-    showLoginError("Complete el correo y la contraseña para iniciar sesion.");
+    showLoginError("Completa el correo y la contraseña para acceder a tu panel.");
     return;
   }
 
   if (error instanceof ApiError && error.code === "UNAUTHORIZED") {
-    showLoginError("Correo o contraseña incorrectos. Revise los datos o recupere el acceso.");
+    showLoginError("Correo o contraseña incorrectos. Revisa los datos o recupera el acceso.");
     return;
   }
 
   if (error instanceof ApiError && error.code === "FORBIDDEN") {
-    showLoginError("El acceso no esta activo. Contacte al administrador de Punto Club.");
+    showLoginError("El acceso no está activo. Contacta al administrador de Punto Club.");
     return;
   }
 
@@ -5119,21 +5224,21 @@ function renderLoginError(error) {
     return;
   }
 
-  showLoginError("No pudimos iniciar sesion. Intenta de nuevo.");
+  showLoginError("No pudimos acceder a tu panel. Intenta de nuevo.");
 }
 
 function renderPasswordResetRequestError(error) {
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
     error.details.forEach((detail) => {
       if (detail.field === "email") {
-        elements.passwordResetEmailError.textContent = "Ingresa un correo valido.";
+        elements.passwordResetEmailError.textContent = "Ingresa un correo válido.";
       }
     });
-    showPasswordResetRequestError("Revise los datos ingresados.");
+    showPasswordResetRequestError("Revisa los datos ingresados.");
     return;
   }
 
-  showPasswordResetRequestError("No pudimos enviar las instrucciones. Intente de nuevo mas tarde.");
+  showPasswordResetRequestError("No pudimos enviar las instrucciones. Intenta de nuevo más tarde.");
 }
 
 function renderPasswordResetCompleteError(error) {
@@ -5146,11 +5251,11 @@ function renderPasswordResetCompleteError(error) {
 
       if (target) {
         target.textContent = detail.field === "password"
-          ? "Usa de 10 a 128 caracteres, con letras y numeros."
-          : "El enlace no es valido. Solicita un nuevo correo de restablecimiento.";
+          ? "Usa de 10 a 128 caracteres, con letras y números."
+          : "El enlace no es válido. Solicita un nuevo correo de restablecimiento.";
       }
     });
-    showPasswordResetError("Revise los datos ingresados.");
+    showPasswordResetError("Revisa los datos ingresados.");
     return;
   }
 
@@ -5168,16 +5273,16 @@ function renderPasswordResetCompleteError(error) {
     return;
   }
 
-  showPasswordResetError("No pudimos guardar la nueva contraseña. Intente de nuevo.");
+  showPasswordResetError("No pudimos guardar la nueva contraseña. Intenta de nuevo.");
 }
 
 function renderAuthIdentity(identity) {
   const companyName = identity?.company?.name || "Empresa";
-  const email = identity?.user?.email || "Sesion iniciada";
+  const email = identity?.user?.email || "Sesión iniciada";
   api.setActiveCompanyId?.(identity?.company?.id);
   elements.authStatus.textContent = email && email !== companyName
     ? email
-    : "Sesion iniciada";
+    : "Sesión iniciada";
   elements.loginButton.hidden = true;
   elements.logoutButton.hidden = false;
   renderActiveCompanyIdentity(identity?.company || null);
@@ -5185,7 +5290,7 @@ function renderAuthIdentity(identity) {
 
 function renderSignedOut() {
   api.setActiveCompanyId?.(config.companyId);
-  elements.authStatus.textContent = "Sesion no iniciada";
+  elements.authStatus.textContent = "Sesión no iniciada";
   elements.loginButton.hidden = false;
   elements.logoutButton.hidden = true;
   currentCompanySettings = null;
@@ -5295,12 +5400,12 @@ function renderPurchaseError(error) {
   }
 
   if (error instanceof ApiError && error.code === "DUPLICATE_INVOICE") {
-    showPurchaseError("Ya existe una compra con esa factura o comprobante. Usa otro numero o revisa el historial del cliente.");
+    showPurchaseError("Ya existe una compra con esa factura o comprobante. Usa otro número o revisa el historial del cliente.");
     return;
   }
 
   if (error instanceof ApiError && error.code === "CUSTOMER_NOT_FOUND") {
-    showPurchaseError("El cliente seleccionado ya no esta disponible.");
+    showPurchaseError("El cliente seleccionado ya no está disponible.");
     return;
   }
 
@@ -5335,7 +5440,7 @@ function renderRedemptionError(error) {
   }
 
   if (error instanceof ApiError && error.code === "CUSTOMER_NOT_FOUND") {
-    showRedemptionError("El cliente seleccionado ya no esta disponible.");
+    showRedemptionError("El cliente seleccionado ya no está disponible.");
     return;
   }
 
@@ -5350,8 +5455,8 @@ function renderRedemptionError(error) {
 function getCustomerValidationMessage(detail) {
   const messagesByField = {
     name: "El nombre es requerido y debe tener 160 caracteres o menos.",
-    phone: "El telefono es requerido y debe tener 32 caracteres o menos.",
-    email: "El correo debe tener un formato valido y 254 caracteres o menos.",
+    phone: "El teléfono es requerido y debe tener 32 caracteres o menos.",
+    email: "El correo debe tener un formato válido y 254 caracteres o menos.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
@@ -5369,7 +5474,7 @@ function getPurchaseValidationMessage(detail) {
 
 function getRedemptionValidationMessage(detail) {
   const messagesByField = {
-    redemptionDate: "La fecha de redencion es requerida.",
+    redemptionDate: "La fecha de redención es requerida.",
     pointsRedeemed: "Los puntos a redimir deben ser un entero mayor que 0.",
     note: "La nota debe tener 500 caracteres o menos.",
   };
@@ -5380,8 +5485,8 @@ function getRedemptionValidationMessage(detail) {
 function getCompanyValidationMessage(detail) {
   const messagesByField = {
     name: "El nombre es requerido y debe tener 160 caracteres o menos.",
-    email: "El correo debe tener un formato valido y 254 caracteres o menos.",
-    phone: "El telefono debe tener entre 7 y 32 caracteres.",
+    email: "El correo debe tener un formato válido y 254 caracteres o menos.",
+    phone: "El teléfono debe tener entre 7 y 32 caracteres.",
     pointsPercentage: "El porcentaje debe ser mayor que 0 y menor o igual que 100.",
   };
 
@@ -5391,8 +5496,8 @@ function getCompanyValidationMessage(detail) {
 function getCompanyPasswordValidationMessage(detail) {
   const messagesByField = {
     currentPassword: "Ingresa la contraseña actual.",
-    newPassword: "Usa de 10 a 128 caracteres, con letras y numeros, distinta a la actual.",
-    passwordConfirmation: "La confirmacion debe coincidir con la nueva contraseña.",
+    newPassword: "Usa de 10 a 128 caracteres, con letras y números, distinta a la actual.",
+    passwordConfirmation: "La confirmación debe coincidir con la nueva contraseña.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
@@ -5424,13 +5529,13 @@ async function getRegistrationLogoValidationMessage(file) {
   }
 
   if (file.size <= 0) {
-    return "No pudimos leer el archivo. Descargalo en este equipo y vuelve a seleccionarlo.";
+    return "No pudimos leer el archivo. Descárgalo en este equipo y vuelve a seleccionarlo.";
   }
 
   try {
     await file.slice(0, Math.min(file.size, 4096)).arrayBuffer();
   } catch (error) {
-    return "No pudimos leer el archivo. Descargalo en este equipo y vuelve a seleccionarlo.";
+    return "No pudimos leer el archivo. Descárgalo en este equipo y vuelve a seleccionarlo.";
   }
 
   try {
@@ -5469,13 +5574,13 @@ async function validateReadableImageFile(file) {
 function getCompanyRegistrationValidationMessage(detail) {
   const messagesByField = {
     companyName: "Ingresa el nombre de la empresa.",
-    companyEmail: "Ingresa un correo de empresa valido.",
-    companyAddress: "Ingresa la direccion de la empresa.",
-    companyPhone: "El telefono de empresa debe tener 32 caracteres o menos.",
+    companyEmail: "Ingresa un correo de empresa válido.",
+    companyAddress: "Ingresa la dirección de la empresa.",
+    companyPhone: "El teléfono de empresa debe tener 32 caracteres o menos.",
     contactName: "El nombre de contacto debe tener 160 caracteres o menos.",
-    contactEmail: "Ingresa un correo de contacto valido.",
-    contactPhone: "El telefono de contacto debe tener 32 caracteres o menos.",
-    logoFile: "No pudimos procesar el logo. Quitalo o selecciona otra imagen para continuar.",
+    contactEmail: "Ingresa un correo de contacto válido.",
+    contactPhone: "El teléfono de contacto debe tener 32 caracteres o menos.",
+    logoFile: "No pudimos procesar el logo. Quítalo o selecciona otra imagen para continuar.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
@@ -5484,18 +5589,18 @@ function getCompanyRegistrationValidationMessage(detail) {
 function getCompanyRegistrationLogoErrorMessage(error) {
   const messagesByCode = {
     LOGO_FILE_UNREADABLE: "No pudimos leer la imagen. Guarda una copia nueva en PNG, JPG o WebP y vuelve a intentarlo.",
-    LOGO_STORAGE_UNAVAILABLE: "No pudimos guardar el logo en este momento. Puedes intentar de nuevo o enviar la solicitud sin logo.",
+    LOGO_STORAGE_UNAVAILABLE: "No pudimos guardar el logo en este momento. Puedes intentar de nuevo o enviar los datos sin logo.",
     UNSUPPORTED_MEDIA_TYPE: "El logo debe ser una imagen PNG, JPG o WebP.",
     UPLOAD_TOO_LARGE: "El logo debe pesar 1 MB o menos.",
   };
 
-  return messagesByCode[error.code] || "No pudimos procesar el logo. Quitalo o selecciona otra imagen para continuar.";
+  return messagesByCode[error.code] || "No pudimos procesar el logo. Quítalo o selecciona otra imagen para continuar.";
 }
 
 function getCreateAccessValidationMessage(detail) {
   const messagesByField = {
     displayName: "El nombre debe tener 160 caracteres o menos.",
-    password: "Usa de 10 a 128 caracteres, con letras y numeros.",
+    password: "Usa de 10 a 128 caracteres, con letras y números.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
@@ -5503,7 +5608,7 @@ function getCreateAccessValidationMessage(detail) {
 
 function getLoginValidationMessage(detail) {
   const messagesByField = {
-    email: "Ingresa un correo valido.",
+    email: "Ingresa un correo válido.",
     password: "Ingresa la contraseña.",
   };
 
@@ -5519,7 +5624,7 @@ function isAdminPermissionError(error) {
 }
 
 function getAuthRequiredMessage() {
-  return "Inicia sesion para operar con la empresa activa.";
+  return "Accede a tu panel para operar con la empresa activa.";
 }
 
 function clearCustomerMessages() {
@@ -5888,9 +5993,10 @@ function clearCompanyPasswordForm(options = {}) {
 function setCompanyPasswordPanelVisible(isVisible, options = {}) {
   elements.companyPasswordForm.hidden = !isVisible;
   elements.toggleCompanyPasswordPanelButton.setAttribute("aria-expanded", String(isVisible));
-  elements.toggleCompanyPasswordPanelButton.textContent = isVisible
-    ? "Ocultar cambio de contraseña"
-    : "Cambiar contraseña";
+  setButtonText(
+    elements.toggleCompanyPasswordPanelButton,
+    isVisible ? "Ocultar cambio de contraseña" : "Cambiar contraseña",
+  );
 
   if (!isVisible && !options.keepForm) {
     clearCompanyPasswordForm();
@@ -6080,7 +6186,7 @@ function clearAdminMessages(options = {}) {
   if (!options.keepTokenStatus) {
     elements.adminTokenStatus.hidden = !adminToken;
     elements.adminTokenStatus.textContent = adminToken
-      ? "Acceso interno activo en esta pestana."
+      ? "Acceso interno activo en esta pestaña."
       : "";
   }
 }
@@ -6115,9 +6221,10 @@ function clearPasswordResetRequestMessages() {
 function setPasswordResetRequestPanelVisible(isVisible, options = {}) {
   elements.passwordResetRequestForm.hidden = !isVisible;
   elements.togglePasswordResetRequestButton.setAttribute("aria-expanded", String(isVisible));
-  elements.togglePasswordResetRequestButton.textContent = isVisible
-    ? "Ocultar recuperacion"
-    : "Recuperar acceso";
+  setButtonText(
+    elements.togglePasswordResetRequestButton,
+    isVisible ? "Ocultar recuperación" : "Recuperar acceso",
+  );
 
   if (!isVisible && !options.keepMessages) {
     clearPasswordResetRequestMessages();
@@ -6148,52 +6255,50 @@ function clearPasswordResetCompleteMessages() {
 
 function setSubmitting(isSubmitting) {
   elements.saveButton.disabled = isSubmitting;
-  elements.saveButton.textContent = isSubmitting ? "Registrando..." : "Registrar cliente";
+  setButtonText(elements.saveButton, isSubmitting ? "Registrando..." : "Registrar cliente");
 }
 
 function setPurchaseSubmitting(isSubmitting) {
   elements.savePurchaseButton.disabled = isSubmitting;
-  elements.savePurchaseButton.textContent = isSubmitting ? "Registrando..." : "Registrar compra";
+  setButtonText(elements.savePurchaseButton, isSubmitting ? "Registrando..." : "Registrar compra");
 }
 
 function setRedemptionSubmitting(isSubmitting) {
   elements.saveRedemptionButton.disabled = isSubmitting;
-  elements.saveRedemptionButton.textContent = isSubmitting ? "Redimiendo..." : "Redimir puntos";
+  setButtonText(elements.saveRedemptionButton, isSubmitting ? "Redimiendo..." : "Redimir puntos");
 }
 
 function setReportSubmitting(isSubmitting) {
   elements.loadReportButton.disabled = isSubmitting;
-  elements.loadReportButton.textContent = isSubmitting ? "Consultando..." : "Consultar";
+  setButtonText(elements.loadReportButton, isSubmitting ? "Consultando..." : "Consultar");
 }
 
 function setMembershipFinancialReportSubmitting(isSubmitting) {
   elements.loadMembershipFinancialReportButton.disabled = isSubmitting;
   elements.exportMembershipFinancialReportButton.disabled = isSubmitting || !currentMembershipFinancialReport?.items?.length;
-  elements.loadMembershipFinancialReportButton.textContent = isSubmitting ? "Consultando..." : "Consultar";
+  setButtonText(elements.loadMembershipFinancialReportButton, isSubmitting ? "Consultando..." : "Consultar");
 }
 
 function setCustomerReportSubmitting(isSubmitting) {
   elements.loadCustomerReportButton.disabled = isSubmitting;
   elements.exportCustomerReportButton.disabled = isSubmitting || !currentCustomerReport?.items?.length;
-  elements.loadCustomerReportButton.textContent = isSubmitting ? "Consultando..." : "Consultar";
+  setButtonText(elements.loadCustomerReportButton, isSubmitting ? "Consultando..." : "Consultar");
 }
 
 function setAuditSubmitting(isSubmitting) {
   elements.loadAuditButton.disabled = isSubmitting;
   elements.exportAuditButton.disabled = isSubmitting || !currentAuditEvents?.items?.length;
-  elements.loadAuditButton.textContent = isSubmitting ? "Consultando..." : "Consultar";
+  setButtonText(elements.loadAuditButton, isSubmitting ? "Consultando..." : "Consultar");
 }
 
 function setCompanyLoading(isLoading) {
   elements.reloadCompanyButton.disabled = isLoading;
-  elements.reloadCompanyButton.textContent = isLoading ? "Cargando..." : "Actualizar";
+  setButtonText(elements.reloadCompanyButton, isLoading ? "Cargando..." : "Actualizar");
 }
 
 function setCompanySubmitting(isSubmitting) {
   elements.saveCompanyButton.disabled = isSubmitting;
-  elements.saveCompanyButton.textContent = isSubmitting
-    ? "Guardando..."
-    : "Guardar configuracion";
+  setButtonText(elements.saveCompanyButton, isSubmitting ? "Guardando..." : "Guardar configuración");
 }
 
 function setCompanyPasswordSubmitting(isSubmitting) {
@@ -6205,20 +6310,20 @@ function setCompanyPasswordSubmitting(isSubmitting) {
   elements.toggleCompanyCurrentPasswordButton.disabled = isSubmitting;
   elements.toggleCompanyNewPasswordButton.disabled = isSubmitting;
   elements.toggleCompanyNewPasswordConfirmationButton.disabled = isSubmitting;
-  elements.saveCompanyPasswordButton.textContent = isSubmitting ? "Actualizando..." : "Actualizar contraseña";
+  setButtonText(elements.saveCompanyPasswordButton, isSubmitting ? "Actualizando..." : "Actualizar contraseña");
 }
 
 function setCompanyLogoSubmitting(isSubmitting) {
   elements.uploadCompanyLogoButton.disabled = isSubmitting;
   elements.clearCompanyLogoButton.disabled = isSubmitting;
   elements.companyLogoFileInput.disabled = isSubmitting;
-  elements.uploadCompanyLogoButton.textContent = isSubmitting ? "Subiendo..." : "Subir logo";
+  setButtonText(elements.uploadCompanyLogoButton, isSubmitting ? "Subiendo..." : "Subir logo");
 }
 
 function setCompanyRegistrationSubmitting(isSubmitting) {
   elements.submitRegistrationButton.disabled = isSubmitting;
   elements.resetRegistrationButton.disabled = isSubmitting;
-  elements.submitRegistrationButton.textContent = isSubmitting ? "Enviando..." : "Enviar solicitud";
+  setButtonText(elements.submitRegistrationButton, isSubmitting ? "Enviando..." : "Enviar datos");
 }
 
 function setMembershipPlanSubmitting(isSubmitting) {
@@ -6226,26 +6331,28 @@ function setMembershipPlanSubmitting(isSubmitting) {
   elements.saveMembershipPlanButton.disabled = isSubmitting;
   elements.resetMembershipPlanButton.disabled = isSubmitting;
   elements.cancelMembershipPlanButton.disabled = isSubmitting;
-  elements.saveMembershipPlanButton.textContent = isSubmitting
-    ? "Guardando..."
-    : (elements.membershipPlanIdInput.value ? "Guardar cambios" : "Guardar plan");
+  setButtonText(
+    elements.saveMembershipPlanButton,
+    isSubmitting ? "Guardando..." : (elements.membershipPlanIdInput.value ? "Guardar cambios" : "Guardar plan"),
+  );
 }
 
 function setMembershipBenefitSubmitting(isSubmitting) {
   elements.saveMembershipBenefitButton.disabled = isSubmitting;
   elements.resetMembershipBenefitButton.disabled = isSubmitting;
   elements.cancelMembershipBenefitButton.disabled = isSubmitting;
-  elements.saveMembershipBenefitButton.textContent = isSubmitting
-    ? "Guardando..."
-    : (elements.membershipBenefitIdInput.value ? "Guardar cambios" : "Guardar beneficio");
+  setButtonText(
+    elements.saveMembershipBenefitButton,
+    isSubmitting ? "Guardando..." : (elements.membershipBenefitIdInput.value ? "Guardar cambios" : "Guardar beneficio"),
+  );
 }
 
 function setMembershipExpirationLoading(isLoading) {
   elements.membershipExpirationWithinDaysInput.disabled = isLoading;
   elements.loadMembershipExpirationButton.disabled = isLoading;
   elements.reloadMembershipExpirationButton.disabled = isLoading;
-  elements.loadMembershipExpirationButton.textContent = isLoading ? "Consultando..." : "Consultar";
-  elements.reloadMembershipExpirationButton.textContent = isLoading ? "Cargando..." : "Actualizar";
+  setButtonText(elements.loadMembershipExpirationButton, isLoading ? "Consultando..." : "Consultar");
+  setButtonText(elements.reloadMembershipExpirationButton, isLoading ? "Cargando..." : "Actualizar");
 }
 
 function setMembershipActivationSubmitting(isSubmitting, options = {}) {
@@ -6256,13 +6363,13 @@ function setMembershipActivationSubmitting(isSubmitting, options = {}) {
   elements.membershipActivationPricePaidInput.disabled = isSubmitting;
   elements.membershipActivationPaymentMethodInput.disabled = isSubmitting;
   elements.activateMembershipButton.disabled = isSubmitting;
-  elements.activateMembershipButton.textContent = isSubmitting && !options.searching ? "Pagando..." : "Pagar membresia";
-  elements.searchMembershipCustomerButton.textContent = isSubmitting && options.searching ? "Buscando..." : "Buscar cliente";
+  setButtonText(elements.activateMembershipButton, isSubmitting && !options.searching ? "Activando..." : "Activar membresía");
+  setButtonText(elements.searchMembershipCustomerButton, isSubmitting && options.searching ? "Buscando..." : "Buscar cliente");
 }
 
 function setMembershipOperationLoading(isLoading) {
   elements.reloadMembershipOperationButton.disabled = isLoading;
-  elements.reloadMembershipOperationButton.textContent = isLoading ? "Cargando..." : "Actualizar";
+  setButtonText(elements.reloadMembershipOperationButton, isLoading ? "Cargando..." : "Actualizar");
 }
 
 function setMembershipBenefitUsageSubmitting(isSubmitting) {
@@ -6271,7 +6378,7 @@ function setMembershipBenefitUsageSubmitting(isSubmitting) {
   elements.membershipBenefitUsageDateInput.disabled = isSubmitting;
   elements.membershipBenefitUsageQuantityInput.disabled = isSubmitting;
   elements.membershipBenefitUsageNoteInput.disabled = isSubmitting;
-  elements.confirmMembershipBenefitUsageButton.textContent = isSubmitting ? "Aplicando..." : "Aplicar beneficio";
+  setButtonText(elements.confirmMembershipBenefitUsageButton, isSubmitting ? "Aplicando..." : "Aplicar beneficio");
 }
 
 function setMembershipRenewalSubmitting(isSubmitting) {
@@ -6279,12 +6386,12 @@ function setMembershipRenewalSubmitting(isSubmitting) {
   elements.cancelMembershipRenewalButton.disabled = isSubmitting;
   elements.membershipRenewalPaymentMethodInput.disabled = isSubmitting;
   elements.membershipRenewalAmountInput.disabled = isSubmitting;
-  elements.confirmMembershipRenewalButton.textContent = isSubmitting ? "Renovando..." : "Renovar membresia";
+  setButtonText(elements.confirmMembershipRenewalButton, isSubmitting ? "Renovando..." : "Renovar membresía");
 }
 
 function setAdminLoading(isLoading) {
   elements.loadAdminRequestsButton.disabled = isLoading;
-  elements.loadAdminRequestsButton.textContent = isLoading ? "Cargando..." : "Actualizar";
+  setButtonText(elements.loadAdminRequestsButton, isLoading ? "Cargando..." : "Actualizar");
   elements.saveAdminTokenButton.disabled = isLoading;
 }
 
@@ -6301,48 +6408,40 @@ function setAdminActionLoading(isLoading, action = "") {
   });
 
   if (approveButton) {
-    approveButton.textContent = isLoading && action === "approve"
-      ? "Aprobando solicitud..."
-      : "Aprobar y enviar invitacion";
+    setButtonText(approveButton, isLoading && action === "approve" ? "Activando empresa..." : "Activar y enviar acceso");
   }
 
   if (rejectButton) {
-    rejectButton.textContent = isLoading && action === "reject"
-      ? "Rechazando solicitud..."
-      : "Rechazar solicitud";
+    setButtonText(rejectButton, isLoading && action === "reject" ? "Guardando nota..." : "No continuar");
   }
 
   if (resendButton) {
-    resendButton.textContent = isLoading && action === "resend"
-      ? "Reenviando invitacion..."
-      : "Reenviar invitacion";
+    setButtonText(resendButton, isLoading && action === "resend" ? "Reenviando acceso..." : "Reenviar acceso");
   }
 
   if (resetPasswordButton) {
-    resetPasswordButton.textContent = isLoading && action === "reset-password"
-      ? "Enviando reset..."
-      : "Enviar reset de acceso";
+    setButtonText(resetPasswordButton, isLoading && action === "reset-password" ? "Enviando reset..." : "Enviar reset de acceso");
   }
 }
 
 function setCreateAccessSubmitting(isSubmitting) {
   elements.createAccessButton.disabled = isSubmitting;
-  elements.createAccessButton.textContent = isSubmitting ? "Creando..." : "Crear acceso";
+  setButtonText(elements.createAccessButton, isSubmitting ? "Creando..." : "Crear acceso");
 }
 
 function setLoginSubmitting(isSubmitting) {
   elements.submitLoginButton.disabled = isSubmitting;
-  elements.submitLoginButton.textContent = isSubmitting ? "Entrando..." : "Iniciar sesion";
+  setButtonText(elements.submitLoginButton, isSubmitting ? "Accediendo..." : "Acceder a mi panel");
 }
 
 function setPasswordResetRequestSubmitting(isSubmitting) {
   elements.submitPasswordResetRequestButton.disabled = isSubmitting;
-  elements.submitPasswordResetRequestButton.textContent = isSubmitting ? "Enviando..." : "Enviar instrucciones";
+  setButtonText(elements.submitPasswordResetRequestButton, isSubmitting ? "Enviando..." : "Enviar instrucciones");
 }
 
 function setPasswordResetSubmitting(isSubmitting) {
   elements.submitPasswordResetButton.disabled = isSubmitting;
-  elements.submitPasswordResetButton.textContent = isSubmitting ? "Guardando..." : "Guardar contraseña";
+  setButtonText(elements.submitPasswordResetButton, isSubmitting ? "Guardando..." : "Guardar contraseña");
 }
 
 function showPublicHomePage() {
@@ -6412,7 +6511,7 @@ function showPasswordResetPage() {
   elements.passwordResetPage.hidden = false;
   elements.loginButton.hidden = false;
   elements.logoutButton.hidden = true;
-  elements.authStatus.textContent = "Recuperacion de acceso";
+  elements.authStatus.textContent = "Recuperación de acceso";
   renderActiveCompanyIdentity(null);
 }
 
@@ -6567,7 +6666,7 @@ function validateCreateAccessForm() {
   let isValid = true;
 
   if (!isStrongPassword(password)) {
-    elements.accessPasswordError.textContent = "Usa de 10 a 128 caracteres, con letras y numeros.";
+    elements.accessPasswordError.textContent = "Usa de 10 a 128 caracteres, con letras y números.";
     isValid = false;
   }
 
@@ -6589,7 +6688,7 @@ function validatePasswordResetCompleteForm() {
   let isValid = true;
 
   if (!isStrongPassword(password)) {
-    elements.newPasswordError.textContent = "Usa de 10 a 128 caracteres, con letras y numeros.";
+    elements.newPasswordError.textContent = "Usa de 10 a 128 caracteres, con letras y números.";
     isValid = false;
   }
 
@@ -6599,12 +6698,12 @@ function validatePasswordResetCompleteForm() {
   }
 
   if (!passwordResetToken) {
-    showPasswordResetError("El enlace no es valido. Solicita un nuevo correo de restablecimiento.");
+    showPasswordResetError("El enlace no es válido. Solicita un nuevo correo de restablecimiento.");
     isValid = false;
   }
 
   if (!isValid) {
-    showPasswordResetError("Revise los datos ingresados.");
+    showPasswordResetError("Revisa los datos ingresados.");
   }
 
   return isValid;
@@ -6622,7 +6721,7 @@ function validateCompanyPasswordChangeForm() {
   }
 
   if (!isStrongPassword(newPassword)) {
-    elements.companyNewPasswordError.textContent = "Usa de 10 a 128 caracteres, con letras y numeros.";
+    elements.companyNewPasswordError.textContent = "Usa de 10 a 128 caracteres, con letras y números.";
     isValid = false;
   } else if (newPassword === currentPassword) {
     elements.companyNewPasswordError.textContent = "La nueva contraseña debe ser distinta a la actual.";
@@ -6635,7 +6734,7 @@ function validateCompanyPasswordChangeForm() {
   }
 
   if (!isValid) {
-    showCompanyPasswordError("Revise los datos ingresados.");
+    showCompanyPasswordError("Revisa los datos ingresados.");
   }
 
   return isValid;
@@ -6645,14 +6744,22 @@ function togglePasswordVisibility(input, button) {
   const isVisible = input.type === "text";
   input.type = isVisible ? "password" : "text";
   button.setAttribute("aria-pressed", String(!isVisible));
-  button.textContent = isVisible ? "Ver" : "Ocultar";
+  const label = isVisible ? "Mostrar contraseña" : "Ocultar contraseña";
+  button.dataset.icon = isVisible ? "eye" : "eye-off";
+  button.setAttribute("aria-label", label);
+  button.setAttribute("title", label);
+  setButtonText(button, "");
   input.focus();
 }
 
 function setPasswordInputHidden(input, button) {
   input.type = "password";
   button.setAttribute("aria-pressed", "false");
-  button.textContent = "Ver";
+  button.dataset.icon = "eye";
+  const label = "Mostrar contraseña";
+  button.setAttribute("aria-label", label);
+  button.setAttribute("title", label);
+  setButtonText(button, "");
 }
 
 function getBalanceValue(balance) {
@@ -6779,14 +6886,14 @@ function getReportTypeLabel(type, item = {}) {
   if (type === "membership") {
     return String(item.note || "").toLowerCase().includes("beneficio usado")
       ? "Beneficio usado"
-      : "Membresia activada";
+      : "Membresía activada";
   }
 
   if (type === "benefit") {
     return "Beneficio usado";
   }
 
-  return "Redencion";
+  return "Redención";
 }
 
 function getAuditEventLabel(eventType) {
@@ -6797,13 +6904,13 @@ function getAuditEventLabel(eventType) {
     "customer.rejected_duplicate": "Cliente duplicado",
     "purchase.rejected_duplicate_invoice": "Factura duplicada",
     "redemption.rejected_insufficient_points": "Saldo insuficiente",
-    "company.settings.updated": "Configuracion actualizada",
-    "membership.plan.created": "Plan de membresia creado",
-    "membership.plan.updated": "Plan de membresia actualizado",
+    "company.settings.updated": "Configuración actualizada",
+    "membership.plan.created": "Plan de membresía creado",
+    "membership.plan.updated": "Plan de membresía actualizado",
     "membership.benefit.created": "Beneficio creado",
     "membership.benefit.updated": "Beneficio actualizado",
     "membership.benefit.used": "Uso de beneficio registrado",
-    "customer.membership.activated": "Membresia de cliente activada",
+    "customer.membership.activated": "Membresía de cliente activada",
   };
 
   return labels[eventType] ?? (eventType || "Evento");
@@ -6813,12 +6920,12 @@ function getAuditEntityLabel(entityType) {
   const labels = {
     customer: "Cliente",
     purchase: "Compra",
-    redemption: "Redencion",
+    redemption: "Redención",
     company: "Empresa",
-    membership_plan: "Plan de membresia",
-    membership_benefit: "Beneficio de membresia",
+    membership_plan: "Plan de membresía",
+    membership_benefit: "Beneficio de membresía",
     membership_benefit_usage: "Uso de beneficio",
-    customer_membership: "Membresia de cliente",
+    customer_membership: "Membresía de cliente",
   };
 
   return labels[entityType] ?? (entityType || "Entidad");
@@ -6828,7 +6935,7 @@ function getCompanyStatusLabel(status) {
   const labels = {
     active: "Activa",
     inactive: "Inactiva",
-    pending_activation: "Pendiente de activacion",
+    pending_activation: "Por activar",
   };
 
   return labels[status] ?? (status || "No disponible");
@@ -6863,12 +6970,12 @@ function getPaymentMethodLabel(method) {
   const labels = {
     cash: "Efectivo",
     card: "Tarjeta",
-    credit: "Credito",
+    credit: "Crédito",
     transfer: "Transferencia",
     other: "Otro",
   };
 
-  return labels[method] ?? "Metodo de pago";
+  return labels[method] ?? "Método de pago";
 }
 
 function isMembershipRenewable(membership) {
@@ -6888,7 +6995,7 @@ function getRenewableMembership(memberships = []) {
 
 function getSelectedCustomerMembershipActionLabel() {
   if (!selectedCustomerActiveMembership) {
-    return "Pagar membresia";
+    return "Activar membresía";
   }
 
   if (isMembershipCurrentlyUsable(selectedCustomerActiveMembership) && selectedCustomerMembershipBenefits.length > 0) {
@@ -6896,10 +7003,10 @@ function getSelectedCustomerMembershipActionLabel() {
   }
 
   if (isMembershipRenewable(selectedCustomerActiveMembership)) {
-    return "Renovar membresia";
+    return "Renovar membresía";
   }
 
-  return "Pagar membresia";
+  return "Activar membresía";
 }
 
 function getMembershipOperationCustomer() {
@@ -6909,9 +7016,9 @@ function getMembershipOperationCustomer() {
 function getExpirationAlertLabel(alert = {}) {
   const labels = {
     none: "Sin alerta de vencimiento.",
-    expires_today: "La membresia vence hoy.",
-    expiring_soon: alert.message || `La membresia vence en ${alert.daysUntilExpiration} dias.`,
-    expired: "Membresia vencida.",
+    expires_today: "La membresía vence hoy.",
+    expiring_soon: alert.message || `La membresía vence en ${alert.daysUntilExpiration} días.`,
+    expired: "Membresía vencida.",
   };
 
   return labels[alert.state] ?? "Sin alerta de vencimiento.";
@@ -6921,14 +7028,14 @@ function getMembershipExpirationStateLabel(item = {}) {
   const days = Number(item.daysUntilExpiration ?? 0);
 
   if (days < 0 || item.state === "expired") {
-    return `Vencio hace ${formatReportNumber(Math.abs(days))} dias`;
+    return `Vencio hace ${formatReportNumber(Math.abs(days))} días`;
   }
 
   if (days === 0 || item.state === "expires_today") {
     return "Vence hoy";
   }
 
-  return `Vence en ${formatReportNumber(days)} dias`;
+  return `Vence en ${formatReportNumber(days)} días`;
 }
 
 function getSelectedActivationPlan() {
@@ -6961,7 +7068,7 @@ function getAppliesToTypeLabel(type) {
   const labels = {
     product: "Producto",
     service: "Servicio",
-    category: "Categoria",
+    category: "Categoría",
     text: "Texto libre",
   };
 
@@ -6986,7 +7093,7 @@ function getMembershipBenefitSummary(benefit) {
   }
 
   if (["allowance", "free_item"].includes(benefit.benefitType)) {
-    return `${benefit.includedQuantity || 0} incluido, limite ${benefit.usageLimit || 0} por ${getUsagePeriodLabel(benefit.usagePeriod).toLowerCase()}`;
+    return `${benefit.includedQuantity || 0} incluido, límite ${benefit.usageLimit || 0} por ${getUsagePeriodLabel(benefit.usagePeriod).toLowerCase()}`;
   }
 
   return "Beneficio informativo";
@@ -6994,9 +7101,9 @@ function getMembershipBenefitSummary(benefit) {
 
 function getRegistrationStatusLabel(status) {
   const labels = {
-    pending: "Pendiente",
-    approved: "Aprobada",
-    rejected: "Rechazada",
+    pending: "Por revisar",
+    approved: "Activada",
+    rejected: "No continuada",
     cancelled: "Cancelada",
   };
 
@@ -7005,18 +7112,18 @@ function getRegistrationStatusLabel(status) {
 
 function getInvitationStatusLabel(status) {
   const labels = {
-    pending: "Invitacion pendiente",
-    accepted: "Invitacion aceptada",
-    expired: "Invitacion expirada",
-    revoked: "Invitacion no disponible",
+    pending: "Acceso pendiente",
+    accepted: "Acceso creado",
+    expired: "Acceso vencido",
+    revoked: "Acceso no disponible",
   };
 
-  return labels[status] ?? (status || "Invitacion no disponible");
+  return labels[status] ?? (status || "Acceso no disponible");
 }
 
 function getAdminInvitationLabel(invitation) {
   if (!invitation) {
-    return "Sin invitacion";
+    return "Sin acceso";
   }
 
   return getInvitationStatusLabel(invitation.status);
@@ -7024,13 +7131,13 @@ function getAdminInvitationLabel(invitation) {
 
 function getAdminRequestStateMessage(status) {
   const messages = {
-    pending: "Esta solicitud esta pendiente de revision.",
-    approved: "Esta solicitud ya fue aprobada.",
-    rejected: "Esta solicitud fue rechazada.",
-    cancelled: "Esta solicitud ya no esta disponible.",
+    pending: "Datos recibidos para revisar.",
+    approved: "Esta empresa ya está activada.",
+    rejected: "Esta empresa quedó como no continuada.",
+    cancelled: "Esta empresa ya no está disponible.",
   };
 
-  return messages[status] ?? "Esta solicitud ya fue procesada. Actualice la lista para ver el estado mas reciente.";
+  return messages[status] ?? "Esta empresa ya fue procesada. Actualiza la lista para ver el estado más reciente.";
 }
 
 function getInvitationRoleLabel(role) {
@@ -7046,22 +7153,22 @@ function getInvitationRoleLabel(role) {
 function getInvitationUnavailableState(reason) {
   const states = {
     invalid: {
-      title: "Invitacion no disponible",
+      title: "Acceso no disponible",
       message:
-        "Esta invitacion expiro, ya fue usada o no es valida. Solicite una nueva invitacion para crear el acceso.",
+        "Este enlace expiró, ya fue usado o no está disponible. Solicita un nuevo acceso.",
     },
     expired: {
-      title: "Invitacion expirada",
-      message: "Esta invitacion expiro. Contacte al equipo de Punto Club para recibir una nueva invitacion.",
+      title: "Acceso vencido",
+      message: "Este enlace expiró. Contacta al equipo de Punto Club para recibir un nuevo acceso.",
     },
     accepted: {
       title: "Acceso creado",
-      message: "Esta invitacion ya fue usada. Si no puede entrar, contacte al equipo de Punto Club.",
+      message: "Este enlace ya fue usado. Si no puedes entrar, contacta al equipo de Punto Club.",
     },
     revoked: {
-      title: "Invitacion no disponible",
+      title: "Acceso no disponible",
       message:
-        "Esta invitacion ya no esta disponible. Contacte al equipo de Punto Club para revisar el acceso de la empresa.",
+        "Este enlace ya no está disponible. Contacta al equipo de Punto Club para revisar el acceso de la empresa.",
     },
   };
 
@@ -7136,7 +7243,7 @@ function getAuditSummary(item, eventType) {
 
   if (eventType === "company.settings.updated") {
     const fields = Array.isArray(metadata.changedFields) ? metadata.changedFields.join(", ") : "";
-    return fields ? `Configuracion actualizada: ${fields}.` : "Configuracion actualizada.";
+    return fields ? `Configuración actualizada: ${fields}.` : "Configuración actualizada.";
   }
 
   return getAuditEventLabel(eventType);
@@ -7160,7 +7267,7 @@ function parseAuditMetadata(metadata) {
 
 function exportReportCsv() {
   if (!currentReport || !Array.isArray(currentReport.items) || currentReport.items.length === 0) {
-    showReportError("Consulte un reporte con movimientos antes de exportar.");
+    showReportError("Consulta un reporte con movimientos antes de exportar.");
     return;
   }
 
@@ -7201,7 +7308,7 @@ function exportMembershipFinancialReportCsv() {
     || !Array.isArray(currentMembershipFinancialReport.items)
     || currentMembershipFinancialReport.items.length === 0
   ) {
-    showMembershipFinancialReportError("Consulte un reporte de membresias antes de exportar.");
+    showMembershipFinancialReportError("Consulta un reporte de membresías antes de exportar.");
     return;
   }
 
@@ -7210,12 +7317,12 @@ function exportMembershipFinancialReportCsv() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `punto-club-membresias-financiero-${currentMembershipFinancialReport.from}-${currentMembershipFinancialReport.to}.csv`;
+  link.download = `punto-club-membresías-financiero-${currentMembershipFinancialReport.from}-${currentMembershipFinancialReport.to}.csv`;
   document.body.append(link);
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
-  showMembershipFinancialReportStatus("CSV de membresias exportado desde los datos cargados.");
+  showMembershipFinancialReportStatus("CSV de membresías exportado desde los datos cargados.");
 }
 
 function exportCustomerReportCsv() {
@@ -7225,7 +7332,7 @@ function exportCustomerReportCsv() {
     || !Array.isArray(currentCustomerReport.items)
     || currentCustomerReport.items.length === 0
   ) {
-    showCustomerReportError("Consulte un reporte por cliente con movimientos antes de exportar.");
+    showCustomerReportError("Consulta un reporte por cliente con movimientos antes de exportar.");
     return;
   }
 
@@ -7245,7 +7352,7 @@ function exportCustomerReportCsv() {
 
 function exportAuditCsv() {
   if (!currentAuditEvents || !Array.isArray(currentAuditEvents.items) || currentAuditEvents.items.length === 0) {
-    showAuditError("Consulte una auditoria con eventos antes de exportar.");
+    showAuditError("Consulta un historial con eventos antes de exportar.");
     return;
   }
 
@@ -7273,12 +7380,12 @@ function exportAuditCsv() {
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = `punto-club-auditoria-${currentAuditEvents.from || "desde"}-${currentAuditEvents.to || "hasta"}.csv`;
+  link.download = `punto-club-historial-${currentAuditEvents.from || "desde"}-${currentAuditEvents.to || "hasta"}.csv`;
   document.body.append(link);
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
-  showAuditStatus("CSV de auditoria exportado desde los datos cargados.");
+  showAuditStatus("CSV de historial exportado desde los datos cargados.");
 }
 
 function buildMembershipFinancialReportCsv(report) {
@@ -7307,7 +7414,7 @@ function getReportCsvDetail(item) {
   }
 
   if (item.type === "membership") {
-    return item.note || "Evento de membresia";
+    return item.note || "Evento de membresía";
   }
 
   return item.note || "Sin nota";
