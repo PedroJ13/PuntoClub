@@ -230,6 +230,7 @@ const elements = {
   companyPasswordError: document.querySelector("#company-password-error"),
   saveCompanyPasswordButton: document.querySelector("#save-company-password-button"),
   resetCompanyPasswordFormButton: document.querySelector("#reset-company-password-form-button"),
+  toggleCompanyPasswordPanelButton: document.querySelector("#toggle-company-password-panel"),
   toggleCompanyCurrentPasswordButton: document.querySelector("#toggle-company-current-password"),
   toggleCompanyNewPasswordButton: document.querySelector("#toggle-company-new-password"),
   toggleCompanyNewPasswordConfirmationButton: document.querySelector("#toggle-company-new-password-confirmation"),
@@ -624,6 +625,10 @@ elements.companyPasswordForm.addEventListener("submit", async (event) => {
 
 elements.resetCompanyPasswordFormButton.addEventListener("click", () => {
   clearCompanyPasswordForm();
+});
+
+elements.toggleCompanyPasswordPanelButton.addEventListener("click", () => {
+  toggleCompanyPasswordPanel();
 });
 
 elements.toggleCompanyCurrentPasswordButton.addEventListener("click", () => {
@@ -4154,7 +4159,7 @@ function renderCompanyLoading() {
 function renderCompanySettings(settings) {
   elements.companyEmpty.hidden = true;
   elements.companyForm.hidden = false;
-  elements.companyPasswordForm.hidden = false;
+  setCompanyPasswordPanelVisible(false);
   elements.companyNameInput.value = settings.name ?? "";
   elements.companyEmailInput.value = settings.email ?? "";
   elements.companyPhoneInput.value = settings.phone ?? "";
@@ -5878,6 +5883,28 @@ function clearCompanyPasswordForm(options = {}) {
   }
 
   clearCompanyPasswordMessages();
+}
+
+function setCompanyPasswordPanelVisible(isVisible, options = {}) {
+  elements.companyPasswordForm.hidden = !isVisible;
+  elements.toggleCompanyPasswordPanelButton.setAttribute("aria-expanded", String(isVisible));
+  elements.toggleCompanyPasswordPanelButton.textContent = isVisible
+    ? "Ocultar cambio de contraseña"
+    : "Cambiar contraseña";
+
+  if (!isVisible && !options.keepForm) {
+    clearCompanyPasswordForm();
+  }
+
+  if (isVisible) {
+    window.requestAnimationFrame(() => {
+      elements.companyCurrentPasswordInput.focus({ preventScroll: isCompactViewport() });
+    });
+  }
+}
+
+function toggleCompanyPasswordPanel() {
+  setCompanyPasswordPanelVisible(elements.companyPasswordForm.hidden);
 }
 
 function clearCompanyLogoMessages() {

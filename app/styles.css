@@ -2122,6 +2122,16 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   background: var(--surface);
 }
 
+.company-password-form {
+  max-width: 680px;
+}
+
+.company-password-fields {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
 .company-future {
   display: grid;
   gap: 8px;
@@ -2785,6 +2795,10 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
     width: 40px;
     min-width: 40px;
     align-self: flex-start;
+  }
+
+  .password-field {
+    grid-template-columns: minmax(0, 1fr) minmax(64px, auto);
   }
 
   .public-home-actions {

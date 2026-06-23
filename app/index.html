@@ -992,11 +992,20 @@
                 </div>
 
                 <div class="form-actions">
+                  <button
+                    class="secondary-button"
+                    id="toggle-company-password-panel"
+                    type="button"
+                    aria-controls="company-password-form"
+                    aria-expanded="false"
+                  >
+                    Cambiar contraseña
+                  </button>
                   <button id="save-company-button" type="submit" data-icon="✓">Guardar configuracion</button>
                 </div>
               </form>
 
-              <form id="company-password-form" class="company-form compact-auth-form" novalidate hidden>
+              <form id="company-password-form" class="company-form compact-auth-form company-password-form" novalidate hidden>
                 <div class="section-header compact-header">
                   <div>
                     <h3>Cambiar contraseña</h3>
@@ -1004,7 +1013,7 @@
                   </div>
                 </div>
 
-                <div class="field-grid company-controls">
+                <div class="company-password-fields">
                   <div class="field">
                     <label for="company-current-password">Contraseña actual</label>
                     <div class="password-field">
