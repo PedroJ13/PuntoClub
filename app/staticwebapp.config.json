@@ -4,6 +4,8 @@
     "exclude": [
       "/styles.css",
       "/app-config.js",
+      "/robots.txt",
+      "/sitemap.xml",
       "/src/*"
     ]
   }

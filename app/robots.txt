@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://puntoclubcr.com/sitemap.xml

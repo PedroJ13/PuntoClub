@@ -3,6 +3,38 @@ import { ApiError, createCustomerApi } from "./customerApi.js";
 
 const api = createCustomerApi(config);
 
+const SEO_BASE_URL = "https://puntoclubcr.com";
+const SEO_ROUTE_CONFIG = {
+  "/": {
+    title: "Punto Club | App de fidelización de clientes en Costa Rica",
+    description:
+      "Crea programas de puntos, membresías y beneficios con Punto Club. Fideliza clientes, aumenta la recompra y opera tu programa desde un panel simple.",
+    canonical: `${SEO_BASE_URL}/`,
+    robots: "index,follow",
+    ogTitle: "Punto Club | App de fidelización de clientes",
+    ogDescription:
+      "Crea programas de puntos, membresías y beneficios para que tus clientes regresen con más frecuencia.",
+  },
+  "/producto": {
+    title: "Software de fidelización de clientes | Punto Club",
+    description:
+      "Punto Club ayuda a negocios a registrar puntos, administrar membresías, aplicar beneficios y medir la actividad de sus clientes frecuentes.",
+    canonical: `${SEO_BASE_URL}/producto`,
+    robots: "index,follow",
+    ogTitle: "Software de fidelización de clientes | Punto Club",
+    ogDescription:
+      "Software de lealtad para negocios en Costa Rica con puntos, membresías, beneficios y reportes.",
+  },
+};
+const SEO_NOINDEX_CONFIG = {
+  title: "Punto Club",
+  description: "Panel operativo de Punto Club para empresas autorizadas.",
+  canonical: SEO_BASE_URL,
+  robots: "noindex,nofollow",
+  ogTitle: "Punto Club",
+  ogDescription: "Panel operativo de Punto Club.",
+};
+
 const elements = {
   publicHomePage: document.querySelector("#public-home-page"),
   publicProductPage: document.querySelector("#public-product-page"),
@@ -13,7 +45,9 @@ const elements = {
   loginButton: document.querySelector("#login-button"),
   logoutButton: document.querySelector("#logout-button"),
   activeCompanyIdentity: document.querySelector("#active-company-identity"),
-  activeCompanyLogoFallback: document.querySelector("#active-company-logo-fallback"),
+  activeCompanyLogoFallback: document.querySelector(
+    "#active-company-logo-fallback",
+  ),
   activeCompanyLogoImage: document.querySelector("#active-company-logo-image"),
   activeCompanyName: document.querySelector("#active-company-name"),
   appBody: document.querySelector(".app-body"),
@@ -27,25 +61,45 @@ const elements = {
   loginStatus: document.querySelector("#login-status"),
   submitLoginButton: document.querySelector("#submit-login-button"),
   toggleLoginPasswordButton: document.querySelector("#toggle-login-password"),
-  passwordResetRequestForm: document.querySelector("#password-reset-request-form"),
+  passwordResetRequestForm: document.querySelector(
+    "#password-reset-request-form",
+  ),
   passwordResetEmailInput: document.querySelector("#password-reset-email"),
-  passwordResetEmailError: document.querySelector("#password-reset-email-error"),
-  passwordResetRequestError: document.querySelector("#password-reset-request-error"),
-  passwordResetRequestStatus: document.querySelector("#password-reset-request-status"),
-  submitPasswordResetRequestButton: document.querySelector("#submit-password-reset-request-button"),
-  togglePasswordResetRequestButton: document.querySelector("#toggle-password-reset-request"),
+  passwordResetEmailError: document.querySelector(
+    "#password-reset-email-error",
+  ),
+  passwordResetRequestError: document.querySelector(
+    "#password-reset-request-error",
+  ),
+  passwordResetRequestStatus: document.querySelector(
+    "#password-reset-request-status",
+  ),
+  submitPasswordResetRequestButton: document.querySelector(
+    "#submit-password-reset-request-button",
+  ),
+  togglePasswordResetRequestButton: document.querySelector(
+    "#toggle-password-reset-request",
+  ),
   passwordResetPage: document.querySelector("#password-reset-page"),
   passwordResetLoading: document.querySelector("#password-reset-loading"),
   passwordResetError: document.querySelector("#password-reset-error"),
   passwordResetStatus: document.querySelector("#password-reset-status"),
   passwordResetForm: document.querySelector("#password-reset-form"),
   newPasswordInput: document.querySelector("#new-password"),
-  newPasswordConfirmationInput: document.querySelector("#new-password-confirmation"),
+  newPasswordConfirmationInput: document.querySelector(
+    "#new-password-confirmation",
+  ),
   newPasswordError: document.querySelector("#new-password-error"),
-  newPasswordConfirmationError: document.querySelector("#new-password-confirmation-error"),
-  submitPasswordResetButton: document.querySelector("#submit-password-reset-button"),
+  newPasswordConfirmationError: document.querySelector(
+    "#new-password-confirmation-error",
+  ),
+  submitPasswordResetButton: document.querySelector(
+    "#submit-password-reset-button",
+  ),
   toggleNewPasswordButton: document.querySelector("#toggle-new-password"),
-  toggleNewPasswordConfirmationButton: document.querySelector("#toggle-new-password-confirmation"),
+  toggleNewPasswordConfirmationButton: document.querySelector(
+    "#toggle-new-password-confirmation",
+  ),
   invitationPage: document.querySelector("#invitation-page"),
   invitationLoading: document.querySelector("#invitation-loading"),
   invitationError: document.querySelector("#invitation-error"),
@@ -58,17 +112,23 @@ const elements = {
   createAccessForm: document.querySelector("#create-access-form"),
   accessDisplayNameInput: document.querySelector("#access-display-name"),
   accessPasswordInput: document.querySelector("#access-password"),
-  accessPasswordConfirmationInput: document.querySelector("#access-password-confirmation"),
+  accessPasswordConfirmationInput: document.querySelector(
+    "#access-password-confirmation",
+  ),
   accessDisplayNameError: document.querySelector("#access-display-name-error"),
   accessPasswordError: document.querySelector("#access-password-error"),
-  accessPasswordConfirmationError: document.querySelector("#access-password-confirmation-error"),
+  accessPasswordConfirmationError: document.querySelector(
+    "#access-password-confirmation-error",
+  ),
   accessError: document.querySelector("#access-error"),
   accessStatus: document.querySelector("#access-status"),
   createAccessButton: document.querySelector("#create-access-button"),
   navButtons: [...document.querySelectorAll("[data-section-target]")],
   sectionPanels: [...document.querySelectorAll("[data-section]")],
   pointsNavButton: document.querySelector('[data-section-target="operations"]'),
-  membershipsNavButton: document.querySelector('[data-section-target="memberships"]'),
+  membershipsNavButton: document.querySelector(
+    '[data-section-target="memberships"]',
+  ),
   membershipOperationHost: document.querySelector("#membership-operation-host"),
   membershipConfigHost: document.querySelector("#membership-config-host"),
   searchForm: document.querySelector("#customer-search-form"),
@@ -92,33 +152,83 @@ const elements = {
   operationEmpty: document.querySelector("#operation-empty"),
   selectedCustomerCard: document.querySelector("#selected-customer-card"),
   pointsMembershipContext: document.querySelector("#points-membership-context"),
-  membershipOperationPanel: document.querySelector("#membership-operation-panel"),
-  reloadMembershipOperationButton: document.querySelector("#reload-membership-operation-button"),
-  membershipOperationStatus: document.querySelector("#membership-operation-status"),
-  membershipOperationError: document.querySelector("#membership-operation-error"),
+  membershipOperationPanel: document.querySelector(
+    "#membership-operation-panel",
+  ),
+  reloadMembershipOperationButton: document.querySelector(
+    "#reload-membership-operation-button",
+  ),
+  membershipOperationStatus: document.querySelector(
+    "#membership-operation-status",
+  ),
+  membershipOperationError: document.querySelector(
+    "#membership-operation-error",
+  ),
   membershipPaymentHost: document.querySelector("#membership-payment-host"),
-  membershipOperationActive: document.querySelector("#membership-operation-active"),
+  membershipOperationActive: document.querySelector(
+    "#membership-operation-active",
+  ),
   membershipRenewalForm: document.querySelector("#membership-renewal-form"),
-  membershipRenewalPaymentMethodInput: document.querySelector("#membership-renewal-payment-method"),
-  membershipRenewalAmountInput: document.querySelector("#membership-renewal-amount"),
-  membershipRenewalPaymentMethodError: document.querySelector("#membership-renewal-payment-method-error"),
-  membershipRenewalAmountError: document.querySelector("#membership-renewal-amount-error"),
-  cancelMembershipRenewalButton: document.querySelector("#cancel-membership-renewal-button"),
-  confirmMembershipRenewalButton: document.querySelector("#confirm-membership-renewal-button"),
-  membershipOperationBenefits: document.querySelector("#membership-operation-benefits"),
-  membershipBenefitUsageForm: document.querySelector("#membership-benefit-usage-form"),
-  membershipBenefitUsageBenefitIdInput: document.querySelector("#membership-benefit-usage-benefit-id"),
-  membershipBenefitUsageSummary: document.querySelector("#membership-benefit-usage-summary"),
-  membershipBenefitUsageDateInput: document.querySelector("#membership-benefit-usage-date"),
-  membershipBenefitUsageQuantityInput: document.querySelector("#membership-benefit-usage-quantity"),
-  membershipBenefitUsageNoteInput: document.querySelector("#membership-benefit-usage-note"),
-  membershipBenefitUsageDateError: document.querySelector("#membership-benefit-usage-date-error"),
-  membershipBenefitUsageQuantityError: document.querySelector("#membership-benefit-usage-quantity-error"),
-  membershipBenefitUsageNoteError: document.querySelector("#membership-benefit-usage-note-error"),
-  cancelMembershipBenefitUsageButton: document.querySelector("#cancel-membership-benefit-usage-button"),
-  confirmMembershipBenefitUsageButton: document.querySelector("#confirm-membership-benefit-usage-button"),
-  membershipOperationUsages: document.querySelector("#membership-operation-usages"),
-  membershipOperationTransactions: document.querySelector("#membership-operation-transactions"),
+  membershipRenewalPaymentMethodInput: document.querySelector(
+    "#membership-renewal-payment-method",
+  ),
+  membershipRenewalAmountInput: document.querySelector(
+    "#membership-renewal-amount",
+  ),
+  membershipRenewalPaymentMethodError: document.querySelector(
+    "#membership-renewal-payment-method-error",
+  ),
+  membershipRenewalAmountError: document.querySelector(
+    "#membership-renewal-amount-error",
+  ),
+  cancelMembershipRenewalButton: document.querySelector(
+    "#cancel-membership-renewal-button",
+  ),
+  confirmMembershipRenewalButton: document.querySelector(
+    "#confirm-membership-renewal-button",
+  ),
+  membershipOperationBenefits: document.querySelector(
+    "#membership-operation-benefits",
+  ),
+  membershipBenefitUsageForm: document.querySelector(
+    "#membership-benefit-usage-form",
+  ),
+  membershipBenefitUsageBenefitIdInput: document.querySelector(
+    "#membership-benefit-usage-benefit-id",
+  ),
+  membershipBenefitUsageSummary: document.querySelector(
+    "#membership-benefit-usage-summary",
+  ),
+  membershipBenefitUsageDateInput: document.querySelector(
+    "#membership-benefit-usage-date",
+  ),
+  membershipBenefitUsageQuantityInput: document.querySelector(
+    "#membership-benefit-usage-quantity",
+  ),
+  membershipBenefitUsageNoteInput: document.querySelector(
+    "#membership-benefit-usage-note",
+  ),
+  membershipBenefitUsageDateError: document.querySelector(
+    "#membership-benefit-usage-date-error",
+  ),
+  membershipBenefitUsageQuantityError: document.querySelector(
+    "#membership-benefit-usage-quantity-error",
+  ),
+  membershipBenefitUsageNoteError: document.querySelector(
+    "#membership-benefit-usage-note-error",
+  ),
+  cancelMembershipBenefitUsageButton: document.querySelector(
+    "#cancel-membership-benefit-usage-button",
+  ),
+  confirmMembershipBenefitUsageButton: document.querySelector(
+    "#confirm-membership-benefit-usage-button",
+  ),
+  membershipOperationUsages: document.querySelector(
+    "#membership-operation-usages",
+  ),
+  membershipOperationTransactions: document.querySelector(
+    "#membership-operation-transactions",
+  ),
   historyPanel: document.querySelector("#history-panel"),
   historySummary: document.querySelector("#history-summary"),
   historyList: document.querySelector("#history-list"),
@@ -127,7 +237,9 @@ const elements = {
   purchaseInvoiceInput: document.querySelector("#purchase-invoice-number"),
   purchaseDateInput: document.querySelector("#purchase-date"),
   purchaseAmountInput: document.querySelector("#purchase-amount"),
-  purchaseInvoiceError: document.querySelector("#purchase-invoice-number-error"),
+  purchaseInvoiceError: document.querySelector(
+    "#purchase-invoice-number-error",
+  ),
   purchaseDateError: document.querySelector("#purchase-date-error"),
   purchaseAmountError: document.querySelector("#purchase-amount-error"),
   purchaseError: document.querySelector("#purchase-error"),
@@ -155,18 +267,42 @@ const elements = {
   reportTableBody: document.querySelector("#report-table-body"),
   loadReportButton: document.querySelector("#load-report-button"),
   exportReportButton: document.querySelector("#export-report-button"),
-  membershipFinancialReportForm: document.querySelector("#membership-financial-report-form"),
-  membershipFinancialReportFromInput: document.querySelector("#membership-financial-report-from"),
-  membershipFinancialReportToInput: document.querySelector("#membership-financial-report-to"),
-  membershipFinancialReportError: document.querySelector("#membership-financial-report-error"),
-  membershipFinancialReportStatus: document.querySelector("#membership-financial-report-status"),
-  membershipFinancialReportSummary: document.querySelector("#membership-financial-report-summary"),
-  membershipFinancialPaymentSummary: document.querySelector("#membership-financial-payment-summary"),
-  membershipFinancialReportEmpty: document.querySelector("#membership-financial-report-empty"),
-  membershipFinancialReportTableWrap: document.querySelector("#membership-financial-report-table-wrap"),
-  membershipFinancialReportTableBody: document.querySelector("#membership-financial-report-table-body"),
-  loadMembershipFinancialReportButton: document.querySelector("#load-membership-financial-report-button"),
-  exportMembershipFinancialReportButton: document.querySelector("#export-membership-financial-report-button"),
+  membershipFinancialReportForm: document.querySelector(
+    "#membership-financial-report-form",
+  ),
+  membershipFinancialReportFromInput: document.querySelector(
+    "#membership-financial-report-from",
+  ),
+  membershipFinancialReportToInput: document.querySelector(
+    "#membership-financial-report-to",
+  ),
+  membershipFinancialReportError: document.querySelector(
+    "#membership-financial-report-error",
+  ),
+  membershipFinancialReportStatus: document.querySelector(
+    "#membership-financial-report-status",
+  ),
+  membershipFinancialReportSummary: document.querySelector(
+    "#membership-financial-report-summary",
+  ),
+  membershipFinancialPaymentSummary: document.querySelector(
+    "#membership-financial-payment-summary",
+  ),
+  membershipFinancialReportEmpty: document.querySelector(
+    "#membership-financial-report-empty",
+  ),
+  membershipFinancialReportTableWrap: document.querySelector(
+    "#membership-financial-report-table-wrap",
+  ),
+  membershipFinancialReportTableBody: document.querySelector(
+    "#membership-financial-report-table-body",
+  ),
+  loadMembershipFinancialReportButton: document.querySelector(
+    "#load-membership-financial-report-button",
+  ),
+  exportMembershipFinancialReportButton: document.querySelector(
+    "#export-membership-financial-report-button",
+  ),
   reportTabs: document.querySelectorAll("[data-report-view]"),
   reportPanels: document.querySelectorAll("[data-report-panel]"),
   customerReportForm: document.querySelector("#customer-report-form"),
@@ -177,12 +313,22 @@ const elements = {
   customerReportError: document.querySelector("#customer-report-error"),
   customerReportStatus: document.querySelector("#customer-report-status"),
   customerReportSummary: document.querySelector("#customer-report-summary"),
-  customerReportCandidates: document.querySelector("#customer-report-candidates"),
+  customerReportCandidates: document.querySelector(
+    "#customer-report-candidates",
+  ),
   customerReportEmpty: document.querySelector("#customer-report-empty"),
-  customerReportTableWrap: document.querySelector("#customer-report-table-wrap"),
-  customerReportTableBody: document.querySelector("#customer-report-table-body"),
-  loadCustomerReportButton: document.querySelector("#load-customer-report-button"),
-  exportCustomerReportButton: document.querySelector("#export-customer-report-button"),
+  customerReportTableWrap: document.querySelector(
+    "#customer-report-table-wrap",
+  ),
+  customerReportTableBody: document.querySelector(
+    "#customer-report-table-body",
+  ),
+  loadCustomerReportButton: document.querySelector(
+    "#load-customer-report-button",
+  ),
+  exportCustomerReportButton: document.querySelector(
+    "#export-customer-report-button",
+  ),
   auditForm: document.querySelector("#audit-form"),
   auditFromInput: document.querySelector("#audit-from"),
   auditToInput: document.querySelector("#audit-to"),
@@ -198,18 +344,26 @@ const elements = {
   companyNameInput: document.querySelector("#company-name"),
   companyEmailInput: document.querySelector("#company-email"),
   companyPhoneInput: document.querySelector("#company-phone"),
-  companyPointsPercentageInput: document.querySelector("#company-points-percentage"),
+  companyPointsPercentageInput: document.querySelector(
+    "#company-points-percentage",
+  ),
   companyNameError: document.querySelector("#company-name-error"),
   companyEmailError: document.querySelector("#company-email-error"),
   companyPhoneError: document.querySelector("#company-phone-error"),
-  companyPointsPercentageError: document.querySelector("#company-points-percentage-error"),
+  companyPointsPercentageError: document.querySelector(
+    "#company-points-percentage-error",
+  ),
   companyLogoFileInput: document.querySelector("#company-logo-file"),
   companyLogoFileError: document.querySelector("#company-logo-file-error"),
   companyLogoPreviewText: document.querySelector("#company-logo-preview-text"),
-  companyLogoPreviewImage: document.querySelector("#company-logo-preview-image"),
+  companyLogoPreviewImage: document.querySelector(
+    "#company-logo-preview-image",
+  ),
   companyLogoStatus: document.querySelector("#company-logo-status"),
   companyLogoError: document.querySelector("#company-logo-error"),
-  uploadCompanyLogoButton: document.querySelector("#upload-company-logo-button"),
+  uploadCompanyLogoButton: document.querySelector(
+    "#upload-company-logo-button",
+  ),
   clearCompanyLogoButton: document.querySelector("#clear-company-logo-button"),
   companyStatus: document.querySelector("#company-status"),
   companyError: document.querySelector("#company-error"),
@@ -220,125 +374,317 @@ const elements = {
   reloadCompanyButton: document.querySelector("#reload-company-button"),
   saveCompanyButton: document.querySelector("#save-company-button"),
   companyPasswordForm: document.querySelector("#company-password-form"),
-  companyCurrentPasswordInput: document.querySelector("#company-current-password"),
+  companyCurrentPasswordInput: document.querySelector(
+    "#company-current-password",
+  ),
   companyNewPasswordInput: document.querySelector("#company-new-password"),
-  companyNewPasswordConfirmationInput: document.querySelector("#company-new-password-confirmation"),
-  companyCurrentPasswordError: document.querySelector("#company-current-password-error"),
-  companyNewPasswordError: document.querySelector("#company-new-password-error"),
-  companyNewPasswordConfirmationError: document.querySelector("#company-new-password-confirmation-error"),
+  companyNewPasswordConfirmationInput: document.querySelector(
+    "#company-new-password-confirmation",
+  ),
+  companyCurrentPasswordError: document.querySelector(
+    "#company-current-password-error",
+  ),
+  companyNewPasswordError: document.querySelector(
+    "#company-new-password-error",
+  ),
+  companyNewPasswordConfirmationError: document.querySelector(
+    "#company-new-password-confirmation-error",
+  ),
   companyPasswordStatus: document.querySelector("#company-password-status"),
   companyPasswordError: document.querySelector("#company-password-error"),
-  saveCompanyPasswordButton: document.querySelector("#save-company-password-button"),
-  resetCompanyPasswordFormButton: document.querySelector("#reset-company-password-form-button"),
-  toggleCompanyPasswordPanelButton: document.querySelector("#toggle-company-password-panel"),
-  toggleCompanyCurrentPasswordButton: document.querySelector("#toggle-company-current-password"),
-  toggleCompanyNewPasswordButton: document.querySelector("#toggle-company-new-password"),
-  toggleCompanyNewPasswordConfirmationButton: document.querySelector("#toggle-company-new-password-confirmation"),
+  saveCompanyPasswordButton: document.querySelector(
+    "#save-company-password-button",
+  ),
+  resetCompanyPasswordFormButton: document.querySelector(
+    "#reset-company-password-form-button",
+  ),
+  toggleCompanyPasswordPanelButton: document.querySelector(
+    "#toggle-company-password-panel",
+  ),
+  toggleCompanyCurrentPasswordButton: document.querySelector(
+    "#toggle-company-current-password",
+  ),
+  toggleCompanyNewPasswordButton: document.querySelector(
+    "#toggle-company-new-password",
+  ),
+  toggleCompanyNewPasswordConfirmationButton: document.querySelector(
+    "#toggle-company-new-password-confirmation",
+  ),
   companyRegistrationForm: document.querySelector("#company-registration-form"),
-  registrationCompanyNameInput: document.querySelector("#registration-company-name"),
-  registrationCompanyEmailInput: document.querySelector("#registration-company-email"),
-  registrationCompanyAddressInput: document.querySelector("#registration-company-address"),
-  registrationCompanyPhoneInput: document.querySelector("#registration-company-phone"),
-  registrationContactNameInput: document.querySelector("#registration-contact-name"),
-  registrationContactEmailInput: document.querySelector("#registration-contact-email"),
-  registrationContactPhoneInput: document.querySelector("#registration-contact-phone"),
-  registrationCompanyNameError: document.querySelector("#registration-company-name-error"),
-  registrationCompanyEmailError: document.querySelector("#registration-company-email-error"),
-  registrationCompanyAddressError: document.querySelector("#registration-company-address-error"),
-  registrationCompanyPhoneError: document.querySelector("#registration-company-phone-error"),
-  registrationContactNameError: document.querySelector("#registration-contact-name-error"),
-  registrationContactEmailError: document.querySelector("#registration-contact-email-error"),
-  registrationContactPhoneError: document.querySelector("#registration-contact-phone-error"),
+  registrationCompanyNameInput: document.querySelector(
+    "#registration-company-name",
+  ),
+  registrationCompanyEmailInput: document.querySelector(
+    "#registration-company-email",
+  ),
+  registrationCompanyAddressInput: document.querySelector(
+    "#registration-company-address",
+  ),
+  registrationCompanyPhoneInput: document.querySelector(
+    "#registration-company-phone",
+  ),
+  registrationContactNameInput: document.querySelector(
+    "#registration-contact-name",
+  ),
+  registrationContactEmailInput: document.querySelector(
+    "#registration-contact-email",
+  ),
+  registrationContactPhoneInput: document.querySelector(
+    "#registration-contact-phone",
+  ),
+  registrationCompanyNameError: document.querySelector(
+    "#registration-company-name-error",
+  ),
+  registrationCompanyEmailError: document.querySelector(
+    "#registration-company-email-error",
+  ),
+  registrationCompanyAddressError: document.querySelector(
+    "#registration-company-address-error",
+  ),
+  registrationCompanyPhoneError: document.querySelector(
+    "#registration-company-phone-error",
+  ),
+  registrationContactNameError: document.querySelector(
+    "#registration-contact-name-error",
+  ),
+  registrationContactEmailError: document.querySelector(
+    "#registration-contact-email-error",
+  ),
+  registrationContactPhoneError: document.querySelector(
+    "#registration-contact-phone-error",
+  ),
   registrationLogoFileInput: document.querySelector("#registration-logo-file"),
-  registrationLogoFileError: document.querySelector("#registration-logo-file-error"),
-  registrationLogoPreviewText: document.querySelector("#registration-logo-preview-text"),
-  registrationLogoPreviewImage: document.querySelector("#registration-logo-preview-image"),
-  clearRegistrationLogoButton: document.querySelector("#clear-registration-logo-button"),
+  registrationLogoFileError: document.querySelector(
+    "#registration-logo-file-error",
+  ),
+  registrationLogoPreviewText: document.querySelector(
+    "#registration-logo-preview-text",
+  ),
+  registrationLogoPreviewImage: document.querySelector(
+    "#registration-logo-preview-image",
+  ),
+  clearRegistrationLogoButton: document.querySelector(
+    "#clear-registration-logo-button",
+  ),
   registrationStatus: document.querySelector("#registration-status"),
   registrationError: document.querySelector("#registration-error"),
   registrationResult: document.querySelector("#registration-result"),
   resetRegistrationButton: document.querySelector("#reset-registration-button"),
-  submitRegistrationButton: document.querySelector("#submit-registration-button"),
+  submitRegistrationButton: document.querySelector(
+    "#submit-registration-button",
+  ),
   membershipPlansList: document.querySelector("#membership-plans-list"),
   membershipPlansStatus: document.querySelector("#membership-plans-status"),
   membershipPlansError: document.querySelector("#membership-plans-error"),
-  reloadMembershipPlansButton: document.querySelector("#reload-membership-plans-button"),
+  reloadMembershipPlansButton: document.querySelector(
+    "#reload-membership-plans-button",
+  ),
   membershipPlanForm: document.querySelector("#membership-plan-form"),
   membershipPlanIdInput: document.querySelector("#membership-plan-id"),
   membershipPlanNameInput: document.querySelector("#membership-plan-name"),
-  membershipPlanDescriptionInput: document.querySelector("#membership-plan-description"),
-  membershipPlanDurationDaysInput: document.querySelector("#membership-plan-duration-days"),
+  membershipPlanDescriptionInput: document.querySelector(
+    "#membership-plan-description",
+  ),
+  membershipPlanDurationDaysInput: document.querySelector(
+    "#membership-plan-duration-days",
+  ),
   membershipPlanPriceInput: document.querySelector("#membership-plan-price"),
-  membershipPlanRenewalNoticeDaysInput: document.querySelector("#membership-plan-renewal-notice-days"),
-  membershipPlanNameError: document.querySelector("#membership-plan-name-error"),
-  membershipPlanDescriptionError: document.querySelector("#membership-plan-description-error"),
-  membershipPlanDurationDaysError: document.querySelector("#membership-plan-duration-days-error"),
-  membershipPlanPriceError: document.querySelector("#membership-plan-price-error"),
-  membershipPlanRenewalNoticeDaysError: document.querySelector("#membership-plan-renewal-notice-days-error"),
-  saveMembershipPlanButton: document.querySelector("#save-membership-plan-button"),
-  resetMembershipPlanButton: document.querySelector("#reset-membership-plan-button"),
-  cancelMembershipPlanButton: document.querySelector("#cancel-membership-plan-button"),
-  membershipExpirationForm: document.querySelector("#membership-expiration-form"),
-  membershipExpirationWithinDaysInput: document.querySelector("#membership-expiration-within-days"),
-  membershipExpirationWithinDaysError: document.querySelector("#membership-expiration-within-days-error"),
-  reloadMembershipExpirationButton: document.querySelector("#reload-membership-expiration-button"),
-  loadMembershipExpirationButton: document.querySelector("#load-membership-expiration-button"),
-  membershipExpirationStatus: document.querySelector("#membership-expiration-status"),
-  membershipExpirationError: document.querySelector("#membership-expiration-error"),
+  membershipPlanRenewalNoticeDaysInput: document.querySelector(
+    "#membership-plan-renewal-notice-days",
+  ),
+  membershipPlanNameError: document.querySelector(
+    "#membership-plan-name-error",
+  ),
+  membershipPlanDescriptionError: document.querySelector(
+    "#membership-plan-description-error",
+  ),
+  membershipPlanDurationDaysError: document.querySelector(
+    "#membership-plan-duration-days-error",
+  ),
+  membershipPlanPriceError: document.querySelector(
+    "#membership-plan-price-error",
+  ),
+  membershipPlanRenewalNoticeDaysError: document.querySelector(
+    "#membership-plan-renewal-notice-days-error",
+  ),
+  saveMembershipPlanButton: document.querySelector(
+    "#save-membership-plan-button",
+  ),
+  resetMembershipPlanButton: document.querySelector(
+    "#reset-membership-plan-button",
+  ),
+  cancelMembershipPlanButton: document.querySelector(
+    "#cancel-membership-plan-button",
+  ),
+  membershipExpirationForm: document.querySelector(
+    "#membership-expiration-form",
+  ),
+  membershipExpirationWithinDaysInput: document.querySelector(
+    "#membership-expiration-within-days",
+  ),
+  membershipExpirationWithinDaysError: document.querySelector(
+    "#membership-expiration-within-days-error",
+  ),
+  reloadMembershipExpirationButton: document.querySelector(
+    "#reload-membership-expiration-button",
+  ),
+  loadMembershipExpirationButton: document.querySelector(
+    "#load-membership-expiration-button",
+  ),
+  membershipExpirationStatus: document.querySelector(
+    "#membership-expiration-status",
+  ),
+  membershipExpirationError: document.querySelector(
+    "#membership-expiration-error",
+  ),
   membershipExpiringList: document.querySelector("#membership-expiring-list"),
   membershipExpiredList: document.querySelector("#membership-expired-list"),
-  membershipBenefitsContext: document.querySelector("#membership-benefits-context"),
+  membershipBenefitsContext: document.querySelector(
+    "#membership-benefits-context",
+  ),
   membershipBenefitsList: document.querySelector("#membership-benefits-list"),
-  membershipBenefitsStatus: document.querySelector("#membership-benefits-status"),
+  membershipBenefitsStatus: document.querySelector(
+    "#membership-benefits-status",
+  ),
   membershipBenefitsError: document.querySelector("#membership-benefits-error"),
   membershipBenefitForm: document.querySelector("#membership-benefit-form"),
   membershipBenefitIdInput: document.querySelector("#membership-benefit-id"),
-  membershipBenefitNameInput: document.querySelector("#membership-benefit-name"),
-  membershipBenefitDescriptionInput: document.querySelector("#membership-benefit-description"),
-  membershipBenefitTypeInput: document.querySelector("#membership-benefit-type"),
-  membershipBenefitAppliesToTypeInput: document.querySelector("#membership-benefit-applies-to-type"),
-  membershipBenefitAppliesToNameInput: document.querySelector("#membership-benefit-applies-to-name"),
-  membershipBenefitDiscountPercentInput: document.querySelector("#membership-benefit-discount-percent"),
-  membershipBenefitIncludedQuantityInput: document.querySelector("#membership-benefit-included-quantity"),
-  membershipBenefitUsageLimitInput: document.querySelector("#membership-benefit-usage-limit"),
-  membershipBenefitUsagePeriodInput: document.querySelector("#membership-benefit-usage-period"),
-  membershipBenefitNameError: document.querySelector("#membership-benefit-name-error"),
-  membershipBenefitDescriptionError: document.querySelector("#membership-benefit-description-error"),
-  membershipBenefitTypeError: document.querySelector("#membership-benefit-type-error"),
-  membershipBenefitAppliesToTypeError: document.querySelector("#membership-benefit-applies-to-type-error"),
-  membershipBenefitAppliesToNameError: document.querySelector("#membership-benefit-applies-to-name-error"),
-  membershipBenefitDiscountPercentError: document.querySelector("#membership-benefit-discount-percent-error"),
-  membershipBenefitIncludedQuantityError: document.querySelector("#membership-benefit-included-quantity-error"),
-  membershipBenefitUsageLimitError: document.querySelector("#membership-benefit-usage-limit-error"),
-  membershipBenefitUsagePeriodError: document.querySelector("#membership-benefit-usage-period-error"),
-  saveMembershipBenefitButton: document.querySelector("#save-membership-benefit-button"),
-  resetMembershipBenefitButton: document.querySelector("#reset-membership-benefit-button"),
-  cancelMembershipBenefitButton: document.querySelector("#cancel-membership-benefit-button"),
-  membershipCustomerSearchForm: document.querySelector("#membership-activation-search-form"),
-  membershipCustomerSearchInput: document.querySelector("#membership-customer-search"),
-  searchMembershipCustomerButton: document.querySelector("#search-membership-customer-button"),
-  membershipCustomerSearchStatus: document.querySelector("#membership-customer-search-status"),
-  membershipCustomerSearchError: document.querySelector("#membership-customer-search-error"),
-  membershipCustomerResults: document.querySelector("#membership-customer-results"),
-  membershipActivationForm: document.querySelector("#membership-activation-form"),
-  membershipSelectedCustomer: document.querySelector("#membership-selected-customer"),
+  membershipBenefitNameInput: document.querySelector(
+    "#membership-benefit-name",
+  ),
+  membershipBenefitDescriptionInput: document.querySelector(
+    "#membership-benefit-description",
+  ),
+  membershipBenefitTypeInput: document.querySelector(
+    "#membership-benefit-type",
+  ),
+  membershipBenefitAppliesToTypeInput: document.querySelector(
+    "#membership-benefit-applies-to-type",
+  ),
+  membershipBenefitAppliesToNameInput: document.querySelector(
+    "#membership-benefit-applies-to-name",
+  ),
+  membershipBenefitDiscountPercentInput: document.querySelector(
+    "#membership-benefit-discount-percent",
+  ),
+  membershipBenefitIncludedQuantityInput: document.querySelector(
+    "#membership-benefit-included-quantity",
+  ),
+  membershipBenefitUsageLimitInput: document.querySelector(
+    "#membership-benefit-usage-limit",
+  ),
+  membershipBenefitUsagePeriodInput: document.querySelector(
+    "#membership-benefit-usage-period",
+  ),
+  membershipBenefitNameError: document.querySelector(
+    "#membership-benefit-name-error",
+  ),
+  membershipBenefitDescriptionError: document.querySelector(
+    "#membership-benefit-description-error",
+  ),
+  membershipBenefitTypeError: document.querySelector(
+    "#membership-benefit-type-error",
+  ),
+  membershipBenefitAppliesToTypeError: document.querySelector(
+    "#membership-benefit-applies-to-type-error",
+  ),
+  membershipBenefitAppliesToNameError: document.querySelector(
+    "#membership-benefit-applies-to-name-error",
+  ),
+  membershipBenefitDiscountPercentError: document.querySelector(
+    "#membership-benefit-discount-percent-error",
+  ),
+  membershipBenefitIncludedQuantityError: document.querySelector(
+    "#membership-benefit-included-quantity-error",
+  ),
+  membershipBenefitUsageLimitError: document.querySelector(
+    "#membership-benefit-usage-limit-error",
+  ),
+  membershipBenefitUsagePeriodError: document.querySelector(
+    "#membership-benefit-usage-period-error",
+  ),
+  saveMembershipBenefitButton: document.querySelector(
+    "#save-membership-benefit-button",
+  ),
+  resetMembershipBenefitButton: document.querySelector(
+    "#reset-membership-benefit-button",
+  ),
+  cancelMembershipBenefitButton: document.querySelector(
+    "#cancel-membership-benefit-button",
+  ),
+  membershipCustomerSearchForm: document.querySelector(
+    "#membership-activation-search-form",
+  ),
+  membershipCustomerSearchInput: document.querySelector(
+    "#membership-customer-search",
+  ),
+  searchMembershipCustomerButton: document.querySelector(
+    "#search-membership-customer-button",
+  ),
+  membershipCustomerSearchStatus: document.querySelector(
+    "#membership-customer-search-status",
+  ),
+  membershipCustomerSearchError: document.querySelector(
+    "#membership-customer-search-error",
+  ),
+  membershipCustomerResults: document.querySelector(
+    "#membership-customer-results",
+  ),
+  membershipActivationForm: document.querySelector(
+    "#membership-activation-form",
+  ),
+  membershipSelectedCustomer: document.querySelector(
+    "#membership-selected-customer",
+  ),
   membershipPointsContext: document.querySelector("#membership-points-context"),
-  membershipActivationPlanInput: document.querySelector("#membership-activation-plan"),
-  membershipActivationStartDateInput: document.querySelector("#membership-activation-start-date"),
-  membershipActivationPricePaidInput: document.querySelector("#membership-activation-price-paid"),
-  membershipActivationPaymentMethodInput: document.querySelector("#membership-activation-payment-method"),
-  membershipActivationPlanError: document.querySelector("#membership-activation-plan-error"),
-  membershipActivationStartDateError: document.querySelector("#membership-activation-start-date-error"),
-  membershipActivationPricePaidError: document.querySelector("#membership-activation-price-paid-error"),
-  membershipActivationPaymentMethodError: document.querySelector("#membership-activation-payment-method-error"),
-  membershipActivationPreview: document.querySelector("#membership-activation-preview"),
-  membershipActivationStatus: document.querySelector("#membership-activation-status"),
-  membershipActivationError: document.querySelector("#membership-activation-error"),
-  activateMembershipButton: document.querySelector("#activate-membership-button"),
-  reloadCustomerMembershipsButton: document.querySelector("#reload-customer-memberships-button"),
-  membershipCustomerMembershipsStatus: document.querySelector("#membership-customer-memberships-status"),
-  membershipCustomerMembershipsError: document.querySelector("#membership-customer-memberships-error"),
-  membershipCustomerMembershipsList: document.querySelector("#membership-customer-memberships-list"),
+  membershipActivationPlanInput: document.querySelector(
+    "#membership-activation-plan",
+  ),
+  membershipActivationStartDateInput: document.querySelector(
+    "#membership-activation-start-date",
+  ),
+  membershipActivationPricePaidInput: document.querySelector(
+    "#membership-activation-price-paid",
+  ),
+  membershipActivationPaymentMethodInput: document.querySelector(
+    "#membership-activation-payment-method",
+  ),
+  membershipActivationPlanError: document.querySelector(
+    "#membership-activation-plan-error",
+  ),
+  membershipActivationStartDateError: document.querySelector(
+    "#membership-activation-start-date-error",
+  ),
+  membershipActivationPricePaidError: document.querySelector(
+    "#membership-activation-price-paid-error",
+  ),
+  membershipActivationPaymentMethodError: document.querySelector(
+    "#membership-activation-payment-method-error",
+  ),
+  membershipActivationPreview: document.querySelector(
+    "#membership-activation-preview",
+  ),
+  membershipActivationStatus: document.querySelector(
+    "#membership-activation-status",
+  ),
+  membershipActivationError: document.querySelector(
+    "#membership-activation-error",
+  ),
+  activateMembershipButton: document.querySelector(
+    "#activate-membership-button",
+  ),
+  reloadCustomerMembershipsButton: document.querySelector(
+    "#reload-customer-memberships-button",
+  ),
+  membershipCustomerMembershipsStatus: document.querySelector(
+    "#membership-customer-memberships-status",
+  ),
+  membershipCustomerMembershipsError: document.querySelector(
+    "#membership-customer-memberships-error",
+  ),
+  membershipCustomerMembershipsList: document.querySelector(
+    "#membership-customer-memberships-list",
+  ),
   adminCompaniesSection: document.querySelector(".admin-companies-section"),
   adminAccessPanel: document.querySelector(".admin-access-panel"),
   adminDetailPanel: document.querySelector(".admin-detail-panel"),
@@ -352,7 +698,9 @@ const elements = {
   adminRequestsForm: document.querySelector("#admin-requests-form"),
   adminRequestStatusInput: document.querySelector("#admin-request-status"),
   adminRequestSearchInput: document.querySelector("#admin-request-search"),
-  loadAdminRequestsButton: document.querySelector("#load-admin-requests-button"),
+  loadAdminRequestsButton: document.querySelector(
+    "#load-admin-requests-button",
+  ),
   adminListStatus: document.querySelector("#admin-list-status"),
   adminListError: document.querySelector("#admin-list-error"),
   adminSummary: document.querySelector("#admin-summary"),
@@ -364,38 +712,56 @@ const elements = {
   backAdminListButton: document.querySelector("#back-admin-list-button"),
   adminConfirmationModal: document.querySelector("#admin-confirmation-modal"),
   adminConfirmationTitle: document.querySelector("#admin-confirmation-title"),
-  adminConfirmationMessage: document.querySelector("#admin-confirmation-message"),
+  adminConfirmationMessage: document.querySelector(
+    "#admin-confirmation-message",
+  ),
   adminConfirmationCancel: document.querySelector("#admin-confirmation-cancel"),
-  adminConfirmationConfirm: document.querySelector("#admin-confirmation-confirm"),
+  adminConfirmationConfirm: document.querySelector(
+    "#admin-confirmation-confirm",
+  ),
 };
 
 const ICON_PATHS = {
   "arrow-left": '<path d="M19 12H5"></path><path d="m12 19-7-7 7-7"></path>',
   "arrow-right": '<path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path>',
-  "bar-chart": '<path d="M4 19V5"></path><path d="M4 19h16"></path><path d="M8 16v-5"></path><path d="M13 16V8"></path><path d="M18 16v-3"></path>',
-  "check": '<path d="m5 12 4 4L19 6"></path>',
-  "circle-minus": '<circle cx="12" cy="12" r="9"></circle><path d="M8 12h8"></path>',
-  "clipboard-list": '<path d="M9 5h6"></path><path d="M9 3h6v4H9z"></path><path d="M7 5H5v16h14V5h-2"></path><path d="M8 12h.01"></path><path d="M11 12h5"></path><path d="M8 16h.01"></path><path d="M11 16h5"></path>',
-  "crown": '<path d="m3 7 4 5 5-7 5 7 4-5-2 11H5z"></path><path d="M5 21h14"></path>',
-  "download": '<path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path>',
-  "eye": '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path><circle cx="12" cy="12" r="3"></circle>',
-  "eye-off": '<path d="m3 3 18 18"></path><path d="M10.6 10.6a3 3 0 0 0 2.8 2.8"></path><path d="M9.9 5.2A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-3.1 4.1"></path><path d="M6.1 6.8C3.4 8.6 2 12 2 12s3.5 7 10 7c1.2 0 2.3-.2 3.3-.6"></path>',
-  "gift": '<path d="M20 12v8H4v-8"></path><path d="M2 7h20v5H2z"></path><path d="M12 22V7"></path><path d="M12 7H8.5A2.5 2.5 0 1 1 11 4.5c0 1.4 1 2.5 1 2.5Z"></path><path d="M12 7h3.5A2.5 2.5 0 1 0 13 4.5c0 1.4-1 2.5-1 2.5Z"></path>',
-  "key": '<circle cx="8" cy="15" r="4"></circle><path d="m11 12 8-8"></path><path d="m17 6 2 2"></path>',
-  "log-in": '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path>',
-  "log-out": '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path>',
-  "mail": '<rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path>',
-  "plus": '<path d="M12 5v14"></path><path d="M5 12h14"></path>',
-  "receipt": '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6"></path><path d="M9 12h6"></path><path d="M9 16h4"></path>',
-  "refresh": '<path d="M20 12a8 8 0 0 1-13.7 5.7L4 15"></path><path d="M4 20v-5h5"></path><path d="M4 12A8 8 0 0 1 17.7 6.3L20 9"></path><path d="M20 4v5h-5"></path>',
-  "save": '<path d="M5 3h12l2 2v16H5z"></path><path d="M8 3v6h8"></path><path d="M8 21v-7h8v7"></path>',
-  "search": '<circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path>',
-  "send": '<path d="m22 2-7 20-4-9-9-4z"></path><path d="M22 2 11 13"></path>',
-  "shield-check": '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path><path d="m9 12 2 2 4-4"></path>',
-  "upload": '<path d="M12 21V9"></path><path d="m7 14 5-5 5 5"></path><path d="M5 3h14"></path>',
-  "user": '<circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path>',
-  "user-plus": '<circle cx="10" cy="8" r="4"></circle><path d="M3 21a7 7 0 0 1 14 0"></path><path d="M19 8v6"></path><path d="M16 11h6"></path>',
-  "x": '<path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>',
+  "bar-chart":
+    '<path d="M4 19V5"></path><path d="M4 19h16"></path><path d="M8 16v-5"></path><path d="M13 16V8"></path><path d="M18 16v-3"></path>',
+  check: '<path d="m5 12 4 4L19 6"></path>',
+  "circle-minus":
+    '<circle cx="12" cy="12" r="9"></circle><path d="M8 12h8"></path>',
+  "clipboard-list":
+    '<path d="M9 5h6"></path><path d="M9 3h6v4H9z"></path><path d="M7 5H5v16h14V5h-2"></path><path d="M8 12h.01"></path><path d="M11 12h5"></path><path d="M8 16h.01"></path><path d="M11 16h5"></path>',
+  crown:
+    '<path d="m3 7 4 5 5-7 5 7 4-5-2 11H5z"></path><path d="M5 21h14"></path>',
+  download:
+    '<path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path>',
+  eye: '<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"></path><circle cx="12" cy="12" r="3"></circle>',
+  "eye-off":
+    '<path d="m3 3 18 18"></path><path d="M10.6 10.6a3 3 0 0 0 2.8 2.8"></path><path d="M9.9 5.2A10.6 10.6 0 0 1 12 5c6.5 0 10 7 10 7a18.5 18.5 0 0 1-3.1 4.1"></path><path d="M6.1 6.8C3.4 8.6 2 12 2 12s3.5 7 10 7c1.2 0 2.3-.2 3.3-.6"></path>',
+  gift: '<path d="M20 12v8H4v-8"></path><path d="M2 7h20v5H2z"></path><path d="M12 22V7"></path><path d="M12 7H8.5A2.5 2.5 0 1 1 11 4.5c0 1.4 1 2.5 1 2.5Z"></path><path d="M12 7h3.5A2.5 2.5 0 1 0 13 4.5c0 1.4-1 2.5-1 2.5Z"></path>',
+  key: '<circle cx="8" cy="15" r="4"></circle><path d="m11 12 8-8"></path><path d="m17 6 2 2"></path>',
+  "log-in":
+    '<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><path d="M10 17l5-5-5-5"></path><path d="M15 12H3"></path>',
+  "log-out":
+    '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><path d="M16 17l5-5-5-5"></path><path d="M21 12H9"></path>',
+  mail: '<rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path>',
+  plus: '<path d="M12 5v14"></path><path d="M5 12h14"></path>',
+  receipt:
+    '<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"></path><path d="M9 8h6"></path><path d="M9 12h6"></path><path d="M9 16h4"></path>',
+  refresh:
+    '<path d="M20 12a8 8 0 0 1-13.7 5.7L4 15"></path><path d="M4 20v-5h5"></path><path d="M4 12A8 8 0 0 1 17.7 6.3L20 9"></path><path d="M20 4v5h-5"></path>',
+  save: '<path d="M5 3h12l2 2v16H5z"></path><path d="M8 3v6h8"></path><path d="M8 21v-7h8v7"></path>',
+  search:
+    '<circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path>',
+  send: '<path d="m22 2-7 20-4-9-9-4z"></path><path d="M22 2 11 13"></path>',
+  "shield-check":
+    '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z"></path><path d="m9 12 2 2 4-4"></path>',
+  upload:
+    '<path d="M12 21V9"></path><path d="m7 14 5-5 5 5"></path><path d="M5 3h14"></path>',
+  user: '<circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path>',
+  "user-plus":
+    '<circle cx="10" cy="8" r="4"></circle><path d="M3 21a7 7 0 0 1 14 0"></path><path d="M19 8v6"></path><path d="M16 11h6"></path>',
+  x: '<path d="M18 6 6 18"></path><path d="m6 6 12 12"></path>',
 };
 
 const LEGACY_ICON_NAMES = {
@@ -430,7 +796,9 @@ function applyButtonIcon(button) {
     return;
   }
 
-  button.querySelectorAll("[data-rendered-icon]").forEach((icon) => icon.remove());
+  button
+    .querySelectorAll("[data-rendered-icon]")
+    .forEach((icon) => icon.remove());
   const iconMarkup = createIconMarkup(button.dataset.icon);
 
   if (!iconMarkup) {
@@ -444,7 +812,9 @@ function applyButtonIcon(button) {
 }
 
 function applyButtonIcons(root = document) {
-  root.querySelectorAll("button[data-icon], .button-link[data-icon]").forEach(applyButtonIcon);
+  root
+    .querySelectorAll("button[data-icon], .button-link[data-icon]")
+    .forEach(applyButtonIcon);
 }
 
 function setButtonText(button, text) {
@@ -584,7 +954,9 @@ elements.membershipOperationBenefits.addEventListener("click", (event) => {
     return;
   }
 
-  openMembershipBenefitUsageConfirmation(button.dataset.membershipUsageBenefitId);
+  openMembershipBenefitUsageConfirmation(
+    button.dataset.membershipUsageBenefitId,
+  );
 });
 
 elements.membershipOperationActive.addEventListener("click", (event) => {
@@ -623,10 +995,13 @@ elements.membershipPointsContext.addEventListener("click", (event) => {
   goToPointsWithCustomer(selectedMembershipCustomer);
 });
 
-elements.membershipBenefitUsageForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  await submitMembershipBenefitUsage();
-});
+elements.membershipBenefitUsageForm.addEventListener(
+  "submit",
+  async (event) => {
+    event.preventDefault();
+    await submitMembershipBenefitUsage();
+  },
+);
 
 elements.cancelMembershipBenefitUsageButton.addEventListener("click", () => {
   clearMembershipBenefitUsageForm();
@@ -641,10 +1016,13 @@ elements.exportReportButton.addEventListener("click", () => {
   exportReportCsv();
 });
 
-elements.membershipFinancialReportForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  await loadMembershipFinancialReport();
-});
+elements.membershipFinancialReportForm.addEventListener(
+  "submit",
+  async (event) => {
+    event.preventDefault();
+    await loadMembershipFinancialReport();
+  },
+);
 
 elements.exportMembershipFinancialReportButton.addEventListener("click", () => {
   exportMembershipFinancialReportCsv();
@@ -694,15 +1072,24 @@ elements.passwordResetForm.addEventListener("submit", async (event) => {
 });
 
 elements.toggleLoginPasswordButton.addEventListener("click", () => {
-  togglePasswordVisibility(elements.loginPasswordInput, elements.toggleLoginPasswordButton);
+  togglePasswordVisibility(
+    elements.loginPasswordInput,
+    elements.toggleLoginPasswordButton,
+  );
 });
 
 elements.toggleNewPasswordButton.addEventListener("click", () => {
-  togglePasswordVisibility(elements.newPasswordInput, elements.toggleNewPasswordButton);
+  togglePasswordVisibility(
+    elements.newPasswordInput,
+    elements.toggleNewPasswordButton,
+  );
 });
 
 elements.toggleNewPasswordConfirmationButton.addEventListener("click", () => {
-  togglePasswordVisibility(elements.newPasswordConfirmationInput, elements.toggleNewPasswordConfirmationButton);
+  togglePasswordVisibility(
+    elements.newPasswordConfirmationInput,
+    elements.toggleNewPasswordConfirmationButton,
+  );
 });
 
 elements.loginButton.addEventListener("click", () => {
@@ -737,19 +1124,28 @@ elements.toggleCompanyPasswordPanelButton.addEventListener("click", () => {
 });
 
 elements.toggleCompanyCurrentPasswordButton.addEventListener("click", () => {
-  togglePasswordVisibility(elements.companyCurrentPasswordInput, elements.toggleCompanyCurrentPasswordButton);
+  togglePasswordVisibility(
+    elements.companyCurrentPasswordInput,
+    elements.toggleCompanyCurrentPasswordButton,
+  );
 });
 
 elements.toggleCompanyNewPasswordButton.addEventListener("click", () => {
-  togglePasswordVisibility(elements.companyNewPasswordInput, elements.toggleCompanyNewPasswordButton);
-});
-
-elements.toggleCompanyNewPasswordConfirmationButton.addEventListener("click", () => {
   togglePasswordVisibility(
-    elements.companyNewPasswordConfirmationInput,
-    elements.toggleCompanyNewPasswordConfirmationButton,
+    elements.companyNewPasswordInput,
+    elements.toggleCompanyNewPasswordButton,
   );
 });
+
+elements.toggleCompanyNewPasswordConfirmationButton.addEventListener(
+  "click",
+  () => {
+    togglePasswordVisibility(
+      elements.companyNewPasswordConfirmationInput,
+      elements.toggleCompanyNewPasswordConfirmationButton,
+    );
+  },
+);
 
 elements.companyLogoFileInput.addEventListener("change", () => {
   previewSelectedCompanyLogo();
@@ -802,9 +1198,12 @@ elements.membershipExpirationForm.addEventListener("submit", async (event) => {
   await loadMembershipExpirationAlerts();
 });
 
-elements.reloadMembershipExpirationButton.addEventListener("click", async () => {
-  await loadMembershipExpirationAlerts();
-});
+elements.reloadMembershipExpirationButton.addEventListener(
+  "click",
+  async () => {
+    await loadMembershipExpirationAlerts();
+  },
+);
 
 elements.membershipPlanForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -850,10 +1249,13 @@ elements.membershipBenefitsList.addEventListener("click", async (event) => {
   await handleMembershipBenefitAction(button);
 });
 
-elements.membershipCustomerSearchForm.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  await searchMembershipCustomers();
-});
+elements.membershipCustomerSearchForm.addEventListener(
+  "submit",
+  async (event) => {
+    event.preventDefault();
+    await searchMembershipCustomers();
+  },
+);
 
 elements.membershipCustomerResults.addEventListener("click", async (event) => {
   const button = event.target.closest("[data-membership-customer-id]");
@@ -871,7 +1273,9 @@ elements.selectedCustomerCard.addEventListener("click", async (event) => {
     return;
   }
 
-  const membershipButton = event.target.closest("[data-profile-membership-action]");
+  const membershipButton = event.target.closest(
+    "[data-profile-membership-action]",
+  );
   if (!membershipButton) {
     return;
   }
@@ -882,12 +1286,21 @@ elements.selectedCustomerCard.addEventListener("click", async (event) => {
 
   await loadOperationMembershipPanel({ openPanel: true });
 
-  if (selectedCustomerActiveMembership && isMembershipCurrentlyUsable(selectedCustomerActiveMembership)) {
-    elements.membershipOperationPanel.scrollIntoView({ behavior: "smooth", block: "start" });
+  if (
+    selectedCustomerActiveMembership &&
+    isMembershipCurrentlyUsable(selectedCustomerActiveMembership)
+  ) {
+    elements.membershipOperationPanel.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
     return;
   }
 
-  if (selectedCustomerActiveMembership && isMembershipRenewable(selectedCustomerActiveMembership)) {
+  if (
+    selectedCustomerActiveMembership &&
+    isMembershipRenewable(selectedCustomerActiveMembership)
+  ) {
     openMembershipRenewalForm();
     return;
   }
@@ -899,7 +1312,9 @@ elements.selectedCustomerCard.addEventListener("click", async (event) => {
 
 elements.membershipActivationPlanInput.addEventListener("change", () => {
   const plan = getSelectedActivationPlan();
-  elements.membershipActivationPricePaidInput.value = plan ? plan.price ?? "" : "";
+  elements.membershipActivationPricePaidInput.value = plan
+    ? (plan.price ?? "")
+    : "";
   renderMembershipActivationPreview();
 });
 
@@ -941,12 +1356,16 @@ elements.adminRequestSearchInput.addEventListener("input", () => {
 });
 
 elements.adminRequestsList.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-admin-request-id], [data-admin-card-action]");
+  const button = event.target.closest(
+    "[data-admin-request-id], [data-admin-card-action]",
+  );
   if (!button) {
     return;
   }
 
-  const request = adminRequests.find((item) => String(item.id) === String(button.dataset.adminRequestId));
+  const request = adminRequests.find(
+    (item) => String(item.id) === String(button.dataset.adminRequestId),
+  );
   if (request) {
     selectAdminRequest(request);
     if (button.dataset.adminCardAction === "approve") {
@@ -995,7 +1414,10 @@ elements.adminConfirmationModal.addEventListener("click", (event) => {
 
 elements.navButtons.forEach((button) => {
   button.addEventListener("click", () => {
-    if (button.dataset.sectionTarget === "adminCompanies" && !isAdminCompaniesRoute()) {
+    if (
+      button.dataset.sectionTarget === "adminCompanies" &&
+      !isAdminCompaniesRoute()
+    ) {
       window.location.assign("/admin-companies");
       return;
     }
@@ -1072,12 +1494,23 @@ function setActiveSection(section, options = {}) {
   const pointsEnabled = isPointsEnabled();
   let requestedSection = section;
   if (requestedSection === "memberships") {
-    requestedSection = membershipsEnabled || pointsEnabled ? "operations" : "company";
+    requestedSection =
+      membershipsEnabled || pointsEnabled ? "operations" : "company";
   }
-  if (requestedSection === "operations" && !pointsEnabled && !membershipsEnabled) {
+  if (
+    requestedSection === "operations" &&
+    !pointsEnabled &&
+    !membershipsEnabled
+  ) {
     requestedSection = "company";
   }
-  const nextSection = ["operations", "company", "memberships", "reports", "adminCompanies"].includes(requestedSection)
+  const nextSection = [
+    "operations",
+    "company",
+    "memberships",
+    "reports",
+    "adminCompanies",
+  ].includes(requestedSection)
     ? requestedSection
     : getDefaultLoyaltySection();
   activeSection = nextSection;
@@ -1092,7 +1525,11 @@ function setActiveSection(section, options = {}) {
     button.setAttribute("aria-current", isActive ? "page" : "false");
   });
 
-  if ((nextSection === "operations" || nextSection === "memberships") && membershipPlans.length === 0 && membershipsEnabled) {
+  if (
+    (nextSection === "operations" || nextSection === "memberships") &&
+    membershipPlans.length === 0 &&
+    membershipsEnabled
+  ) {
     loadMembershipPlans();
   }
 
@@ -1154,7 +1591,9 @@ async function loadCustomers(search) {
     renderCustomers(currentCustomers, trimmedSearch);
 
     if (currentCustomers.length === 0) {
-      setCustomersFeedback("No encontramos ese cliente. Completa el registro para crearlo.");
+      setCustomersFeedback(
+        "No encontramos ese cliente. Completa el registro para crearlo.",
+      );
       elements.nameInput.focus();
     }
   } catch (error) {
@@ -1181,7 +1620,9 @@ async function submitCustomer() {
     setCustomersFeedback("");
     renderCustomers(currentCustomers, customer.phone);
     await selectCustomer(customerWithBalance);
-    showSuccess(`Cliente registrado: ${customer.name}. Ya puedes continuar la atención.`);
+    showSuccess(
+      `Cliente registrado: ${customer.name}. Ya puedes continuar la atención.`,
+    );
     clearForm({ keepSuccess: true, focus: false });
     elements.selectedCustomerCard.focus?.();
   } catch (error) {
@@ -1208,14 +1649,17 @@ async function handleDuplicateCustomer(payload) {
 
   const [customerWithBalance] = await withBalances([match]);
   currentCustomers = [customerWithBalance];
-  elements.searchInput.value = customerWithBalance.phone || customerWithBalance.email || "";
+  elements.searchInput.value =
+    customerWithBalance.phone || customerWithBalance.email || "";
   setCustomersFeedback("");
   renderCustomers(currentCustomers, elements.searchInput.value);
   await selectCustomer(
     customerWithBalance,
     "Este cliente ya existe. Lo seleccionamos para continuar la atención.",
   );
-  showSuccess("Este cliente ya existe. Lo seleccionamos para continuar la atención.");
+  showSuccess(
+    "Este cliente ya existe. Lo seleccionamos para continuar la atención.",
+  );
   clearForm({ keepSuccess: true, focus: false });
   elements.selectedCustomerCard.focus?.();
 }
@@ -1228,8 +1672,12 @@ async function findExistingCustomer(payload) {
   for (const search of searches) {
     const result = await api.searchCustomers(search);
     const match = result.items.find((customer) => {
-      const samePhone = payload.phone.trim() && normalize(customer.phone) === normalize(payload.phone);
-      const sameEmail = payload.email.trim() && normalize(customer.email) === normalize(payload.email);
+      const samePhone =
+        payload.phone.trim() &&
+        normalize(customer.phone) === normalize(payload.phone);
+      const sameEmail =
+        payload.email.trim() &&
+        normalize(customer.email) === normalize(payload.email);
       return samePhone || sameEmail;
     });
 
@@ -1324,7 +1772,9 @@ async function refreshCustomerBalance(customerId) {
   customerBalances.set(String(customerId), balance);
 
   currentCustomers = currentCustomers.map((customer) =>
-    String(customer.id) === String(customerId) ? { ...customer, balance } : customer,
+    String(customer.id) === String(customerId)
+      ? { ...customer, balance }
+      : customer,
   );
 
   if (selectedCustomer && String(selectedCustomer.id) === String(customerId)) {
@@ -1367,7 +1817,8 @@ function renderSearchPrompt() {
 }
 
 function renderLoading() {
-  elements.customersList.innerHTML = '<div class="loading-state">Buscando clientes...</div>';
+  elements.customersList.innerHTML =
+    '<div class="loading-state">Buscando clientes...</div>';
 }
 
 function renderCustomers(customers, search) {
@@ -1394,8 +1845,13 @@ function renderCustomers(customers, search) {
         setButtonText(button, "Cargando...");
         selectCustomer(customer)
           .catch((error) => {
-            console.error("No se pudo completar la seleccion del cliente.", error);
-            showOperationStatus("Cliente seleccionado. Algunas secciones pueden tardar en cargar.");
+            console.error(
+              "No se pudo completar la seleccion del cliente.",
+              error,
+            );
+            showOperationStatus(
+              "Cliente seleccionado. Algunas secciones pueden tardar en cargar.",
+            );
           })
           .finally(() => {
             button.disabled = false;
@@ -1433,7 +1889,9 @@ async function selectCustomer(customer, statusMessage = "") {
     : await withBalances([customer]);
   selectedCustomer = {
     ...customerWithBalance,
-    balance: customerWithBalance.balance ?? customerBalances.get(String(customerWithBalance.id)),
+    balance:
+      customerWithBalance.balance ??
+      customerBalances.get(String(customerWithBalance.id)),
   };
   elements.operationEmpty.hidden = true;
   elements.operationTitle.textContent = "Ficha del cliente";
@@ -1493,7 +1951,9 @@ function goToPointsWithCustomer(customer) {
   currentCustomers = [selectedCustomer];
   elements.searchInput.value = customer.name || "";
   setActiveSection("operations");
-  resetOperation("Cliente conservado desde Membresías. Selecciona compra, historial o redimir puntos.");
+  resetOperation(
+    "Cliente conservado desde Membresías. Selecciona compra, historial o redimir puntos.",
+  );
   renderCustomers(currentCustomers, elements.searchInput.value.trim());
   renderSelectedCustomer();
   renderPointsMembershipContext();
@@ -1539,7 +1999,9 @@ function resetOperation(message = "") {
   clearOperationMessages();
   elements.operationTitle.textContent = "Ficha del cliente";
   elements.operationEmpty.hidden = false;
-  elements.operationEmpty.textContent = message || "Selecciona un cliente para ver su resumen y operar puntos o membresías.";
+  elements.operationEmpty.textContent =
+    message ||
+    "Selecciona un cliente para ver su resumen y operar puntos o membresías.";
   elements.selectedCustomerCard.hidden = true;
   elements.purchaseForm.hidden = true;
   elements.redemptionForm.hidden = true;
@@ -1595,7 +2057,9 @@ async function loadOperationMembershipPanel(options = {}) {
     }
 
     selectedCustomerMembershipTransactions = transactionsResult.items || [];
-    selectedCustomerActiveMembership = getRenewableMembership(membershipsResult.items || []);
+    selectedCustomerActiveMembership = getRenewableMembership(
+      membershipsResult.items || [],
+    );
 
     if (!selectedCustomerActiveMembership) {
       selectedCustomerMembershipBenefits = [];
@@ -1609,10 +2073,14 @@ async function loadOperationMembershipPanel(options = {}) {
       return;
     }
 
-    const isUsableMembership = isMembershipCurrentlyUsable(selectedCustomerActiveMembership);
+    const isUsableMembership = isMembershipCurrentlyUsable(
+      selectedCustomerActiveMembership,
+    );
     const [benefitsResult, usagesResult] = isUsableMembership
       ? await Promise.all([
-          api.listMembershipBenefits(selectedCustomerActiveMembership.planId, { status: "active" }),
+          api.listMembershipBenefits(selectedCustomerActiveMembership.planId, {
+            status: "active",
+          }),
           api.listMembershipBenefitUsages(customerId, filters),
         ])
       : [{ items: [] }, { items: [] }];
@@ -1665,7 +2133,11 @@ async function submitMembershipRenewal() {
   };
 
   try {
-    await api.renewCustomerMembership(operationCustomer.id, selectedCustomerActiveMembership.id, payload);
+    await api.renewCustomerMembership(
+      operationCustomer.id,
+      selectedCustomerActiveMembership.id,
+      payload,
+    );
     clearMembershipRenewalForm();
     await loadOperationMembershipPanel();
     showMembershipOperationStatus("Membresía renovada.");
@@ -1678,8 +2150,14 @@ async function submitMembershipRenewal() {
 
 async function submitMembershipBenefitUsage() {
   const operationCustomer = getMembershipOperationCustomer();
-  if (!operationCustomer || !selectedCustomerActiveMembership || !pendingMembershipBenefitUsage) {
-    showMembershipOperationError("Selecciona un beneficio antes de aplicar beneficio.");
+  if (
+    !operationCustomer ||
+    !selectedCustomerActiveMembership ||
+    !pendingMembershipBenefitUsage
+  ) {
+    showMembershipOperationError(
+      "Selecciona un beneficio antes de aplicar beneficio.",
+    );
     return;
   }
 
@@ -1696,10 +2174,15 @@ async function submitMembershipBenefitUsage() {
   };
 
   try {
-    const usage = await api.createMembershipBenefitUsage(operationCustomer.id, payload);
+    const usage = await api.createMembershipBenefitUsage(
+      operationCustomer.id,
+      payload,
+    );
     clearMembershipBenefitUsageForm();
     await loadOperationMembershipPanel();
-    showMembershipOperationStatus(`Beneficio aplicado: ${usage.benefitName || "beneficio"}.`);
+    showMembershipOperationStatus(
+      `Beneficio aplicado: ${usage.benefitName || "beneficio"}.`,
+    );
   } catch (error) {
     renderMembershipBenefitUsageError(error);
   } finally {
@@ -1719,7 +2202,10 @@ async function loadCustomerActivity() {
   try {
     const activity = await api.getCustomerActivity(customerId);
 
-    if (!selectedCustomer || String(selectedCustomer.id) !== String(customerId)) {
+    if (
+      !selectedCustomer ||
+      String(selectedCustomer.id) !== String(customerId)
+    ) {
       return;
     }
 
@@ -1778,7 +2264,9 @@ async function loadMembershipFinancialReport() {
   }
 
   if (filters.from > filters.to) {
-    showMembershipFinancialReportError("La fecha hasta debe ser igual o posterior a fecha desde.");
+    showMembershipFinancialReportError(
+      "La fecha hasta debe ser igual o posterior a fecha desde.",
+    );
     return;
   }
 
@@ -1831,7 +2319,9 @@ async function loadCustomerReport() {
   }
 
   if (filters.from > filters.to) {
-    showCustomerReportError("La fecha hasta debe ser igual o posterior a fecha desde.");
+    showCustomerReportError(
+      "La fecha hasta debe ser igual o posterior a fecha desde.",
+    );
     return;
   }
 
@@ -1945,7 +2435,9 @@ async function submitCompanyPasswordChange() {
   }
 
   setCompanyPasswordSubmitting(true);
-  const stopLoading = startGlobalLoading("Estamos actualizando la contraseña...");
+  const stopLoading = startGlobalLoading(
+    "Estamos actualizando la contraseña...",
+  );
 
   try {
     await api.changeCompanyPassword({
@@ -2014,7 +2506,12 @@ async function loadMembershipPlans() {
     renderMembershipPlans();
     renderMembershipActivationPlanOptions();
 
-    if (selectedMembershipPlanId && membershipPlans.some((plan) => String(plan.id) === String(selectedMembershipPlanId))) {
+    if (
+      selectedMembershipPlanId &&
+      membershipPlans.some(
+        (plan) => String(plan.id) === String(selectedMembershipPlanId),
+      )
+    ) {
       await loadMembershipBenefits(selectedMembershipPlanId);
     } else {
       selectedMembershipPlanId = null;
@@ -2034,10 +2531,13 @@ async function loadMembershipExpirationAlerts() {
   }
 
   clearMembershipExpirationMessages();
-  const withinDays = Number(elements.membershipExpirationWithinDaysInput.value || 5);
+  const withinDays = Number(
+    elements.membershipExpirationWithinDaysInput.value || 5,
+  );
 
   if (!Number.isInteger(withinDays) || withinDays < 0 || withinDays > 365) {
-    elements.membershipExpirationWithinDaysError.textContent = "Ingresa un valor de 0 a 365.";
+    elements.membershipExpirationWithinDaysError.textContent =
+      "Ingresa un valor de 0 a 365.";
     return;
   }
 
@@ -2066,7 +2566,9 @@ async function loadMembershipExpirationAlerts() {
 }
 
 async function selectMembershipPlan(planId, options = {}) {
-  const plan = membershipPlans.find((item) => String(item.id) === String(planId));
+  const plan = membershipPlans.find(
+    (item) => String(item.id) === String(planId),
+  );
   if (!plan) {
     return;
   }
@@ -2104,12 +2606,14 @@ async function searchMembershipCustomers() {
 
   if (!search) {
     showMembershipCustomerSearchError("Ingresa nombre, teléfono o correo.");
-    elements.membershipCustomerResults.innerHTML = '<div class="empty-state">Busca un cliente existente para activar una membresía.</div>';
+    elements.membershipCustomerResults.innerHTML =
+      '<div class="empty-state">Busca un cliente existente para activar una membresía.</div>';
     return;
   }
 
   setMembershipActivationSubmitting(true, { searching: true });
-  elements.membershipCustomerResults.innerHTML = '<div class="loading-state">Buscando clientes...</div>';
+  elements.membershipCustomerResults.innerHTML =
+    '<div class="loading-state">Buscando clientes...</div>';
 
   try {
     const result = await api.searchCustomers(search);
@@ -2124,7 +2628,9 @@ async function searchMembershipCustomers() {
 }
 
 async function selectMembershipCustomer(customerId) {
-  const customer = membershipCustomerResults.find((item) => String(item.id) === String(customerId));
+  const customer = membershipCustomerResults.find(
+    (item) => String(item.id) === String(customerId),
+  );
   if (!customer) {
     return;
   }
@@ -2142,11 +2648,15 @@ async function loadSelectedCustomerMemberships() {
   }
 
   clearMembershipCustomerMembershipMessages();
-  elements.membershipCustomerMembershipsList.innerHTML = '<div class="loading-state">Cargando membresías...</div>';
+  elements.membershipCustomerMembershipsList.innerHTML =
+    '<div class="loading-state">Cargando membresías...</div>';
   elements.reloadCustomerMembershipsButton.disabled = true;
 
   try {
-    const result = await api.listCustomerMemberships(selectedMembershipCustomer.id, { status: "all" });
+    const result = await api.listCustomerMemberships(
+      selectedMembershipCustomer.id,
+      { status: "all" },
+    );
     selectedCustomerMemberships = result.items || [];
     renderCustomerMemberships();
   } catch (error) {
@@ -2161,7 +2671,9 @@ async function submitMembershipActivation() {
   clearMembershipActivationMessages();
 
   if (!selectedMembershipCustomer) {
-    showMembershipActivationError("Selecciona un cliente antes de activar la membresía.");
+    showMembershipActivationError(
+      "Selecciona un cliente antes de activar la membresía.",
+    );
     return;
   }
 
@@ -2237,7 +2749,9 @@ async function handleMembershipPlanAction(button) {
       }
       await loadMembershipPlans();
       await selectMembershipPlan(planId, { edit: false });
-      showMembershipPlansStatus(action === "activate" ? "Plan activado." : "Plan inactivado.");
+      showMembershipPlansStatus(
+        action === "activate" ? "Plan activado." : "Plan inactivado.",
+      );
     } catch (error) {
       renderMembershipPlansError(error);
     } finally {
@@ -2250,7 +2764,9 @@ async function submitMembershipBenefit() {
   clearMembershipBenefitMessages();
 
   if (!selectedMembershipPlanId) {
-    showMembershipBenefitsError("Selecciona un plan antes de crear beneficios.");
+    showMembershipBenefitsError(
+      "Selecciona un plan antes de crear beneficios.",
+    );
     return;
   }
 
@@ -2259,12 +2775,16 @@ async function submitMembershipBenefit() {
   const benefitId = elements.membershipBenefitIdInput.value;
   const payload = {
     name: elements.membershipBenefitNameInput.value,
-    description: elements.membershipBenefitDescriptionInput.value.trim() || null,
+    description:
+      elements.membershipBenefitDescriptionInput.value.trim() || null,
     benefitType: elements.membershipBenefitTypeInput.value,
     appliesToType: elements.membershipBenefitAppliesToTypeInput.value,
-    appliesToName: elements.membershipBenefitAppliesToNameInput.value.trim() || null,
-    discountPercent: elements.membershipBenefitDiscountPercentInput.value || null,
-    includedQuantity: elements.membershipBenefitIncludedQuantityInput.value || null,
+    appliesToName:
+      elements.membershipBenefitAppliesToNameInput.value.trim() || null,
+    discountPercent:
+      elements.membershipBenefitDiscountPercentInput.value || null,
+    includedQuantity:
+      elements.membershipBenefitIncludedQuantityInput.value || null,
     usageLimit: elements.membershipBenefitUsageLimitInput.value || null,
     usagePeriod: elements.membershipBenefitUsagePeriodInput.value,
   };
@@ -2277,7 +2797,9 @@ async function submitMembershipBenefit() {
     }
     await loadMembershipBenefits(selectedMembershipPlanId);
     closeMembershipBenefitForm();
-    showMembershipBenefitsStatus(benefitId ? "Beneficio actualizado." : "Beneficio creado.");
+    showMembershipBenefitsStatus(
+      benefitId ? "Beneficio actualizado." : "Beneficio creado.",
+    );
   } catch (error) {
     renderMembershipBenefitFormError(error);
   } finally {
@@ -2288,7 +2810,9 @@ async function submitMembershipBenefit() {
 async function handleMembershipBenefitAction(button) {
   const benefitId = button.dataset.membershipBenefitId;
   const action = button.dataset.membershipBenefitAction;
-  const benefit = membershipBenefits.find((item) => String(item.id) === String(benefitId));
+  const benefit = membershipBenefits.find(
+    (item) => String(item.id) === String(benefitId),
+  );
 
   if (action === "create") {
     openMembershipBenefitForm();
@@ -2318,7 +2842,9 @@ async function handleMembershipBenefitAction(button) {
         status: action === "activate" ? "active" : "inactive",
       });
       await loadMembershipBenefits(selectedMembershipPlanId);
-      showMembershipBenefitsStatus(action === "activate" ? "Beneficio activado." : "Beneficio inactivado.");
+      showMembershipBenefitsStatus(
+        action === "activate" ? "Beneficio activado." : "Beneficio inactivado.",
+      );
     } catch (error) {
       renderMembershipBenefitsError(error);
     } finally {
@@ -2330,7 +2856,9 @@ async function handleMembershipBenefitAction(button) {
 async function submitCompanyRegistrationRequest() {
   clearCompanyRegistrationMessages();
   const [logoFile] = elements.registrationLogoFileInput.files;
-  const logoValidationMessage = logoFile ? await getRegistrationLogoValidationMessage(logoFile) : "";
+  const logoValidationMessage = logoFile
+    ? await getRegistrationLogoValidationMessage(logoFile)
+    : "";
 
   if (logoValidationMessage) {
     elements.registrationLogoFileError.textContent = logoValidationMessage;
@@ -2368,7 +2896,8 @@ async function submitAdminToken() {
   const nextToken = elements.adminTokenInput.value.trim();
 
   if (!nextToken) {
-    elements.adminTokenError.textContent = "Ingresa el token interno para cargar empresas por activar.";
+    elements.adminTokenError.textContent =
+      "Ingresa el token interno para cargar empresas por activar.";
     showAdminGlobalError("Token interno requerido.");
     return;
   }
@@ -2396,8 +2925,11 @@ async function loadAdminRequests() {
 
   if (!adminToken) {
     renderAdminPrompt();
-    elements.adminTokenError.textContent = "Ingresa el token interno para cargar empresas por activar.";
-    showAdminGlobalError("Ingresa el token interno para cargar empresas por activar.");
+    elements.adminTokenError.textContent =
+      "Ingresa el token interno para cargar empresas por activar.";
+    showAdminGlobalError(
+      "Ingresa el token interno para cargar empresas por activar.",
+    );
     return;
   }
 
@@ -2414,10 +2946,15 @@ async function loadAdminRequests() {
       adminToken,
     );
     adminRequests = Array.isArray(result.items) ? result.items : [];
-    selectedAdminRequest = reconcileSelectedAdminRequest(selectedAdminRequest, adminRequests);
+    selectedAdminRequest = reconcileSelectedAdminRequest(
+      selectedAdminRequest,
+      adminRequests,
+    );
     renderAdminRequestsList();
     renderAdminDetail();
-    showAdminListStatus(`Empresas cargadas: ${formatReportNumber(adminRequests.length)}.`);
+    showAdminListStatus(
+      `Empresas cargadas: ${formatReportNumber(adminRequests.length)}.`,
+    );
   } catch (error) {
     if (isAdminPermissionError(error)) {
       adminToken = "";
@@ -2474,7 +3011,9 @@ async function approveSelectedAdminRequest() {
       companyName: selectedAdminRequest.companyName,
     };
     await loadAdminRequests();
-    showAdminDetailStatus(`Empresa activada. El acceso fue enviado a ${selectedAdminRequest.companyEmail}.`);
+    showAdminDetailStatus(
+      `Empresa activada. El acceso fue enviado a ${selectedAdminRequest.companyEmail}.`,
+    );
   } catch (error) {
     renderAdminActionError(error);
   } finally {
@@ -2494,7 +3033,8 @@ async function rejectSelectedAdminRequest() {
     return;
   }
 
-  const noteInput = elements.adminRequestDetail.querySelector("#admin-reject-note");
+  const noteInput =
+    elements.adminRequestDetail.querySelector("#admin-reject-note");
   const reviewNote = noteInput?.value.trim() || "";
 
   if (!reviewNote) {
@@ -2505,7 +3045,8 @@ async function rejectSelectedAdminRequest() {
 
   const confirmed = await requestAdminConfirmation({
     title: "No continuar",
-    message: "Vas a marcar esta empresa como no continuada. La nota queda como referencia interna.",
+    message:
+      "Vas a marcar esta empresa como no continuada. La nota queda como referencia interna.",
     confirmLabel: "No continuar",
     danger: true,
   });
@@ -2515,7 +3056,9 @@ async function rejectSelectedAdminRequest() {
 
   clearAdminMessages({ keepTokenStatus: true });
   setAdminActionLoading(true, "reject");
-  const stopLoading = startGlobalLoading("Estamos guardando la nota interna...");
+  const stopLoading = startGlobalLoading(
+    "Estamos guardando la nota interna...",
+  );
 
   try {
     const result = await api.rejectCompanyRegistrationRequest(
@@ -2548,7 +3091,9 @@ async function resendSelectedAdminInvitation() {
   }
 
   if (invitation.status === "accepted") {
-    showAdminDetailError("El acceso ya fue creado. No es necesario reenviarlo.");
+    showAdminDetailError(
+      "El acceso ya fue creado. No es necesario reenviarlo.",
+    );
     return;
   }
 
@@ -2576,7 +3121,9 @@ async function resendSelectedAdminInvitation() {
       },
     };
     await loadAdminRequests();
-    showAdminDetailStatus(`Acceso reenviado a ${result.email || invitation.email}.`);
+    showAdminDetailStatus(
+      `Acceso reenviado a ${result.email || invitation.email}.`,
+    );
   } catch (error) {
     renderAdminActionError(error);
   } finally {
@@ -2586,10 +3133,14 @@ async function resendSelectedAdminInvitation() {
 }
 
 async function sendSelectedAdminPasswordReset() {
-  const email = selectedAdminRequest?.invitation?.email || selectedAdminRequest?.companyEmail;
+  const email =
+    selectedAdminRequest?.invitation?.email ||
+    selectedAdminRequest?.companyEmail;
 
   if (!email || !adminToken) {
-    showAdminDetailError("No hay un correo de empresa disponible para enviar el reset.");
+    showAdminDetailError(
+      "No hay un correo de empresa disponible para enviar el reset.",
+    );
     return;
   }
 
@@ -2705,7 +3256,11 @@ async function submitCompanyLogin() {
     currentAuthIdentity = identity;
     renderAuthIdentity(identity);
     elements.loginPasswordInput.value = "";
-    await showMainApp({ replaceLoginRoute: true, focus: true, refreshCompany: true });
+    await showMainApp({
+      replaceLoginRoute: true,
+      focus: true,
+      refreshCompany: true,
+    });
   } catch (error) {
     renderLoginError(error);
   } finally {
@@ -2748,7 +3303,9 @@ async function submitPasswordResetComplete() {
   }
 
   setPasswordResetSubmitting(true);
-  const stopLoading = startGlobalLoading("Estamos guardando la nueva contraseña...");
+  const stopLoading = startGlobalLoading(
+    "Estamos guardando la nueva contraseña...",
+  );
 
   try {
     await api.completeCompanyPasswordReset({
@@ -2756,11 +3313,15 @@ async function submitPasswordResetComplete() {
       password: elements.newPasswordInput.value,
     });
     elements.passwordResetForm.hidden = true;
-    showPasswordResetStatus("Contraseña actualizada. Ya puedes acceder a tu panel con tu nuevo acceso.");
+    showPasswordResetStatus(
+      "Contraseña actualizada. Ya puedes acceder a tu panel con tu nuevo acceso.",
+    );
     window.history.replaceState({}, "", "/login");
     window.requestAnimationFrame(() => {
       showLoginPage();
-      showLoginStatus("Contraseña actualizada. Accede a tu panel con tu nuevo acceso.");
+      showLoginStatus(
+        "Contraseña actualizada. Accede a tu panel con tu nuevo acceso.",
+      );
     });
   } catch (error) {
     renderPasswordResetCompleteError(error);
@@ -2785,7 +3346,11 @@ async function refreshAuthIdentity(options = {}) {
     currentAuthIdentity = null;
     renderSignedOut();
 
-    if (!options.silent && error instanceof ApiError && error.code === "UNAUTHORIZED") {
+    if (
+      !options.silent &&
+      error instanceof ApiError &&
+      error.code === "UNAUTHORIZED"
+    ) {
       showLoginError("Tu sesión expiró. Accede nuevamente a tu panel.");
     }
 
@@ -2817,13 +3382,16 @@ function renderSelectedCustomer() {
   const pointsEnabled = isPointsEnabled();
   const membershipsEnabled = isMembershipsEnabled();
   const points = getBalanceValue(selectedCustomer.balance);
-  const membershipExpirationAlert = selectedCustomerActiveMembership?.expirationAlert;
+  const membershipExpirationAlert =
+    selectedCustomerActiveMembership?.expirationAlert;
   const canRedeem = pointsEnabled && points > 0;
   const membershipAction = getSelectedCustomerMembershipActionLabel();
   const alerts = [
     !selectedCustomer.email ? "Cliente sin correo." : "",
     pointsEnabled && points > 0 ? "Cliente tiene puntos disponibles." : "",
-    membershipsEnabled && membershipExpirationAlert && membershipExpirationAlert.state !== "none"
+    membershipsEnabled &&
+    membershipExpirationAlert &&
+    membershipExpirationAlert.state !== "none"
       ? getExpirationAlertLabel(membershipExpirationAlert)
       : "",
   ].filter(Boolean);
@@ -2880,7 +3448,8 @@ function renderSelectedCustomer() {
 
 function renderHistoryLoading() {
   elements.historySummary.innerHTML = "";
-  elements.historyList.innerHTML = '<div class="loading-state">Cargando historial...</div>';
+  elements.historyList.innerHTML =
+    '<div class="loading-state">Cargando historial...</div>';
 }
 
 function renderHistory(activity) {
@@ -2903,11 +3472,14 @@ function renderHistory(activity) {
   `;
 
   if (items.length === 0) {
-    elements.historyList.innerHTML = '<div class="empty-state">Sin movimientos para este cliente.</div>';
+    elements.historyList.innerHTML =
+      '<div class="empty-state">Sin movimientos para este cliente.</div>';
     return;
   }
 
-  elements.historyList.innerHTML = items.map((item) => renderHistoryItem(item)).join("");
+  elements.historyList.innerHTML = items
+    .map((item) => renderHistoryItem(item))
+    .join("");
 }
 
 function renderHistoryItem(item) {
@@ -2932,10 +3504,9 @@ function renderHistoryItem(item) {
 }
 
 function renderHistoryError(error) {
-  const message =
-    isAuthRequiredError(error)
-      ? getAuthRequiredMessage()
-      : error instanceof ApiError && error.code === "CUSTOMER_NOT_FOUND"
+  const message = isAuthRequiredError(error)
+    ? getAuthRequiredMessage()
+    : error instanceof ApiError && error.code === "CUSTOMER_NOT_FOUND"
       ? "El cliente seleccionado ya no está disponible."
       : "No pudimos cargar el historial. Intenta de nuevo.";
   elements.historySummary.innerHTML = "";
@@ -2945,14 +3516,16 @@ function renderHistoryError(error) {
 }
 
 function renderOperationMembershipLoading() {
-  elements.membershipOperationActive.innerHTML = '<div class="loading-state">Cargando membresía...</div>';
+  elements.membershipOperationActive.innerHTML =
+    '<div class="loading-state">Cargando membresía...</div>';
   elements.membershipOperationBenefits.innerHTML = "";
   elements.membershipOperationUsages.innerHTML = "";
   elements.membershipOperationTransactions.innerHTML = "";
 }
 
 function renderOperationMembershipDisabled() {
-  elements.membershipOperationActive.innerHTML = '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
+  elements.membershipOperationActive.innerHTML =
+    '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
   elements.membershipOperationBenefits.innerHTML = "";
   elements.membershipOperationUsages.innerHTML = "";
   elements.membershipOperationTransactions.innerHTML = "";
@@ -2981,7 +3554,9 @@ function renderOperationMembershipPanel() {
   elements.membershipActivationForm.hidden = true;
   const alert = selectedCustomerActiveMembership.expirationAlert || {};
   const canRenew = isMembershipRenewable(selectedCustomerActiveMembership);
-  const canUseBenefits = isMembershipCurrentlyUsable(selectedCustomerActiveMembership);
+  const canUseBenefits = isMembershipCurrentlyUsable(
+    selectedCustomerActiveMembership,
+  );
   elements.membershipOperationActive.innerHTML = `
     <article class="membership-card membership-operation-card">
       <div>
@@ -3008,7 +3583,8 @@ function renderOperationMembershipPanel() {
   if (canUseBenefits) {
     renderOperationMembershipBenefits();
   } else {
-    elements.membershipOperationBenefits.innerHTML = '<div class="empty-state">Renueva la membresía antes de aplicar beneficios.</div>';
+    elements.membershipOperationBenefits.innerHTML =
+      '<div class="empty-state">Renueva la membresía antes de aplicar beneficios.</div>';
   }
   renderOperationMembershipUsages();
   renderOperationMembershipTransactions();
@@ -3017,12 +3593,15 @@ function renderOperationMembershipPanel() {
 
 function renderOperationMembershipBenefits() {
   if (!selectedCustomerMembershipBenefits.length) {
-    elements.membershipOperationBenefits.innerHTML = '<div class="empty-state">El plan activo no tiene beneficios disponibles.</div>';
+    elements.membershipOperationBenefits.innerHTML =
+      '<div class="empty-state">El plan activo no tiene beneficios disponibles.</div>';
     return;
   }
 
-  elements.membershipOperationBenefits.innerHTML = selectedCustomerMembershipBenefits
-    .map((benefit) => `
+  elements.membershipOperationBenefits.innerHTML =
+    selectedCustomerMembershipBenefits
+      .map(
+        (benefit) => `
       <article class="membership-card membership-operation-benefit" data-membership-benefit-usage-card>
         <div>
           <div class="membership-card-title">
@@ -3040,19 +3619,23 @@ function renderOperationMembershipBenefits() {
           <button class="secondary-button" type="button" data-icon="gift" data-membership-usage-benefit-id="${escapeHtml(benefit.id)}">Aplicar beneficio</button>
         </div>
       </article>
-    `)
-    .join("");
+    `,
+      )
+      .join("");
 }
 
 function renderOperationMembershipUsages() {
   if (!selectedCustomerMembershipUsages.length) {
-    elements.membershipOperationUsages.innerHTML = '<div class="empty-state">Sin usos recientes de beneficios.</div>';
+    elements.membershipOperationUsages.innerHTML =
+      '<div class="empty-state">Sin usos recientes de beneficios.</div>';
     return;
   }
 
-  elements.membershipOperationUsages.innerHTML = selectedCustomerMembershipUsages
-    .slice(0, 8)
-    .map((usage) => `
+  elements.membershipOperationUsages.innerHTML =
+    selectedCustomerMembershipUsages
+      .slice(0, 8)
+      .map(
+        (usage) => `
       <article class="history-row membership-usage-row">
         <div>
           <h3>${escapeHtml(usage.benefitName || "Beneficio")}</h3>
@@ -3060,8 +3643,9 @@ function renderOperationMembershipUsages() {
         </div>
         <strong class="history-points">x${formatReportNumber(usage.quantity)}</strong>
       </article>
-    `)
-    .join("");
+    `,
+      )
+      .join("");
 }
 
 function renderOperationMembershipTransactions() {
@@ -3075,7 +3659,8 @@ function renderOperationMembershipTransactions() {
     ${header}
     ${selectedCustomerMembershipTransactions
       .slice(0, 8)
-      .map((transaction) => `
+      .map(
+        (transaction) => `
         <article class="history-row membership-transaction-row">
           <div>
             <h3>${escapeHtml(getMembershipTransactionTypeLabel(transaction.transactionType))}</h3>
@@ -3084,27 +3669,37 @@ function renderOperationMembershipTransactions() {
           </div>
           <strong class="history-points">${formatMoney(transaction.amount)}</strong>
         </article>
-      `)
+      `,
+      )
       .join("")}
   `;
 }
 
 function openMembershipRenewalForm() {
-  if (!selectedCustomerActiveMembership || !isMembershipRenewable(selectedCustomerActiveMembership)) {
+  if (
+    !selectedCustomerActiveMembership ||
+    !isMembershipRenewable(selectedCustomerActiveMembership)
+  ) {
     return;
   }
 
   clearMembershipOperationMessages();
   clearMembershipRenewalErrors();
-  const price = selectedCustomerActiveMembership.pricePaid ?? selectedCustomerActiveMembership.plan?.price ?? "";
-  elements.membershipRenewalAmountInput.value = price === "" || price == null ? "" : Number(price);
+  const price =
+    selectedCustomerActiveMembership.pricePaid ??
+    selectedCustomerActiveMembership.plan?.price ??
+    "";
+  elements.membershipRenewalAmountInput.value =
+    price === "" || price == null ? "" : Number(price);
   elements.membershipRenewalPaymentMethodInput.value = "";
   elements.membershipRenewalForm.hidden = false;
   elements.membershipRenewalPaymentMethodInput.focus();
 }
 
 function openMembershipBenefitUsageConfirmation(benefitId) {
-  const benefit = selectedCustomerMembershipBenefits.find((item) => String(item.id) === String(benefitId));
+  const benefit = selectedCustomerMembershipBenefits.find(
+    (item) => String(item.id) === String(benefitId),
+  );
   if (!benefit || !selectedCustomerActiveMembership) {
     return;
   }
@@ -3129,7 +3724,8 @@ function renderOperationMembershipError(error) {
   const message = isAuthRequiredError(error)
     ? getAuthRequiredMessage()
     : "No pudimos cargar la membresía activa del cliente.";
-  elements.membershipOperationActive.innerHTML = '<div class="empty-state">Membresía no disponible.</div>';
+  elements.membershipOperationActive.innerHTML =
+    '<div class="empty-state">Membresía no disponible.</div>';
   elements.membershipOperationBenefits.innerHTML = "";
   elements.membershipOperationUsages.innerHTML = "";
   elements.membershipOperationTransactions.innerHTML = "";
@@ -3143,7 +3739,8 @@ function renderReportPrompt() {
   elements.reportTableWrap.hidden = true;
   elements.reportTableBody.innerHTML = "";
   elements.reportEmpty.hidden = false;
-  elements.reportEmpty.textContent = "Selecciona un rango de fechas para ver la actividad.";
+  elements.reportEmpty.textContent =
+    "Selecciona un rango de fechas para ver la actividad.";
   elements.exportReportButton.disabled = true;
 }
 
@@ -3193,7 +3790,8 @@ function renderReport(report) {
 
   if (items.length === 0) {
     elements.reportEmpty.hidden = false;
-    elements.reportEmpty.textContent = "Sin movimientos para el rango seleccionado.";
+    elements.reportEmpty.textContent =
+      "Sin movimientos para el rango seleccionado.";
     elements.reportTableWrap.hidden = true;
     elements.reportTableBody.innerHTML = "";
     elements.exportReportButton.disabled = true;
@@ -3202,9 +3800,13 @@ function renderReport(report) {
 
   elements.reportEmpty.hidden = true;
   elements.reportTableWrap.hidden = false;
-  elements.reportTableBody.innerHTML = items.map((item) => renderReportRow(item)).join("");
+  elements.reportTableBody.innerHTML = items
+    .map((item) => renderReportRow(item))
+    .join("");
   elements.exportReportButton.disabled = false;
-  showReportStatus(`Reporte cargado: ${formatReportNumber(items.length)} movimientos.`);
+  showReportStatus(
+    `Reporte cargado: ${formatReportNumber(items.length)} movimientos.`,
+  );
 }
 
 function renderReportRow(item) {
@@ -3226,20 +3828,30 @@ function renderReportRow(item) {
 
 function renderReportDetail(item) {
   if (item.type === "purchase") {
-    const invoice = item.invoiceNumber ? `Factura ${item.invoiceNumber}` : "Compra sin comprobante";
+    const invoice = item.invoiceNumber
+      ? `Factura ${item.invoiceNumber}`
+      : "Compra sin comprobante";
     return `${escapeHtml(invoice)}<span>${formatMoney(item.amount)}</span>`;
   }
 
   if (item.type === "membership") {
-    const label = item.planName ? `Membresía: ${item.planName}` : (item.note || "Evento de membresía");
-    const amount = Number.isFinite(Number(item.amount)) ? `<span>${formatMoney(item.amount)}</span>` : "";
+    const label = item.planName
+      ? `Membresía: ${item.planName}`
+      : item.note || "Evento de membresía";
+    const amount = Number.isFinite(Number(item.amount))
+      ? `<span>${formatMoney(item.amount)}</span>`
+      : "";
     return `${escapeHtml(label)}${amount}`;
   }
 
   if (item.type === "benefit") {
     const quantity = item.quantity ? ` x${item.quantity}` : "";
-    const label = item.benefitName ? `Beneficio usado: ${item.benefitName}${quantity}` : (item.note || "Beneficio usado");
-    const plan = item.planName ? `<span>${escapeHtml(item.planName)}</span>` : "";
+    const label = item.benefitName
+      ? `Beneficio usado: ${item.benefitName}${quantity}`
+      : item.note || "Beneficio usado";
+    const plan = item.planName
+      ? `<span>${escapeHtml(item.planName)}</span>`
+      : "";
     return `${escapeHtml(label)}${plan}`;
   }
 
@@ -3276,7 +3888,8 @@ function renderCustomerReportPrompt() {
   elements.customerReportTableWrap.hidden = true;
   elements.customerReportTableBody.innerHTML = "";
   elements.customerReportEmpty.hidden = false;
-  elements.customerReportEmpty.textContent = "Busca un cliente y selecciona un rango para ver sus movimientos.";
+  elements.customerReportEmpty.textContent =
+    "Busca un cliente y selecciona un rango para ver sus movimientos.";
   elements.exportCustomerReportButton.disabled = true;
 }
 
@@ -3304,7 +3917,8 @@ function renderCustomerReport(report) {
     elements.customerReportSummary.hidden = true;
     elements.customerReportSummary.innerHTML = "";
     elements.customerReportEmpty.hidden = false;
-    elements.customerReportEmpty.textContent = "No encontramos un cliente con ese dato. Revisa teléfono, nombre o correo.";
+    elements.customerReportEmpty.textContent =
+      "No encontramos un cliente con ese dato. Revisa teléfono, nombre o correo.";
     showCustomerReportStatus("Sin cliente encontrado para la búsqueda.");
     return;
   }
@@ -3313,15 +3927,22 @@ function renderCustomerReport(report) {
     elements.customerReportSummary.hidden = true;
     elements.customerReportSummary.innerHTML = "";
     elements.customerReportEmpty.hidden = false;
-    elements.customerReportEmpty.textContent = "Hay varios clientes posibles. Refina la búsqueda con teléfono o correo exacto.";
+    elements.customerReportEmpty.textContent =
+      "Hay varios clientes posibles. Refina la búsqueda con teléfono o correo exacto.";
     elements.customerReportCandidates.hidden = false;
-    elements.customerReportCandidates.innerHTML = (report.candidates || []).map((candidate) => `
+    elements.customerReportCandidates.innerHTML = (report.candidates || [])
+      .map(
+        (candidate) => `
       <div>
         <strong>${escapeHtml(candidate.name || "Cliente sin nombre")}</strong>
         <span>${escapeHtml(candidate.phone || "Sin teléfono")} · ${escapeHtml(candidate.email || "Sin correo")}</span>
       </div>
-    `).join("");
-    showCustomerReportStatus(`Coincidencias encontradas: ${formatReportNumber((report.candidates || []).length)}.`);
+    `,
+      )
+      .join("");
+    showCustomerReportStatus(
+      `Coincidencias encontradas: ${formatReportNumber((report.candidates || []).length)}.`,
+    );
     return;
   }
 
@@ -3359,22 +3980,29 @@ function renderCustomerReport(report) {
 
   if (items.length === 0) {
     elements.customerReportEmpty.hidden = false;
-    elements.customerReportEmpty.textContent = "Cliente encontrado, sin movimientos para el rango seleccionado.";
+    elements.customerReportEmpty.textContent =
+      "Cliente encontrado, sin movimientos para el rango seleccionado.";
     return;
   }
 
   elements.customerReportEmpty.hidden = true;
   elements.customerReportTableWrap.hidden = false;
-  elements.customerReportTableBody.innerHTML = items.map((item) => renderReportRow(item)).join("");
+  elements.customerReportTableBody.innerHTML = items
+    .map((item) => renderReportRow(item))
+    .join("");
   elements.exportCustomerReportButton.disabled = false;
-  showCustomerReportStatus(`Reporte cargado: ${formatReportNumber(items.length)} movimientos.`);
+  showCustomerReportStatus(
+    `Reporte cargado: ${formatReportNumber(items.length)} movimientos.`,
+  );
 }
 
 function renderCustomerReportError(error) {
   renderCustomerReportPrompt();
 
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
-    showCustomerReportError("Revisa búsqueda, rango de fechas y tipo de reporte.");
+    showCustomerReportError(
+      "Revisa búsqueda, rango de fechas y tipo de reporte.",
+    );
     return;
   }
 
@@ -3383,7 +4011,9 @@ function renderCustomerReportError(error) {
     return;
   }
 
-  showCustomerReportError("No pudimos cargar el reporte por cliente. Intenta de nuevo.");
+  showCustomerReportError(
+    "No pudimos cargar el reporte por cliente. Intenta de nuevo.",
+  );
 }
 
 function renderMembershipFinancialReportPrompt() {
@@ -3395,7 +4025,8 @@ function renderMembershipFinancialReportPrompt() {
   elements.membershipFinancialReportTableWrap.hidden = true;
   elements.membershipFinancialReportTableBody.innerHTML = "";
   elements.membershipFinancialReportEmpty.hidden = false;
-  elements.membershipFinancialReportEmpty.textContent = "Selecciona un rango de fechas para ver ventas y renovaciones.";
+  elements.membershipFinancialReportEmpty.textContent =
+    "Selecciona un rango de fechas para ver ventas y renovaciones.";
   elements.exportMembershipFinancialReportButton.disabled = true;
 }
 
@@ -3404,7 +4035,8 @@ function renderMembershipFinancialReportLoading() {
   elements.membershipFinancialPaymentSummary.hidden = true;
   elements.membershipFinancialReportTableWrap.hidden = true;
   elements.membershipFinancialReportEmpty.hidden = false;
-  elements.membershipFinancialReportEmpty.textContent = "Cargando reporte de membresías...";
+  elements.membershipFinancialReportEmpty.textContent =
+    "Cargando reporte de membresías...";
   elements.exportMembershipFinancialReportButton.disabled = true;
 }
 
@@ -3440,18 +4072,21 @@ function renderMembershipFinancialReport(report) {
       <strong>${paymentMethods.length ? formatReportNumber(paymentMethods.length) : "0"}</strong>
     </div>
     ${paymentMethods
-      .map((item) => `
+      .map(
+        (item) => `
         <div>
           <span>${escapeHtml(getPaymentMethodLabel(item.paymentMethod))} (${formatReportNumber(item.count)})</span>
           <strong>${formatMoney(item.amount)}</strong>
         </div>
-      `)
+      `,
+      )
       .join("")}
   `;
 
   if (!items.length) {
     elements.membershipFinancialReportEmpty.hidden = false;
-    elements.membershipFinancialReportEmpty.textContent = "Sin transacciones de membresía para el rango seleccionado.";
+    elements.membershipFinancialReportEmpty.textContent =
+      "Sin transacciones de membresía para el rango seleccionado.";
     elements.membershipFinancialReportTableWrap.hidden = true;
     elements.membershipFinancialReportTableBody.innerHTML = "";
     elements.exportMembershipFinancialReportButton.disabled = true;
@@ -3460,9 +4095,13 @@ function renderMembershipFinancialReport(report) {
 
   elements.membershipFinancialReportEmpty.hidden = true;
   elements.membershipFinancialReportTableWrap.hidden = false;
-  elements.membershipFinancialReportTableBody.innerHTML = items.map(renderMembershipFinancialReportRow).join("");
+  elements.membershipFinancialReportTableBody.innerHTML = items
+    .map(renderMembershipFinancialReportRow)
+    .join("");
   elements.exportMembershipFinancialReportButton.disabled = false;
-  showMembershipFinancialReportStatus(`Reporte de membresías cargado: ${formatReportNumber(items.length)} transacciones.`);
+  showMembershipFinancialReportStatus(
+    `Reporte de membresías cargado: ${formatReportNumber(items.length)} transacciones.`,
+  );
 }
 
 function renderMembershipFinancialReportRow(item) {
@@ -3487,7 +4126,8 @@ function renderMembershipFinancialReportError(error) {
   elements.membershipFinancialReportTableWrap.hidden = true;
   elements.membershipFinancialReportTableBody.innerHTML = "";
   elements.membershipFinancialReportEmpty.hidden = false;
-  elements.membershipFinancialReportEmpty.textContent = "No hay reporte de membresías cargado.";
+  elements.membershipFinancialReportEmpty.textContent =
+    "No hay reporte de membresías cargado.";
   elements.exportMembershipFinancialReportButton.disabled = true;
 
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
@@ -3500,7 +4140,9 @@ function renderMembershipFinancialReportError(error) {
     return;
   }
 
-  showMembershipFinancialReportError("No pudimos cargar el reporte de membresías.");
+  showMembershipFinancialReportError(
+    "No pudimos cargar el reporte de membresías.",
+  );
 }
 
 function renderAuditPrompt() {
@@ -3508,7 +4150,8 @@ function renderAuditPrompt() {
   elements.auditTableWrap.hidden = true;
   elements.auditTableBody.innerHTML = "";
   elements.auditEmpty.hidden = false;
-  elements.auditEmpty.textContent = "Selecciona un rango de fechas para ver eventos recientes.";
+  elements.auditEmpty.textContent =
+    "Selecciona un rango de fechas para ver eventos recientes.";
   elements.exportAuditButton.disabled = true;
 }
 
@@ -3533,9 +4176,13 @@ function renderAuditEvents(result) {
 
   elements.auditEmpty.hidden = true;
   elements.auditTableWrap.hidden = false;
-  elements.auditTableBody.innerHTML = items.map((item) => renderAuditRow(item)).join("");
+  elements.auditTableBody.innerHTML = items
+    .map((item) => renderAuditRow(item))
+    .join("");
   elements.exportAuditButton.disabled = false;
-  showAuditStatus(`Historial cargado: ${formatReportNumber(items.length)} eventos.`);
+  showAuditStatus(
+    `Historial cargado: ${formatReportNumber(items.length)} eventos.`,
+  );
 }
 
 function renderAuditRow(item) {
@@ -3583,7 +4230,9 @@ function renderAuditError(error) {
 
 function updateMembershipNavigation(settings) {
   const membershipsEnabled = Boolean(settings?.loyaltyMembershipsEnabled);
-  const pointsEnabled = settings ? Boolean(settings.loyaltyPointsEnabled) : true;
+  const pointsEnabled = settings
+    ? Boolean(settings.loyaltyPointsEnabled)
+    : true;
   elements.pointsNavButton.hidden = !pointsEnabled && !membershipsEnabled;
   elements.membershipsNavButton.hidden = true;
 
@@ -3597,10 +4246,12 @@ function updateMembershipNavigation(settings) {
     renderMembershipDisabled();
     resetOperationMembershipState();
     renderMembershipPointsContext();
-
   }
 
-  if (activeSection === "memberships" || (activeSection === "operations" && !pointsEnabled && !membershipsEnabled)) {
+  if (
+    activeSection === "memberships" ||
+    (activeSection === "operations" && !pointsEnabled && !membershipsEnabled)
+  ) {
     setActiveSection(getDefaultLoyaltySection(), { focus: false });
   }
 }
@@ -3610,7 +4261,9 @@ function isMembershipsEnabled() {
 }
 
 function isPointsEnabled() {
-  return currentCompanySettings ? Boolean(currentCompanySettings.loyaltyPointsEnabled) : true;
+  return currentCompanySettings
+    ? Boolean(currentCompanySettings.loyaltyPointsEnabled)
+    : true;
 }
 
 function getDefaultLoyaltySection() {
@@ -3622,20 +4275,29 @@ function getDefaultLoyaltySection() {
 }
 
 function renderMembershipDisabled() {
-  elements.membershipPlansList.innerHTML = '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
-  elements.membershipBenefitsContext.textContent = "Habilita membresías para configurar beneficios.";
-  elements.membershipBenefitsList.innerHTML = '<div class="empty-state">Selecciona un plan para gestionar sus beneficios.</div>';
-  elements.membershipCustomerResults.innerHTML = '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
-  elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Selecciona un cliente para ver sus membresías.</div>';
-  elements.membershipExpiringList.innerHTML = '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
-  elements.membershipExpiredList.innerHTML = '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
+  elements.membershipPlansList.innerHTML =
+    '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
+  elements.membershipBenefitsContext.textContent =
+    "Habilita membresías para configurar beneficios.";
+  elements.membershipBenefitsList.innerHTML =
+    '<div class="empty-state">Selecciona un plan para gestionar sus beneficios.</div>';
+  elements.membershipCustomerResults.innerHTML =
+    '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
+  elements.membershipCustomerMembershipsList.innerHTML =
+    '<div class="empty-state">Selecciona un cliente para ver sus membresías.</div>';
+  elements.membershipExpiringList.innerHTML =
+    '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
+  elements.membershipExpiredList.innerHTML =
+    '<div class="empty-state">Las membresías no están habilitadas para esta empresa.</div>';
   membershipExpirationAlerts = { active: [], expired: [] };
   renderMembershipActivationPlanOptions();
 }
 
 function renderMembershipExpirationLoading() {
-  elements.membershipExpiringList.innerHTML = '<div class="loading-state">Cargando próximas a vencer...</div>';
-  elements.membershipExpiredList.innerHTML = '<div class="loading-state">Cargando vencidas...</div>';
+  elements.membershipExpiringList.innerHTML =
+    '<div class="loading-state">Cargando próximas a vencer...</div>';
+  elements.membershipExpiredList.innerHTML =
+    '<div class="loading-state">Cargando vencidas...</div>';
 }
 
 function renderMembershipExpirationAlerts() {
@@ -3687,7 +4349,8 @@ function renderMembershipExpirationError(error) {
 }
 
 function renderMembershipPlansLoading() {
-  elements.membershipPlansList.innerHTML = '<div class="loading-state">Cargando planes de membresía...</div>';
+  elements.membershipPlansList.innerHTML =
+    '<div class="loading-state">Cargando planes de membresía...</div>';
 }
 
 function renderMembershipPlans() {
@@ -3696,21 +4359,26 @@ function renderMembershipPlans() {
       title: "No existen planes de membresía",
       text: "Crea un plan para empezar a ofrecer beneficios a tus clientes.",
       action: "Crear plan",
-      actionAttribute: "data-membership-plan-action=\"create\"",
+      actionAttribute: 'data-membership-plan-action="create"',
     });
     renderMembershipActivationPlanOptions();
     return;
   }
 
-  elements.membershipPlansList.innerHTML = membershipPlans.map(renderMembershipPlanCard).join("");
+  elements.membershipPlansList.innerHTML = membershipPlans
+    .map(renderMembershipPlanCard)
+    .join("");
   renderMembershipActivationPlanOptions();
 }
 
 function renderMembershipActivationPlanOptions() {
-  const activePlans = membershipPlans.filter((plan) => plan.status === "active");
+  const activePlans = membershipPlans.filter(
+    (plan) => plan.status === "active",
+  );
 
   if (!activePlans.length) {
-    elements.membershipActivationPlanInput.innerHTML = '<option value="">Sin planes activos</option>';
+    elements.membershipActivationPlanInput.innerHTML =
+      '<option value="">Sin planes activos</option>';
     elements.membershipActivationPricePaidInput.value = "";
     renderMembershipActivationPreview();
     return;
@@ -3718,10 +4386,16 @@ function renderMembershipActivationPlanOptions() {
 
   const currentValue = elements.membershipActivationPlanInput.value;
   elements.membershipActivationPlanInput.innerHTML = activePlans
-    .map((plan) => `<option value="${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</option>`)
+    .map(
+      (plan) =>
+        `<option value="${escapeHtml(plan.id)}">${escapeHtml(plan.name)}</option>`,
+    )
     .join("");
 
-  if (currentValue && activePlans.some((plan) => String(plan.id) === String(currentValue))) {
+  if (
+    currentValue &&
+    activePlans.some((plan) => String(plan.id) === String(currentValue))
+  ) {
     elements.membershipActivationPlanInput.value = currentValue;
   }
 
@@ -3738,11 +4412,14 @@ function syncMembershipActivationPlanFields() {
 
 function renderMembershipCustomerResults() {
   if (!membershipCustomerResults.length) {
-    elements.membershipCustomerResults.innerHTML = '<div class="empty-state">No encontramos clientes con esa búsqueda. Puedes registrarlo desde Atender cliente.</div>';
+    elements.membershipCustomerResults.innerHTML =
+      '<div class="empty-state">No encontramos clientes con esa búsqueda. Puedes registrarlo desde Atender cliente.</div>';
     return;
   }
 
-  elements.membershipCustomerResults.innerHTML = membershipCustomerResults.map((customer) => `
+  elements.membershipCustomerResults.innerHTML = membershipCustomerResults
+    .map(
+      (customer) => `
     <article class="membership-card">
       <div>
         <div class="membership-card-title">
@@ -3757,7 +4434,9 @@ function renderMembershipCustomerResults() {
         <button class="secondary-button" type="button" data-icon="arrow-right" data-membership-customer-id="${escapeHtml(customer.id)}">Seleccionar</button>
       </div>
     </article>
-  `).join("");
+  `,
+    )
+    .join("");
 }
 
 function renderSelectedMembershipCustomer() {
@@ -3806,11 +4485,14 @@ function renderMembershipActivationPreview() {
   const startDate = elements.membershipActivationStartDateInput.value;
 
   if (!plan) {
-    elements.membershipActivationPreview.innerHTML = "Selecciona un plan activo.";
+    elements.membershipActivationPreview.innerHTML =
+      "Selecciona un plan activo.";
     return;
   }
 
-  const expectedEndDate = startDate ? calculateExpectedMembershipEndDate(startDate, plan.durationDays) : null;
+  const expectedEndDate = startDate
+    ? calculateExpectedMembershipEndDate(startDate, plan.durationDays)
+    : null;
   elements.membershipActivationPreview.innerHTML = `
     <div><strong>${escapeHtml(plan.name)}</strong></div>
     <div>Duracion: ${formatReportNumber(plan.durationDays)} días</div>
@@ -3820,16 +4502,19 @@ function renderMembershipActivationPreview() {
 }
 
 function renderCustomerMembershipsPrompt() {
-  elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Selecciona un cliente para ver sus membresías.</div>';
+  elements.membershipCustomerMembershipsList.innerHTML =
+    '<div class="empty-state">Selecciona un cliente para ver sus membresías.</div>';
 }
 
 function renderCustomerMemberships() {
   if (!selectedCustomerMemberships.length) {
-    elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Este cliente no tiene una membresía activa. Puedes activar una membresía para habilitar sus beneficios.</div>';
+    elements.membershipCustomerMembershipsList.innerHTML =
+      '<div class="empty-state">Este cliente no tiene una membresía activa. Puedes activar una membresía para habilitar sus beneficios.</div>';
     return;
   }
 
-  elements.membershipCustomerMembershipsList.innerHTML = selectedCustomerMemberships.map(renderCustomerMembershipCard).join("");
+  elements.membershipCustomerMembershipsList.innerHTML =
+    selectedCustomerMemberships.map(renderCustomerMembershipCard).join("");
 }
 
 function renderCustomerMembershipCard(membership) {
@@ -3883,7 +4568,8 @@ function renderMembershipPlanCard(plan) {
 }
 
 function renderMembershipBenefitsPrompt() {
-  elements.membershipBenefitsContext.textContent = "Selecciona un plan para ver o crear sus beneficios.";
+  elements.membershipBenefitsContext.textContent =
+    "Selecciona un plan para ver o crear sus beneficios.";
   elements.membershipBenefitsList.innerHTML = renderMembershipEmptyState({
     title: "Selecciona un plan",
     text: "Elige un plan de membresía para ver o crear sus beneficios.",
@@ -3891,11 +4577,14 @@ function renderMembershipBenefitsPrompt() {
 }
 
 function renderMembershipBenefitsLoading() {
-  elements.membershipBenefitsList.innerHTML = '<div class="loading-state">Cargando beneficios...</div>';
+  elements.membershipBenefitsList.innerHTML =
+    '<div class="loading-state">Cargando beneficios...</div>';
 }
 
 function renderMembershipBenefits() {
-  const plan = membershipPlans.find((item) => String(item.id) === String(selectedMembershipPlanId));
+  const plan = membershipPlans.find(
+    (item) => String(item.id) === String(selectedMembershipPlanId),
+  );
   elements.membershipBenefitsContext.textContent = plan
     ? `Beneficios de ${plan.name}`
     : "Selecciona un plan para ver o crear sus beneficios.";
@@ -3905,12 +4594,14 @@ function renderMembershipBenefits() {
       title: "Este plan aún no tiene beneficios",
       text: "Agrega beneficios para explicar que incluye la membresía y controlar usos limitados.",
       action: "Crear beneficio",
-      actionAttribute: "data-membership-benefit-action=\"create\"",
+      actionAttribute: 'data-membership-benefit-action="create"',
     });
     return;
   }
 
-  elements.membershipBenefitsList.innerHTML = membershipBenefits.map(renderMembershipBenefitCard).join("");
+  elements.membershipBenefitsList.innerHTML = membershipBenefits
+    .map(renderMembershipBenefitCard)
+    .join("");
 }
 
 function renderMembershipBenefitCard(benefit) {
@@ -3939,10 +4630,16 @@ function renderMembershipBenefitCard(benefit) {
   `;
 }
 
-function renderMembershipEmptyState({ title, text, action = "", actionAttribute = "" }) {
-  const actionButton = action && actionAttribute
-    ? `<button class="secondary-button" type="button" data-icon="plus" ${actionAttribute}>${escapeHtml(action)}</button>`
-    : "";
+function renderMembershipEmptyState({
+  title,
+  text,
+  action = "",
+  actionAttribute = "",
+}) {
+  const actionButton =
+    action && actionAttribute
+      ? `<button class="secondary-button" type="button" data-icon="plus" ${actionAttribute}>${escapeHtml(action)}</button>`
+      : "";
 
   return `
     <div class="empty-state membership-empty-state">
@@ -3960,7 +4657,8 @@ function fillMembershipPlanForm(plan) {
   elements.membershipPlanDescriptionInput.value = plan.description || "";
   elements.membershipPlanDurationDaysInput.value = plan.durationDays ?? "";
   elements.membershipPlanPriceInput.value = plan.price ?? "";
-  elements.membershipPlanRenewalNoticeDaysInput.value = plan.renewalNoticeDays ?? 5;
+  elements.membershipPlanRenewalNoticeDaysInput.value =
+    plan.renewalNoticeDays ?? 5;
   setButtonText(elements.saveMembershipPlanButton, "Guardar cambios");
 }
 
@@ -4000,19 +4698,27 @@ function fillMembershipBenefitForm(benefit) {
   elements.membershipBenefitIdInput.value = benefit.id;
   elements.membershipBenefitNameInput.value = benefit.name || "";
   elements.membershipBenefitDescriptionInput.value = benefit.description || "";
-  elements.membershipBenefitTypeInput.value = benefit.benefitType || "informational";
-  elements.membershipBenefitAppliesToTypeInput.value = benefit.appliesToType || "text";
-  elements.membershipBenefitAppliesToNameInput.value = benefit.appliesToName || "";
-  elements.membershipBenefitDiscountPercentInput.value = benefit.discountPercent ?? "";
-  elements.membershipBenefitIncludedQuantityInput.value = benefit.includedQuantity ?? "";
+  elements.membershipBenefitTypeInput.value =
+    benefit.benefitType || "informational";
+  elements.membershipBenefitAppliesToTypeInput.value =
+    benefit.appliesToType || "text";
+  elements.membershipBenefitAppliesToNameInput.value =
+    benefit.appliesToName || "";
+  elements.membershipBenefitDiscountPercentInput.value =
+    benefit.discountPercent ?? "";
+  elements.membershipBenefitIncludedQuantityInput.value =
+    benefit.includedQuantity ?? "";
   elements.membershipBenefitUsageLimitInput.value = benefit.usageLimit ?? "";
-  elements.membershipBenefitUsagePeriodInput.value = benefit.usagePeriod || "none";
+  elements.membershipBenefitUsagePeriodInput.value =
+    benefit.usagePeriod || "none";
   setButtonText(elements.saveMembershipBenefitButton, "Guardar cambios");
 }
 
 function openMembershipBenefitForm(benefit = null, options = {}) {
   if (!selectedMembershipPlanId) {
-    showMembershipBenefitsError("Selecciona un plan antes de crear beneficios.");
+    showMembershipBenefitsError(
+      "Selecciona un plan antes de crear beneficios.",
+    );
     return;
   }
 
@@ -4049,23 +4755,27 @@ function clearMembershipBenefitForm(options = {}) {
 }
 
 function renderMembershipPlansError(error) {
-  const message = isAuthRequiredError(error) ? getAuthRequiredMessage() : "No se pudieron cargar los planes.";
+  const message = isAuthRequiredError(error)
+    ? getAuthRequiredMessage()
+    : "No se pudieron cargar los planes.";
   elements.membershipPlansList.innerHTML = renderMembershipEmptyState({
     title: "No se pudieron cargar los planes",
     text: "Intenta de nuevo para continuar configurando membresías.",
     action: "Reintentar",
-    actionAttribute: "data-membership-plan-action=\"retry\"",
+    actionAttribute: 'data-membership-plan-action="retry"',
   });
   showMembershipPlansError(message);
 }
 
 function renderMembershipBenefitsError(error) {
-  const message = isAuthRequiredError(error) ? getAuthRequiredMessage() : "No se pudieron cargar los beneficios.";
+  const message = isAuthRequiredError(error)
+    ? getAuthRequiredMessage()
+    : "No se pudieron cargar los beneficios.";
   elements.membershipBenefitsList.innerHTML = renderMembershipEmptyState({
     title: "No se pudieron cargar los beneficios",
     text: "Intenta de nuevo para continuar gestionando este plan.",
     action: "Reintentar",
-    actionAttribute: "data-membership-benefit-action=\"retry\"",
+    actionAttribute: 'data-membership-benefit-action="retry"',
   });
   showMembershipBenefitsError(message);
 }
@@ -4077,79 +4787,132 @@ function renderMembershipPlanFormError(error) {
     return;
   }
 
-  showMembershipPlansError(isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos guardar el plan. Intenta de nuevo.");
+  showMembershipPlansError(
+    isAuthRequiredError(error)
+      ? getAuthRequiredMessage()
+      : "No pudimos guardar el plan. Intenta de nuevo.",
+  );
 }
 
 function renderMembershipBenefitFormError(error) {
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
     mapMembershipBenefitErrors(error.details);
-    showMembershipBenefitsError("Revisa los campos del beneficio antes de continuar.");
+    showMembershipBenefitsError(
+      "Revisa los campos del beneficio antes de continuar.",
+    );
     return;
   }
 
-  showMembershipBenefitsError(isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos guardar el beneficio. Intenta de nuevo.");
+  showMembershipBenefitsError(
+    isAuthRequiredError(error)
+      ? getAuthRequiredMessage()
+      : "No pudimos guardar el beneficio. Intenta de nuevo.",
+  );
 }
 
 function renderMembershipCustomerSearchError(error) {
-  const message = isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos buscar clientes.";
-  elements.membershipCustomerResults.innerHTML = '<div class="empty-state">Sin clientes cargados.</div>';
+  const message = isAuthRequiredError(error)
+    ? getAuthRequiredMessage()
+    : "No pudimos buscar clientes.";
+  elements.membershipCustomerResults.innerHTML =
+    '<div class="empty-state">Sin clientes cargados.</div>';
   showMembershipCustomerSearchError(message);
 }
 
 function renderCustomerMembershipsError(error) {
-  const message = isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos cargar las membresías del cliente.";
-  elements.membershipCustomerMembershipsList.innerHTML = '<div class="empty-state">Sin membresías cargadas.</div>';
+  const message = isAuthRequiredError(error)
+    ? getAuthRequiredMessage()
+    : "No pudimos cargar las membresías del cliente.";
+  elements.membershipCustomerMembershipsList.innerHTML =
+    '<div class="empty-state">Sin membresías cargadas.</div>';
   showMembershipCustomerMembershipsError(message);
 }
 
 function renderMembershipActivationError(error) {
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
     mapMembershipActivationErrors(error.details);
-    showMembershipActivationError("Revisa los campos de activación de la membresía.");
+    showMembershipActivationError(
+      "Revisa los campos de activación de la membresía.",
+    );
     return;
   }
 
-  if (error instanceof ApiError && error.code === "CUSTOMER_ALREADY_HAS_ACTIVE_MEMBERSHIP") {
-    showMembershipActivationError("Este cliente ya tiene una membresía activa.");
+  if (
+    error instanceof ApiError &&
+    error.code === "CUSTOMER_ALREADY_HAS_ACTIVE_MEMBERSHIP"
+  ) {
+    showMembershipActivationError(
+      "Este cliente ya tiene una membresía activa.",
+    );
     return;
   }
 
   if (error instanceof ApiError && error.code === "MEMBERSHIP_PLAN_INACTIVE") {
-    showMembershipActivationError("Este plan está inactivo. Activa el plan o selecciona otro.");
+    showMembershipActivationError(
+      "Este plan está inactivo. Activa el plan o selecciona otro.",
+    );
     return;
   }
 
-  showMembershipActivationError(isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos activar la membresía. Intenta de nuevo.");
+  showMembershipActivationError(
+    isAuthRequiredError(error)
+      ? getAuthRequiredMessage()
+      : "No pudimos activar la membresía. Intenta de nuevo.",
+  );
 }
 
 function renderMembershipBenefitUsageError(error) {
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
     mapMembershipBenefitUsageErrors(error.details);
-    showMembershipOperationError("Revisa los campos antes de aplicar el beneficio.");
+    showMembershipOperationError(
+      "Revisa los campos antes de aplicar el beneficio.",
+    );
     return;
   }
 
-  if (error instanceof ApiError && error.code === "CUSTOMER_MEMBERSHIP_NOT_ACTIVE") {
-    showMembershipOperationError("Este cliente no tiene una membresía activa. Renueva o activa una membresía antes de aplicar beneficios.");
+  if (
+    error instanceof ApiError &&
+    error.code === "CUSTOMER_MEMBERSHIP_NOT_ACTIVE"
+  ) {
+    showMembershipOperationError(
+      "Este cliente no tiene una membresía activa. Renueva o activa una membresía antes de aplicar beneficios.",
+    );
     return;
   }
 
-  if (error instanceof ApiError && error.code === "MEMBERSHIP_BENEFIT_INACTIVE") {
+  if (
+    error instanceof ApiError &&
+    error.code === "MEMBERSHIP_BENEFIT_INACTIVE"
+  ) {
     showMembershipOperationError("Este beneficio está inactivo.");
     return;
   }
 
-  if (error instanceof ApiError && error.code === "MEMBERSHIP_BENEFIT_NOT_IN_ACTIVE_PLAN") {
-    showMembershipOperationError("Este beneficio no pertenece al plan activo del cliente.");
+  if (
+    error instanceof ApiError &&
+    error.code === "MEMBERSHIP_BENEFIT_NOT_IN_ACTIVE_PLAN"
+  ) {
+    showMembershipOperationError(
+      "Este beneficio no pertenece al plan activo del cliente.",
+    );
     return;
   }
 
-  if (error instanceof ApiError && error.code === "MEMBERSHIP_BENEFIT_USAGE_LIMIT_EXCEEDED") {
-    showMembershipOperationError("Este beneficio ya alcanzo su límite de uso para el periodo.");
+  if (
+    error instanceof ApiError &&
+    error.code === "MEMBERSHIP_BENEFIT_USAGE_LIMIT_EXCEEDED"
+  ) {
+    showMembershipOperationError(
+      "Este beneficio ya alcanzo su límite de uso para el periodo.",
+    );
     return;
   }
 
-  showMembershipOperationError(isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos aplicar el beneficio. Intenta de nuevo.");
+  showMembershipOperationError(
+    isAuthRequiredError(error)
+      ? getAuthRequiredMessage()
+      : "No pudimos aplicar el beneficio. Intenta de nuevo.",
+  );
 }
 
 function renderMembershipRenewalError(error) {
@@ -4159,17 +4922,31 @@ function renderMembershipRenewalError(error) {
     return;
   }
 
-  if (error instanceof ApiError && error.code === "CUSTOMER_MEMBERSHIP_CANCELLED") {
-    showMembershipOperationError("No se puede renovar una membresía cancelada.");
+  if (
+    error instanceof ApiError &&
+    error.code === "CUSTOMER_MEMBERSHIP_CANCELLED"
+  ) {
+    showMembershipOperationError(
+      "No se puede renovar una membresía cancelada.",
+    );
     return;
   }
 
-  if (error instanceof ApiError && error.code === "CUSTOMER_MEMBERSHIP_NOT_FOUND") {
-    showMembershipOperationError("La membresía seleccionada ya no está disponible.");
+  if (
+    error instanceof ApiError &&
+    error.code === "CUSTOMER_MEMBERSHIP_NOT_FOUND"
+  ) {
+    showMembershipOperationError(
+      "La membresía seleccionada ya no está disponible.",
+    );
     return;
   }
 
-  showMembershipOperationError(isAuthRequiredError(error) ? getAuthRequiredMessage() : "No pudimos renovar la membresía. Intenta de nuevo.");
+  showMembershipOperationError(
+    isAuthRequiredError(error)
+      ? getAuthRequiredMessage()
+      : "No pudimos renovar la membresía. Intenta de nuevo.",
+  );
 }
 
 function mapMembershipPlanErrors(details = []) {
@@ -4269,7 +5046,9 @@ function renderCompanySettings(settings) {
   elements.companyEmailInput.value = settings.email ?? "";
   elements.companyPhoneInput.value = settings.phone ?? "";
   elements.companyPointsPercentageInput.value = settings.pointsPercentage ?? "";
-  elements.companyCurrentStatus.textContent = getCompanyStatusLabel(settings.status);
+  elements.companyCurrentStatus.textContent = getCompanyStatusLabel(
+    settings.status,
+  );
   elements.companyCurrentUpdated.textContent = settings.updatedAt
     ? formatDateTime(settings.updatedAt)
     : "No disponible";
@@ -4334,8 +5113,11 @@ function renderCompanyPasswordChangeError(error) {
   }
 
   if (error instanceof ApiError && error.code === "INVALID_CURRENT_PASSWORD") {
-    elements.companyCurrentPasswordError.textContent = "La contraseña actual no coincide.";
-    showCompanyPasswordError("No pudimos actualizar la contraseña. Revisa la contraseña actual.");
+    elements.companyCurrentPasswordError.textContent =
+      "La contraseña actual no coincide.";
+    showCompanyPasswordError(
+      "No pudimos actualizar la contraseña. Revisa la contraseña actual.",
+    );
     return;
   }
 
@@ -4344,12 +5126,16 @@ function renderCompanyPasswordChangeError(error) {
     return;
   }
 
-  showCompanyPasswordError("No pudimos actualizar la contraseña. Intenta de nuevo.");
+  showCompanyPasswordError(
+    "No pudimos actualizar la contraseña. Intenta de nuevo.",
+  );
 }
 
 function renderCompanyLogo(settings) {
   revokeCompanyLogoPreviewUrl();
-  const logoUrl = settings?.logoUrl ? api.getCompanyLogoUrl?.(settings.logoUrl) : "";
+  const logoUrl = settings?.logoUrl
+    ? api.getCompanyLogoUrl?.(settings.logoUrl)
+    : "";
   const updatedAt = settings?.logoUpdatedAt || settings?.updatedAt;
 
   if (!logoUrl) {
@@ -4488,10 +5274,16 @@ function renderCompanyLogoError(error) {
 }
 
 function renderCompanyRegistrationSuccess(result) {
-  const companyName = result.companyName || elements.registrationCompanyNameInput.value.trim();
-  const companyEmail = result.companyEmail || elements.registrationCompanyEmailInput.value.trim();
-  const contactEmail = result.contactEmail || elements.registrationContactEmailInput.value.trim();
-  const hasLogo = Boolean(result.requestedLogo?.available || elements.registrationLogoFileInput.files.length);
+  const companyName =
+    result.companyName || elements.registrationCompanyNameInput.value.trim();
+  const companyEmail =
+    result.companyEmail || elements.registrationCompanyEmailInput.value.trim();
+  const contactEmail =
+    result.contactEmail || elements.registrationContactEmailInput.value.trim();
+  const hasLogo = Boolean(
+    result.requestedLogo?.available ||
+    elements.registrationLogoFileInput.files.length,
+  );
 
   elements.registrationStatus.hidden = false;
   elements.registrationStatus.textContent = "Datos recibidos";
@@ -4537,11 +5329,20 @@ function renderCompanyRegistrationError(error) {
         target.textContent = getCompanyRegistrationValidationMessage(detail);
       }
     });
-    showCompanyRegistrationError("Revisa los campos marcados antes de enviar los datos.");
+    showCompanyRegistrationError(
+      "Revisa los campos marcados antes de enviar los datos.",
+    );
     return;
   }
 
-  if (error instanceof ApiError && ["UNSUPPORTED_MEDIA_TYPE", "UPLOAD_TOO_LARGE", "LOGO_FILE_UNREADABLE"].includes(error.code)) {
+  if (
+    error instanceof ApiError &&
+    [
+      "UNSUPPORTED_MEDIA_TYPE",
+      "UPLOAD_TOO_LARGE",
+      "LOGO_FILE_UNREADABLE",
+    ].includes(error.code)
+  ) {
     const message = getCompanyRegistrationLogoErrorMessage(error);
     elements.registrationLogoFileError.textContent = message;
     showCompanyRegistrationError("Revisa el logo antes de enviar los datos.");
@@ -4562,14 +5363,20 @@ function renderCompanyRegistrationError(error) {
     return;
   }
 
-  if (error instanceof ApiError && error.code === "REGISTRATION_ALREADY_PENDING") {
+  if (
+    error instanceof ApiError &&
+    error.code === "REGISTRATION_ALREADY_PENDING"
+  ) {
     showCompanyRegistrationError(
       "Ya hay datos recibidos para ese correo. Prepararemos el acceso y enviaremos los siguientes pasos cuando este listo.",
     );
     return;
   }
 
-  if (error instanceof ApiError && error.code === "INVITATION_ALREADY_PENDING") {
+  if (
+    error instanceof ApiError &&
+    error.code === "INVITATION_ALREADY_PENDING"
+  ) {
     showCompanyRegistrationError(
       "Ya hay un acceso pendiente para ese correo. Revisa la bandeja de entrada o solicita un reenvió si está disponible.",
     );
@@ -4577,21 +5384,29 @@ function renderCompanyRegistrationError(error) {
   }
 
   if (error instanceof ApiError && error.code === "RATE_LIMITED") {
-    showCompanyRegistrationError("Hay demasiados intentos recientes. Espera unos minutos e intenta de nuevo.");
+    showCompanyRegistrationError(
+      "Hay demasiados intentos recientes. Espera unos minutos e intenta de nuevo.",
+    );
     return;
   }
 
   if (error instanceof ApiError && error.code === "SERVICE_UNAVAILABLE") {
-    showCompanyRegistrationError("El servicio no está disponible en este momento. Intenta más tarde.");
+    showCompanyRegistrationError(
+      "El servicio no está disponible en este momento. Intenta más tarde.",
+    );
     return;
   }
 
   if (error instanceof TypeError) {
-    showCompanyRegistrationError("No pudimos enviar los datos por un problema de conexion. Revisa tu internet e intenta de nuevo.");
+    showCompanyRegistrationError(
+      "No pudimos enviar los datos por un problema de conexion. Revisa tu internet e intenta de nuevo.",
+    );
     return;
   }
 
-  showCompanyRegistrationError("No pudimos enviar los datos. Intenta de nuevo.");
+  showCompanyRegistrationError(
+    "No pudimos enviar los datos. Intenta de nuevo.",
+  );
 }
 
 function renderAdminPrompt() {
@@ -4606,14 +5421,19 @@ function renderAdminPrompt() {
 function renderAdminListLoading() {
   elements.adminSummary.hidden = true;
   elements.adminSummary.innerHTML = "";
-  elements.adminRequestsList.innerHTML = '<div class="loading-state">Cargando empresas...</div>';
+  elements.adminRequestsList.innerHTML =
+    '<div class="loading-state">Cargando empresas...</div>';
 }
 
 function renderAdminRequestsList() {
   const search = normalize(elements.adminRequestSearchInput.value);
   const filteredRequests = adminRequests.filter((request) =>
-    [request.companyName, request.companyEmail, request.contactName, request.contactEmail]
-      .some((value) => normalize(value).includes(search)),
+    [
+      request.companyName,
+      request.companyEmail,
+      request.contactName,
+      request.contactEmail,
+    ].some((value) => normalize(value).includes(search)),
   );
 
   elements.adminSummary.hidden = false;
@@ -4642,11 +5462,15 @@ function renderAdminRequestsList() {
     return;
   }
 
-  elements.adminRequestsList.innerHTML = filteredRequests.map((request) => renderAdminRequestCard(request)).join("");
+  elements.adminRequestsList.innerHTML = filteredRequests
+    .map((request) => renderAdminRequestCard(request))
+    .join("");
 }
 
 function renderAdminRequestCard(request) {
-  const isSelected = selectedAdminRequest && String(selectedAdminRequest.id) === String(request.id);
+  const isSelected =
+    selectedAdminRequest &&
+    String(selectedAdminRequest.id) === String(request.id);
   const invitationLabel = getAdminInvitationLabel(request.invitation);
   const canApprove = request.status === "pending";
 
@@ -4702,7 +5526,8 @@ function renderAdminDetailPrompt() {
   elements.adminCompaniesSection.classList.remove("is-admin-drawer-open");
   elements.backAdminListButton.hidden = true;
   elements.adminDetailEmpty.hidden = false;
-  elements.adminDetailEmpty.textContent = "Selecciona una empresa para revisar sus datos.";
+  elements.adminDetailEmpty.textContent =
+    "Selecciona una empresa para revisar sus datos.";
   elements.adminRequestDetail.hidden = true;
   elements.adminRequestDetail.innerHTML = "";
 }
@@ -4842,8 +5667,14 @@ async function loadAdminRequestLogoPreview(request) {
   }
 
   try {
-    const blob = await api.getCompanyRegistrationRequestLogo(request.id, adminToken);
-    if (!isSelectedAdminRequest(requestId) || adminRequestLogoPreviewLoadId !== loadId) {
+    const blob = await api.getCompanyRegistrationRequestLogo(
+      request.id,
+      adminToken,
+    );
+    if (
+      !isSelectedAdminRequest(requestId) ||
+      adminRequestLogoPreviewLoadId !== loadId
+    ) {
       return;
     }
 
@@ -4852,27 +5683,42 @@ async function loadAdminRequestLogoPreview(request) {
     adminRequestLogoPreviewRequestId = requestId;
     target.innerHTML = '<img alt="Logo solicitado" loading="lazy" />';
     const image = target.querySelector("img");
-    image.addEventListener("error", () => {
-      if (isSelectedAdminRequest(requestId)) {
-        revokeAdminRequestLogoPreview();
-        target.innerHTML = "<span>Logo no disponible</span>";
-      }
-    }, { once: true });
+    image.addEventListener(
+      "error",
+      () => {
+        if (isSelectedAdminRequest(requestId)) {
+          revokeAdminRequestLogoPreview();
+          target.innerHTML = "<span>Logo no disponible</span>";
+        }
+      },
+      { once: true },
+    );
     image.src = previewUrl;
   } catch (error) {
-    if (isSelectedAdminRequest(requestId) && adminRequestLogoPreviewLoadId === loadId) {
+    if (
+      isSelectedAdminRequest(requestId) &&
+      adminRequestLogoPreviewLoadId === loadId
+    ) {
       target.innerHTML = "<span>Logo no disponible</span>";
     }
   }
 }
 
 function getAdminLogoPreviewTarget(requestId) {
-  return [...elements.adminRequestDetail.querySelectorAll("[data-admin-logo-preview]")]
-    .find((target) => target.dataset.adminLogoPreview === requestId) || null;
+  return (
+    [
+      ...elements.adminRequestDetail.querySelectorAll(
+        "[data-admin-logo-preview]",
+      ),
+    ].find((target) => target.dataset.adminLogoPreview === requestId) || null
+  );
 }
 
 function isSelectedAdminRequest(requestId) {
-  return selectedAdminRequest && String(selectedAdminRequest.id) === String(requestId);
+  return (
+    selectedAdminRequest &&
+    String(selectedAdminRequest.id) === String(requestId)
+  );
 }
 
 function revokeAdminRequestLogoPreview() {
@@ -4953,16 +5799,22 @@ function reconcileSelectedAdminRequest(selected, requests) {
     return null;
   }
 
-  return requests.find((request) => String(request.id) === String(selected.id)) || selected;
+  return (
+    requests.find((request) => String(request.id) === String(selected.id)) ||
+    selected
+  );
 }
 
 function renderAdminListError(error) {
   elements.adminSummary.hidden = true;
   elements.adminSummary.innerHTML = "";
-  elements.adminRequestsList.innerHTML = '<div class="empty-state">No hay empresas cargadas.</div>';
+  elements.adminRequestsList.innerHTML =
+    '<div class="empty-state">No hay empresas cargadas.</div>';
 
   if (isAdminPermissionError(error)) {
-    showAdminListError("El token interno no es válido o venció. Ingrésalo de nuevo.");
+    showAdminListError(
+      "El token interno no es válido o venció. Ingrésalo de nuevo.",
+    );
     return;
   }
 
@@ -4971,11 +5823,16 @@ function renderAdminListError(error) {
     return;
   }
 
-  showAdminListError("No pudimos cargar las empresas. Revisa el token interno e intenta de nuevo.");
+  showAdminListError(
+    "No pudimos cargar las empresas. Revisa el token interno e intenta de nuevo.",
+  );
 }
 
 function updateAdminAccessState() {
-  elements.adminCompaniesSection.classList.toggle("has-admin-token", Boolean(adminToken));
+  elements.adminCompaniesSection.classList.toggle(
+    "has-admin-token",
+    Boolean(adminToken),
+  );
 }
 
 function requestAdminConfirmation(options) {
@@ -4983,10 +5840,15 @@ function requestAdminConfirmation(options) {
     pendingAdminConfirmation(false);
   }
 
-  elements.adminConfirmationTitle.textContent = options.title || "Confirmar accion";
+  elements.adminConfirmationTitle.textContent =
+    options.title || "Confirmar accion";
   elements.adminConfirmationMessage.textContent = options.message || "";
-  elements.adminConfirmationConfirm.textContent = options.confirmLabel || "Confirmar";
-  elements.adminConfirmationConfirm.classList.toggle("danger-button", Boolean(options.danger));
+  elements.adminConfirmationConfirm.textContent =
+    options.confirmLabel || "Confirmar";
+  elements.adminConfirmationConfirm.classList.toggle(
+    "danger-button",
+    Boolean(options.danger),
+  );
   elements.adminConfirmationModal.hidden = false;
   elements.adminConfirmationConfirm.focus();
 
@@ -5009,15 +5871,21 @@ function resolveAdminConfirmation(value) {
 
 function renderAdminActionError(error) {
   if (isAdminPermissionError(error)) {
-    showAdminDetailError("No tienes acceso para realizar esta accion con el token actual.");
+    showAdminDetailError(
+      "No tienes acceso para realizar esta accion con el token actual.",
+    );
     return;
   }
 
   if (
     error instanceof ApiError &&
-    ["COMPANY_REGISTRATION_REQUEST_NOT_FOUND", "COMPANY_NOT_FOUND"].includes(error.code)
+    ["COMPANY_REGISTRATION_REQUEST_NOT_FOUND", "COMPANY_NOT_FOUND"].includes(
+      error.code,
+    )
   ) {
-    showAdminDetailError("La empresa ya fue procesada por otro flujo. Actualiza la lista.");
+    showAdminDetailError(
+      "La empresa ya fue procesada por otro flujo. Actualiza la lista.",
+    );
     return;
   }
 
@@ -5031,13 +5899,20 @@ function renderAdminActionError(error) {
     return;
   }
 
-  if (error instanceof ApiError && error.code === "INVITATION_ALREADY_ACCEPTED") {
-    showAdminDetailError("El acceso ya fue creado. No es necesario reenviarlo.");
+  if (
+    error instanceof ApiError &&
+    error.code === "INVITATION_ALREADY_ACCEPTED"
+  ) {
+    showAdminDetailError(
+      "El acceso ya fue creado. No es necesario reenviarlo.",
+    );
     return;
   }
 
   if (error instanceof ApiError && error.code === "INVITATION_EXPIRED") {
-    showAdminDetailError("El acceso venció. Actualiza la lista antes de reenviar.");
+    showAdminDetailError(
+      "El acceso venció. Actualiza la lista antes de reenviar.",
+    );
     return;
   }
 
@@ -5070,10 +5945,13 @@ function renderInvitationValid(invitation) {
   elements.invitationError.hidden = true;
   elements.invitationValid.hidden = false;
   elements.invitationUnavailable.hidden = true;
-  elements.invitationCompanyName.textContent = invitation.companyName || "No disponible";
+  elements.invitationCompanyName.textContent =
+    invitation.companyName || "No disponible";
   elements.invitationEmail.textContent = invitation.email || "No disponible";
   elements.invitationRole.textContent = getInvitationRoleLabel(invitation.role);
-  elements.invitationExpiresAt.textContent = formatDateTime(invitation.expiresAt);
+  elements.invitationExpiresAt.textContent = formatDateTime(
+    invitation.expiresAt,
+  );
   elements.accessDisplayNameInput.value = "";
   elements.accessPasswordInput.value = "";
   elements.accessPasswordConfirmationInput.value = "";
@@ -5103,7 +5981,8 @@ function renderInvitationServiceError(error) {
   }
 
   elements.invitationError.hidden = false;
-  elements.invitationError.textContent = "El servicio no está disponible en este momento. Intenta más tarde.";
+  elements.invitationError.textContent =
+    "El servicio no está disponible en este momento. Intenta más tarde.";
 }
 
 function renderPasswordResetLoading() {
@@ -5128,10 +6007,13 @@ function renderPasswordResetValid(result) {
 
 function renderPasswordResetUnavailable(reason) {
   const states = {
-    invalid: "El enlace de recuperación no es válido. Solicita un nuevo correo de restablecimiento.",
-    expired: "El enlace de recuperación expiró. Solicita un nuevo correo de restablecimiento.",
+    invalid:
+      "El enlace de recuperación no es válido. Solicita un nuevo correo de restablecimiento.",
+    expired:
+      "El enlace de recuperación expiró. Solicita un nuevo correo de restablecimiento.",
     used: "Este enlace ya fue utilizado. Accede a tu panel o solicita un nuevo correo si lo necesitas.",
-    service: "No pudimos revisar el enlace en este momento. Intenta de nuevo más tarde.",
+    service:
+      "No pudimos revisar el enlace en este momento. Intenta de nuevo más tarde.",
   };
   elements.passwordResetLoading.hidden = true;
   elements.passwordResetForm.hidden = true;
@@ -5145,7 +6027,8 @@ function renderAccessCreated(result) {
   const email = result.email || currentInvitation?.email || "";
   elements.createAccessForm.hidden = true;
   elements.accessStatus.hidden = false;
-  elements.accessStatus.textContent = "Acceso creado correctamente. Ya puedes acceder a tu panel.";
+  elements.accessStatus.textContent =
+    "Acceso creado correctamente. Ya puedes acceder a tu panel.";
   if (email) {
     window.sessionStorage.setItem("puntoclubLoginEmail", email);
   }
@@ -5175,12 +6058,18 @@ function renderCreateAccessError(error) {
     return;
   }
 
-  if (error instanceof ApiError && error.code === "INVITATION_ALREADY_ACCEPTED") {
+  if (
+    error instanceof ApiError &&
+    error.code === "INVITATION_ALREADY_ACCEPTED"
+  ) {
     renderInvitationUnavailable("accepted");
     return;
   }
 
-  if (error instanceof ApiError && error.code === "COMPANY_USER_ALREADY_EXISTS") {
+  if (
+    error instanceof ApiError &&
+    error.code === "COMPANY_USER_ALREADY_EXISTS"
+  ) {
     showAccessError("Ya existe un acceso para ese correo. Accede a tu panel.");
     return;
   }
@@ -5200,27 +6089,40 @@ function renderLoginError(error) {
         target.textContent = getLoginValidationMessage(detail);
       }
     });
-    showLoginError("Completa el correo y la contraseña para acceder a tu panel.");
+    showLoginError(
+      "Completa el correo y la contraseña para acceder a tu panel.",
+    );
     return;
   }
 
   if (error instanceof ApiError && error.code === "UNAUTHORIZED") {
-    showLoginError("Correo o contraseña incorrectos. Revisa los datos o recupera el acceso.");
+    showLoginError(
+      "Correo o contraseña incorrectos. Revisa los datos o recupera el acceso.",
+    );
     return;
   }
 
   if (error instanceof ApiError && error.code === "FORBIDDEN") {
-    showLoginError("El acceso no está activo. Contacta al administrador de Punto Club.");
+    showLoginError(
+      "El acceso no está activo. Contacta al administrador de Punto Club.",
+    );
     return;
   }
 
-  if (error instanceof ApiError && ["RATE_LIMITED", "TOO_MANY_ATTEMPTS"].includes(error.code)) {
-    showLoginError("Hay demasiados intentos recientes. Espere unos minutos o recupere el acceso.");
+  if (
+    error instanceof ApiError &&
+    ["RATE_LIMITED", "TOO_MANY_ATTEMPTS"].includes(error.code)
+  ) {
+    showLoginError(
+      "Hay demasiados intentos recientes. Espere unos minutos o recupere el acceso.",
+    );
     return;
   }
 
   if (!(error instanceof ApiError)) {
-    showLoginError("No pudimos conectar con Punto Club. Verifique internet o intente de nuevo.");
+    showLoginError(
+      "No pudimos conectar con Punto Club. Verifique internet o intente de nuevo.",
+    );
     return;
   }
 
@@ -5231,14 +6133,17 @@ function renderPasswordResetRequestError(error) {
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
     error.details.forEach((detail) => {
       if (detail.field === "email") {
-        elements.passwordResetEmailError.textContent = "Ingresa un correo válido.";
+        elements.passwordResetEmailError.textContent =
+          "Ingresa un correo válido.";
       }
     });
     showPasswordResetRequestError("Revisa los datos ingresados.");
     return;
   }
 
-  showPasswordResetRequestError("No pudimos enviar las instrucciones. Intenta de nuevo más tarde.");
+  showPasswordResetRequestError(
+    "No pudimos enviar las instrucciones. Intenta de nuevo más tarde.",
+  );
 }
 
 function renderPasswordResetCompleteError(error) {
@@ -5250,9 +6155,10 @@ function renderPasswordResetCompleteError(error) {
       }[detail.field];
 
       if (target) {
-        target.textContent = detail.field === "password"
-          ? "Usa de 10 a 128 caracteres, con letras y números."
-          : "El enlace no es válido. Solicita un nuevo correo de restablecimiento.";
+        target.textContent =
+          detail.field === "password"
+            ? "Usa de 10 a 128 caracteres, con letras y números."
+            : "El enlace no es válido. Solicita un nuevo correo de restablecimiento.";
       }
     });
     showPasswordResetError("Revisa los datos ingresados.");
@@ -5261,7 +6167,11 @@ function renderPasswordResetCompleteError(error) {
 
   if (
     error instanceof ApiError &&
-    ["PASSWORD_RESET_NOT_FOUND", "PASSWORD_RESET_ALREADY_USED", "PASSWORD_RESET_EXPIRED"].includes(error.code)
+    [
+      "PASSWORD_RESET_NOT_FOUND",
+      "PASSWORD_RESET_ALREADY_USED",
+      "PASSWORD_RESET_EXPIRED",
+    ].includes(error.code)
   ) {
     renderPasswordResetUnavailable(
       error.code === "PASSWORD_RESET_EXPIRED"
@@ -5273,16 +6183,17 @@ function renderPasswordResetCompleteError(error) {
     return;
   }
 
-  showPasswordResetError("No pudimos guardar la nueva contraseña. Intenta de nuevo.");
+  showPasswordResetError(
+    "No pudimos guardar la nueva contraseña. Intenta de nuevo.",
+  );
 }
 
 function renderAuthIdentity(identity) {
   const companyName = identity?.company?.name || "Empresa";
   const email = identity?.user?.email || "Sesión iniciada";
   api.setActiveCompanyId?.(identity?.company?.id);
-  elements.authStatus.textContent = email && email !== companyName
-    ? email
-    : "Sesión iniciada";
+  elements.authStatus.textContent =
+    email && email !== companyName ? email : "Sesión iniciada";
   elements.loginButton.hidden = true;
   elements.logoutButton.hidden = false;
   renderActiveCompanyIdentity(identity?.company || null);
@@ -5310,10 +6221,13 @@ function renderActiveCompanyIdentity(company) {
 
   elements.activeCompanyIdentity.hidden = false;
   elements.activeCompanyName.textContent = companyName;
-  elements.activeCompanyLogoFallback.textContent = getCompanyInitials(companyName);
+  elements.activeCompanyLogoFallback.textContent =
+    getCompanyInitials(companyName);
 
   const logoSource = company?.logoUrl ? company : currentCompanySettings;
-  const logoUrl = logoSource?.logoUrl ? api.getCompanyLogoUrl?.(logoSource.logoUrl) : "";
+  const logoUrl = logoSource?.logoUrl
+    ? api.getCompanyLogoUrl?.(logoSource.logoUrl)
+    : "";
   const updatedAt = logoSource?.logoUpdatedAt || logoSource?.updatedAt;
 
   if (!logoUrl) {
@@ -5330,20 +6244,21 @@ function renderActiveCompanyIdentity(company) {
 }
 
 function getCompanyInitials(name) {
-  return String(name || "PC")
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0])
-    .join("")
-    .toUpperCase() || "PC";
+  return (
+    String(name || "PC")
+      .trim()
+      .split(/\s+/)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join("")
+      .toUpperCase() || "PC"
+  );
 }
 
 function renderCustomersError(error) {
-  const message =
-    isAuthRequiredError(error)
-      ? getAuthRequiredMessage()
-      : error instanceof ApiError && error.code === "INTERNAL_ERROR"
+  const message = isAuthRequiredError(error)
+    ? getAuthRequiredMessage()
+    : error instanceof ApiError && error.code === "INTERNAL_ERROR"
       ? "No pudimos consultar clientes. Intenta de nuevo."
       : error instanceof ApiError
         ? error.message
@@ -5400,7 +6315,9 @@ function renderPurchaseError(error) {
   }
 
   if (error instanceof ApiError && error.code === "DUPLICATE_INVOICE") {
-    showPurchaseError("Ya existe una compra con esa factura o comprobante. Usa otro número o revisa el historial del cliente.");
+    showPurchaseError(
+      "Ya existe una compra con esa factura o comprobante. Usa otro número o revisa el historial del cliente.",
+    );
     return;
   }
 
@@ -5435,7 +6352,9 @@ function renderRedemptionError(error) {
   }
 
   if (error instanceof ApiError && error.code === "INSUFFICIENT_POINTS") {
-    showRedemptionError("El cliente no tiene puntos suficientes para redimir esa cantidad.");
+    showRedemptionError(
+      "El cliente no tiene puntos suficientes para redimir esa cantidad.",
+    );
     return;
   }
 
@@ -5464,7 +6383,8 @@ function getCustomerValidationMessage(detail) {
 
 function getPurchaseValidationMessage(detail) {
   const messagesByField = {
-    invoiceNumber: "La factura o comprobante es requerido y debe tener 80 caracteres o menos.",
+    invoiceNumber:
+      "La factura o comprobante es requerido y debe tener 80 caracteres o menos.",
     purchaseDate: "La fecha de compra es requerida.",
     amount: "El monto debe ser mayor que 0.",
   };
@@ -5487,7 +6407,8 @@ function getCompanyValidationMessage(detail) {
     name: "El nombre es requerido y debe tener 160 caracteres o menos.",
     email: "El correo debe tener un formato válido y 254 caracteres o menos.",
     phone: "El teléfono debe tener entre 7 y 32 caracteres.",
-    pointsPercentage: "El porcentaje debe ser mayor que 0 y menor o igual que 100.",
+    pointsPercentage:
+      "El porcentaje debe ser mayor que 0 y menor o igual que 100.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
@@ -5496,8 +6417,10 @@ function getCompanyValidationMessage(detail) {
 function getCompanyPasswordValidationMessage(detail) {
   const messagesByField = {
     currentPassword: "Ingresa la contraseña actual.",
-    newPassword: "Usa de 10 a 128 caracteres, con letras y números, distinta a la actual.",
-    passwordConfirmation: "La confirmación debe coincidir con la nueva contraseña.",
+    newPassword:
+      "Usa de 10 a 128 caracteres, con letras y números, distinta a la actual.",
+    passwordConfirmation:
+      "La confirmación debe coincidir con la nueva contraseña.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
@@ -5580,7 +6503,8 @@ function getCompanyRegistrationValidationMessage(detail) {
     contactName: "El nombre de contacto debe tener 160 caracteres o menos.",
     contactEmail: "Ingresa un correo de contacto válido.",
     contactPhone: "El teléfono de contacto debe tener 32 caracteres o menos.",
-    logoFile: "No pudimos procesar el logo. Quítalo o selecciona otra imagen para continuar.",
+    logoFile:
+      "No pudimos procesar el logo. Quítalo o selecciona otra imagen para continuar.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
@@ -5588,13 +6512,18 @@ function getCompanyRegistrationValidationMessage(detail) {
 
 function getCompanyRegistrationLogoErrorMessage(error) {
   const messagesByCode = {
-    LOGO_FILE_UNREADABLE: "No pudimos leer la imagen. Guarda una copia nueva en PNG, JPG o WebP y vuelve a intentarlo.",
-    LOGO_STORAGE_UNAVAILABLE: "No pudimos guardar el logo en este momento. Puedes intentar de nuevo o enviar los datos sin logo.",
+    LOGO_FILE_UNREADABLE:
+      "No pudimos leer la imagen. Guarda una copia nueva en PNG, JPG o WebP y vuelve a intentarlo.",
+    LOGO_STORAGE_UNAVAILABLE:
+      "No pudimos guardar el logo en este momento. Puedes intentar de nuevo o enviar los datos sin logo.",
     UNSUPPORTED_MEDIA_TYPE: "El logo debe ser una imagen PNG, JPG o WebP.",
     UPLOAD_TOO_LARGE: "El logo debe pesar 1 MB o menos.",
   };
 
-  return messagesByCode[error.code] || "No pudimos procesar el logo. Quítalo o selecciona otra imagen para continuar.";
+  return (
+    messagesByCode[error.code] ||
+    "No pudimos procesar el logo. Quítalo o selecciona otra imagen para continuar."
+  );
 }
 
 function getCreateAccessValidationMessage(detail) {
@@ -5616,11 +6545,17 @@ function getLoginValidationMessage(detail) {
 }
 
 function isAuthRequiredError(error) {
-  return error instanceof ApiError && ["UNAUTHORIZED", "FORBIDDEN"].includes(error.code);
+  return (
+    error instanceof ApiError &&
+    ["UNAUTHORIZED", "FORBIDDEN"].includes(error.code)
+  );
 }
 
 function isAdminPermissionError(error) {
-  return error instanceof ApiError && ["UNAUTHORIZED", "FORBIDDEN"].includes(error.code);
+  return (
+    error instanceof ApiError &&
+    ["UNAUTHORIZED", "FORBIDDEN"].includes(error.code)
+  );
 }
 
 function getAuthRequiredMessage() {
@@ -5971,8 +6906,14 @@ function clearCompanyPasswordMessages() {
 
 function clearCompanyPasswordForm(options = {}) {
   elements.companyPasswordForm.reset();
-  setPasswordInputHidden(elements.companyCurrentPasswordInput, elements.toggleCompanyCurrentPasswordButton);
-  setPasswordInputHidden(elements.companyNewPasswordInput, elements.toggleCompanyNewPasswordButton);
+  setPasswordInputHidden(
+    elements.companyCurrentPasswordInput,
+    elements.toggleCompanyCurrentPasswordButton,
+  );
+  setPasswordInputHidden(
+    elements.companyNewPasswordInput,
+    elements.toggleCompanyNewPasswordButton,
+  );
   setPasswordInputHidden(
     elements.companyNewPasswordConfirmationInput,
     elements.toggleCompanyNewPasswordConfirmationButton,
@@ -5992,7 +6933,10 @@ function clearCompanyPasswordForm(options = {}) {
 
 function setCompanyPasswordPanelVisible(isVisible, options = {}) {
   elements.companyPasswordForm.hidden = !isVisible;
-  elements.toggleCompanyPasswordPanelButton.setAttribute("aria-expanded", String(isVisible));
+  elements.toggleCompanyPasswordPanelButton.setAttribute(
+    "aria-expanded",
+    String(isVisible),
+  );
   setButtonText(
     elements.toggleCompanyPasswordPanelButton,
     isVisible ? "Ocultar cambio de contraseña" : "Cambiar contraseña",
@@ -6004,7 +6948,9 @@ function setCompanyPasswordPanelVisible(isVisible, options = {}) {
 
   if (isVisible) {
     window.requestAnimationFrame(() => {
-      elements.companyCurrentPasswordInput.focus({ preventScroll: isCompactViewport() });
+      elements.companyCurrentPasswordInput.focus({
+        preventScroll: isCompactViewport(),
+      });
     });
   }
 }
@@ -6220,7 +7166,10 @@ function clearPasswordResetRequestMessages() {
 
 function setPasswordResetRequestPanelVisible(isVisible, options = {}) {
   elements.passwordResetRequestForm.hidden = !isVisible;
-  elements.togglePasswordResetRequestButton.setAttribute("aria-expanded", String(isVisible));
+  elements.togglePasswordResetRequestButton.setAttribute(
+    "aria-expanded",
+    String(isVisible),
+  );
   setButtonText(
     elements.togglePasswordResetRequestButton,
     isVisible ? "Ocultar recuperación" : "Recuperar acceso",
@@ -6231,7 +7180,10 @@ function setPasswordResetRequestPanelVisible(isVisible, options = {}) {
   }
 
   if (isVisible) {
-    if (!elements.passwordResetEmailInput.value && elements.loginEmailInput.value) {
+    if (
+      !elements.passwordResetEmailInput.value &&
+      elements.loginEmailInput.value
+    ) {
       elements.passwordResetEmailInput.value = elements.loginEmailInput.value;
     }
     window.requestAnimationFrame(() => {
@@ -6255,50 +7207,80 @@ function clearPasswordResetCompleteMessages() {
 
 function setSubmitting(isSubmitting) {
   elements.saveButton.disabled = isSubmitting;
-  setButtonText(elements.saveButton, isSubmitting ? "Registrando..." : "Registrar cliente");
+  setButtonText(
+    elements.saveButton,
+    isSubmitting ? "Registrando..." : "Registrar cliente",
+  );
 }
 
 function setPurchaseSubmitting(isSubmitting) {
   elements.savePurchaseButton.disabled = isSubmitting;
-  setButtonText(elements.savePurchaseButton, isSubmitting ? "Registrando..." : "Registrar compra");
+  setButtonText(
+    elements.savePurchaseButton,
+    isSubmitting ? "Registrando..." : "Registrar compra",
+  );
 }
 
 function setRedemptionSubmitting(isSubmitting) {
   elements.saveRedemptionButton.disabled = isSubmitting;
-  setButtonText(elements.saveRedemptionButton, isSubmitting ? "Redimiendo..." : "Redimir puntos");
+  setButtonText(
+    elements.saveRedemptionButton,
+    isSubmitting ? "Redimiendo..." : "Redimir puntos",
+  );
 }
 
 function setReportSubmitting(isSubmitting) {
   elements.loadReportButton.disabled = isSubmitting;
-  setButtonText(elements.loadReportButton, isSubmitting ? "Consultando..." : "Consultar");
+  setButtonText(
+    elements.loadReportButton,
+    isSubmitting ? "Consultando..." : "Consultar",
+  );
 }
 
 function setMembershipFinancialReportSubmitting(isSubmitting) {
   elements.loadMembershipFinancialReportButton.disabled = isSubmitting;
-  elements.exportMembershipFinancialReportButton.disabled = isSubmitting || !currentMembershipFinancialReport?.items?.length;
-  setButtonText(elements.loadMembershipFinancialReportButton, isSubmitting ? "Consultando..." : "Consultar");
+  elements.exportMembershipFinancialReportButton.disabled =
+    isSubmitting || !currentMembershipFinancialReport?.items?.length;
+  setButtonText(
+    elements.loadMembershipFinancialReportButton,
+    isSubmitting ? "Consultando..." : "Consultar",
+  );
 }
 
 function setCustomerReportSubmitting(isSubmitting) {
   elements.loadCustomerReportButton.disabled = isSubmitting;
-  elements.exportCustomerReportButton.disabled = isSubmitting || !currentCustomerReport?.items?.length;
-  setButtonText(elements.loadCustomerReportButton, isSubmitting ? "Consultando..." : "Consultar");
+  elements.exportCustomerReportButton.disabled =
+    isSubmitting || !currentCustomerReport?.items?.length;
+  setButtonText(
+    elements.loadCustomerReportButton,
+    isSubmitting ? "Consultando..." : "Consultar",
+  );
 }
 
 function setAuditSubmitting(isSubmitting) {
   elements.loadAuditButton.disabled = isSubmitting;
-  elements.exportAuditButton.disabled = isSubmitting || !currentAuditEvents?.items?.length;
-  setButtonText(elements.loadAuditButton, isSubmitting ? "Consultando..." : "Consultar");
+  elements.exportAuditButton.disabled =
+    isSubmitting || !currentAuditEvents?.items?.length;
+  setButtonText(
+    elements.loadAuditButton,
+    isSubmitting ? "Consultando..." : "Consultar",
+  );
 }
 
 function setCompanyLoading(isLoading) {
   elements.reloadCompanyButton.disabled = isLoading;
-  setButtonText(elements.reloadCompanyButton, isLoading ? "Cargando..." : "Actualizar");
+  setButtonText(
+    elements.reloadCompanyButton,
+    isLoading ? "Cargando..." : "Actualizar",
+  );
 }
 
 function setCompanySubmitting(isSubmitting) {
   elements.saveCompanyButton.disabled = isSubmitting;
-  setButtonText(elements.saveCompanyButton, isSubmitting ? "Guardando..." : "Guardar configuración");
+  setButtonText(
+    elements.saveCompanyButton,
+    isSubmitting ? "Guardando..." : "Guardar configuración",
+  );
 }
 
 function setCompanyPasswordSubmitting(isSubmitting) {
@@ -6310,20 +7292,29 @@ function setCompanyPasswordSubmitting(isSubmitting) {
   elements.toggleCompanyCurrentPasswordButton.disabled = isSubmitting;
   elements.toggleCompanyNewPasswordButton.disabled = isSubmitting;
   elements.toggleCompanyNewPasswordConfirmationButton.disabled = isSubmitting;
-  setButtonText(elements.saveCompanyPasswordButton, isSubmitting ? "Actualizando..." : "Actualizar contraseña");
+  setButtonText(
+    elements.saveCompanyPasswordButton,
+    isSubmitting ? "Actualizando..." : "Actualizar contraseña",
+  );
 }
 
 function setCompanyLogoSubmitting(isSubmitting) {
   elements.uploadCompanyLogoButton.disabled = isSubmitting;
   elements.clearCompanyLogoButton.disabled = isSubmitting;
   elements.companyLogoFileInput.disabled = isSubmitting;
-  setButtonText(elements.uploadCompanyLogoButton, isSubmitting ? "Subiendo..." : "Subir logo");
+  setButtonText(
+    elements.uploadCompanyLogoButton,
+    isSubmitting ? "Subiendo..." : "Subir logo",
+  );
 }
 
 function setCompanyRegistrationSubmitting(isSubmitting) {
   elements.submitRegistrationButton.disabled = isSubmitting;
   elements.resetRegistrationButton.disabled = isSubmitting;
-  setButtonText(elements.submitRegistrationButton, isSubmitting ? "Enviando..." : "Enviar datos");
+  setButtonText(
+    elements.submitRegistrationButton,
+    isSubmitting ? "Enviando..." : "Enviar datos",
+  );
 }
 
 function setMembershipPlanSubmitting(isSubmitting) {
@@ -6333,7 +7324,11 @@ function setMembershipPlanSubmitting(isSubmitting) {
   elements.cancelMembershipPlanButton.disabled = isSubmitting;
   setButtonText(
     elements.saveMembershipPlanButton,
-    isSubmitting ? "Guardando..." : (elements.membershipPlanIdInput.value ? "Guardar cambios" : "Guardar plan"),
+    isSubmitting
+      ? "Guardando..."
+      : elements.membershipPlanIdInput.value
+        ? "Guardar cambios"
+        : "Guardar plan",
   );
 }
 
@@ -6343,7 +7338,11 @@ function setMembershipBenefitSubmitting(isSubmitting) {
   elements.cancelMembershipBenefitButton.disabled = isSubmitting;
   setButtonText(
     elements.saveMembershipBenefitButton,
-    isSubmitting ? "Guardando..." : (elements.membershipBenefitIdInput.value ? "Guardar cambios" : "Guardar beneficio"),
+    isSubmitting
+      ? "Guardando..."
+      : elements.membershipBenefitIdInput.value
+        ? "Guardar cambios"
+        : "Guardar beneficio",
   );
 }
 
@@ -6351,8 +7350,14 @@ function setMembershipExpirationLoading(isLoading) {
   elements.membershipExpirationWithinDaysInput.disabled = isLoading;
   elements.loadMembershipExpirationButton.disabled = isLoading;
   elements.reloadMembershipExpirationButton.disabled = isLoading;
-  setButtonText(elements.loadMembershipExpirationButton, isLoading ? "Consultando..." : "Consultar");
-  setButtonText(elements.reloadMembershipExpirationButton, isLoading ? "Cargando..." : "Actualizar");
+  setButtonText(
+    elements.loadMembershipExpirationButton,
+    isLoading ? "Consultando..." : "Consultar",
+  );
+  setButtonText(
+    elements.reloadMembershipExpirationButton,
+    isLoading ? "Cargando..." : "Actualizar",
+  );
 }
 
 function setMembershipActivationSubmitting(isSubmitting, options = {}) {
@@ -6363,13 +7368,22 @@ function setMembershipActivationSubmitting(isSubmitting, options = {}) {
   elements.membershipActivationPricePaidInput.disabled = isSubmitting;
   elements.membershipActivationPaymentMethodInput.disabled = isSubmitting;
   elements.activateMembershipButton.disabled = isSubmitting;
-  setButtonText(elements.activateMembershipButton, isSubmitting && !options.searching ? "Activando..." : "Activar membresía");
-  setButtonText(elements.searchMembershipCustomerButton, isSubmitting && options.searching ? "Buscando..." : "Buscar cliente");
+  setButtonText(
+    elements.activateMembershipButton,
+    isSubmitting && !options.searching ? "Activando..." : "Activar membresía",
+  );
+  setButtonText(
+    elements.searchMembershipCustomerButton,
+    isSubmitting && options.searching ? "Buscando..." : "Buscar cliente",
+  );
 }
 
 function setMembershipOperationLoading(isLoading) {
   elements.reloadMembershipOperationButton.disabled = isLoading;
-  setButtonText(elements.reloadMembershipOperationButton, isLoading ? "Cargando..." : "Actualizar");
+  setButtonText(
+    elements.reloadMembershipOperationButton,
+    isLoading ? "Cargando..." : "Actualizar",
+  );
 }
 
 function setMembershipBenefitUsageSubmitting(isSubmitting) {
@@ -6378,7 +7392,10 @@ function setMembershipBenefitUsageSubmitting(isSubmitting) {
   elements.membershipBenefitUsageDateInput.disabled = isSubmitting;
   elements.membershipBenefitUsageQuantityInput.disabled = isSubmitting;
   elements.membershipBenefitUsageNoteInput.disabled = isSubmitting;
-  setButtonText(elements.confirmMembershipBenefitUsageButton, isSubmitting ? "Aplicando..." : "Aplicar beneficio");
+  setButtonText(
+    elements.confirmMembershipBenefitUsageButton,
+    isSubmitting ? "Aplicando..." : "Aplicar beneficio",
+  );
 }
 
 function setMembershipRenewalSubmitting(isSubmitting) {
@@ -6386,65 +7403,155 @@ function setMembershipRenewalSubmitting(isSubmitting) {
   elements.cancelMembershipRenewalButton.disabled = isSubmitting;
   elements.membershipRenewalPaymentMethodInput.disabled = isSubmitting;
   elements.membershipRenewalAmountInput.disabled = isSubmitting;
-  setButtonText(elements.confirmMembershipRenewalButton, isSubmitting ? "Renovando..." : "Renovar membresía");
+  setButtonText(
+    elements.confirmMembershipRenewalButton,
+    isSubmitting ? "Renovando..." : "Renovar membresía",
+  );
 }
 
 function setAdminLoading(isLoading) {
   elements.loadAdminRequestsButton.disabled = isLoading;
-  setButtonText(elements.loadAdminRequestsButton, isLoading ? "Cargando..." : "Actualizar");
+  setButtonText(
+    elements.loadAdminRequestsButton,
+    isLoading ? "Cargando..." : "Actualizar",
+  );
   elements.saveAdminTokenButton.disabled = isLoading;
 }
 
 function setAdminActionLoading(isLoading, action = "") {
-  const approveButton = elements.adminRequestDetail.querySelector("#approve-admin-request-button");
-  const rejectButton = elements.adminRequestDetail.querySelector("#reject-admin-request-button");
-  const resendButton = elements.adminRequestDetail.querySelector("#resend-admin-invitation-button");
-  const resetPasswordButton = elements.adminRequestDetail.querySelector("#send-admin-password-reset-button");
+  const approveButton = elements.adminRequestDetail.querySelector(
+    "#approve-admin-request-button",
+  );
+  const rejectButton = elements.adminRequestDetail.querySelector(
+    "#reject-admin-request-button",
+  );
+  const resendButton = elements.adminRequestDetail.querySelector(
+    "#resend-admin-invitation-button",
+  );
+  const resetPasswordButton = elements.adminRequestDetail.querySelector(
+    "#send-admin-password-reset-button",
+  );
 
-  [approveButton, rejectButton, resendButton, resetPasswordButton].forEach((button) => {
-    if (button) {
-      button.disabled = isLoading;
-    }
-  });
+  [approveButton, rejectButton, resendButton, resetPasswordButton].forEach(
+    (button) => {
+      if (button) {
+        button.disabled = isLoading;
+      }
+    },
+  );
 
   if (approveButton) {
-    setButtonText(approveButton, isLoading && action === "approve" ? "Activando empresa..." : "Activar y enviar acceso");
+    setButtonText(
+      approveButton,
+      isLoading && action === "approve"
+        ? "Activando empresa..."
+        : "Activar y enviar acceso",
+    );
   }
 
   if (rejectButton) {
-    setButtonText(rejectButton, isLoading && action === "reject" ? "Guardando nota..." : "No continuar");
+    setButtonText(
+      rejectButton,
+      isLoading && action === "reject" ? "Guardando nota..." : "No continuar",
+    );
   }
 
   if (resendButton) {
-    setButtonText(resendButton, isLoading && action === "resend" ? "Reenviando acceso..." : "Reenviar acceso");
+    setButtonText(
+      resendButton,
+      isLoading && action === "resend"
+        ? "Reenviando acceso..."
+        : "Reenviar acceso",
+    );
   }
 
   if (resetPasswordButton) {
-    setButtonText(resetPasswordButton, isLoading && action === "reset-password" ? "Enviando reset..." : "Enviar reset de acceso");
+    setButtonText(
+      resetPasswordButton,
+      isLoading && action === "reset-password"
+        ? "Enviando reset..."
+        : "Enviar reset de acceso",
+    );
   }
 }
 
 function setCreateAccessSubmitting(isSubmitting) {
   elements.createAccessButton.disabled = isSubmitting;
-  setButtonText(elements.createAccessButton, isSubmitting ? "Creando..." : "Crear acceso");
+  setButtonText(
+    elements.createAccessButton,
+    isSubmitting ? "Creando..." : "Crear acceso",
+  );
 }
 
 function setLoginSubmitting(isSubmitting) {
   elements.submitLoginButton.disabled = isSubmitting;
-  setButtonText(elements.submitLoginButton, isSubmitting ? "Accediendo..." : "Acceder a mi panel");
+  setButtonText(
+    elements.submitLoginButton,
+    isSubmitting ? "Accediendo..." : "Acceder a mi panel",
+  );
 }
 
 function setPasswordResetRequestSubmitting(isSubmitting) {
   elements.submitPasswordResetRequestButton.disabled = isSubmitting;
-  setButtonText(elements.submitPasswordResetRequestButton, isSubmitting ? "Enviando..." : "Enviar instrucciones");
+  setButtonText(
+    elements.submitPasswordResetRequestButton,
+    isSubmitting ? "Enviando..." : "Enviar instrucciones",
+  );
 }
 
 function setPasswordResetSubmitting(isSubmitting) {
   elements.submitPasswordResetButton.disabled = isSubmitting;
-  setButtonText(elements.submitPasswordResetButton, isSubmitting ? "Guardando..." : "Guardar contraseña");
+  setButtonText(
+    elements.submitPasswordResetButton,
+    isSubmitting ? "Guardando..." : "Guardar contraseña",
+  );
+}
+
+function applySeoForRoute(route) {
+  const seoConfig = SEO_ROUTE_CONFIG[route] ?? SEO_ROUTE_CONFIG["/"];
+  applySeoConfig(seoConfig);
+}
+
+function applyNoindexSeo() {
+  applySeoConfig(SEO_NOINDEX_CONFIG);
+}
+
+function applySeoConfig(seoConfig) {
+  document.title = seoConfig.title;
+  setMetaContent("name", "description", seoConfig.description);
+  setMetaContent("name", "robots", seoConfig.robots);
+  setCanonicalHref(seoConfig.canonical);
+  setMetaContent("property", "og:title", seoConfig.ogTitle);
+  setMetaContent("property", "og:description", seoConfig.ogDescription);
+  setMetaContent("property", "og:url", seoConfig.canonical);
+  setMetaContent("name", "twitter:title", seoConfig.ogTitle);
+  setMetaContent("name", "twitter:description", seoConfig.ogDescription);
+}
+
+function setMetaContent(attributeName, attributeValue, content) {
+  let meta = document.head.querySelector(
+    `meta[${attributeName}="${attributeValue}"]`,
+  );
+  if (!meta) {
+    meta = document.createElement("meta");
+    meta.setAttribute(attributeName, attributeValue);
+    document.head.append(meta);
+  }
+  meta.setAttribute("content", content);
+}
+
+function setCanonicalHref(href) {
+  let canonical = document.head.querySelector('link[rel="canonical"]');
+  if (!canonical) {
+    canonical = document.createElement("link");
+    canonical.setAttribute("rel", "canonical");
+    document.head.append(canonical);
+  }
+  canonical.setAttribute("href", href);
 }
 
 function showPublicHomePage() {
+  applySeoForRoute("/");
   document.body.classList.add("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
@@ -6463,6 +7570,8 @@ function showPublicHomePage() {
 }
 
 function showProductPage() {
+  const route = window.location.pathname.replace(/\/$/, "") || "/";
+  applySeoForRoute(route === "/producto" ? "/producto" : "/");
   document.body.classList.remove("public-home-mode");
   document.body.classList.add("public-product-mode");
   document.body.classList.remove("public-registration-mode");
@@ -6481,6 +7590,7 @@ function showProductPage() {
 }
 
 function showInvitationPage() {
+  applyNoindexSeo();
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
@@ -6497,6 +7607,7 @@ function showInvitationPage() {
 }
 
 function showPasswordResetPage() {
+  applyNoindexSeo();
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
@@ -6516,6 +7627,7 @@ function showPasswordResetPage() {
 }
 
 function showLoginPage(options = {}) {
+  applyNoindexSeo();
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
@@ -6528,7 +7640,9 @@ function showLoginPage(options = {}) {
   elements.invitationPage.hidden = true;
   elements.passwordResetPage.hidden = true;
   elements.authPage.hidden = false;
-  setPasswordResetRequestPanelVisible(false, { keepMessages: Boolean(options.keepPasswordResetMessages) });
+  setPasswordResetRequestPanelVisible(false, {
+    keepMessages: Boolean(options.keepPasswordResetMessages),
+  });
   if (options.replaceRoute && !isCompanyLoginRoute()) {
     window.history.replaceState({}, "", "/login");
   }
@@ -6543,6 +7657,7 @@ function showLoginPage(options = {}) {
 }
 
 async function showMainApp(options = {}) {
+  applyNoindexSeo();
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
@@ -6558,7 +7673,9 @@ async function showMainApp(options = {}) {
   if (isCompactViewport()) {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }
-  setActiveSection(getDefaultLoyaltySection(), { focus: options.focus !== false });
+  setActiveSection(getDefaultLoyaltySection(), {
+    focus: options.focus !== false,
+  });
 
   if (options.replaceLoginRoute && isCompanyLoginRoute()) {
     window.history.replaceState({}, "", "/app");
@@ -6570,6 +7687,7 @@ async function showMainApp(options = {}) {
 }
 
 function showPublicCompanyRegistrationPage() {
+  applyNoindexSeo();
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.add("public-registration-mode");
@@ -6602,6 +7720,7 @@ function isolatePublicCompanyRegistrationView() {
 }
 
 function showAdminCompaniesPage() {
+  applyNoindexSeo();
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
@@ -6638,16 +7757,24 @@ function isolateAdminCompaniesView() {
 }
 
 function isCompactViewport() {
-  return window.matchMedia?.("(max-width: 860px)").matches ?? window.innerWidth <= 860;
+  return (
+    window.matchMedia?.("(max-width: 860px)").matches ??
+    window.innerWidth <= 860
+  );
 }
 
 function startGlobalLoading(message, options = {}) {
-  const delay = Number.isFinite(Number(options.delay)) ? Number(options.delay) : 3000;
+  const delay = Number.isFinite(Number(options.delay))
+    ? Number(options.delay)
+    : 3000;
   stopGlobalLoading();
-  globalLoadingTimer = window.setTimeout(() => {
-    elements.globalLoadingMessage.textContent = message;
-    elements.globalLoading.hidden = false;
-  }, Math.max(0, delay));
+  globalLoadingTimer = window.setTimeout(
+    () => {
+      elements.globalLoadingMessage.textContent = message;
+      elements.globalLoading.hidden = false;
+    },
+    Math.max(0, delay),
+  );
   return stopGlobalLoading;
 }
 
@@ -6666,12 +7793,14 @@ function validateCreateAccessForm() {
   let isValid = true;
 
   if (!isStrongPassword(password)) {
-    elements.accessPasswordError.textContent = "Usa de 10 a 128 caracteres, con letras y números.";
+    elements.accessPasswordError.textContent =
+      "Usa de 10 a 128 caracteres, con letras y números.";
     isValid = false;
   }
 
   if (password !== confirmation) {
-    elements.accessPasswordConfirmationError.textContent = "Las contraseñas no coinciden.";
+    elements.accessPasswordConfirmationError.textContent =
+      "Las contraseñas no coinciden.";
     isValid = false;
   }
 
@@ -6688,17 +7817,21 @@ function validatePasswordResetCompleteForm() {
   let isValid = true;
 
   if (!isStrongPassword(password)) {
-    elements.newPasswordError.textContent = "Usa de 10 a 128 caracteres, con letras y números.";
+    elements.newPasswordError.textContent =
+      "Usa de 10 a 128 caracteres, con letras y números.";
     isValid = false;
   }
 
   if (password !== confirmation) {
-    elements.newPasswordConfirmationError.textContent = "Las contraseñas no coinciden.";
+    elements.newPasswordConfirmationError.textContent =
+      "Las contraseñas no coinciden.";
     isValid = false;
   }
 
   if (!passwordResetToken) {
-    showPasswordResetError("El enlace no es válido. Solicita un nuevo correo de restablecimiento.");
+    showPasswordResetError(
+      "El enlace no es válido. Solicita un nuevo correo de restablecimiento.",
+    );
     isValid = false;
   }
 
@@ -6716,20 +7849,24 @@ function validateCompanyPasswordChangeForm() {
   let isValid = true;
 
   if (!currentPassword || currentPassword.length > 128) {
-    elements.companyCurrentPasswordError.textContent = "Ingresa la contraseña actual.";
+    elements.companyCurrentPasswordError.textContent =
+      "Ingresa la contraseña actual.";
     isValid = false;
   }
 
   if (!isStrongPassword(newPassword)) {
-    elements.companyNewPasswordError.textContent = "Usa de 10 a 128 caracteres, con letras y números.";
+    elements.companyNewPasswordError.textContent =
+      "Usa de 10 a 128 caracteres, con letras y números.";
     isValid = false;
   } else if (newPassword === currentPassword) {
-    elements.companyNewPasswordError.textContent = "La nueva contraseña debe ser distinta a la actual.";
+    elements.companyNewPasswordError.textContent =
+      "La nueva contraseña debe ser distinta a la actual.";
     isValid = false;
   }
 
   if (newPassword !== confirmation) {
-    elements.companyNewPasswordConfirmationError.textContent = "Las contraseñas no coinciden.";
+    elements.companyNewPasswordConfirmationError.textContent =
+      "Las contraseñas no coinciden.";
     isValid = false;
   }
 
@@ -6763,7 +7900,9 @@ function setPasswordInputHidden(input, button) {
 }
 
 function getBalanceValue(balance) {
-  return balance && balance.pointsBalance != null ? Number(balance.pointsBalance) : 0;
+  return balance && balance.pointsBalance != null
+    ? Number(balance.pointsBalance)
+    : 0;
 }
 
 function updateCustomerBalance(customerId, balance) {
@@ -6773,7 +7912,9 @@ function updateCustomerBalance(customerId, balance) {
 
   customerBalances.set(String(customerId), balance);
   currentCustomers = currentCustomers.map((customer) =>
-    String(customer.id) === String(customerId) ? { ...customer, balance } : customer,
+    String(customer.id) === String(customerId)
+      ? { ...customer, balance }
+      : customer,
   );
 
   if (selectedCustomer && String(selectedCustomer.id) === String(customerId)) {
@@ -6811,7 +7952,9 @@ function formatReportNumber(value) {
 }
 
 function formatPoints(value) {
-  return new Intl.NumberFormat("es-CR", { maximumFractionDigits: 0 }).format(Number(value));
+  return new Intl.NumberFormat("es-CR", { maximumFractionDigits: 0 }).format(
+    Number(value),
+  );
 }
 
 function formatSignedPoints(value) {
@@ -6884,7 +8027,9 @@ function getReportTypeLabel(type, item = {}) {
   }
 
   if (type === "membership") {
-    return String(item.note || "").toLowerCase().includes("beneficio usado")
+    return String(item.note || "")
+      .toLowerCase()
+      .includes("beneficio usado")
       ? "Beneficio usado"
       : "Membresía activada";
   }
@@ -6983,14 +8128,24 @@ function isMembershipRenewable(membership) {
 }
 
 function isMembershipCurrentlyUsable(membership) {
-  return Boolean(membership) && membership.status === "active" && String(membership.endDate || "") >= getToday();
+  return (
+    Boolean(membership) &&
+    membership.status === "active" &&
+    String(membership.endDate || "") >= getToday()
+  );
 }
 
 function getRenewableMembership(memberships = []) {
-  return memberships.find(isMembershipCurrentlyUsable)
-    || memberships.find((membership) => isMembershipRenewable(membership) && String(membership.endDate || "") < getToday())
-    || memberships.find(isMembershipRenewable)
-    || null;
+  return (
+    memberships.find(isMembershipCurrentlyUsable) ||
+    memberships.find(
+      (membership) =>
+        isMembershipRenewable(membership) &&
+        String(membership.endDate || "") < getToday(),
+    ) ||
+    memberships.find(isMembershipRenewable) ||
+    null
+  );
 }
 
 function getSelectedCustomerMembershipActionLabel() {
@@ -6998,7 +8153,10 @@ function getSelectedCustomerMembershipActionLabel() {
     return "Activar membresía";
   }
 
-  if (isMembershipCurrentlyUsable(selectedCustomerActiveMembership) && selectedCustomerMembershipBenefits.length > 0) {
+  if (
+    isMembershipCurrentlyUsable(selectedCustomerActiveMembership) &&
+    selectedCustomerMembershipBenefits.length > 0
+  ) {
     return "Aplicar beneficio";
   }
 
@@ -7010,14 +8168,18 @@ function getSelectedCustomerMembershipActionLabel() {
 }
 
 function getMembershipOperationCustomer() {
-  return activeSection === "memberships" ? selectedMembershipCustomer : selectedCustomer;
+  return activeSection === "memberships"
+    ? selectedMembershipCustomer
+    : selectedCustomer;
 }
 
 function getExpirationAlertLabel(alert = {}) {
   const labels = {
     none: "Sin alerta de vencimiento.",
     expires_today: "La membresía vence hoy.",
-    expiring_soon: alert.message || `La membresía vence en ${alert.daysUntilExpiration} días.`,
+    expiring_soon:
+      alert.message ||
+      `La membresía vence en ${alert.daysUntilExpiration} días.`,
     expired: "Membresía vencida.",
   };
 
@@ -7040,7 +8202,11 @@ function getMembershipExpirationStateLabel(item = {}) {
 
 function getSelectedActivationPlan() {
   const planId = elements.membershipActivationPlanInput.value;
-  return membershipPlans.find((plan) => String(plan.id) === String(planId) && plan.status === "active") || null;
+  return (
+    membershipPlans.find(
+      (plan) => String(plan.id) === String(planId) && plan.status === "active",
+    ) || null
+  );
 }
 
 function calculateExpectedMembershipEndDate(startDate, durationDays) {
@@ -7137,7 +8303,10 @@ function getAdminRequestStateMessage(status) {
     cancelled: "Esta empresa ya no está disponible.",
   };
 
-  return messages[status] ?? "Esta empresa ya fue procesada. Actualiza la lista para ver el estado más reciente.";
+  return (
+    messages[status] ??
+    "Esta empresa ya fue procesada. Actualiza la lista para ver el estado más reciente."
+  );
 }
 
 function getInvitationRoleLabel(role) {
@@ -7159,11 +8328,13 @@ function getInvitationUnavailableState(reason) {
     },
     expired: {
       title: "Acceso vencido",
-      message: "Este enlace expiró. Contacta al equipo de Punto Club para recibir un nuevo acceso.",
+      message:
+        "Este enlace expiró. Contacta al equipo de Punto Club para recibir un nuevo acceso.",
     },
     accepted: {
       title: "Acceso creado",
-      message: "Este enlace ya fue usado. Si no puedes entrar, contacta al equipo de Punto Club.",
+      message:
+        "Este enlace ya fue usado. Si no puedes entrar, contacta al equipo de Punto Club.",
     },
     revoked: {
       title: "Acceso no disponible",
@@ -7176,11 +8347,16 @@ function getInvitationUnavailableState(reason) {
 }
 
 function isCompanyInvitationRoute() {
-  return window.location.pathname.replace(/\/$/, "") === "/company-invitations/accept";
+  return (
+    window.location.pathname.replace(/\/$/, "") ===
+    "/company-invitations/accept"
+  );
 }
 
 function isCompanyPasswordResetRoute() {
-  return window.location.pathname.replace(/\/$/, "") === "/company-password-reset";
+  return (
+    window.location.pathname.replace(/\/$/, "") === "/company-password-reset"
+  );
 }
 
 function isProductRoute() {
@@ -7197,7 +8373,9 @@ function isCompanyLoginRoute() {
 }
 
 function isCompanyRegistrationRoute() {
-  return window.location.pathname.replace(/\/$/, "") === "/company-registration";
+  return (
+    window.location.pathname.replace(/\/$/, "") === "/company-registration"
+  );
 }
 
 function isAdminCompaniesRoute() {
@@ -7232,18 +8410,26 @@ function getAuditSummary(item, eventType) {
   }
 
   if (eventType === "purchase.registered") {
-    const invoice = metadata.invoiceNumber ? ` Factura ${metadata.invoiceNumber}.` : "";
+    const invoice = metadata.invoiceNumber
+      ? ` Factura ${metadata.invoiceNumber}.`
+      : "";
     return `Compra registrada.${invoice}`;
   }
 
   if (eventType === "redemption.registered") {
-    const points = metadata.pointsRedeemed ? ` ${metadata.pointsRedeemed} pts.` : "";
+    const points = metadata.pointsRedeemed
+      ? ` ${metadata.pointsRedeemed} pts.`
+      : "";
     return `Puntos redimidos.${points}`;
   }
 
   if (eventType === "company.settings.updated") {
-    const fields = Array.isArray(metadata.changedFields) ? metadata.changedFields.join(", ") : "";
-    return fields ? `Configuración actualizada: ${fields}.` : "Configuración actualizada.";
+    const fields = Array.isArray(metadata.changedFields)
+      ? metadata.changedFields.join(", ")
+      : "";
+    return fields
+      ? `Configuración actualizada: ${fields}.`
+      : "Configuración actualizada.";
   }
 
   return getAuditEventLabel(eventType);
@@ -7266,7 +8452,11 @@ function parseAuditMetadata(metadata) {
 }
 
 function exportReportCsv() {
-  if (!currentReport || !Array.isArray(currentReport.items) || currentReport.items.length === 0) {
+  if (
+    !currentReport ||
+    !Array.isArray(currentReport.items) ||
+    currentReport.items.length === 0
+  ) {
     showReportError("Consulta un reporte con movimientos antes de exportar.");
     return;
   }
@@ -7286,7 +8476,16 @@ function exportReportCsv() {
 
 function buildReportCsv(report) {
   const rows = [
-    ["fecha", "tipo", "cliente", "telefono", "email", "detalle", "monto", "puntos"],
+    [
+      "fecha",
+      "tipo",
+      "cliente",
+      "telefono",
+      "email",
+      "detalle",
+      "monto",
+      "puntos",
+    ],
     ...report.items.map((item) => [
       item.date || "",
       getReportTypeLabel(item.type, item),
@@ -7294,7 +8493,9 @@ function buildReportCsv(report) {
       item.customerPhone || "",
       item.customerEmail || "",
       getReportCsvDetail(item),
-      ["purchase", "membership"].includes(item.type) && item.amount != null ? Number(item.amount ?? 0) : "",
+      ["purchase", "membership"].includes(item.type) && item.amount != null
+        ? Number(item.amount ?? 0)
+        : "",
       Number(item.points ?? 0),
     ]),
   ];
@@ -7304,15 +8505,19 @@ function buildReportCsv(report) {
 
 function exportMembershipFinancialReportCsv() {
   if (
-    !currentMembershipFinancialReport
-    || !Array.isArray(currentMembershipFinancialReport.items)
-    || currentMembershipFinancialReport.items.length === 0
+    !currentMembershipFinancialReport ||
+    !Array.isArray(currentMembershipFinancialReport.items) ||
+    currentMembershipFinancialReport.items.length === 0
   ) {
-    showMembershipFinancialReportError("Consulta un reporte de membresías antes de exportar.");
+    showMembershipFinancialReportError(
+      "Consulta un reporte de membresías antes de exportar.",
+    );
     return;
   }
 
-  const csv = buildMembershipFinancialReportCsv(currentMembershipFinancialReport);
+  const csv = buildMembershipFinancialReportCsv(
+    currentMembershipFinancialReport,
+  );
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -7322,17 +8527,21 @@ function exportMembershipFinancialReportCsv() {
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
-  showMembershipFinancialReportStatus("CSV de membresías exportado desde los datos cargados.");
+  showMembershipFinancialReportStatus(
+    "CSV de membresías exportado desde los datos cargados.",
+  );
 }
 
 function exportCustomerReportCsv() {
   if (
-    !currentCustomerReport
-    || currentCustomerReport.status !== "resolved"
-    || !Array.isArray(currentCustomerReport.items)
-    || currentCustomerReport.items.length === 0
+    !currentCustomerReport ||
+    currentCustomerReport.status !== "resolved" ||
+    !Array.isArray(currentCustomerReport.items) ||
+    currentCustomerReport.items.length === 0
   ) {
-    showCustomerReportError("Consulta un reporte por cliente con movimientos antes de exportar.");
+    showCustomerReportError(
+      "Consulta un reporte por cliente con movimientos antes de exportar.",
+    );
     return;
   }
 
@@ -7351,7 +8560,11 @@ function exportCustomerReportCsv() {
 }
 
 function exportAuditCsv() {
-  if (!currentAuditEvents || !Array.isArray(currentAuditEvents.items) || currentAuditEvents.items.length === 0) {
+  if (
+    !currentAuditEvents ||
+    !Array.isArray(currentAuditEvents.items) ||
+    currentAuditEvents.items.length === 0
+  ) {
     showAuditError("Consulta un historial con eventos antes de exportar.");
     return;
   }
@@ -7390,7 +8603,18 @@ function exportAuditCsv() {
 
 function buildMembershipFinancialReportCsv(report) {
   const rows = [
-    ["fecha_hora", "fecha_transaccion", "cliente", "telefono", "email", "plan", "tipo", "metodo_pago", "monto", "nota"],
+    [
+      "fecha_hora",
+      "fecha_transaccion",
+      "cliente",
+      "telefono",
+      "email",
+      "plan",
+      "tipo",
+      "metodo_pago",
+      "monto",
+      "nota",
+    ],
     ...report.items.map((item) => [
       item.createdAt || "",
       item.transactionDate || "",
@@ -7410,7 +8634,9 @@ function buildMembershipFinancialReportCsv(report) {
 
 function getReportCsvDetail(item) {
   if (item.type === "purchase") {
-    return item.invoiceNumber ? `Factura ${item.invoiceNumber}` : "Compra sin comprobante";
+    return item.invoiceNumber
+      ? `Factura ${item.invoiceNumber}`
+      : "Compra sin comprobante";
   }
 
   if (item.type === "membership") {

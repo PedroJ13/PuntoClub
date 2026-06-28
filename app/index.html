@@ -4,24 +4,87 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    <title>Punto Club</title>
+    <title>Punto Club | App de fidelización de clientes en Costa Rica</title>
+    <meta
+      name="description"
+      content="Crea programas de puntos, membresías y beneficios con Punto Club. Fideliza clientes, aumenta la recompra y opera tu programa desde un panel simple."
+    />
+    <meta name="robots" content="index,follow" />
+    <link rel="canonical" href="https://puntoclubcr.com/" />
+    <meta property="og:site_name" content="Punto Club" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="Punto Club | App de fidelización de clientes"
+    />
+    <meta
+      property="og:description"
+      content="Crea programas de puntos, membresías y beneficios para que tus clientes regresen con más frecuencia."
+    />
+    <meta property="og:url" content="https://puntoclubcr.com/" />
+    <meta property="og:locale" content="es_CR" />
+    <meta name="twitter:card" content="summary" />
+    <meta
+      name="twitter:title"
+      content="Punto Club | App de fidelización de clientes"
+    />
+    <meta
+      name="twitter:description"
+      content="Software de lealtad para negocios en Costa Rica con puntos, membresías, beneficios y reportes."
+    />
+    <script type="application/ld+json" id="seo-structured-data">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Punto Club",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "App de fidelización de clientes para crear programas de puntos, membresías y beneficios.",
+        "url": "https://puntoclubcr.com/",
+        "areaServed": "CR",
+        "offers": {
+          "@type": "Offer",
+          "availability": "https://schema.org/InStock",
+          "priceCurrency": "CRC"
+        }
+      }
+    </script>
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
     <div class="app-shell">
       <header class="topbar">
         <div>
-          <p class="eyebrow">Fidelización con puntos, membresías y beneficios</p>
+          <p class="eyebrow">
+            Fidelización con puntos, membresías y beneficios
+          </p>
           <h1>Punto Club</h1>
         </div>
         <div class="topbar-actions">
-          <div class="active-company-identity" id="active-company-identity" hidden>
-            <span class="active-company-logo" id="active-company-logo-fallback">PC</span>
-            <img id="active-company-logo-image" alt="Logo de empresa activa" hidden />
+          <div
+            class="active-company-identity"
+            id="active-company-identity"
+            hidden
+          >
+            <span class="active-company-logo" id="active-company-logo-fallback"
+              >PC</span
+            >
+            <img
+              id="active-company-logo-image"
+              alt="Logo de empresa activa"
+              hidden
+            />
             <span id="active-company-name">Empresa</span>
           </div>
           <div class="status-pill" id="auth-status">Sesión no iniciada</div>
-          <button class="secondary-button" id="login-button" type="button" data-icon="log-in">Acceder a mi panel</button>
+          <button
+            class="secondary-button"
+            id="login-button"
+            type="button"
+            data-icon="log-in"
+          >
+            Acceder a mi panel
+          </button>
           <button
             class="secondary-button icon-button logout-icon-button"
             id="logout-button"
@@ -31,21 +94,34 @@
             title="Cerrar sesión"
             hidden
           ></button>
-          <div class="status-pill data-source-pill" id="data-source-status">Modo de prueba</div>
+          <div class="status-pill data-source-pill" id="data-source-status">
+            Modo de prueba
+          </div>
         </div>
       </header>
 
-      <section id="public-home-page" class="public-home-page" aria-labelledby="public-home-title" hidden>
+      <section
+        id="public-home-page"
+        class="public-home-page"
+        aria-labelledby="public-home-title"
+        hidden
+      >
         <div class="public-home-copy">
           <p class="eyebrow">Fidelización para empresas</p>
           <h2 id="public-home-title">Punto Club</h2>
           <p>
-            Gestiona puntos, membresías y beneficios para que tus clientes vuelvan con más frecuencia.
+            App de fidelización para negocios en Costa Rica: gestiona puntos,
+            membresías y beneficios para que tus clientes vuelvan con más
+            frecuencia.
           </p>
           <div class="public-home-actions">
-            <a class="button-link secondary-link" href="/producto">Conocer producto</a>
+            <a class="button-link secondary-link" href="/producto"
+              >Conocer producto</a
+            >
             <a class="button-link" href="/login">Acceder a mi panel</a>
-            <a class="button-link secondary-link" href="/company-registration">Crear programa</a>
+            <a class="button-link secondary-link" href="/company-registration"
+              >Crear programa</a
+            >
           </div>
         </div>
 
@@ -65,7 +141,12 @@
         </div>
       </section>
 
-      <section id="public-product-page" class="public-product-page" aria-labelledby="public-product-title" hidden>
+      <section
+        id="public-product-page"
+        class="public-product-page"
+        aria-labelledby="public-product-title"
+        hidden
+      >
         <nav class="product-nav" aria-label="Navegacion publica">
           <a href="/">Inicio</a>
           <a href="#product-benefits">Beneficios</a>
@@ -73,19 +154,31 @@
           <a href="#product-pricing">Precios</a>
           <a href="#product-contact">Contacto</a>
           <a class="product-nav-panel" href="/login">Acceder a mi panel</a>
-          <a class="product-nav-cta" href="/company-registration">Crear programa</a>
+          <a class="product-nav-cta" href="/company-registration"
+            >Crear programa</a
+          >
         </nav>
 
         <section class="product-hero" aria-label="Punto Club comercial">
           <div class="product-hero-copy">
-            <p class="eyebrow">Punto Club para empresas</p>
-            <h2 id="public-product-title">Haz crecer tu negocio fidelizando clientes</h2>
+            <p class="eyebrow">Software de lealtad para negocios</p>
+            <h2 id="public-product-title">
+              Haz crecer tu negocio fidelizando clientes
+            </h2>
             <p>
-              Con Punto Club puedes crear programas de puntos, membresías y beneficios para que tus clientes regresen.
+              Con Punto Club puedes crear programas de puntos, membresías y
+              beneficios para clientes frecuentes sin perder el control
+              operativo.
             </p>
             <div class="public-home-actions">
-              <a class="button-link product-primary-cta" href="/company-registration">Crear programa</a>
-              <a class="button-link product-secondary-cta" href="#product-steps">Ver cómo funciona</a>
+              <a
+                class="button-link product-primary-cta"
+                href="/company-registration"
+                >Crear programa</a
+              >
+              <a class="button-link product-secondary-cta" href="#product-steps"
+                >Ver cómo funciona</a
+              >
               <a class="product-panel-link" href="/login">Acceder a mi panel</a>
             </div>
             <div class="product-trust-row" aria-label="Confianza operativa">
@@ -95,7 +188,10 @@
             </div>
           </div>
 
-          <div class="product-dashboard" aria-label="Vista resumida de Punto Club">
+          <div
+            class="product-dashboard"
+            aria-label="Vista resumida de Punto Club"
+          >
             <div class="product-dashboard-header">
               <div>
                 <span>Panel Punto Club</span>
@@ -103,7 +199,10 @@
               </div>
               <small>Datos de ejemplo</small>
             </div>
-            <p class="product-example-note">Ejemplo visual. Los números ilustran el panel y no representan métricas reales.</p>
+            <p class="product-example-note">
+              Ejemplo visual. Los números ilustran el panel y no representan
+              métricas reales.
+            </p>
             <div class="product-metric-row">
               <div>
                 <span>Clientes activos</span>
@@ -139,7 +238,10 @@
                 <strong>Cliente ejemplo</strong>
                 <p>1,240 puntos disponibles</p>
               </div>
-              <div class="product-qr-card" aria-label="Confirmacion de beneficio">
+              <div
+                class="product-qr-card"
+                aria-label="Confirmacion de beneficio"
+              >
                 <span></span>
                 <strong>QR</strong>
                 <p>Aplicar beneficio</p>
@@ -148,18 +250,59 @@
           </div>
         </section>
 
-        <section id="product-benefits" class="product-section product-problem" aria-label="Problema que resuelve">
+        <section
+          id="product-benefits"
+          class="product-section product-problem"
+          aria-label="Problema que resuelve"
+        >
           <div>
             <p class="eyebrow">Beneficios</p>
-            <h3>Fideliza con control, no con hojas sueltas</h3>
+            <h3>Un programa de fidelización de clientes sin hojas sueltas</h3>
           </div>
           <p>
-            Punto Club centraliza puntos, membresías y beneficios para que el equipo sepa qué ofrecer, cuándo aplicarlo
-            y cómo darle seguimiento.
+            Punto Club centraliza puntos, membresías, beneficios y reportes para
+            que tu equipo sepa qué ofrecer, cuándo aplicarlo y cómo darle
+            seguimiento a cada cliente recurrente.
           </p>
         </section>
 
-        <section id="product-features" class="product-section" aria-label="Funciones para empresas">
+        <section class="product-section" aria-label="Para quien es Punto Club">
+          <div class="section-header compact-header">
+            <div>
+              <p class="eyebrow">Para quién es</p>
+              <h3>Negocios que dependen de clientes que regresan</h3>
+            </div>
+          </div>
+          <div class="product-benefits-grid">
+            <article>
+              <span>Restaurantes y cafeterías</span>
+              <p>
+                Premia visitas frecuentes y compras repetidas con puntos o
+                beneficios claros.
+              </p>
+            </article>
+            <article>
+              <span>Tiendas y comercios locales</span>
+              <p>
+                Convierte cada compra en una razón para volver y medir la
+                actividad del cliente.
+              </p>
+            </article>
+            <article>
+              <span>Gimnasios, salones y servicios</span>
+              <p>
+                Gestiona membresías, renovaciones y beneficios para clientes
+                frecuentes.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section
+          id="product-features"
+          class="product-section"
+          aria-label="Funciones para empresas"
+        >
           <div class="section-header compact-header">
             <div>
               <p class="eyebrow">Funciones</p>
@@ -169,32 +312,89 @@
           <div class="product-benefits-grid">
             <article>
               <span>Puntos por compra</span>
-              <p>Registra compras, acumula puntos y consulta historial por cliente.</p>
+              <p>
+                Registra compras, acumula puntos y consulta historial por
+                cliente.
+              </p>
             </article>
             <article>
               <span>Membresías</span>
-              <p>Activa membresías, controla vigencia y acompaña renovaciones.</p>
+              <p>
+                Activa membresías, controla vigencia y acompaña renovaciones.
+              </p>
             </article>
             <article>
               <span>Beneficios controlados</span>
-              <p>Aplica beneficios con reglas claras y trazabilidad operativa.</p>
+              <p>
+                Aplica beneficios con reglas claras y trazabilidad operativa.
+              </p>
             </article>
             <article>
               <span>Reportes</span>
-              <p>Consulta actividad, clientes y resultados para tomar mejores decisiones.</p>
+              <p>
+                Consulta actividad, clientes y resultados para tomar mejores
+                decisiones.
+              </p>
             </article>
             <article>
               <span>Correos transaccionales</span>
-              <p>Comunica accesos y eventos importantes con formato profesional.</p>
+              <p>
+                Comunica accesos y eventos importantes con formato profesional.
+              </p>
             </article>
             <article>
               <span>Multiempresa controlado</span>
-              <p>Administra empresas del piloto sin mezclar datos ni accesos.</p>
+              <p>
+                Administra empresas del piloto sin mezclar datos ni accesos.
+              </p>
             </article>
           </div>
         </section>
 
-        <section id="product-steps" class="product-section" aria-label="Cómo funciona">
+        <section class="product-section" aria-label="Casos de uso">
+          <div class="section-header compact-header">
+            <div>
+              <p class="eyebrow">Casos de uso</p>
+              <h3>Lealtad lista para operar, medir y ajustar</h3>
+            </div>
+          </div>
+          <div class="product-benefits-grid">
+            <article>
+              <span>App de puntos para clientes</span>
+              <p>
+                Registra compras, acumula puntos y consulta el historial del
+                cliente en segundos.
+              </p>
+            </article>
+            <article>
+              <span>Membresías para clientes frecuentes</span>
+              <p>
+                Activa planes, controla vigencias y da seguimiento a
+                renovaciones.
+              </p>
+            </article>
+            <article>
+              <span>Beneficios para clientes recurrentes</span>
+              <p>
+                Aplica beneficios limitados con trazabilidad y reglas claras
+                para el equipo.
+              </p>
+            </article>
+            <article>
+              <span>Reportes operativos</span>
+              <p>
+                Revisa clientes, actividad, compras, redenciones y membresías
+                desde un panel simple.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section
+          id="product-steps"
+          class="product-section"
+          aria-label="Cómo funciona"
+        >
           <div class="section-header compact-header">
             <div>
               <p class="eyebrow">Cómo funciona</p>
@@ -220,27 +420,74 @@
           </div>
         </section>
 
-        <section id="product-pricing" class="product-section product-pricing" aria-label="Precios">
+        <section
+          id="product-pricing"
+          class="product-section product-pricing"
+          aria-label="Precios"
+        >
           <div>
             <p class="eyebrow">Precios</p>
-            <h3>Piloto controlado para negocios que quieren aumentar recompra</h3>
+            <h3>
+              Piloto controlado para negocios que quieren aumentar recompra
+            </h3>
           </div>
           <p>
-            La fase actual se coordina como piloto operativo. Revisamos tu caso, preparamos el acceso y acompañamos el
-            uso con datos reales de tu empresa.
+            La fase actual se coordina como piloto operativo. Revisamos tu caso,
+            preparamos el acceso y acompañamos el uso con datos reales de tu
+            empresa.
           </p>
         </section>
 
-        <section id="product-contact" class="product-contact" aria-label="Contacto">
+        <section class="product-section" aria-label="Preguntas frecuentes">
+          <div class="section-header compact-header">
+            <div>
+              <p class="eyebrow">Preguntas frecuentes</p>
+              <h3>Lo básico antes de iniciar</h3>
+            </div>
+          </div>
+          <div class="product-benefits-grid">
+            <article>
+              <span>¿Qué es un programa de fidelización?</span>
+              <p>
+                Es una forma de motivar recompra con puntos, membresías o
+                beneficios para clientes recurrentes.
+              </p>
+            </article>
+            <article>
+              <span>¿Requiere instalación?</span>
+              <p>
+                No. Punto Club opera desde la web y se prepara con acceso para
+                la empresa aprobada.
+              </p>
+            </article>
+            <article>
+              <span>¿Sirve para Costa Rica?</span>
+              <p>
+                Sí. La operación, el copy y el piloto están pensados para
+                negocios en Costa Rica.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section
+          id="product-contact"
+          class="product-contact"
+          aria-label="Contacto"
+        >
           <div>
             <p class="eyebrow">Contacto</p>
             <h3>Hablemos de tu programa de fidelización</h3>
             <p>
-              Si quieres probar Punto Club en tu empresa, déjanos tus datos por correo y te contactamos para coordinar
-              el piloto.
+              Si quieres probar Punto Club en tu empresa, déjanos tus datos por
+              correo y te contactamos para coordinar el piloto.
             </p>
           </div>
-          <a class="button-link product-primary-cta" href="mailto:pj13eros_business@outlook.com?subject=Quiero%20conocer%20Punto%20Club">Escribir a Punto Club</a>
+          <a
+            class="button-link product-primary-cta"
+            href="mailto:pj13eros_business@outlook.com?subject=Quiero%20conocer%20Punto%20Club"
+            >Escribir a Punto Club</a
+          >
         </section>
       </section>
 
@@ -253,9 +500,14 @@
         <div class="invitation-card zone-card">
           <p class="eyebrow">Acceso de empresa</p>
           <h2 id="invitation-title">Crea el acceso de tu empresa</h2>
-          <p class="section-support">Define una contraseña para entrar a Punto Club con el correo invitado.</p>
+          <p class="section-support">
+            Define una contraseña para entrar a Punto Club con el correo
+            invitado.
+          </p>
 
-          <div id="invitation-loading" class="loading-state">Revisando acceso...</div>
+          <div id="invitation-loading" class="loading-state">
+            Revisando acceso...
+          </div>
           <div id="invitation-error" class="form-error" hidden></div>
 
           <div id="invitation-valid" class="invitation-result" hidden>
@@ -287,21 +539,39 @@
               <form id="create-access-form" class="auth-form" novalidate>
                 <div class="field">
                   <label for="access-display-name">Nombre para mostrar</label>
-                  <input id="access-display-name" name="displayName" maxlength="160" autocomplete="name" />
-                  <p class="field-help">Opcional. Usaremos este nombre para identificar el acceso dentro de la empresa.</p>
+                  <input
+                    id="access-display-name"
+                    name="displayName"
+                    maxlength="160"
+                    autocomplete="name"
+                  />
+                  <p class="field-help">
+                    Opcional. Usaremos este nombre para identificar el acceso
+                    dentro de la empresa.
+                  </p>
                   <p class="field-error" id="access-display-name-error"></p>
                 </div>
 
                 <div class="field-grid">
                   <div class="field">
                     <label for="access-password">Contraseña</label>
-                    <input id="access-password" name="password" type="password" maxlength="128" autocomplete="new-password" />
-                    <p class="field-help">Usa de 10 a 128 caracteres, con letras y números.</p>
+                    <input
+                      id="access-password"
+                      name="password"
+                      type="password"
+                      maxlength="128"
+                      autocomplete="new-password"
+                    />
+                    <p class="field-help">
+                      Usa de 10 a 128 caracteres, con letras y números.
+                    </p>
                     <p class="field-error" id="access-password-error"></p>
                   </div>
 
                   <div class="field">
-                    <label for="access-password-confirmation">Confirmar contraseña</label>
+                    <label for="access-password-confirmation"
+                      >Confirmar contraseña</label
+                    >
                     <input
                       id="access-password-confirmation"
                       name="passwordConfirmation"
@@ -309,27 +579,43 @@
                       maxlength="128"
                       autocomplete="new-password"
                     />
-                    <p class="field-error" id="access-password-confirmation-error"></p>
+                    <p
+                      class="field-error"
+                      id="access-password-confirmation-error"
+                    ></p>
                   </div>
                 </div>
 
                 <div id="access-error" class="form-error" hidden></div>
                 <div id="access-status" class="success-message" hidden></div>
 
-                <button id="create-access-button" type="submit" data-icon="key">Crear acceso</button>
+                <button id="create-access-button" type="submit" data-icon="key">
+                  Crear acceso
+                </button>
               </form>
             </div>
           </div>
 
-          <div id="invitation-unavailable" class="invitation-result is-unavailable" hidden></div>
+          <div
+            id="invitation-unavailable"
+            class="invitation-result is-unavailable"
+            hidden
+          ></div>
         </div>
       </section>
 
-      <section id="auth-page" class="auth-page" aria-labelledby="login-title" hidden>
+      <section
+        id="auth-page"
+        class="auth-page"
+        aria-labelledby="login-title"
+        hidden
+      >
         <div class="auth-card zone-card">
           <p class="eyebrow">Acceso de empresa</p>
           <h2 id="login-title">Acceder a mi panel</h2>
-          <p class="section-support">Ingresa con el correo usado para crear el acceso de tu empresa.</p>
+          <p class="section-support">
+            Ingresa con el correo usado para crear el acceso de tu empresa.
+          </p>
 
           <div id="login-status" class="success-message" hidden></div>
           <div id="login-error" class="form-error" hidden></div>
@@ -337,31 +623,44 @@
           <form id="login-form" class="auth-form" novalidate>
             <div class="field">
               <label for="login-email">Correo</label>
-              <input id="login-email" name="email" maxlength="254" autocomplete="email" inputmode="email" />
+              <input
+                id="login-email"
+                name="email"
+                maxlength="254"
+                autocomplete="email"
+                inputmode="email"
+              />
               <p class="field-error" id="login-email-error"></p>
             </div>
 
             <div class="field">
               <label for="login-password">Contraseña</label>
               <div class="password-field">
-                <input id="login-password" name="password" type="password" maxlength="128" autocomplete="current-password" />
+                <input
+                  id="login-password"
+                  name="password"
+                  type="password"
+                  maxlength="128"
+                  autocomplete="current-password"
+                />
                 <button
                   class="secondary-button password-toggle"
                   id="toggle-login-password"
                   type="button"
                   aria-controls="login-password"
                   aria-pressed="false"
-                    data-icon="eye"
-                    aria-label="Mostrar contraseña"
-                    title="Mostrar contraseña"
-                  >
-                </button>
+                  data-icon="eye"
+                  aria-label="Mostrar contraseña"
+                  title="Mostrar contraseña"
+                ></button>
               </div>
               <p class="field-error" id="login-password-error"></p>
             </div>
 
             <div class="form-actions">
-              <button id="submit-login-button" type="submit" data-icon="log-in">Acceder a mi panel</button>
+              <button id="submit-login-button" type="submit" data-icon="log-in">
+                Acceder a mi panel
+              </button>
             </div>
           </form>
 
@@ -377,7 +676,12 @@
             </button>
           </div>
 
-          <form id="password-reset-request-form" class="auth-form compact-auth-form" novalidate hidden>
+          <form
+            id="password-reset-request-form"
+            class="auth-form compact-auth-form"
+            novalidate
+            hidden
+          >
             <div class="field">
               <label for="password-reset-email">Recuperar acceso</label>
               <input
@@ -388,13 +692,28 @@
                 inputmode="email"
                 placeholder="Correo de la empresa"
               />
-              <p class="field-help">Si el correo está registrado, enviaremos instrucciones para restablecer la contraseña.</p>
+              <p class="field-help">
+                Si el correo está registrado, enviaremos instrucciones para
+                restablecer la contraseña.
+              </p>
               <p class="field-error" id="password-reset-email-error"></p>
             </div>
-            <div id="password-reset-request-error" class="form-error" hidden></div>
-            <div id="password-reset-request-status" class="success-message" hidden></div>
+            <div
+              id="password-reset-request-error"
+              class="form-error"
+              hidden
+            ></div>
+            <div
+              id="password-reset-request-status"
+              class="success-message"
+              hidden
+            ></div>
             <div class="form-actions">
-              <button class="secondary-button" id="submit-password-reset-request-button" type="submit">
+              <button
+                class="secondary-button"
+                id="submit-password-reset-request-button"
+                type="submit"
+              >
                 Enviar instrucciones
               </button>
             </div>
@@ -402,13 +721,22 @@
         </div>
       </section>
 
-      <section id="password-reset-page" class="auth-page" aria-labelledby="password-reset-title" hidden>
+      <section
+        id="password-reset-page"
+        class="auth-page"
+        aria-labelledby="password-reset-title"
+        hidden
+      >
         <div class="auth-card zone-card">
           <p class="eyebrow">Acceso de empresa</p>
           <h2 id="password-reset-title">Crear nueva contraseña</h2>
-          <p class="section-support">Usa una contraseña segura para recuperar el acceso de tu empresa.</p>
+          <p class="section-support">
+            Usa una contraseña segura para recuperar el acceso de tu empresa.
+          </p>
 
-          <div id="password-reset-loading" class="empty-state">Revisando enlace...</div>
+          <div id="password-reset-loading" class="empty-state">
+            Revisando enlace...
+          </div>
           <div id="password-reset-error" class="form-error" hidden></div>
           <div id="password-reset-status" class="success-message" hidden></div>
 
@@ -416,25 +744,34 @@
             <div class="field">
               <label for="new-password">Nueva contraseña</label>
               <div class="password-field">
-                <input id="new-password" name="password" type="password" maxlength="128" autocomplete="new-password" />
+                <input
+                  id="new-password"
+                  name="password"
+                  type="password"
+                  maxlength="128"
+                  autocomplete="new-password"
+                />
                 <button
                   class="secondary-button password-toggle"
                   id="toggle-new-password"
                   type="button"
                   aria-controls="new-password"
                   aria-pressed="false"
-                    data-icon="eye"
-                    aria-label="Mostrar contraseña"
-                    title="Mostrar contraseña"
-                  >
-                </button>
+                  data-icon="eye"
+                  aria-label="Mostrar contraseña"
+                  title="Mostrar contraseña"
+                ></button>
               </div>
-              <p class="field-help">Usa de 10 a 128 caracteres, con letras y números.</p>
+              <p class="field-help">
+                Usa de 10 a 128 caracteres, con letras y números.
+              </p>
               <p class="field-error" id="new-password-error"></p>
             </div>
 
             <div class="field">
-              <label for="new-password-confirmation">Confirmar contraseña</label>
+              <label for="new-password-confirmation"
+                >Confirmar contraseña</label
+              >
               <div class="password-field">
                 <input
                   id="new-password-confirmation"
@@ -449,17 +786,18 @@
                   type="button"
                   aria-controls="new-password-confirmation"
                   aria-pressed="false"
-                    data-icon="eye"
-                    aria-label="Mostrar confirmación de contraseña"
-                    title="Mostrar confirmación de contraseña"
-                  >
-                </button>
+                  data-icon="eye"
+                  aria-label="Mostrar confirmación de contraseña"
+                  title="Mostrar confirmación de contraseña"
+                ></button>
               </div>
               <p class="field-error" id="new-password-confirmation-error"></p>
             </div>
 
             <div class="form-actions">
-              <button id="submit-password-reset-button" type="submit">Guardar contraseña</button>
+              <button id="submit-password-reset-button" type="submit">
+                Guardar contraseña
+              </button>
             </div>
           </form>
         </div>
@@ -467,19 +805,41 @@
 
       <div class="app-body">
         <aside class="side-nav" aria-label="Secciones principales">
-          <button class="nav-button is-active" type="button" data-section-target="operations">
+          <button
+            class="nav-button is-active"
+            type="button"
+            data-section-target="operations"
+          >
             Atender cliente
           </button>
-          <button class="nav-button" type="button" data-section-target="company">
+          <button
+            class="nav-button"
+            type="button"
+            data-section-target="company"
+          >
             Mi empresa
           </button>
-          <button class="nav-button" type="button" data-section-target="memberships" hidden>
+          <button
+            class="nav-button"
+            type="button"
+            data-section-target="memberships"
+            hidden
+          >
             Membresías
           </button>
-          <button class="nav-button" type="button" data-section-target="reports">
+          <button
+            class="nav-button"
+            type="button"
+            data-section-target="reports"
+          >
             Reportes
           </button>
-          <button class="nav-button" type="button" data-section-target="adminCompanies" hidden>
+          <button
+            class="nav-button"
+            type="button"
+            data-section-target="adminCompanies"
+            hidden
+          >
             Panel interno
           </button>
         </aside>
@@ -490,14 +850,25 @@
             data-section="operations"
             aria-labelledby="operations-section-title"
           >
-            <h2 id="operations-section-title" class="sr-only">Atender cliente</h2>
+            <h2 id="operations-section-title" class="sr-only">
+              Atender cliente
+            </h2>
 
-            <section class="search-panel zone-card" aria-labelledby="search-title">
+            <section
+              class="search-panel zone-card"
+              aria-labelledby="search-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="search-title">Buscar cliente</h2>
                 </div>
-                <button class="secondary-button" id="clear-search-button" type="button">Limpiar</button>
+                <button
+                  class="secondary-button"
+                  id="clear-search-button"
+                  type="button"
+                >
+                  Limpiar
+                </button>
               </div>
 
               <form class="search-form" id="customer-search-form">
@@ -515,7 +886,10 @@
               </form>
             </section>
 
-            <section class="form-panel zone-card" aria-labelledby="new-customer-title">
+            <section
+              class="form-panel zone-card"
+              aria-labelledby="new-customer-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="new-customer-title">Registrar cliente</h2>
@@ -528,33 +902,63 @@
                 <div class="field-grid">
                   <div class="field">
                     <label for="customer-name">Nombre</label>
-                    <input id="customer-name" name="name" maxlength="160" autocomplete="name" />
+                    <input
+                      id="customer-name"
+                      name="name"
+                      maxlength="160"
+                      autocomplete="name"
+                    />
                     <p class="field-error" id="customer-name-error"></p>
                   </div>
 
                   <div class="field">
                     <label for="customer-phone">Teléfono</label>
-                    <input id="customer-phone" name="phone" maxlength="32" autocomplete="tel" />
+                    <input
+                      id="customer-phone"
+                      name="phone"
+                      maxlength="32"
+                      autocomplete="tel"
+                    />
                     <p class="field-error" id="customer-phone-error"></p>
                   </div>
                 </div>
 
                 <div class="field">
                   <label for="customer-email">Correo</label>
-                  <input id="customer-email" name="email" maxlength="254" autocomplete="email" />
+                  <input
+                    id="customer-email"
+                    name="email"
+                    maxlength="254"
+                    autocomplete="email"
+                  />
                   <p class="field-error" id="customer-email-error"></p>
                 </div>
 
                 <div id="form-error" class="form-error" hidden></div>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="reset-form-button" type="button">Limpiar formulario</button>
-                  <button id="save-customer-button" type="submit" data-icon="user-plus">Registrar cliente</button>
+                  <button
+                    class="secondary-button"
+                    id="reset-form-button"
+                    type="button"
+                  >
+                    Limpiar formulario
+                  </button>
+                  <button
+                    id="save-customer-button"
+                    type="submit"
+                    data-icon="user-plus"
+                  >
+                    Registrar cliente
+                  </button>
                 </div>
               </form>
             </section>
 
-            <section class="results-panel zone-card" aria-labelledby="customers-title">
+            <section
+              class="results-panel zone-card"
+              aria-labelledby="customers-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="customers-title">Resultados</h2>
@@ -565,7 +969,10 @@
               <div id="customers-list" class="customers-list"></div>
             </section>
 
-            <section class="operation-panel zone-card" aria-labelledby="operation-title">
+            <section
+              class="operation-panel zone-card"
+              aria-labelledby="operation-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="operation-title">Ficha del cliente</h2>
@@ -577,26 +984,71 @@
                 Busca o registra un cliente para iniciar la atención.
               </div>
 
-              <div id="selected-customer-card" class="selected-customer-card" hidden></div>
-              <div id="points-membership-context" class="module-context" hidden></div>
+              <div
+                id="selected-customer-card"
+                class="selected-customer-card"
+                hidden
+              ></div>
+              <div
+                id="points-membership-context"
+                class="module-context"
+                hidden
+              ></div>
 
-              <section id="membership-operation-panel" class="membership-operation-panel" hidden aria-labelledby="membership-operation-title">
+              <section
+                id="membership-operation-panel"
+                class="membership-operation-panel"
+                hidden
+                aria-labelledby="membership-operation-title"
+              >
                 <div class="section-header">
                   <div>
                     <h3 id="membership-operation-title">Membresías</h3>
                   </div>
-                  <button class="secondary-button" id="reload-membership-operation-button" type="button" data-icon="refresh">Actualizar</button>
+                  <button
+                    class="secondary-button"
+                    id="reload-membership-operation-button"
+                    type="button"
+                    data-icon="refresh"
+                  >
+                    Actualizar
+                  </button>
                 </div>
 
-                <div id="membership-operation-status" class="success-message" hidden></div>
-                <div id="membership-operation-error" class="form-error" hidden></div>
-                <div id="membership-payment-host" class="membership-payment-host" hidden></div>
-                <div id="membership-operation-active" class="membership-operation-active"></div>
-                <form id="membership-renewal-form" class="membership-form" hidden novalidate>
+                <div
+                  id="membership-operation-status"
+                  class="success-message"
+                  hidden
+                ></div>
+                <div
+                  id="membership-operation-error"
+                  class="form-error"
+                  hidden
+                ></div>
+                <div
+                  id="membership-payment-host"
+                  class="membership-payment-host"
+                  hidden
+                ></div>
+                <div
+                  id="membership-operation-active"
+                  class="membership-operation-active"
+                ></div>
+                <form
+                  id="membership-renewal-form"
+                  class="membership-form"
+                  hidden
+                  novalidate
+                >
                   <div class="field-grid membership-controls">
                     <div class="field">
-                      <label for="membership-renewal-payment-method">Método de pago</label>
-                      <select id="membership-renewal-payment-method" name="paymentMethod">
+                      <label for="membership-renewal-payment-method"
+                        >Método de pago</label
+                      >
+                      <select
+                        id="membership-renewal-payment-method"
+                        name="paymentMethod"
+                      >
                         <option value="">Selecciona método</option>
                         <option value="cash">Efectivo</option>
                         <option value="card">Tarjeta</option>
@@ -604,57 +1056,151 @@
                         <option value="transfer">Transferencia</option>
                         <option value="other">Otro</option>
                       </select>
-                      <p class="field-error" id="membership-renewal-payment-method-error"></p>
+                      <p
+                        class="field-error"
+                        id="membership-renewal-payment-method-error"
+                      ></p>
                     </div>
 
                     <div class="field">
                       <label for="membership-renewal-amount">Monto</label>
-                      <input id="membership-renewal-amount" name="amount" type="number" min="0" step="0.01" inputmode="decimal" />
-                      <p class="field-error" id="membership-renewal-amount-error"></p>
+                      <input
+                        id="membership-renewal-amount"
+                        name="amount"
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        inputmode="decimal"
+                      />
+                      <p
+                        class="field-error"
+                        id="membership-renewal-amount-error"
+                      ></p>
                     </div>
                   </div>
 
                   <div class="form-actions">
-                    <button class="secondary-button" id="cancel-membership-renewal-button" type="button">Cancelar</button>
-                    <button id="confirm-membership-renewal-button" type="submit" data-icon="refresh">Renovar membresía</button>
+                    <button
+                      class="secondary-button"
+                      id="cancel-membership-renewal-button"
+                      type="button"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      id="confirm-membership-renewal-button"
+                      type="submit"
+                      data-icon="refresh"
+                    >
+                      Renovar membresía
+                    </button>
                   </div>
                 </form>
-                <div id="membership-operation-benefits" class="membership-list"></div>
+                <div
+                  id="membership-operation-benefits"
+                  class="membership-list"
+                ></div>
 
-                <form id="membership-benefit-usage-form" class="membership-benefit-usage-form" hidden novalidate>
-                  <input id="membership-benefit-usage-benefit-id" name="benefitId" type="hidden" />
-                  <div id="membership-benefit-usage-summary" class="membership-preview"></div>
+                <form
+                  id="membership-benefit-usage-form"
+                  class="membership-benefit-usage-form"
+                  hidden
+                  novalidate
+                >
+                  <input
+                    id="membership-benefit-usage-benefit-id"
+                    name="benefitId"
+                    type="hidden"
+                  />
+                  <div
+                    id="membership-benefit-usage-summary"
+                    class="membership-preview"
+                  ></div>
                   <div class="field-grid membership-controls">
                     <div class="field">
-                      <label for="membership-benefit-usage-date">Fecha de uso</label>
-                      <input id="membership-benefit-usage-date" name="usageDate" type="date" />
-                      <p class="field-error" id="membership-benefit-usage-date-error"></p>
+                      <label for="membership-benefit-usage-date"
+                        >Fecha de uso</label
+                      >
+                      <input
+                        id="membership-benefit-usage-date"
+                        name="usageDate"
+                        type="date"
+                      />
+                      <p
+                        class="field-error"
+                        id="membership-benefit-usage-date-error"
+                      ></p>
                     </div>
 
                     <div class="field">
-                      <label for="membership-benefit-usage-quantity">Cantidad</label>
-                      <input id="membership-benefit-usage-quantity" name="quantity" type="number" min="1" step="1" inputmode="numeric" />
-                      <p class="field-error" id="membership-benefit-usage-quantity-error"></p>
+                      <label for="membership-benefit-usage-quantity"
+                        >Cantidad</label
+                      >
+                      <input
+                        id="membership-benefit-usage-quantity"
+                        name="quantity"
+                        type="number"
+                        min="1"
+                        step="1"
+                        inputmode="numeric"
+                      />
+                      <p
+                        class="field-error"
+                        id="membership-benefit-usage-quantity-error"
+                      ></p>
                     </div>
                   </div>
 
                   <div class="field">
-                    <label for="membership-benefit-usage-note">Nota opcional</label>
-                    <textarea id="membership-benefit-usage-note" name="note" maxlength="500" rows="3"></textarea>
-                    <p class="field-error" id="membership-benefit-usage-note-error"></p>
+                    <label for="membership-benefit-usage-note"
+                      >Nota opcional</label
+                    >
+                    <textarea
+                      id="membership-benefit-usage-note"
+                      name="note"
+                      maxlength="500"
+                      rows="3"
+                    ></textarea>
+                    <p
+                      class="field-error"
+                      id="membership-benefit-usage-note-error"
+                    ></p>
                   </div>
 
                   <div class="form-actions">
-                    <button class="secondary-button" id="cancel-membership-benefit-usage-button" type="button">Cancelar</button>
-                    <button id="confirm-membership-benefit-usage-button" type="submit" data-icon="gift">Aplicar beneficio</button>
+                    <button
+                      class="secondary-button"
+                      id="cancel-membership-benefit-usage-button"
+                      type="button"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      id="confirm-membership-benefit-usage-button"
+                      type="submit"
+                      data-icon="gift"
+                    >
+                      Aplicar beneficio
+                    </button>
                   </div>
                 </form>
 
-                <div id="membership-operation-usages" class="history-list"></div>
-                <div id="membership-operation-transactions" class="history-list"></div>
+                <div
+                  id="membership-operation-usages"
+                  class="history-list"
+                ></div>
+                <div
+                  id="membership-operation-transactions"
+                  class="history-list"
+                ></div>
               </section>
 
-              <section id="history-panel" class="history-panel" hidden aria-label="Historial del cliente">
+              <section
+                id="history-panel"
+                class="history-panel"
+                hidden
+                aria-label="Historial del cliente"
+              >
                 <div id="history-error" class="form-error" hidden></div>
                 <div id="history-summary" class="history-summary"></div>
                 <div id="history-list" class="history-list"></div>
@@ -662,8 +1208,15 @@
 
               <form id="purchase-form" class="purchase-form" hidden novalidate>
                 <div class="field">
-                  <label for="purchase-invoice-number">Factura o comprobante</label>
-                  <input id="purchase-invoice-number" name="invoiceNumber" maxlength="80" autocomplete="off" />
+                  <label for="purchase-invoice-number"
+                    >Factura o comprobante</label
+                  >
+                  <input
+                    id="purchase-invoice-number"
+                    name="invoiceNumber"
+                    maxlength="80"
+                    autocomplete="off"
+                  />
                   <p class="field-error" id="purchase-invoice-number-error"></p>
                 </div>
 
@@ -691,16 +1244,37 @@
                 <div id="purchase-error" class="form-error" hidden></div>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="reset-purchase-button" type="button">Limpiar compra</button>
-                  <button id="save-purchase-button" type="submit" data-icon="receipt">Registrar compra</button>
+                  <button
+                    class="secondary-button"
+                    id="reset-purchase-button"
+                    type="button"
+                  >
+                    Limpiar compra
+                  </button>
+                  <button
+                    id="save-purchase-button"
+                    type="submit"
+                    data-icon="receipt"
+                  >
+                    Registrar compra
+                  </button>
                 </div>
               </form>
 
-              <form id="redemption-form" class="redemption-form" hidden novalidate>
+              <form
+                id="redemption-form"
+                class="redemption-form"
+                hidden
+                novalidate
+              >
                 <div class="field-grid">
                   <div class="field">
                     <label for="redemption-date">Fecha</label>
-                    <input id="redemption-date" name="redemptionDate" type="date" />
+                    <input
+                      id="redemption-date"
+                      name="redemptionDate"
+                      type="date"
+                    />
                     <p class="field-error" id="redemption-date-error"></p>
                   </div>
 
@@ -720,15 +1294,32 @@
 
                 <div class="field">
                   <label for="redemption-note">Nota opcional</label>
-                  <textarea id="redemption-note" name="note" maxlength="500" rows="3"></textarea>
+                  <textarea
+                    id="redemption-note"
+                    name="note"
+                    maxlength="500"
+                    rows="3"
+                  ></textarea>
                   <p class="field-error" id="redemption-note-error"></p>
                 </div>
 
                 <div id="redemption-error" class="form-error" hidden></div>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="reset-redemption-button" type="button">Limpiar redención</button>
-                  <button id="save-redemption-button" type="submit" data-icon="gift">Redimir puntos</button>
+                  <button
+                    class="secondary-button"
+                    id="reset-redemption-button"
+                    type="button"
+                  >
+                    Limpiar redención
+                  </button>
+                  <button
+                    id="save-redemption-button"
+                    type="submit"
+                    data-icon="gift"
+                  >
+                    Redimir puntos
+                  </button>
                 </div>
               </form>
             </section>
@@ -749,36 +1340,58 @@
             >
               <div class="section-header">
                 <div>
-                  <h2 id="company-registration-title">Crea tu programa de fidelización</h2>
+                  <h2 id="company-registration-title">
+                    Crea tu programa de fidelización
+                  </h2>
                   <p class="section-support">
-                    Cuéntanos de tu negocio. Prepararemos tu programa y te enviaremos los siguientes pasos al correo de contacto.
+                    Cuéntanos de tu negocio. Prepararemos tu programa y te
+                    enviaremos los siguientes pasos al correo de contacto.
                   </p>
                 </div>
               </div>
 
-              <div id="registration-status" class="success-message" hidden></div>
+              <div
+                id="registration-status"
+                class="success-message"
+                hidden
+              ></div>
               <div id="registration-error" class="form-error" hidden></div>
-              <div id="registration-result" class="registration-result" hidden></div>
+              <div
+                id="registration-result"
+                class="registration-result"
+                hidden
+              ></div>
 
-              <form id="company-registration-form" class="company-registration-form" novalidate>
+              <form
+                id="company-registration-form"
+                class="company-registration-form"
+                novalidate
+              >
                 <div class="form-section-title">
                   <span>1</span>
                   <h3>Datos de la empresa</h3>
                 </div>
                 <div class="field-grid company-registration-controls">
                   <div class="field">
-                    <label for="registration-company-name">Nombre de empresa</label>
+                    <label for="registration-company-name"
+                      >Nombre de empresa</label
+                    >
                     <input
                       id="registration-company-name"
                       name="companyName"
                       maxlength="160"
                       autocomplete="organization"
                     />
-                    <p class="field-error" id="registration-company-name-error"></p>
+                    <p
+                      class="field-error"
+                      id="registration-company-name-error"
+                    ></p>
                   </div>
 
                   <div class="field">
-                    <label for="registration-company-email">Correo de empresa</label>
+                    <label for="registration-company-email"
+                      >Correo de empresa</label
+                    >
                     <input
                       id="registration-company-email"
                       name="companyEmail"
@@ -786,8 +1399,13 @@
                       autocomplete="email"
                       inputmode="email"
                     />
-                    <p class="field-help">Este correo será el usuario principal de la empresa.</p>
-                    <p class="field-error" id="registration-company-email-error"></p>
+                    <p class="field-help">
+                      Este correo será el usuario principal de la empresa.
+                    </p>
+                    <p
+                      class="field-error"
+                      id="registration-company-email-error"
+                    ></p>
                   </div>
 
                   <div class="field">
@@ -799,21 +1417,30 @@
                       rows="3"
                       autocomplete="street-address"
                     ></textarea>
-                    <p class="field-help">Usa la dirección principal de la empresa.</p>
-                    <p class="field-error" id="registration-company-address-error"></p>
+                    <p class="field-help">
+                      Usa la dirección principal de la empresa.
+                    </p>
+                    <p
+                      class="field-error"
+                      id="registration-company-address-error"
+                    ></p>
                   </div>
 
                   <div class="field">
-                    <label for="registration-company-phone">Teléfono de empresa</label>
+                    <label for="registration-company-phone"
+                      >Teléfono de empresa</label
+                    >
                     <input
                       id="registration-company-phone"
                       name="companyPhone"
                       maxlength="32"
                       autocomplete="tel"
                     />
-                    <p class="field-error" id="registration-company-phone-error"></p>
+                    <p
+                      class="field-error"
+                      id="registration-company-phone-error"
+                    ></p>
                   </div>
-
                 </div>
 
                 <div class="form-section-title">
@@ -822,18 +1449,25 @@
                 </div>
                 <div class="field-grid company-registration-controls">
                   <div class="field">
-                    <label for="registration-contact-name">Nombre de contacto</label>
+                    <label for="registration-contact-name"
+                      >Nombre de contacto</label
+                    >
                     <input
                       id="registration-contact-name"
                       name="contactName"
                       maxlength="160"
                       autocomplete="name"
                     />
-                    <p class="field-error" id="registration-contact-name-error"></p>
+                    <p
+                      class="field-error"
+                      id="registration-contact-name-error"
+                    ></p>
                   </div>
 
                   <div class="field">
-                    <label for="registration-contact-email">Correo de contacto</label>
+                    <label for="registration-contact-email"
+                      >Correo de contacto</label
+                    >
                     <input
                       id="registration-contact-email"
                       name="contactEmail"
@@ -841,72 +1475,132 @@
                       autocomplete="email"
                       inputmode="email"
                     />
-                    <p class="field-error" id="registration-contact-email-error"></p>
+                    <p
+                      class="field-error"
+                      id="registration-contact-email-error"
+                    ></p>
                   </div>
 
                   <div class="field">
-                    <label for="registration-contact-phone">Teléfono de contacto</label>
+                    <label for="registration-contact-phone"
+                      >Teléfono de contacto</label
+                    >
                     <input
                       id="registration-contact-phone"
                       name="contactPhone"
                       maxlength="32"
                       autocomplete="tel"
                     />
-                    <p class="field-error" id="registration-contact-phone-error"></p>
+                    <p
+                      class="field-error"
+                      id="registration-contact-phone-error"
+                    ></p>
                   </div>
                 </div>
 
-                <section class="registration-logo-panel" aria-labelledby="registration-logo-title">
+                <section
+                  class="registration-logo-panel"
+                  aria-labelledby="registration-logo-title"
+                >
                   <div class="form-section-title">
                     <span>3</span>
                     <h3 id="registration-logo-title">Logo de empresa</h3>
                   </div>
                   <p class="field-help">
-                    Opcional. PNG, JPG o WebP hasta 1 MB. Usa una imagen descargada en este equipo; si está en
-                    OneDrive o la nube, descárgala primero o marca "Mantener siempre en este dispositivo".
+                    Opcional. PNG, JPG o WebP hasta 1 MB. Usa una imagen
+                    descargada en este equipo; si está en OneDrive o la nube,
+                    descárgala primero o marca "Mantener siempre en este
+                    dispositivo".
                   </p>
 
                   <div class="company-logo-grid">
-                    <div class="company-logo-preview" id="registration-logo-preview">
+                    <div
+                      class="company-logo-preview"
+                      id="registration-logo-preview"
+                    >
                       <span id="registration-logo-preview-text">Sin logo</span>
-                      <img id="registration-logo-preview-image" alt="Logo solicitado" hidden />
+                      <img
+                        id="registration-logo-preview-image"
+                        alt="Logo solicitado"
+                        hidden
+                      />
                     </div>
 
                     <div class="company-logo-controls">
                       <div class="field">
                         <label for="registration-logo-file">Imagen</label>
-                        <input id="registration-logo-file" name="logoFile" type="file" accept="image/png,image/jpeg,image/webp" />
-                        <p class="field-error" id="registration-logo-file-error"></p>
+                        <input
+                          id="registration-logo-file"
+                          name="logoFile"
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                        />
+                        <p
+                          class="field-error"
+                          id="registration-logo-file-error"
+                        ></p>
                       </div>
 
                       <div class="form-actions">
-                        <button class="secondary-button" id="clear-registration-logo-button" type="button">Quitar selección</button>
+                        <button
+                          class="secondary-button"
+                          id="clear-registration-logo-button"
+                          type="button"
+                        >
+                          Quitar selección
+                        </button>
                       </div>
                     </div>
                   </div>
                 </section>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="reset-registration-button" type="button">Limpiar</button>
-                  <button id="submit-registration-button" type="submit" data-icon="send">Enviar datos</button>
+                  <button
+                    class="secondary-button"
+                    id="reset-registration-button"
+                    type="button"
+                  >
+                    Limpiar
+                  </button>
+                  <button
+                    id="submit-registration-button"
+                    type="submit"
+                    data-icon="send"
+                  >
+                    Enviar datos
+                  </button>
                 </div>
               </form>
             </section>
 
-            <section id="company-panel" class="company-panel zone-card" aria-labelledby="company-title">
+            <section
+              id="company-panel"
+              class="company-panel zone-card"
+              aria-labelledby="company-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="company-title">Mi empresa</h2>
                   <p class="section-support">
-                    Actualiza los datos que vera tu equipo y que Punto Club usara para calcular puntos futuros.
+                    Actualiza los datos que vera tu equipo y que Punto Club
+                    usara para calcular puntos futuros.
                   </p>
                 </div>
-                <button class="secondary-button" id="reload-company-button" type="button" data-icon="refresh">Actualizar</button>
+                <button
+                  class="secondary-button"
+                  id="reload-company-button"
+                  type="button"
+                  data-icon="refresh"
+                >
+                  Actualizar
+                </button>
               </div>
 
               <div id="company-status" class="success-message" hidden></div>
               <div id="company-error" class="form-error" hidden></div>
-              <div id="company-empty" class="empty-state">Cargando configuración...</div>
+              <div id="company-empty" class="empty-state">
+                Cargando configuración...
+              </div>
 
               <form id="company-form" class="company-form" novalidate hidden>
                 <div class="company-current">
@@ -924,7 +1618,10 @@
                   </div>
                 </div>
 
-                <section class="company-logo-panel" aria-labelledby="company-logo-title">
+                <section
+                  class="company-logo-panel"
+                  aria-labelledby="company-logo-title"
+                >
                   <div class="section-header compact-header">
                     <div>
                       <h3 id="company-logo-title">Logo de empresa</h3>
@@ -934,23 +1631,52 @@
                   <div class="company-logo-grid">
                     <div class="company-logo-preview" id="company-logo-preview">
                       <span id="company-logo-preview-text">Sin logo</span>
-                      <img id="company-logo-preview-image" alt="Logo de empresa" hidden />
+                      <img
+                        id="company-logo-preview-image"
+                        alt="Logo de empresa"
+                        hidden
+                      />
                     </div>
 
                     <div class="company-logo-controls">
                       <div class="field">
                         <label for="company-logo-file">Imagen</label>
-                        <input id="company-logo-file" name="logoFile" type="file" accept="image/png,image/jpeg,image/webp" />
+                        <input
+                          id="company-logo-file"
+                          name="logoFile"
+                          type="file"
+                          accept="image/png,image/jpeg,image/webp"
+                        />
                         <p class="field-help">PNG, JPG o WebP hasta 1 MB.</p>
                         <p class="field-error" id="company-logo-file-error"></p>
                       </div>
 
-                      <div id="company-logo-status" class="success-message" hidden></div>
-                      <div id="company-logo-error" class="form-error" hidden></div>
+                      <div
+                        id="company-logo-status"
+                        class="success-message"
+                        hidden
+                      ></div>
+                      <div
+                        id="company-logo-error"
+                        class="form-error"
+                        hidden
+                      ></div>
 
                       <div class="form-actions">
-                        <button class="secondary-button" id="clear-company-logo-button" type="button">Quitar selección</button>
-                        <button id="upload-company-logo-button" type="button" data-icon="upload">Subir logo</button>
+                        <button
+                          class="secondary-button"
+                          id="clear-company-logo-button"
+                          type="button"
+                        >
+                          Quitar selección
+                        </button>
+                        <button
+                          id="upload-company-logo-button"
+                          type="button"
+                          data-icon="upload"
+                        >
+                          Subir logo
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -959,24 +1685,41 @@
                 <div class="field-grid company-controls">
                   <div class="field">
                     <label for="company-name">Nombre</label>
-                    <input id="company-name" name="name" maxlength="160" autocomplete="organization" />
+                    <input
+                      id="company-name"
+                      name="name"
+                      maxlength="160"
+                      autocomplete="organization"
+                    />
                     <p class="field-error" id="company-name-error"></p>
                   </div>
 
                   <div class="field">
                     <label for="company-email">Correo</label>
-                    <input id="company-email" name="email" maxlength="254" autocomplete="email" />
+                    <input
+                      id="company-email"
+                      name="email"
+                      maxlength="254"
+                      autocomplete="email"
+                    />
                     <p class="field-error" id="company-email-error"></p>
                   </div>
 
                   <div class="field">
                     <label for="company-phone">Teléfono</label>
-                    <input id="company-phone" name="phone" maxlength="32" autocomplete="tel" />
+                    <input
+                      id="company-phone"
+                      name="phone"
+                      maxlength="32"
+                      autocomplete="tel"
+                    />
                     <p class="field-error" id="company-phone-error"></p>
                   </div>
 
                   <div class="field">
-                    <label for="company-points-percentage">Porcentaje de puntos</label>
+                    <label for="company-points-percentage"
+                      >Porcentaje de puntos</label
+                    >
                     <input
                       id="company-points-percentage"
                       name="pointsPercentage"
@@ -986,14 +1729,20 @@
                       step="0.01"
                       inputmode="decimal"
                     />
-                    <p class="field-error" id="company-points-percentage-error"></p>
+                    <p
+                      class="field-error"
+                      id="company-points-percentage-error"
+                    ></p>
                   </div>
                 </div>
 
                 <div class="company-future">
                   <div>
                     <span>Acceso</span>
-                    <strong>Los accesos por correo se gestionan desde el panel interno.</strong>
+                    <strong
+                      >Los accesos por correo se gestionan desde el panel
+                      interno.</strong
+                    >
                   </div>
                 </div>
 
@@ -1008,21 +1757,37 @@
                   >
                     Cambiar contraseña
                   </button>
-                  <button id="save-company-button" type="submit" data-icon="save">Guardar configuración</button>
+                  <button
+                    id="save-company-button"
+                    type="submit"
+                    data-icon="save"
+                  >
+                    Guardar configuración
+                  </button>
                 </div>
               </form>
 
-              <form id="company-password-form" class="company-form compact-auth-form company-password-form" novalidate hidden>
+              <form
+                id="company-password-form"
+                class="company-form compact-auth-form company-password-form"
+                novalidate
+                hidden
+              >
                 <div class="section-header compact-header">
                   <div>
                     <h3>Cambiar contraseña</h3>
-                    <p class="section-support">Actualiza el acceso de esta empresa sin compartir contraseñas por chat.</p>
+                    <p class="section-support">
+                      Actualiza el acceso de esta empresa sin compartir
+                      contraseñas por chat.
+                    </p>
                   </div>
                 </div>
 
                 <div class="company-password-fields">
                   <div class="field">
-                    <label for="company-current-password">Contraseña actual</label>
+                    <label for="company-current-password"
+                      >Contraseña actual</label
+                    >
                     <div class="password-field">
                       <input
                         id="company-current-password"
@@ -1040,10 +1805,12 @@
                         data-icon="eye"
                         aria-label="Mostrar contraseña actual"
                         title="Mostrar contraseña actual"
-                      >
-                      </button>
+                      ></button>
                     </div>
-                    <p class="field-error" id="company-current-password-error"></p>
+                    <p
+                      class="field-error"
+                      id="company-current-password-error"
+                    ></p>
                   </div>
 
                   <div class="field">
@@ -1065,15 +1832,18 @@
                         data-icon="eye"
                         aria-label="Mostrar nueva contraseña"
                         title="Mostrar nueva contraseña"
-                      >
-                      </button>
+                      ></button>
                     </div>
-                    <p class="field-help">Usa de 10 a 128 caracteres, con letras y números.</p>
+                    <p class="field-help">
+                      Usa de 10 a 128 caracteres, con letras y números.
+                    </p>
                     <p class="field-error" id="company-new-password-error"></p>
                   </div>
 
                   <div class="field">
-                    <label for="company-new-password-confirmation">Confirmar nueva contraseña</label>
+                    <label for="company-new-password-confirmation"
+                      >Confirmar nueva contraseña</label
+                    >
                     <div class="password-field">
                       <input
                         id="company-new-password-confirmation"
@@ -1091,24 +1861,49 @@
                         data-icon="eye"
                         aria-label="Mostrar confirmación de contraseña"
                         title="Mostrar confirmación de contraseña"
-                      >
-                      </button>
+                      ></button>
                     </div>
-                    <p class="field-error" id="company-new-password-confirmation-error"></p>
+                    <p
+                      class="field-error"
+                      id="company-new-password-confirmation-error"
+                    ></p>
                   </div>
                 </div>
 
-                <div id="company-password-status" class="success-message" hidden></div>
-                <div id="company-password-error" class="form-error" hidden></div>
+                <div
+                  id="company-password-status"
+                  class="success-message"
+                  hidden
+                ></div>
+                <div
+                  id="company-password-error"
+                  class="form-error"
+                  hidden
+                ></div>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="reset-company-password-form-button" type="button">Limpiar</button>
-                  <button id="save-company-password-button" type="submit" data-icon="key">Actualizar contraseña</button>
+                  <button
+                    class="secondary-button"
+                    id="reset-company-password-form-button"
+                    type="button"
+                  >
+                    Limpiar
+                  </button>
+                  <button
+                    id="save-company-password-button"
+                    type="submit"
+                    data-icon="key"
+                  >
+                    Actualizar contraseña
+                  </button>
                 </div>
               </form>
             </section>
 
-            <div id="membership-config-host" class="membership-config-host"></div>
+            <div
+              id="membership-config-host"
+              class="membership-config-host"
+            ></div>
           </section>
 
           <section
@@ -1119,118 +1914,282 @@
           >
             <h2 id="memberships-section-title" class="sr-only">Membresías</h2>
 
-            <div id="membership-operation-host" class="membership-operation-host"></div>
+            <div
+              id="membership-operation-host"
+              class="membership-operation-host"
+            ></div>
 
-            <section class="membership-plans-panel zone-card" aria-labelledby="membership-plans-title">
+            <section
+              class="membership-plans-panel zone-card"
+              aria-labelledby="membership-plans-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="membership-plans-title">Planes de membresía</h2>
                 </div>
-                <button class="secondary-button" id="reload-membership-plans-button" type="button" data-icon="refresh">Actualizar</button>
+                <button
+                  class="secondary-button"
+                  id="reload-membership-plans-button"
+                  type="button"
+                  data-icon="refresh"
+                >
+                  Actualizar
+                </button>
               </div>
 
-              <div id="membership-plans-status" class="success-message" hidden></div>
+              <div
+                id="membership-plans-status"
+                class="success-message"
+                hidden
+              ></div>
               <div id="membership-plans-error" class="form-error" hidden></div>
               <div id="membership-plans-list" class="membership-list">
                 <div class="empty-state">Cargando planes...</div>
               </div>
             </section>
 
-            <section class="membership-plan-form-panel zone-card" aria-labelledby="membership-plan-form-title">
+            <section
+              class="membership-plan-form-panel zone-card"
+              aria-labelledby="membership-plan-form-title"
+            >
               <div class="section-header">
                 <div>
-                  <h2 id="membership-plan-form-title">Crear plan de membresía</h2>
+                  <h2 id="membership-plan-form-title">
+                    Crear plan de membresía
+                  </h2>
                 </div>
-                <button class="secondary-button" id="reset-membership-plan-button" type="button" data-icon="plus">Crear plan</button>
+                <button
+                  class="secondary-button"
+                  id="reset-membership-plan-button"
+                  type="button"
+                  data-icon="plus"
+                >
+                  Crear plan
+                </button>
               </div>
 
-              <form id="membership-plan-form" class="membership-form" hidden novalidate>
+              <form
+                id="membership-plan-form"
+                class="membership-form"
+                hidden
+                novalidate
+              >
                 <input id="membership-plan-id" name="planId" type="hidden" />
                 <div class="field-grid membership-controls">
                   <div class="field">
                     <label for="membership-plan-name">Nombre</label>
-                    <input id="membership-plan-name" name="name" maxlength="120" autocomplete="off" />
+                    <input
+                      id="membership-plan-name"
+                      name="name"
+                      maxlength="120"
+                      autocomplete="off"
+                    />
                     <p class="field-error" id="membership-plan-name-error"></p>
                   </div>
 
                   <div class="field">
-                    <label for="membership-plan-duration-days">Duracion en días</label>
-                    <input id="membership-plan-duration-days" name="durationDays" type="number" min="1" step="1" inputmode="numeric" />
-                    <p class="field-error" id="membership-plan-duration-days-error"></p>
+                    <label for="membership-plan-duration-days"
+                      >Duracion en días</label
+                    >
+                    <input
+                      id="membership-plan-duration-days"
+                      name="durationDays"
+                      type="number"
+                      min="1"
+                      step="1"
+                      inputmode="numeric"
+                    />
+                    <p
+                      class="field-error"
+                      id="membership-plan-duration-days-error"
+                    ></p>
                   </div>
 
                   <div class="field">
                     <label for="membership-plan-price">Precio</label>
-                    <input id="membership-plan-price" name="price" type="number" min="0" step="0.01" inputmode="decimal" />
+                    <input
+                      id="membership-plan-price"
+                      name="price"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      inputmode="decimal"
+                    />
                     <p class="field-error" id="membership-plan-price-error"></p>
                   </div>
 
                   <div class="field">
-                    <label for="membership-plan-renewal-notice-days">Aviso antes de vencer</label>
-                    <input id="membership-plan-renewal-notice-days" name="renewalNoticeDays" type="number" min="0" step="1" inputmode="numeric" />
-                    <p class="field-error" id="membership-plan-renewal-notice-days-error"></p>
+                    <label for="membership-plan-renewal-notice-days"
+                      >Aviso antes de vencer</label
+                    >
+                    <input
+                      id="membership-plan-renewal-notice-days"
+                      name="renewalNoticeDays"
+                      type="number"
+                      min="0"
+                      step="1"
+                      inputmode="numeric"
+                    />
+                    <p
+                      class="field-error"
+                      id="membership-plan-renewal-notice-days-error"
+                    ></p>
                   </div>
                 </div>
 
                 <div class="field">
                   <label for="membership-plan-description">Descripcion</label>
-                  <textarea id="membership-plan-description" name="description" maxlength="500" rows="3"></textarea>
-                  <p class="field-error" id="membership-plan-description-error"></p>
+                  <textarea
+                    id="membership-plan-description"
+                    name="description"
+                    maxlength="500"
+                    rows="3"
+                  ></textarea>
+                  <p
+                    class="field-error"
+                    id="membership-plan-description-error"
+                  ></p>
                 </div>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="cancel-membership-plan-button" type="button">Cancelar</button>
-                  <button id="save-membership-plan-button" type="submit" data-icon="save">Guardar plan</button>
+                  <button
+                    class="secondary-button"
+                    id="cancel-membership-plan-button"
+                    type="button"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    id="save-membership-plan-button"
+                    type="submit"
+                    data-icon="save"
+                  >
+                    Guardar plan
+                  </button>
                 </div>
               </form>
             </section>
 
-            <section class="membership-activation-panel zone-card" aria-labelledby="membership-activation-title">
+            <section
+              class="membership-activation-panel zone-card"
+              aria-labelledby="membership-activation-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="membership-activation-title">Activar membresía</h2>
                 </div>
               </div>
 
-              <form id="membership-activation-search-form" class="search-form" novalidate>
+              <form
+                id="membership-activation-search-form"
+                class="search-form"
+                novalidate
+              >
                 <div class="search-row">
-                  <label class="sr-only" for="membership-customer-search">Buscar cliente</label>
-                  <input id="membership-customer-search" name="search" autocomplete="off" placeholder="Nombre, teléfono o correo" />
-                  <button id="search-membership-customer-button" type="submit" data-icon="search">Buscar cliente</button>
+                  <label class="sr-only" for="membership-customer-search"
+                    >Buscar cliente</label
+                  >
+                  <input
+                    id="membership-customer-search"
+                    name="search"
+                    autocomplete="off"
+                    placeholder="Nombre, teléfono o correo"
+                  />
+                  <button
+                    id="search-membership-customer-button"
+                    type="submit"
+                    data-icon="search"
+                  >
+                    Buscar cliente
+                  </button>
                 </div>
               </form>
 
-              <div id="membership-customer-search-status" class="success-message" hidden></div>
-              <div id="membership-customer-search-error" class="form-error" hidden></div>
+              <div
+                id="membership-customer-search-status"
+                class="success-message"
+                hidden
+              ></div>
+              <div
+                id="membership-customer-search-error"
+                class="form-error"
+                hidden
+              ></div>
               <div id="membership-customer-results" class="membership-list">
-                <div class="empty-state">Busca un cliente existente para activar una membresía.</div>
+                <div class="empty-state">
+                  Busca un cliente existente para activar una membresía.
+                </div>
               </div>
 
-              <form id="membership-activation-form" class="membership-form" novalidate>
-                <div id="membership-selected-customer" class="selected-customer-card" hidden></div>
-                <div id="membership-points-context" class="module-context" hidden></div>
+              <form
+                id="membership-activation-form"
+                class="membership-form"
+                novalidate
+              >
+                <div
+                  id="membership-selected-customer"
+                  class="selected-customer-card"
+                  hidden
+                ></div>
+                <div
+                  id="membership-points-context"
+                  class="module-context"
+                  hidden
+                ></div>
                 <div class="field-grid membership-controls">
                   <div class="field">
-                    <label for="membership-activation-plan">Plan de membresía</label>
-                    <select id="membership-activation-plan" name="planId"></select>
-                    <p class="field-error" id="membership-activation-plan-error"></p>
+                    <label for="membership-activation-plan"
+                      >Plan de membresía</label
+                    >
+                    <select
+                      id="membership-activation-plan"
+                      name="planId"
+                    ></select>
+                    <p
+                      class="field-error"
+                      id="membership-activation-plan-error"
+                    ></p>
                   </div>
 
                   <div class="field">
-                    <label for="membership-activation-start-date">Fecha de inicio</label>
-                    <input id="membership-activation-start-date" name="startDate" type="date" />
-                    <p class="field-error" id="membership-activation-start-date-error"></p>
+                    <label for="membership-activation-start-date"
+                      >Fecha de inicio</label
+                    >
+                    <input
+                      id="membership-activation-start-date"
+                      name="startDate"
+                      type="date"
+                    />
+                    <p
+                      class="field-error"
+                      id="membership-activation-start-date-error"
+                    ></p>
                   </div>
 
                   <div class="field">
                     <label for="membership-activation-price-paid">Monto</label>
-                    <input id="membership-activation-price-paid" name="pricePaid" type="number" min="0" step="0.01" inputmode="decimal" />
-                    <p class="field-error" id="membership-activation-price-paid-error"></p>
+                    <input
+                      id="membership-activation-price-paid"
+                      name="pricePaid"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      inputmode="decimal"
+                    />
+                    <p
+                      class="field-error"
+                      id="membership-activation-price-paid-error"
+                    ></p>
                   </div>
 
                   <div class="field">
-                    <label for="membership-activation-payment-method">Método de pago</label>
-                    <select id="membership-activation-payment-method" name="paymentMethod">
+                    <label for="membership-activation-payment-method"
+                      >Método de pago</label
+                    >
+                    <select
+                      id="membership-activation-payment-method"
+                      name="paymentMethod"
+                    >
                       <option value="">Selecciona método</option>
                       <option value="cash">Efectivo</option>
                       <option value="card">Tarjeta</option>
@@ -1238,59 +2197,149 @@
                       <option value="transfer">Transferencia</option>
                       <option value="other">Otro</option>
                     </select>
-                    <p class="field-error" id="membership-activation-payment-method-error"></p>
+                    <p
+                      class="field-error"
+                      id="membership-activation-payment-method-error"
+                    ></p>
                   </div>
                 </div>
 
-                <div id="membership-activation-preview" class="membership-preview"></div>
-                <div id="membership-activation-status" class="success-message" hidden></div>
-                <div id="membership-activation-error" class="form-error" hidden></div>
+                <div
+                  id="membership-activation-preview"
+                  class="membership-preview"
+                ></div>
+                <div
+                  id="membership-activation-status"
+                  class="success-message"
+                  hidden
+                ></div>
+                <div
+                  id="membership-activation-error"
+                  class="form-error"
+                  hidden
+                ></div>
 
                 <div class="form-actions">
-                  <button id="activate-membership-button" type="submit" data-icon="crown">Activar membresía</button>
+                  <button
+                    id="activate-membership-button"
+                    type="submit"
+                    data-icon="crown"
+                  >
+                    Activar membresía
+                  </button>
                 </div>
               </form>
             </section>
 
-            <section class="membership-customer-memberships-panel zone-card" aria-labelledby="membership-customer-memberships-title">
+            <section
+              class="membership-customer-memberships-panel zone-card"
+              aria-labelledby="membership-customer-memberships-title"
+            >
               <div class="section-header">
                 <div>
-                  <h2 id="membership-customer-memberships-title">Membresías del cliente</h2>
+                  <h2 id="membership-customer-memberships-title">
+                    Membresías del cliente
+                  </h2>
                 </div>
-                <button class="secondary-button" id="reload-customer-memberships-button" type="button" data-icon="refresh">Actualizar</button>
+                <button
+                  class="secondary-button"
+                  id="reload-customer-memberships-button"
+                  type="button"
+                  data-icon="refresh"
+                >
+                  Actualizar
+                </button>
               </div>
 
-              <div id="membership-customer-memberships-status" class="success-message" hidden></div>
-              <div id="membership-customer-memberships-error" class="form-error" hidden></div>
-              <div id="membership-customer-memberships-list" class="membership-list">
-                <div class="empty-state">Selecciona un cliente para ver sus membresías.</div>
+              <div
+                id="membership-customer-memberships-status"
+                class="success-message"
+                hidden
+              ></div>
+              <div
+                id="membership-customer-memberships-error"
+                class="form-error"
+                hidden
+              ></div>
+              <div
+                id="membership-customer-memberships-list"
+                class="membership-list"
+              >
+                <div class="empty-state">
+                  Selecciona un cliente para ver sus membresías.
+                </div>
               </div>
             </section>
 
-            <section class="membership-expiration-panel zone-card" aria-labelledby="membership-expiration-title">
+            <section
+              class="membership-expiration-panel zone-card"
+              aria-labelledby="membership-expiration-title"
+            >
               <div class="section-header">
                 <div>
-                  <h2 id="membership-expiration-title">Seguimiento de membresías</h2>
+                  <h2 id="membership-expiration-title">
+                    Seguimiento de membresías
+                  </h2>
                 </div>
-                <button class="secondary-button" id="reload-membership-expiration-button" type="button" data-icon="refresh">Actualizar</button>
+                <button
+                  class="secondary-button"
+                  id="reload-membership-expiration-button"
+                  type="button"
+                  data-icon="refresh"
+                >
+                  Actualizar
+                </button>
               </div>
 
-              <form id="membership-expiration-form" class="search-form membership-expiration-form" novalidate>
+              <form
+                id="membership-expiration-form"
+                class="search-form membership-expiration-form"
+                novalidate
+              >
                 <div class="field">
-                  <label for="membership-expiration-within-days">Dias antes de vencer</label>
-                  <input id="membership-expiration-within-days" name="withinDays" type="number" min="0" max="365" step="1" inputmode="numeric" />
-                  <p class="field-error" id="membership-expiration-within-days-error"></p>
+                  <label for="membership-expiration-within-days"
+                    >Dias antes de vencer</label
+                  >
+                  <input
+                    id="membership-expiration-within-days"
+                    name="withinDays"
+                    type="number"
+                    min="0"
+                    max="365"
+                    step="1"
+                    inputmode="numeric"
+                  />
+                  <p
+                    class="field-error"
+                    id="membership-expiration-within-days-error"
+                  ></p>
                 </div>
-                <button id="load-membership-expiration-button" type="submit" data-icon="search">Consultar</button>
+                <button
+                  id="load-membership-expiration-button"
+                  type="submit"
+                  data-icon="search"
+                >
+                  Consultar
+                </button>
               </form>
 
-              <div id="membership-expiration-status" class="success-message" hidden></div>
-              <div id="membership-expiration-error" class="form-error" hidden></div>
+              <div
+                id="membership-expiration-status"
+                class="success-message"
+                hidden
+              ></div>
+              <div
+                id="membership-expiration-error"
+                class="form-error"
+                hidden
+              ></div>
               <div class="membership-expiration-grid">
                 <section aria-labelledby="membership-expiring-title">
                   <h3 id="membership-expiring-title">Próximas a vencer</h3>
                   <div id="membership-expiring-list" class="membership-list">
-                    <div class="empty-state">Consulta membresías próximas a vencer.</div>
+                    <div class="empty-state">
+                      Consulta membresías próximas a vencer.
+                    </div>
                   </div>
                 </section>
                 <section aria-labelledby="membership-expired-title">
@@ -1302,36 +2351,78 @@
               </div>
             </section>
 
-            <section class="membership-benefits-panel zone-card" aria-labelledby="membership-benefits-title">
+            <section
+              class="membership-benefits-panel zone-card"
+              aria-labelledby="membership-benefits-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="membership-benefits-title">Beneficios</h2>
-                  <p class="section-support" id="membership-benefits-context">Selecciona un plan para gestionar sus beneficios.</p>
+                  <p class="section-support" id="membership-benefits-context">
+                    Selecciona un plan para gestionar sus beneficios.
+                  </p>
                 </div>
               </div>
 
-              <div id="membership-benefits-status" class="success-message" hidden></div>
-              <div id="membership-benefits-error" class="form-error" hidden></div>
+              <div
+                id="membership-benefits-status"
+                class="success-message"
+                hidden
+              ></div>
+              <div
+                id="membership-benefits-error"
+                class="form-error"
+                hidden
+              ></div>
               <div id="membership-benefits-list" class="membership-list">
-                <div class="empty-state">Selecciona un plan para gestionar sus beneficios.</div>
+                <div class="empty-state">
+                  Selecciona un plan para gestionar sus beneficios.
+                </div>
               </div>
             </section>
 
-            <section class="membership-benefit-form-panel zone-card" aria-labelledby="membership-benefit-form-title">
+            <section
+              class="membership-benefit-form-panel zone-card"
+              aria-labelledby="membership-benefit-form-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="membership-benefit-form-title">Crear beneficio</h2>
                 </div>
-                <button class="secondary-button" id="reset-membership-benefit-button" type="button" data-icon="plus">Crear beneficio</button>
+                <button
+                  class="secondary-button"
+                  id="reset-membership-benefit-button"
+                  type="button"
+                  data-icon="plus"
+                >
+                  Crear beneficio
+                </button>
               </div>
 
-              <form id="membership-benefit-form" class="membership-form" hidden novalidate>
-                <input id="membership-benefit-id" name="benefitId" type="hidden" />
+              <form
+                id="membership-benefit-form"
+                class="membership-form"
+                hidden
+                novalidate
+              >
+                <input
+                  id="membership-benefit-id"
+                  name="benefitId"
+                  type="hidden"
+                />
                 <div class="field-grid membership-controls">
                   <div class="field">
                     <label for="membership-benefit-name">Nombre</label>
-                    <input id="membership-benefit-name" name="name" maxlength="120" autocomplete="off" />
-                    <p class="field-error" id="membership-benefit-name-error"></p>
+                    <input
+                      id="membership-benefit-name"
+                      name="name"
+                      maxlength="120"
+                      autocomplete="off"
+                    />
+                    <p
+                      class="field-error"
+                      id="membership-benefit-name-error"
+                    ></p>
                   </div>
 
                   <div class="field">
@@ -1342,66 +2433,152 @@
                       <option value="allowance">Cantidad incluida</option>
                       <option value="free_item">Producto incluido</option>
                     </select>
-                    <p class="field-error" id="membership-benefit-type-error"></p>
+                    <p
+                      class="field-error"
+                      id="membership-benefit-type-error"
+                    ></p>
                   </div>
 
                   <div class="field">
-                    <label for="membership-benefit-applies-to-type">Aplica a</label>
-                    <select id="membership-benefit-applies-to-type" name="appliesToType">
+                    <label for="membership-benefit-applies-to-type"
+                      >Aplica a</label
+                    >
+                    <select
+                      id="membership-benefit-applies-to-type"
+                      name="appliesToType"
+                    >
                       <option value="text">Texto libre</option>
                       <option value="product">Producto</option>
                       <option value="service">Servicio</option>
                       <option value="category">Categoría</option>
                     </select>
-                    <p class="field-error" id="membership-benefit-applies-to-type-error"></p>
+                    <p
+                      class="field-error"
+                      id="membership-benefit-applies-to-type-error"
+                    ></p>
                   </div>
 
                   <div class="field">
-                    <label for="membership-benefit-applies-to-name">Producto, servicio o categoría</label>
-                    <input id="membership-benefit-applies-to-name" name="appliesToName" maxlength="160" autocomplete="off" />
-                    <p class="field-error" id="membership-benefit-applies-to-name-error"></p>
+                    <label for="membership-benefit-applies-to-name"
+                      >Producto, servicio o categoría</label
+                    >
+                    <input
+                      id="membership-benefit-applies-to-name"
+                      name="appliesToName"
+                      maxlength="160"
+                      autocomplete="off"
+                    />
+                    <p
+                      class="field-error"
+                      id="membership-benefit-applies-to-name-error"
+                    ></p>
                   </div>
 
                   <div class="field">
-                    <label for="membership-benefit-discount-percent">Descuento %</label>
-                    <input id="membership-benefit-discount-percent" name="discountPercent" type="number" min="0.01" max="100" step="0.01" inputmode="decimal" />
-                    <p class="field-error" id="membership-benefit-discount-percent-error"></p>
+                    <label for="membership-benefit-discount-percent"
+                      >Descuento %</label
+                    >
+                    <input
+                      id="membership-benefit-discount-percent"
+                      name="discountPercent"
+                      type="number"
+                      min="0.01"
+                      max="100"
+                      step="0.01"
+                      inputmode="decimal"
+                    />
+                    <p
+                      class="field-error"
+                      id="membership-benefit-discount-percent-error"
+                    ></p>
                   </div>
 
                   <div class="field">
-                    <label for="membership-benefit-included-quantity">Cantidad incluida</label>
-                    <input id="membership-benefit-included-quantity" name="includedQuantity" type="number" min="0.01" step="0.01" inputmode="decimal" />
-                    <p class="field-error" id="membership-benefit-included-quantity-error"></p>
+                    <label for="membership-benefit-included-quantity"
+                      >Cantidad incluida</label
+                    >
+                    <input
+                      id="membership-benefit-included-quantity"
+                      name="includedQuantity"
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      inputmode="decimal"
+                    />
+                    <p
+                      class="field-error"
+                      id="membership-benefit-included-quantity-error"
+                    ></p>
                   </div>
 
                   <div class="field">
-                    <label for="membership-benefit-usage-limit">Límite de uso</label>
-                    <input id="membership-benefit-usage-limit" name="usageLimit" type="number" min="1" step="1" inputmode="numeric" />
-                    <p class="field-error" id="membership-benefit-usage-limit-error"></p>
+                    <label for="membership-benefit-usage-limit"
+                      >Límite de uso</label
+                    >
+                    <input
+                      id="membership-benefit-usage-limit"
+                      name="usageLimit"
+                      type="number"
+                      min="1"
+                      step="1"
+                      inputmode="numeric"
+                    />
+                    <p
+                      class="field-error"
+                      id="membership-benefit-usage-limit-error"
+                    ></p>
                   </div>
 
                   <div class="field">
                     <label for="membership-benefit-usage-period">Periodo</label>
-                    <select id="membership-benefit-usage-period" name="usagePeriod">
+                    <select
+                      id="membership-benefit-usage-period"
+                      name="usagePeriod"
+                    >
                       <option value="none">Sin control</option>
                       <option value="day">Dia</option>
                       <option value="week">Semana</option>
                       <option value="month">Mes</option>
                       <option value="membership_term">Vigencia</option>
                     </select>
-                    <p class="field-error" id="membership-benefit-usage-period-error"></p>
+                    <p
+                      class="field-error"
+                      id="membership-benefit-usage-period-error"
+                    ></p>
                   </div>
                 </div>
 
                 <div class="field">
-                  <label for="membership-benefit-description">Descripcion</label>
-                  <textarea id="membership-benefit-description" name="description" maxlength="500" rows="3"></textarea>
-                  <p class="field-error" id="membership-benefit-description-error"></p>
+                  <label for="membership-benefit-description"
+                    >Descripcion</label
+                  >
+                  <textarea
+                    id="membership-benefit-description"
+                    name="description"
+                    maxlength="500"
+                    rows="3"
+                  ></textarea>
+                  <p
+                    class="field-error"
+                    id="membership-benefit-description-error"
+                  ></p>
                 </div>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="cancel-membership-benefit-button" type="button">Cancelar</button>
-                  <button id="save-membership-benefit-button" type="submit" data-icon="save">Guardar beneficio</button>
+                  <button
+                    class="secondary-button"
+                    id="cancel-membership-benefit-button"
+                    type="button"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    id="save-membership-benefit-button"
+                    type="submit"
+                    data-icon="save"
+                  >
+                    Guardar beneficio
+                  </button>
                 </div>
               </form>
             </section>
@@ -1415,22 +2592,55 @@
           >
             <h2 id="reports-section-title" class="sr-only">Reportes</h2>
 
-            <div class="report-tabs" role="tablist" aria-label="Reportes disponibles">
-              <button class="report-tab active" type="button" data-icon="bar-chart" data-report-view="activity" aria-selected="true">
+            <div
+              class="report-tabs"
+              role="tablist"
+              aria-label="Reportes disponibles"
+            >
+              <button
+                class="report-tab active"
+                type="button"
+                data-icon="bar-chart"
+                data-report-view="activity"
+                aria-selected="true"
+              >
                 Actividad
               </button>
-              <button class="report-tab" type="button" data-icon="crown" data-report-view="memberships" aria-selected="false">
+              <button
+                class="report-tab"
+                type="button"
+                data-icon="crown"
+                data-report-view="memberships"
+                aria-selected="false"
+              >
                 Membresías
               </button>
-              <button class="report-tab" type="button" data-icon="clipboard-list" data-report-view="audit" aria-selected="false">
+              <button
+                class="report-tab"
+                type="button"
+                data-icon="clipboard-list"
+                data-report-view="audit"
+                aria-selected="false"
+              >
                 Historial
               </button>
-              <button class="report-tab" type="button" data-icon="user" data-report-view="customer" aria-selected="false">
+              <button
+                class="report-tab"
+                type="button"
+                data-icon="user"
+                data-report-view="customer"
+                aria-selected="false"
+              >
                 Cliente
               </button>
             </div>
 
-            <section id="report-panel" class="report-panel zone-card" data-report-panel="activity" aria-labelledby="report-title">
+            <section
+              id="report-panel"
+              class="report-panel zone-card"
+              data-report-panel="activity"
+              aria-labelledby="report-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="report-title">Reporte de actividad</h2>
@@ -1461,14 +2671,26 @@
 
                   <div class="field report-action-field">
                     <label aria-hidden="true">&nbsp;</label>
-                    <button id="load-report-button" type="submit" data-icon="search">Consultar</button>
+                    <button
+                      id="load-report-button"
+                      type="submit"
+                      data-icon="search"
+                    >
+                      Consultar
+                    </button>
                   </div>
                 </div>
 
                 <div id="report-error" class="form-error" hidden></div>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="export-report-button" type="button" data-icon="download" disabled>
+                  <button
+                    class="secondary-button"
+                    id="export-report-button"
+                    type="button"
+                    data-icon="download"
+                    disabled
+                  >
                     Exportar CSV
                   </button>
                 </div>
@@ -1495,47 +2717,103 @@
               </div>
             </section>
 
-            <section id="membership-financial-report-panel" class="report-panel zone-card" data-report-panel="memberships" aria-labelledby="membership-financial-report-title" hidden>
+            <section
+              id="membership-financial-report-panel"
+              class="report-panel zone-card"
+              data-report-panel="memberships"
+              aria-labelledby="membership-financial-report-title"
+              hidden
+            >
               <div class="section-header">
                 <div>
-                  <h2 id="membership-financial-report-title">Reporte diario de membresías</h2>
+                  <h2 id="membership-financial-report-title">
+                    Reporte diario de membresías
+                  </h2>
                 </div>
               </div>
 
-              <form id="membership-financial-report-form" class="report-form" novalidate>
+              <form
+                id="membership-financial-report-form"
+                class="report-form"
+                novalidate
+              >
                 <div class="field-grid report-controls">
                   <div class="field">
-                    <label for="membership-financial-report-from">Fecha desde</label>
-                    <input id="membership-financial-report-from" name="from" type="date" />
+                    <label for="membership-financial-report-from"
+                      >Fecha desde</label
+                    >
+                    <input
+                      id="membership-financial-report-from"
+                      name="from"
+                      type="date"
+                    />
                   </div>
 
                   <div class="field">
-                    <label for="membership-financial-report-to">Fecha hasta</label>
-                    <input id="membership-financial-report-to" name="to" type="date" />
+                    <label for="membership-financial-report-to"
+                      >Fecha hasta</label
+                    >
+                    <input
+                      id="membership-financial-report-to"
+                      name="to"
+                      type="date"
+                    />
                   </div>
 
                   <div class="field report-action-field">
                     <label aria-hidden="true">&nbsp;</label>
-                    <button id="load-membership-financial-report-button" type="submit" data-icon="search">Consultar</button>
+                    <button
+                      id="load-membership-financial-report-button"
+                      type="submit"
+                      data-icon="search"
+                    >
+                      Consultar
+                    </button>
                   </div>
                 </div>
 
-                <div id="membership-financial-report-error" class="form-error" hidden></div>
+                <div
+                  id="membership-financial-report-error"
+                  class="form-error"
+                  hidden
+                ></div>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="export-membership-financial-report-button" type="button" data-icon="download" disabled>
+                  <button
+                    class="secondary-button"
+                    id="export-membership-financial-report-button"
+                    type="button"
+                    data-icon="download"
+                    disabled
+                  >
                     Exportar CSV
                   </button>
                 </div>
               </form>
 
-              <div id="membership-financial-report-status" class="success-message" hidden></div>
-              <div id="membership-financial-report-summary" class="report-summary" hidden></div>
-              <div id="membership-financial-payment-summary" class="report-summary" hidden></div>
+              <div
+                id="membership-financial-report-status"
+                class="success-message"
+                hidden
+              ></div>
+              <div
+                id="membership-financial-report-summary"
+                class="report-summary"
+                hidden
+              ></div>
+              <div
+                id="membership-financial-payment-summary"
+                class="report-summary"
+                hidden
+              ></div>
               <div id="membership-financial-report-empty" class="empty-state">
                 Selecciona un rango de fechas para ver ventas y renovaciones.
               </div>
-              <div id="membership-financial-report-table-wrap" class="report-table-wrap" hidden>
+              <div
+                id="membership-financial-report-table-wrap"
+                class="report-table-wrap"
+                hidden
+              >
                 <table class="report-table">
                   <thead>
                     <tr>
@@ -1552,7 +2830,13 @@
               </div>
             </section>
 
-            <section id="audit-panel" class="audit-panel zone-card" data-report-panel="audit" aria-labelledby="audit-title" hidden>
+            <section
+              id="audit-panel"
+              class="audit-panel zone-card"
+              data-report-panel="audit"
+              aria-labelledby="audit-title"
+              hidden
+            >
               <div class="section-header">
                 <div>
                   <h2 id="audit-title">Historial operativo</h2>
@@ -1582,14 +2866,26 @@
 
                   <div class="field report-action-field">
                     <label aria-hidden="true">&nbsp;</label>
-                    <button id="load-audit-button" type="submit" data-icon="search">Consultar</button>
+                    <button
+                      id="load-audit-button"
+                      type="submit"
+                      data-icon="search"
+                    >
+                      Consultar
+                    </button>
                   </div>
                 </div>
 
                 <div id="audit-error" class="form-error" hidden></div>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="export-audit-button" type="button" data-icon="download" disabled>
+                  <button
+                    class="secondary-button"
+                    id="export-audit-button"
+                    type="button"
+                    data-icon="download"
+                    disabled
+                  >
                     Exportar CSV
                   </button>
                 </div>
@@ -1615,7 +2911,13 @@
               </div>
             </section>
 
-            <section id="customer-report-panel" class="report-panel zone-card" data-report-panel="customer" aria-labelledby="customer-report-title" hidden>
+            <section
+              id="customer-report-panel"
+              class="report-panel zone-card"
+              data-report-panel="customer"
+              aria-labelledby="customer-report-title"
+              hidden
+            >
               <div class="section-header">
                 <div>
                   <h2 id="customer-report-title">Reporte por cliente</h2>
@@ -1658,26 +2960,54 @@
 
                   <div class="field report-action-field">
                     <label aria-hidden="true">&nbsp;</label>
-                    <button id="load-customer-report-button" type="submit" data-icon="search">Consultar</button>
+                    <button
+                      id="load-customer-report-button"
+                      type="submit"
+                      data-icon="search"
+                    >
+                      Consultar
+                    </button>
                   </div>
                 </div>
 
                 <div id="customer-report-error" class="form-error" hidden></div>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="export-customer-report-button" type="button" data-icon="download" disabled>
+                  <button
+                    class="secondary-button"
+                    id="export-customer-report-button"
+                    type="button"
+                    data-icon="download"
+                    disabled
+                  >
                     Exportar CSV
                   </button>
                 </div>
               </form>
 
-              <div id="customer-report-status" class="success-message" hidden></div>
-              <div id="customer-report-summary" class="report-summary" hidden></div>
-              <div id="customer-report-candidates" class="customer-report-candidates" hidden></div>
+              <div
+                id="customer-report-status"
+                class="success-message"
+                hidden
+              ></div>
+              <div
+                id="customer-report-summary"
+                class="report-summary"
+                hidden
+              ></div>
+              <div
+                id="customer-report-candidates"
+                class="customer-report-candidates"
+                hidden
+              ></div>
               <div id="customer-report-empty" class="empty-state">
                 Busca un cliente y selecciona un rango para ver sus movimientos.
               </div>
-              <div id="customer-report-table-wrap" class="report-table-wrap" hidden>
+              <div
+                id="customer-report-table-wrap"
+                class="report-table-wrap"
+                hidden
+              >
                 <table class="report-table">
                   <thead>
                     <tr>
@@ -1705,13 +3035,17 @@
               <h2>Panel interno</h2>
             </div>
 
-            <section class="admin-access-panel zone-card" aria-labelledby="admin-access-title">
+            <section
+              class="admin-access-panel zone-card"
+              aria-labelledby="admin-access-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="admin-access-title">Acceso interno temporal</h2>
                   <p class="section-support">
-                    Ingresa el token interno para revisar empresas por activar. Este acceso es temporal y no
-                    reemplaza el acceso administrativo final.
+                    Ingresa el token interno para revisar empresas por activar.
+                    Este acceso es temporal y no reemplaza el acceso
+                    administrativo final.
                   </p>
                 </div>
               </div>
@@ -1726,13 +3060,27 @@
                     autocomplete="off"
                     placeholder="Pega el token interno"
                   />
-                  <p class="field-help">El token solo se usa durante esta sesión del navegador.</p>
+                  <p class="field-help">
+                    El token solo se usa durante esta sesión del navegador.
+                  </p>
                   <p class="field-error" id="admin-token-error"></p>
                 </div>
 
                 <div class="form-actions">
-                  <button class="secondary-button" id="clear-admin-token-button" type="button">Limpiar token</button>
-                  <button id="save-admin-token-button" type="submit" data-icon="log-in">Acceder</button>
+                  <button
+                    class="secondary-button"
+                    id="clear-admin-token-button"
+                    type="button"
+                  >
+                    Limpiar token
+                  </button>
+                  <button
+                    id="save-admin-token-button"
+                    type="submit"
+                    data-icon="log-in"
+                  >
+                    Acceder
+                  </button>
                 </div>
               </form>
 
@@ -1740,14 +3088,21 @@
               <div id="admin-global-error" class="form-error" hidden></div>
             </section>
 
-            <section class="admin-list-panel zone-card" aria-labelledby="admin-list-title">
+            <section
+              class="admin-list-panel zone-card"
+              aria-labelledby="admin-list-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="admin-list-title">Empresas por activar</h2>
                 </div>
               </div>
 
-              <form id="admin-requests-form" class="admin-requests-form" novalidate>
+              <form
+                id="admin-requests-form"
+                class="admin-requests-form"
+                novalidate
+              >
                 <div class="field-grid admin-controls">
                   <div class="field">
                     <label for="admin-request-status">Vista</label>
@@ -1760,7 +3115,9 @@
                   </div>
 
                   <div class="field">
-                    <label for="admin-request-search">Búsqueda por empresa o correo</label>
+                    <label for="admin-request-search"
+                      >Búsqueda por empresa o correo</label
+                    >
                     <input
                       id="admin-request-search"
                       name="search"
@@ -1772,7 +3129,13 @@
                 </div>
 
                 <div class="form-actions">
-                  <button id="load-admin-requests-button" type="submit" data-icon="refresh">Actualizar</button>
+                  <button
+                    id="load-admin-requests-button"
+                    type="submit"
+                    data-icon="refresh"
+                  >
+                    Actualizar
+                  </button>
                 </div>
               </form>
 
@@ -1780,43 +3143,81 @@
               <div id="admin-list-error" class="form-error" hidden></div>
               <div id="admin-summary" class="admin-summary" hidden></div>
               <div id="admin-requests-list" class="admin-requests-list">
-                <div class="empty-state">Ingresa el token interno para cargar empresas por activar.</div>
+                <div class="empty-state">
+                  Ingresa el token interno para cargar empresas por activar.
+                </div>
               </div>
             </section>
 
-            <section class="admin-detail-panel zone-card" aria-labelledby="admin-detail-title">
+            <section
+              class="admin-detail-panel zone-card"
+              aria-labelledby="admin-detail-title"
+            >
               <div class="section-header">
                 <div>
                   <h2 id="admin-detail-title">Datos de empresa</h2>
                 </div>
-                <button class="secondary-button" id="back-admin-list-button" type="button" data-icon="arrow-left" hidden>
+                <button
+                  class="secondary-button"
+                  id="back-admin-list-button"
+                  type="button"
+                  data-icon="arrow-left"
+                  hidden
+                >
                   Volver a empresas
                 </button>
               </div>
 
-              <div id="admin-detail-status" class="success-message" hidden></div>
+              <div
+                id="admin-detail-status"
+                class="success-message"
+                hidden
+              ></div>
               <div id="admin-detail-error" class="form-error" hidden></div>
               <div id="admin-detail-empty" class="empty-state">
                 Selecciona una empresa para revisar sus datos.
               </div>
-              <div id="admin-request-detail" class="admin-request-detail" hidden></div>
+              <div
+                id="admin-request-detail"
+                class="admin-request-detail"
+                hidden
+              ></div>
             </section>
           </section>
         </main>
       </div>
 
       <div class="modal-backdrop" id="admin-confirmation-modal" hidden>
-        <section class="confirmation-modal" role="dialog" aria-modal="true" aria-labelledby="admin-confirmation-title">
+        <section
+          class="confirmation-modal"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-confirmation-title"
+        >
           <h2 id="admin-confirmation-title">Confirmar accion</h2>
           <p id="admin-confirmation-message"></p>
           <div class="form-actions">
-            <button class="secondary-button" id="admin-confirmation-cancel" type="button">Cancelar</button>
-            <button id="admin-confirmation-confirm" type="button">Confirmar</button>
+            <button
+              class="secondary-button"
+              id="admin-confirmation-cancel"
+              type="button"
+            >
+              Cancelar
+            </button>
+            <button id="admin-confirmation-confirm" type="button">
+              Confirmar
+            </button>
           </div>
         </section>
       </div>
 
-      <div id="global-loading" class="global-loading" role="status" aria-live="polite" hidden>
+      <div
+        id="global-loading"
+        class="global-loading"
+        role="status"
+        aria-live="polite"
+        hidden
+      >
         <span class="loading-spinner" aria-hidden="true"></span>
         <span id="global-loading-message">Estamos trabajando...</span>
       </div>
