@@ -1,0 +1,7 @@
+legacy_transaction_id,legacy_customer_id,phone,email,transaction_date,type,amount,points,description
+MOV-TYPE-001,CUST-001,,,2025-03-01,purchase,25000,250,Tipo canonico compra
+MOV-TYPE-002,CUST-001,,,2025-03-02,redemption,,50,Tipo canonico redencion
+MOV-TYPE-003,CUST-001,,,2025-03-03,points_adjustment_positive,,15,Tipo canonico ajuste positivo
+MOV-TYPE-004,CUST-001,,,2025-03-04,points_adjustment_negative,,-10,Tipo canonico ajuste negativo
+MOV-TYPE-005,CUST-001,,,2025-03-05,legacy_balance_import,,500,Tipo canonico saldo importado
+MOV-TYPE-006,CUST-001,,,2025-03-06,legacy_balance_reconciliation,,-25,Tipo canonico conciliacion saldo

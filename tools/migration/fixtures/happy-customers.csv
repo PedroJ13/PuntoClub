@@ -1,0 +1,3 @@
+legacy_customer_id,customer_name,phone,email,customer_status,created_at,notes
+CUST-001,Ana Maria Solis,(506) 8888-0001,ANA.SOLIS@example.com,active,2025-01-10,synthetic happy path
+CUST-002,Carlos Mendez,506-8888-0002,carlos.mendez@example.com,active,2025-02-15,synthetic happy path

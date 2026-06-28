@@ -1,0 +1,2 @@
+legacy_transaction_id,legacy_customer_id,phone,email,transaction_date,type,amount,points,description
+MOV-UNKNOWN-001,CUST-001,,,2025-03-09,manual_bonus,,20,Tipo desconocido sintetico

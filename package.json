@@ -1,0 +1,25 @@
+{
+  "name": "punto-club-tooling",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Local QA tooling for Punto Club web UI.",
+  "type": "module",
+  "scripts": {
+    "test:e2e": "node tools/run-playwright-smoke.mjs",
+    "test:e2e:raw": "playwright test",
+    "test:e2e:list": "playwright test --list",
+    "migration:dry-run": "node tools/migration/dry-run-legacy-import.mjs",
+    "copy:check": "node tools/check-copy-terms.mjs",
+    "lint": "eslint app/src/app.js playwright.config.mjs tests/qa tools",
+    "format:check": "prettier --check package.json playwright.config.mjs \"tests/qa/**/*.js\" \"tools/**/*.mjs\" docs/TOOLS.md tools/migration/README.md",
+    "stylelint": "stylelint \"app/**/*.css\"",
+    "qa:check": "npm run copy:check && npm run test:e2e"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
+    "@playwright/test": "^1.61.1",
+    "eslint": "^10.5.0",
+    "prettier": "^3.8.4",
+    "stylelint": "^17.13.0"
+  }
+}

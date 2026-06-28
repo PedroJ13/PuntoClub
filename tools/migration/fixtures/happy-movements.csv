@@ -1,0 +1,4 @@
+legacy_transaction_id,legacy_customer_id,phone,email,transaction_date,type,amount,points,description
+MOV-001,CUST-001,,,2025-03-01,purchase,25000,250,Compra sintetica inicial
+MOV-002,CUST-001,,,2025-03-15,redemption,,50,Canje sintetico
+MOV-003,CUST-002,,,2025-04-02,purchase,13000,130,Compra sintetica

@@ -1,0 +1,4 @@
+legacy_customer_id,customer_name,phone,email,customer_status,created_at,notes
+CUST-020,Cliente Duplicado Uno,506-8888-0020,duplicado@example.com,active,2025-01-01,synthetic duplicate
+CUST-020,Cliente Duplicado Dos,506-8888-0021,duplicado2@example.com,active,2025-01-02,synthetic duplicate id
+CUST-021,Cliente Telefono Repetido,506-8888-0020,otro@example.com,active,2025-01-03,synthetic duplicate phone

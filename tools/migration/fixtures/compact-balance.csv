@@ -1,0 +1,3 @@
+legacy_customer_id,customer_name,phone,email,current_points_balance,balance_as_of,notes
+CUST-010,Laura Campos,506 8888 0010,laura.campos@example.com,540,2025-05-31,synthetic compact balance
+CUST-011,Diego Vargas,(506) 8888-0011,DIEGO.VARGAS@example.com,120,2025-05-31,synthetic compact balance

@@ -1,0 +1,2 @@
+legacy_customer_id,phone,email,customer_status,created_at,notes
+CUST-030,506-8888-0030,sin.nombre@example.com,active,2025-01-01,synthetic missing header
