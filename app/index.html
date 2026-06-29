@@ -837,6 +837,13 @@
           <button
             class="nav-button"
             type="button"
+            data-section-target="communications"
+          >
+            Comunicaciones
+          </button>
+          <button
+            class="nav-button"
+            type="button"
             data-section-target="adminCompanies"
             hidden
           >
@@ -3019,6 +3026,279 @@
                     </tr>
                   </thead>
                   <tbody id="customer-report-table-body"></tbody>
+                </table>
+              </div>
+            </section>
+          </section>
+
+          <section
+            class="workspace-section communications-section"
+            data-section="communications"
+            aria-labelledby="communications-title"
+            hidden
+          >
+            <section
+              class="communications-hero zone-card"
+              aria-labelledby="communications-title"
+            >
+              <div class="section-header">
+                <div>
+                  <p class="eyebrow">Centro de comunicaciones</p>
+                  <h2 id="communications-title">Correos y campañas</h2>
+                  <p class="section-support">
+                    Configura correos operativos, prepara campañas y revisa
+                    preferencias antes de activar envíos reales.
+                  </p>
+                </div>
+              </div>
+              <div class="communications-kpis" aria-label="Resumen local">
+                <div>
+                  <span>Operativos</span>
+                  <strong>5</strong>
+                </div>
+                <div>
+                  <span>Suscritos</span>
+                  <strong>128</strong>
+                </div>
+                <div>
+                  <span>Bajas</span>
+                  <strong>9</strong>
+                </div>
+                <div>
+                  <span>Promociones</span>
+                  <strong>Pausadas</strong>
+                </div>
+              </div>
+            </section>
+
+            <section
+              class="communications-settings-panel zone-card"
+              aria-labelledby="communications-settings-title"
+            >
+              <div class="section-header">
+                <div>
+                  <h2 id="communications-settings-title">Configuración</h2>
+                  <p class="section-support">
+                    Los operativos acompañan acciones del programa. Las
+                    promociones quedan protegidas hasta tener dominio y bajas.
+                  </p>
+                </div>
+              </div>
+
+              <div class="communication-switch-list">
+                <label class="communication-switch">
+                  <input type="checkbox" checked />
+                  <span>
+                    <strong>Bienvenida al registrar cliente</strong>
+                    <small>Enviar cuando se registre un cliente con correo.</small>
+                  </span>
+                </label>
+                <label class="communication-switch">
+                  <input type="checkbox" checked />
+                  <span>
+                    <strong>Compra registrada</strong>
+                    <small>Puntos ganados y saldo total como snapshot.</small>
+                  </span>
+                </label>
+                <label class="communication-switch">
+                  <input type="checkbox" checked />
+                  <span>
+                    <strong>Canje o redención</strong>
+                    <small>Puntos redimidos y saldo actualizado.</small>
+                  </span>
+                </label>
+                <label class="communication-switch">
+                  <input type="checkbox" />
+                  <span>
+                    <strong>Beneficio o membresía</strong>
+                    <small>Uso de beneficio y membresías activadas.</small>
+                  </span>
+                </label>
+                <label class="communication-switch is-locked">
+                  <input type="checkbox" disabled />
+                  <span>
+                    <strong>Campañas promocionales</strong>
+                    <small>Requiere dominio promocional, baja y cuotas.</small>
+                  </span>
+                </label>
+              </div>
+            </section>
+
+            <section
+              class="communications-campaign-panel zone-card"
+              aria-labelledby="communications-campaign-title"
+            >
+              <div class="section-header">
+                <div>
+                  <h2 id="communications-campaign-title">Campaña local</h2>
+                  <p class="section-support">
+                    Borrador local para validar flujo, variables y preview sin
+                    enviar correos reales.
+                  </p>
+                </div>
+              </div>
+
+              <form
+                id="communication-campaign-form"
+                class="communication-campaign-form"
+              >
+                <div class="field-grid communication-campaign-controls">
+                  <div class="field">
+                    <label for="communication-campaign-name"
+                      >Nombre interno</label
+                    >
+                    <input
+                      id="communication-campaign-name"
+                      type="text"
+                      value="Promo clientes frecuentes"
+                    />
+                  </div>
+                  <div class="field">
+                    <label for="communication-campaign-subject">Asunto</label>
+                    <input
+                      id="communication-campaign-subject"
+                      type="text"
+                      value="Promo especial para clientes frecuentes"
+                    />
+                  </div>
+                  <div class="field">
+                    <label for="communication-campaign-audience"
+                      >Destinatarios</label
+                    >
+                    <select id="communication-campaign-audience">
+                      <option value="subscribed">Clientes suscritos</option>
+                      <option value="points">
+                        Clientes con puntos disponibles
+                      </option>
+                      <option value="unsubscribed">Dados de baja</option>
+                    </select>
+                  </div>
+                  <label class="communication-inline-check">
+                    <input
+                      id="communication-include-points"
+                      type="checkbox"
+                      checked
+                    />
+                    Incluir puntos disponibles
+                  </label>
+                </div>
+
+                <div class="field">
+                  <label for="communication-campaign-body">Mensaje</label>
+                  <textarea id="communication-campaign-body"></textarea>
+                </div>
+
+                <div class="form-actions">
+                  <button
+                    class="secondary-button"
+                    id="communication-preview-button"
+                    type="button"
+                  >
+                    Previsualizar
+                  </button>
+                  <button
+                    id="communication-send-button"
+                    type="button"
+                    disabled
+                  >
+                    Envío real bloqueado
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <section
+              class="communications-preview-panel zone-card"
+              aria-labelledby="communications-preview-title"
+            >
+              <div class="section-header">
+                <div>
+                  <h2 id="communications-preview-title">Preview</h2>
+                  <p class="section-support">
+                    Los puntos se muestran como snapshot al preparar el envío.
+                  </p>
+                </div>
+              </div>
+              <article
+                id="communication-preview"
+                class="communication-preview"
+              ></article>
+              <div class="communication-variable-list">
+                <span>{{customer.name}}</span>
+                <span>{{company.name}}</span>
+                <span>{{points.currentBalance}}</span>
+                <span>{{promotion.validUntil}}</span>
+              </div>
+            </section>
+
+            <section
+              class="communications-customers-panel zone-card"
+              aria-labelledby="communications-customers-title"
+            >
+              <div class="section-header">
+                <div>
+                  <h2 id="communications-customers-title">
+                    Clientes y preferencias
+                  </h2>
+                  <p class="section-support">
+                    La baja promocional no elimina puntos, beneficios ni
+                    historial.
+                  </p>
+                </div>
+              </div>
+              <div
+                class="communication-filter-row"
+                role="group"
+                aria-label="Filtro de preferencias"
+              >
+                <button
+                  class="secondary-button is-active"
+                  type="button"
+                  data-communication-filter="subscribed"
+                >
+                  Suscritos
+                </button>
+                <button
+                  class="secondary-button"
+                  type="button"
+                  data-communication-filter="unsubscribed"
+                >
+                  Bajas
+                </button>
+                <button
+                  class="secondary-button"
+                  type="button"
+                  data-communication-filter="blocked"
+                >
+                  No aptos
+                </button>
+              </div>
+              <div
+                id="communication-customer-list"
+                class="communication-customer-list"
+              ></div>
+            </section>
+
+            <section
+              class="communications-history-panel zone-card"
+              aria-labelledby="communications-history-title"
+            >
+              <div class="section-header">
+                <div>
+                  <h2 id="communications-history-title">Historial local</h2>
+                </div>
+              </div>
+              <div class="report-table-wrap">
+                <table class="report-table communication-history-table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Tipo</th>
+                      <th>Destinatario</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody id="communication-history-body"></tbody>
                 </table>
               </div>
             </section>

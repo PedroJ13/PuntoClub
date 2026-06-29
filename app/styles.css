@@ -1001,6 +1001,7 @@ textarea:focus {
 .public-registration-mode [data-section="operations"],
 .public-registration-mode [data-section="memberships"],
 .public-registration-mode [data-section="reports"],
+.public-registration-mode [data-section="communications"],
 .public-registration-mode [data-section="adminCompanies"] {
   display: none;
 }
@@ -1017,6 +1018,7 @@ textarea:focus {
 .public-registration-mode [data-section="operations"],
 .public-registration-mode [data-section="memberships"],
 .public-registration-mode [data-section="reports"],
+.public-registration-mode [data-section="communications"],
 .public-registration-mode [data-section="adminCompanies"] {
   display: none;
 }
@@ -1035,7 +1037,8 @@ textarea:focus {
 .admin-companies-page-mode [data-section="operations"],
 .admin-companies-page-mode [data-section="company"],
 .admin-companies-page-mode [data-section="memberships"],
-.admin-companies-page-mode [data-section="reports"] {
+.admin-companies-page-mode [data-section="reports"],
+.admin-companies-page-mode [data-section="communications"] {
   display: none;
 }
 
@@ -1051,13 +1054,15 @@ textarea:focus {
 .admin-companies-page-mode [data-section="operations"],
 .admin-companies-page-mode [data-section="company"],
 .admin-companies-page-mode [data-section="memberships"],
-.admin-companies-page-mode [data-section="reports"] {
+.admin-companies-page-mode [data-section="reports"],
+.admin-companies-page-mode [data-section="communications"] {
   display: none;
 }
 
 .company-section,
 .memberships-section,
 .reports-section,
+.communications-section,
 .admin-companies-section {
   grid-template-columns: 1fr;
   grid-template-areas: none;
@@ -1071,6 +1076,12 @@ textarea:focus {
 .memberships-section .membership-benefit-form-panel,
 .reports-section .report-panel,
 .reports-section .audit-panel,
+.communications-section .communications-hero,
+.communications-section .communications-settings-panel,
+.communications-section .communications-campaign-panel,
+.communications-section .communications-preview-panel,
+.communications-section .communications-customers-panel,
+.communications-section .communications-history-panel,
 .admin-companies-section .admin-access-panel,
 .admin-companies-section .admin-list-panel,
 .admin-companies-section .admin-detail-panel {
@@ -2202,6 +2213,181 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   font-size: 0.92rem;
 }
 
+.communications-kpis {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.communications-kpis div,
+.communication-preview,
+.communication-customer-card {
+  min-width: 0;
+  border: 1px solid rgba(15, 118, 110, 0.16);
+  border-radius: var(--radius-sm);
+  padding: 11px;
+  background: var(--surface);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+}
+
+.communications-kpis span,
+.communication-customer-card span,
+.communication-preview-meta span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.communications-kpis strong,
+.communication-customer-card strong {
+  display: block;
+  margin-top: 2px;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.communication-switch-list,
+.communication-campaign-form,
+.communication-customer-list {
+  display: grid;
+  gap: 10px;
+}
+
+.communication-switch {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 11px;
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.42),
+    rgba(255, 255, 255, 0.94)
+  );
+}
+
+.communication-switch.is-locked {
+  background: var(--surface-warm);
+}
+
+.communication-switch input {
+  width: auto;
+  min-height: 0;
+  margin-top: 3px;
+}
+
+.communication-switch strong,
+.communication-switch small {
+  display: block;
+}
+
+.communication-switch small {
+  margin-top: 2px;
+  color: var(--muted);
+  font-weight: 750;
+}
+
+.communication-campaign-controls {
+  grid-template-columns:
+    minmax(160px, 0.8fr) minmax(220px, 1fr) minmax(170px, 0.62fr)
+    minmax(180px, 0.52fr);
+  align-items: end;
+}
+
+.communication-inline-check {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  gap: 8px;
+  color: var(--accent-strong);
+  font-weight: 850;
+}
+
+.communication-inline-check input {
+  width: auto;
+  min-height: 0;
+}
+
+.communication-preview {
+  display: grid;
+  gap: 10px;
+  background:
+    linear-gradient(
+      135deg,
+      rgba(223, 247, 244, 0.58),
+      rgba(255, 255, 255, 0.96)
+    ),
+    var(--surface);
+}
+
+.communication-preview h3,
+.communication-preview p {
+  margin: 0;
+}
+
+.communication-preview h3 {
+  font-size: 1.1rem;
+}
+
+.communication-preview p {
+  color: var(--muted);
+  font-weight: 760;
+}
+
+.communication-preview-footer {
+  border-top: 1px solid var(--line);
+  padding-top: 10px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 760;
+}
+
+.communication-variable-list,
+.communication-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.communication-variable-list span,
+.communication-state-pill {
+  border: 1px solid rgba(15, 118, 110, 0.2);
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: var(--surface-strong);
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 900;
+}
+
+.communication-filter-row .is-active {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
+.communication-customer-card {
+  display: grid;
+  grid-template-columns:
+    minmax(0, 1fr) minmax(130px, auto) minmax(120px, auto);
+  gap: 10px;
+  align-items: center;
+}
+
+.communication-customer-card p {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 750;
+  overflow-wrap: anywhere;
+}
+
 .report-controls {
   grid-template-columns: minmax(132px, 0.7fr) minmax(132px, 0.7fr) minmax(160px, 0.52fr) minmax(120px, 0.36fr);
   align-items: end;
@@ -2889,6 +3075,9 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   .company-logo-grid,
   .company-controls,
   .company-registration-controls,
+  .communications-kpis,
+  .communication-campaign-controls,
+  .communication-customer-card,
   .registration-summary,
   .invitation-details,
   .company-future,

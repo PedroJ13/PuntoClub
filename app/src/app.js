@@ -123,6 +123,34 @@ const elements = {
   accessError: document.querySelector("#access-error"),
   accessStatus: document.querySelector("#access-status"),
   createAccessButton: document.querySelector("#create-access-button"),
+  communicationCampaignNameInput: document.querySelector(
+    "#communication-campaign-name",
+  ),
+  communicationCampaignSubjectInput: document.querySelector(
+    "#communication-campaign-subject",
+  ),
+  communicationCampaignAudienceInput: document.querySelector(
+    "#communication-campaign-audience",
+  ),
+  communicationCampaignBodyInput: document.querySelector(
+    "#communication-campaign-body",
+  ),
+  communicationIncludePointsInput: document.querySelector(
+    "#communication-include-points",
+  ),
+  communicationPreviewButton: document.querySelector(
+    "#communication-preview-button",
+  ),
+  communicationPreview: document.querySelector("#communication-preview"),
+  communicationCustomerList: document.querySelector(
+    "#communication-customer-list",
+  ),
+  communicationFilterButtons: [
+    ...document.querySelectorAll("[data-communication-filter]"),
+  ],
+  communicationHistoryBody: document.querySelector(
+    "#communication-history-body",
+  ),
   navButtons: [...document.querySelectorAll("[data-section-target]")],
   sectionPanels: [...document.querySelectorAll("[data-section]")],
   pointsNavButton: document.querySelector('[data-section-target="operations"]'),
@@ -874,7 +902,61 @@ let adminRequestLogoPreviewRequestId = null;
 let adminRequestLogoPreviewLoadId = 0;
 let pendingAdminConfirmation = null;
 let globalLoadingTimer = null;
+let activeCommunicationFilter = "subscribed";
 const customerBalances = new Map();
+const communicationPreviewCustomer = {
+  name: "María Fernández",
+  email: "maria@example.com",
+  pointsBalance: 1250,
+};
+const communicationDefaultBody =
+  "Hola {{customer.name}}, {{company.name}} tiene una promoción para clientes de Punto Club.";
+const communicationCustomers = [
+  {
+    name: "María Fernández",
+    email: "maria@example.com",
+    pointsBalance: 1250,
+    status: "subscribed",
+  },
+  {
+    name: "Carlos Mora",
+    email: "carlos@example.com",
+    pointsBalance: 840,
+    status: "subscribed",
+  },
+  {
+    name: "Ana Jiménez",
+    email: "ana@example.com",
+    pointsBalance: 0,
+    status: "unsubscribed",
+  },
+  {
+    name: "Cliente sin correo",
+    email: "",
+    pointsBalance: 320,
+    status: "blocked",
+  },
+];
+const communicationHistory = [
+  {
+    date: "2026-06-29",
+    type: "Compra registrada",
+    recipient: "maria@example.com",
+    status: "Entregado",
+  },
+  {
+    date: "2026-06-29",
+    type: "Canje registrado",
+    recipient: "carlos@example.com",
+    status: "En cola",
+  },
+  {
+    date: "2026-06-28",
+    type: "Promoción local",
+    recipient: "ana@example.com",
+    status: "Bloqueado por baja",
+  },
+];
 const invitationToken = getInvitationTokenFromUrl();
 const passwordResetToken = getPasswordResetTokenFromUrl();
 const isInvitationPage = isCompanyInvitationRoute();
@@ -900,6 +982,7 @@ elements.auditFromInput.value = getToday();
 elements.auditToInput.value = getToday();
 elements.membershipActivationStartDateInput.value = getToday();
 elements.membershipExpirationWithinDaysInput.value = "5";
+elements.communicationCampaignBodyInput.value = communicationDefaultBody;
 applyButtonIcons();
 observeIconButtons();
 
@@ -1412,6 +1495,28 @@ elements.adminConfirmationModal.addEventListener("click", (event) => {
   }
 });
 
+elements.communicationPreviewButton.addEventListener("click", () => {
+  renderCommunicationPreview();
+});
+
+[
+  elements.communicationCampaignNameInput,
+  elements.communicationCampaignSubjectInput,
+  elements.communicationCampaignAudienceInput,
+  elements.communicationCampaignBodyInput,
+  elements.communicationIncludePointsInput,
+].forEach((control) => {
+  control.addEventListener("input", renderCommunicationPreview);
+  control.addEventListener("change", renderCommunicationPreview);
+});
+
+elements.communicationFilterButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    activeCommunicationFilter = button.dataset.communicationFilter;
+    renderCommunicationCustomers();
+  });
+});
+
 elements.navButtons.forEach((button) => {
   button.addEventListener("click", () => {
     if (
@@ -1434,6 +1539,9 @@ renderMembershipFinancialReportPrompt();
 renderCustomerReportPrompt();
 renderAuditPrompt();
 renderAdminPrompt();
+renderCommunicationPreview();
+renderCommunicationCustomers();
+renderCommunicationHistory();
 
 if (isInvitationPage) {
   showInvitationPage();
@@ -1509,6 +1617,7 @@ function setActiveSection(section, options = {}) {
     "company",
     "memberships",
     "reports",
+    "communications",
     "adminCompanies",
   ].includes(requestedSection)
     ? requestedSection
@@ -1553,6 +1662,7 @@ function setActiveSection(section, options = {}) {
     company: elements.companyNameInput,
     memberships: elements.membershipCustomerSearchInput,
     reports: elements.reportFromInput,
+    communications: elements.communicationCampaignNameInput,
     adminCompanies: elements.adminTokenInput,
   }[nextSection];
 
@@ -1568,6 +1678,106 @@ function setActiveSection(section, options = {}) {
 
     focusTarget.focus();
   });
+}
+
+function renderCommunicationPreview() {
+  const companyName = currentCompanySettings?.name || "Punto Club Demo";
+  const subject =
+    elements.communicationCampaignSubjectInput.value.trim() ||
+    "Promo especial para clientes frecuentes";
+  const body =
+    elements.communicationCampaignBodyInput.value.trim() ||
+    "Hola {{customer.name}}, {{company.name}} tiene una promoción para clientes de Punto Club.";
+  const includePoints = elements.communicationIncludePointsInput.checked;
+  const renderedBody = body
+    .replaceAll("{{customer.name}}", communicationPreviewCustomer.name)
+    .replaceAll("{{company.name}}", companyName)
+    .replaceAll(
+      "{{points.currentBalance}}",
+      formatPoints(communicationPreviewCustomer.pointsBalance),
+    )
+    .replaceAll("{{promotion.validUntil}}", "31/07/2026");
+
+  elements.communicationPreview.innerHTML = `
+    <div class="communication-preview-meta">
+      <span>Asunto</span>
+      <h3>${escapeHtml(subject)}</h3>
+    </div>
+    <p>${escapeHtml(renderedBody)}</p>
+    ${
+      includePoints
+        ? `<p><strong>Puntos disponibles:</strong> ${formatPoints(communicationPreviewCustomer.pointsBalance)} pts.</p>`
+        : ""
+    }
+    <div class="communication-preview-footer">
+      Recibes este correo porque aceptas promociones de ${escapeHtml(companyName)} en Punto Club.
+      Puedes dejar de recibir promociones sin perder tus puntos, beneficios, membresías ni historial.
+    </div>
+  `;
+}
+
+function renderCommunicationCustomers() {
+  elements.communicationFilterButtons.forEach((button) => {
+    const isActive =
+      button.dataset.communicationFilter === activeCommunicationFilter;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-pressed", isActive ? "true" : "false");
+  });
+
+  const customers = communicationCustomers.filter(
+    (customer) => customer.status === activeCommunicationFilter,
+  );
+
+  if (!customers.length) {
+    elements.communicationCustomerList.innerHTML =
+      '<div class="empty-state">No hay clientes en esta vista.</div>';
+    return;
+  }
+
+  elements.communicationCustomerList.innerHTML = customers
+    .map(renderCommunicationCustomerCard)
+    .join("");
+}
+
+function renderCommunicationCustomerCard(customer) {
+  return `
+    <article class="communication-customer-card">
+      <div>
+        <strong>${escapeHtml(customer.name)}</strong>
+        <p>${customer.email ? escapeHtml(customer.email) : "Sin correo registrado"}</p>
+      </div>
+      <div>
+        <span>Puntos</span>
+        <strong>${formatPoints(customer.pointsBalance)}</strong>
+      </div>
+      <span class="communication-state-pill">${escapeHtml(getCommunicationPreferenceLabel(customer.status))}</span>
+    </article>
+  `;
+}
+
+function renderCommunicationHistory() {
+  elements.communicationHistoryBody.innerHTML = communicationHistory
+    .map(
+      (item) => `
+        <tr>
+          <td>${escapeHtml(item.date)}</td>
+          <td>${escapeHtml(item.type)}</td>
+          <td>${escapeHtml(item.recipient)}</td>
+          <td><span class="communication-state-pill">${escapeHtml(item.status)}</span></td>
+        </tr>
+      `,
+    )
+    .join("");
+}
+
+function getCommunicationPreferenceLabel(status) {
+  const labels = {
+    subscribed: "Suscrito",
+    unsubscribed: "Baja promocional",
+    blocked: "No apto",
+  };
+
+  return labels[status] ?? "Sin estado";
 }
 
 async function loadCustomers(search) {
