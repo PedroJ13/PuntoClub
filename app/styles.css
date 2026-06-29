@@ -43,7 +43,12 @@ body {
   background: var(--bg);
   color: var(--text);
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
   font-size: 15px;
   line-height: 1.4;
@@ -203,7 +208,11 @@ textarea:focus {
   border-radius: var(--radius-lg);
   padding: 12px 14px;
   background:
-    linear-gradient(135deg, rgba(223, 247, 244, 0.84), rgba(255, 255, 255, 0.96) 42%),
+    linear-gradient(
+      135deg,
+      rgba(223, 247, 244, 0.84),
+      rgba(255, 255, 255, 0.96) 42%
+    ),
     var(--surface);
   box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
 }
@@ -932,8 +941,11 @@ textarea:focus {
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
-  background:
-    linear-gradient(180deg, rgba(2, 44, 46, 0.98), rgba(4, 63, 58, 0.96));
+  background: linear-gradient(
+    180deg,
+    rgba(2, 44, 46, 0.98),
+    rgba(4, 63, 58, 0.96)
+  );
   box-shadow: 0 18px 42px rgba(2, 44, 46, 0.16);
   padding: 10px;
 }
@@ -1088,7 +1100,9 @@ textarea:focus {
   grid-area: auto;
 }
 
-body:not(.public-registration-mode) .company-section .company-registration-panel {
+body:not(.public-registration-mode)
+  .company-section
+  .company-registration-panel {
   display: none;
 }
 
@@ -1129,7 +1143,8 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   grid-area: report;
 }
 
-.report-tabs {
+.report-tabs,
+.section-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
@@ -1141,7 +1156,8 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   background: var(--surface-strong);
 }
 
-.report-tab {
+.report-tab,
+.section-tab {
   border: 1px solid var(--line);
   background: var(--surface);
   color: var(--accent-strong);
@@ -1151,7 +1167,9 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 }
 
 .report-tab.active,
-.report-tab[aria-selected="true"] {
+.report-tab[aria-selected="true"],
+.section-tab.active,
+.section-tab[aria-selected="true"] {
   border-color: var(--brand);
   background: var(--brand);
   color: #ffffff;
@@ -1223,7 +1241,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   padding: 12px;
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.46), rgba(255, 255, 255, 0.94));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.46),
+    rgba(255, 255, 255, 0.94)
+  );
 }
 
 .membership-expiration-grid {
@@ -1323,7 +1345,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   padding: 12px;
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.42), rgba(255, 255, 255, 0.94));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.42),
+    rgba(255, 255, 255, 0.94)
+  );
 }
 
 .membership-preview {
@@ -1631,7 +1657,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 }
 
 .loading-state {
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.72), rgba(255, 255, 255, 0.96));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.72),
+    rgba(255, 255, 255, 0.96)
+  );
   color: var(--accent-strong);
   font-weight: 800;
 }
@@ -1641,7 +1671,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   gap: 0.45rem;
   align-items: start;
   border-color: rgba(15, 118, 110, 0.22);
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.62), rgba(255, 255, 255, 0.94));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.62),
+    rgba(255, 255, 255, 0.94)
+  );
 }
 
 .membership-empty-state strong {
@@ -1818,7 +1852,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   border-radius: var(--radius-md);
   padding: 12px;
   margin-bottom: 12px;
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.56), rgba(255, 255, 255, 0.94));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.56),
+    rgba(255, 255, 255, 0.94)
+  );
 }
 
 .module-context[hidden] {
@@ -1918,7 +1956,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   padding: 12px;
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.42), rgba(255, 255, 255, 0.94));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.42),
+    rgba(255, 255, 255, 0.94)
+  );
 }
 
 .company-registration-panel {
@@ -2050,7 +2092,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   border: 1px solid rgba(15, 118, 110, 0.18);
   border-radius: var(--radius-sm);
   padding: 11px;
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.62), rgba(255, 255, 255, 0.94));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.62),
+    rgba(255, 255, 255, 0.94)
+  );
 }
 
 .company-current span {
@@ -2088,7 +2134,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   border: 1px solid rgba(15, 118, 110, 0.18);
   border-radius: var(--radius-md);
   padding: 12px;
-  background: linear-gradient(135deg, rgba(238, 246, 245, 0.72), rgba(255, 255, 255, 0.96));
+  background: linear-gradient(
+    135deg,
+    rgba(238, 246, 245, 0.72),
+    rgba(255, 255, 255, 0.96)
+  );
 }
 
 .registration-logo-panel h3 {
@@ -2118,7 +2168,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   overflow: hidden;
   border: 1px dashed rgba(15, 118, 110, 0.36);
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.52), rgba(255, 255, 255, 0.88));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.52),
+    rgba(255, 255, 255, 0.88)
+  );
   color: var(--accent-strong);
   font-size: 0.86rem;
   font-weight: 800;
@@ -2146,6 +2200,40 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 
 .company-password-form {
   max-width: 680px;
+}
+
+.company-communications-panel {
+  max-width: 760px;
+}
+
+.company-communications-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.company-communications-grid div {
+  min-width: 0;
+  border: 1px solid rgba(15, 118, 110, 0.16);
+  border-radius: var(--radius-sm);
+  padding: 11px;
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.42),
+    rgba(255, 255, 255, 0.94)
+  );
+}
+
+.company-communications-grid strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--text);
+}
+
+.company-communications-grid p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.88rem;
 }
 
 .company-password-fields {
@@ -2374,8 +2462,7 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 
 .communication-customer-card {
   display: grid;
-  grid-template-columns:
-    minmax(0, 1fr) minmax(130px, auto) minmax(120px, auto);
+  grid-template-columns: minmax(0, 1fr) minmax(130px, auto) minmax(120px, auto);
   gap: 10px;
   align-items: center;
 }
@@ -2389,17 +2476,23 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 }
 
 .report-controls {
-  grid-template-columns: minmax(132px, 0.7fr) minmax(132px, 0.7fr) minmax(160px, 0.52fr) minmax(120px, 0.36fr);
+  grid-template-columns:
+    minmax(132px, 0.7fr) minmax(132px, 0.7fr) minmax(160px, 0.52fr)
+    minmax(120px, 0.36fr);
   align-items: end;
 }
 
 .audit-controls {
-  grid-template-columns: minmax(132px, 0.7fr) minmax(132px, 0.7fr) minmax(150px, 0.42fr) minmax(120px, 0.36fr);
+  grid-template-columns:
+    minmax(132px, 0.7fr) minmax(132px, 0.7fr) minmax(150px, 0.42fr)
+    minmax(120px, 0.36fr);
   align-items: end;
 }
 
 .customer-report-controls {
-  grid-template-columns: minmax(220px, 1.1fr) minmax(132px, 0.58fr) minmax(132px, 0.58fr) minmax(150px, 0.46fr) minmax(120px, 0.34fr);
+  grid-template-columns:
+    minmax(220px, 1.1fr) minmax(132px, 0.58fr) minmax(132px, 0.58fr)
+    minmax(150px, 0.46fr) minmax(120px, 0.34fr);
   align-items: end;
 }
 
@@ -2409,7 +2502,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   padding: 12px;
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.56), rgba(255, 255, 255, 0.92));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.56),
+    rgba(255, 255, 255, 0.92)
+  );
 }
 
 .report-action-field button {
@@ -2435,7 +2532,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   border: 1px solid rgba(15, 118, 110, 0.18);
   border-radius: var(--radius-md);
   padding: 14px;
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.58), rgba(255, 255, 255, 0.94));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.58),
+    rgba(255, 255, 255, 0.94)
+  );
   box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
 }
 
@@ -2462,7 +2563,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   border: 1px solid var(--line);
   border-radius: var(--radius-md);
   padding: 12px;
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.46), rgba(255, 255, 255, 0.94));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.46),
+    rgba(255, 255, 255, 0.94)
+  );
 }
 
 .admin-summary,
@@ -2513,7 +2618,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   margin: 8px 0 0;
   border: 1px dashed rgba(15, 118, 110, 0.34);
   border-radius: var(--radius-sm);
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.48), rgba(255, 255, 255, 0.9));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.48),
+    rgba(255, 255, 255, 0.9)
+  );
   overflow: hidden;
 }
 
@@ -2644,7 +2753,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   border: 1px solid rgba(154, 77, 0, 0.18);
   border-radius: var(--radius-md);
   padding: 12px;
-  background: linear-gradient(135deg, rgba(255, 248, 230, 0.72), rgba(255, 255, 255, 0.94));
+  background: linear-gradient(
+    135deg,
+    rgba(255, 248, 230, 0.72),
+    rgba(255, 255, 255, 0.94)
+  );
 }
 
 .admin-invitation-panel h3 {
@@ -2729,7 +2842,11 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
 
 .report-summary div:first-child {
   border-color: rgba(15, 118, 110, 0.28);
-  background: linear-gradient(135deg, rgba(223, 247, 244, 0.72), rgba(255, 255, 255, 0.96));
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.72),
+    rgba(255, 255, 255, 0.96)
+  );
 }
 
 .report-summary span {
@@ -3074,6 +3191,7 @@ body:not(.public-registration-mode) .company-section .company-registration-panel
   .company-current,
   .company-logo-grid,
   .company-controls,
+  .company-communications-grid,
   .company-registration-controls,
   .communications-kpis,
   .communication-campaign-controls,

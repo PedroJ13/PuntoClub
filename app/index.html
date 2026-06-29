@@ -839,7 +839,7 @@
             type="button"
             data-section-target="communications"
           >
-            Comunicaciones
+            Enviar campañas
           </button>
           <button
             class="nav-button"
@@ -1603,6 +1603,44 @@
                 </button>
               </div>
 
+              <nav
+                class="section-tabs company-subnav"
+                aria-label="Secciones de Mi empresa"
+              >
+                <button
+                  class="section-tab active"
+                  type="button"
+                  data-company-subsection="profile"
+                  aria-selected="true"
+                >
+                  Perfil
+                </button>
+                <button
+                  class="section-tab"
+                  type="button"
+                  data-company-subsection="logo"
+                  aria-selected="false"
+                >
+                  Logo
+                </button>
+                <button
+                  class="section-tab"
+                  type="button"
+                  data-company-subsection="access"
+                  aria-selected="false"
+                >
+                  Acceso
+                </button>
+                <button
+                  class="section-tab"
+                  type="button"
+                  data-company-subsection="communications"
+                  aria-selected="false"
+                >
+                  Comunicaciones
+                </button>
+              </nav>
+
               <div id="company-status" class="success-message" hidden></div>
               <div id="company-error" class="form-error" hidden></div>
               <div id="company-empty" class="empty-state">
@@ -1610,7 +1648,7 @@
               </div>
 
               <form id="company-form" class="company-form" novalidate hidden>
-                <div class="company-current">
+                <div class="company-current" data-company-panel="profile">
                   <div>
                     <span>Estado del programa</span>
                     <strong id="company-current-status">No disponible</strong>
@@ -1627,6 +1665,7 @@
 
                 <section
                   class="company-logo-panel"
+                  data-company-panel="logo"
                   aria-labelledby="company-logo-title"
                 >
                   <div class="section-header compact-header">
@@ -1689,7 +1728,10 @@
                   </div>
                 </section>
 
-                <div class="field-grid company-controls">
+                <div
+                  class="field-grid company-controls"
+                  data-company-panel="profile"
+                >
                   <div class="field">
                     <label for="company-name">Nombre</label>
                     <input
@@ -1743,7 +1785,7 @@
                   </div>
                 </div>
 
-                <div class="company-future">
+                <div class="company-future" data-company-panel="profile">
                   <div>
                     <span>Acceso</span>
                     <strong
@@ -1753,7 +1795,7 @@
                   </div>
                 </div>
 
-                <div class="form-actions">
+                <div class="form-actions" data-company-panel="profile">
                   <button
                     class="secondary-button"
                     id="toggle-company-password-panel"
@@ -1777,6 +1819,7 @@
               <form
                 id="company-password-form"
                 class="company-form compact-auth-form company-password-form"
+                data-company-panel="access"
                 novalidate
                 hidden
               >
@@ -1905,6 +1948,53 @@
                   </button>
                 </div>
               </form>
+
+              <section
+                class="company-communications-panel compact-auth-form"
+                data-company-panel="communications"
+                aria-labelledby="company-communications-title"
+                hidden
+              >
+                <div class="section-header compact-header">
+                  <div>
+                    <h3 id="company-communications-title">Comunicaciones</h3>
+                    <p class="section-support">
+                      Configura correos y prepara campañas sin activar envíos
+                      reales.
+                    </p>
+                  </div>
+                </div>
+                <div class="company-communications-grid">
+                  <div>
+                    <span class="communication-state-pill">
+                      Operativos activos
+                    </span>
+                    <strong>Bienvenida, compra y canje</strong>
+                    <p>
+                      Los correos transaccionales siguen separados de las
+                      campañas promocionales.
+                    </p>
+                  </div>
+                  <div>
+                    <span class="communication-state-pill">
+                      Promociones pausadas
+                    </span>
+                    <strong>Envío real bloqueado</strong>
+                    <p>
+                      El envío real requiere dominio promocional, baja y cuotas.
+                    </p>
+                  </div>
+                </div>
+                <div class="form-actions">
+                  <button
+                    id="company-open-campaigns-button"
+                    type="button"
+                    data-icon="send"
+                  >
+                    Abrir Enviar campañas
+                  </button>
+                </div>
+              </section>
             </section>
 
             <div
@@ -3071,8 +3161,47 @@
               </div>
             </section>
 
+            <nav
+              class="section-tabs communications-subnav"
+              aria-label="Vistas de Comunicaciones"
+            >
+              <button
+                class="section-tab active"
+                type="button"
+                data-communication-view="send"
+                aria-selected="true"
+              >
+                Enviar campañas
+              </button>
+              <button
+                class="section-tab"
+                type="button"
+                data-communication-view="settings"
+                aria-selected="false"
+              >
+                Configuración
+              </button>
+              <button
+                class="section-tab"
+                type="button"
+                data-communication-view="customers"
+                aria-selected="false"
+              >
+                Clientes
+              </button>
+              <button
+                class="section-tab"
+                type="button"
+                data-communication-view="history"
+                aria-selected="false"
+              >
+                Historial
+              </button>
+            </nav>
+
             <section
               class="communications-settings-panel zone-card"
+              data-communication-panel="settings"
               aria-labelledby="communications-settings-title"
             >
               <div class="section-header">
@@ -3090,7 +3219,9 @@
                   <input type="checkbox" checked />
                   <span>
                     <strong>Bienvenida al registrar cliente</strong>
-                    <small>Enviar cuando se registre un cliente con correo.</small>
+                    <small
+                      >Enviar cuando se registre un cliente con correo.</small
+                    >
                   </span>
                 </label>
                 <label class="communication-switch">
@@ -3126,14 +3257,15 @@
 
             <section
               class="communications-campaign-panel zone-card"
+              data-communication-panel="send"
               aria-labelledby="communications-campaign-title"
             >
               <div class="section-header">
                 <div>
-                  <h2 id="communications-campaign-title">Campaña local</h2>
+                  <h2 id="communications-campaign-title">Enviar campañas</h2>
                   <p class="section-support">
-                    Borrador local para validar flujo, variables y preview sin
-                    enviar correos reales.
+                    Prepara una campaña local, revisa destinatarios y valida el
+                    preview antes de habilitar envíos reales.
                   </p>
                 </div>
               </div>
@@ -3196,11 +3328,7 @@
                   >
                     Previsualizar
                   </button>
-                  <button
-                    id="communication-send-button"
-                    type="button"
-                    disabled
-                  >
+                  <button id="communication-send-button" type="button" disabled>
                     Envío real bloqueado
                   </button>
                 </div>
@@ -3209,6 +3337,7 @@
 
             <section
               class="communications-preview-panel zone-card"
+              data-communication-panel="send"
               aria-labelledby="communications-preview-title"
             >
               <div class="section-header">
@@ -3233,6 +3362,7 @@
 
             <section
               class="communications-customers-panel zone-card"
+              data-communication-panel="customers"
               aria-labelledby="communications-customers-title"
             >
               <div class="section-header">
@@ -3281,6 +3411,7 @@
 
             <section
               class="communications-history-panel zone-card"
+              data-communication-panel="history"
               aria-labelledby="communications-history-title"
             >
               <div class="section-header">

@@ -151,6 +151,21 @@ const elements = {
   communicationHistoryBody: document.querySelector(
     "#communication-history-body",
   ),
+  companySubsectionButtons: [
+    ...document.querySelectorAll("[data-company-subsection]"),
+  ],
+  companySubsectionPanels: [
+    ...document.querySelectorAll("[data-company-panel]"),
+  ],
+  companyOpenCampaignsButton: document.querySelector(
+    "#company-open-campaigns-button",
+  ),
+  communicationViewButtons: [
+    ...document.querySelectorAll("[data-communication-view]"),
+  ],
+  communicationPanels: [
+    ...document.querySelectorAll("[data-communication-panel]"),
+  ],
   navButtons: [...document.querySelectorAll("[data-section-target]")],
   sectionPanels: [...document.querySelectorAll("[data-section]")],
   pointsNavButton: document.querySelector('[data-section-target="operations"]'),
@@ -903,6 +918,8 @@ let adminRequestLogoPreviewLoadId = 0;
 let pendingAdminConfirmation = null;
 let globalLoadingTimer = null;
 let activeCommunicationFilter = "subscribed";
+let activeCompanySubsection = "profile";
+let activeCommunicationView = "send";
 const customerBalances = new Map();
 const communicationPreviewCustomer = {
   name: "María Fernández",
@@ -1203,7 +1220,7 @@ elements.resetCompanyPasswordFormButton.addEventListener("click", () => {
 });
 
 elements.toggleCompanyPasswordPanelButton.addEventListener("click", () => {
-  toggleCompanyPasswordPanel();
+  setCompanySubsection("access");
 });
 
 elements.toggleCompanyCurrentPasswordButton.addEventListener("click", () => {
@@ -1517,6 +1534,23 @@ elements.communicationFilterButtons.forEach((button) => {
   });
 });
 
+elements.companySubsectionButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setCompanySubsection(button.dataset.companySubsection);
+  });
+});
+
+elements.companyOpenCampaignsButton.addEventListener("click", () => {
+  setActiveSection("communications");
+  setCommunicationView("send");
+});
+
+elements.communicationViewButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setCommunicationView(button.dataset.communicationView);
+  });
+});
+
 elements.navButtons.forEach((button) => {
   button.addEventListener("click", () => {
     if (
@@ -1532,6 +1566,8 @@ elements.navButtons.forEach((button) => {
 });
 
 setActiveSection(activeSection, { focus: false });
+setCompanySubsection(activeCompanySubsection, { focus: false });
+setCommunicationView(activeCommunicationView, { focus: false });
 renderSearchPrompt();
 resetOperation();
 renderReportPrompt();
@@ -1677,6 +1713,84 @@ function setActiveSection(section, options = {}) {
     }
 
     focusTarget.focus();
+  });
+}
+
+function setCompanySubsection(subsection, options = {}) {
+  const nextSubsection = [
+    "profile",
+    "logo",
+    "access",
+    "communications",
+  ].includes(subsection)
+    ? subsection
+    : "profile";
+  activeCompanySubsection = nextSubsection;
+
+  elements.companySubsectionButtons.forEach((button) => {
+    const isActive = button.dataset.companySubsection === nextSubsection;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+
+  elements.companySubsectionPanels.forEach((panel) => {
+    panel.hidden = panel.dataset.companyPanel !== nextSubsection;
+  });
+
+  if (nextSubsection === "access") {
+    setCompanyPasswordPanelVisible(true, {
+      focus: options.focus,
+      keepForm: true,
+    });
+  } else {
+    setCompanyPasswordPanelVisible(false, { focus: false, keepForm: true });
+  }
+
+  if (options.focus === false) {
+    return;
+  }
+
+  const focusTarget = {
+    profile: elements.companyNameInput,
+    logo: elements.companyLogoFileInput,
+    access: elements.companyCurrentPasswordInput,
+    communications: elements.companyOpenCampaignsButton,
+  }[nextSubsection];
+
+  window.requestAnimationFrame(() => {
+    focusTarget?.focus({ preventScroll: isCompactViewport() });
+  });
+}
+
+function setCommunicationView(view, options = {}) {
+  const nextView = ["send", "settings", "customers", "history"].includes(view)
+    ? view
+    : "send";
+  activeCommunicationView = nextView;
+
+  elements.communicationViewButtons.forEach((button) => {
+    const isActive = button.dataset.communicationView === nextView;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-selected", String(isActive));
+  });
+
+  elements.communicationPanels.forEach((panel) => {
+    panel.hidden = panel.dataset.communicationPanel !== nextView;
+  });
+
+  if (options.focus === false) {
+    return;
+  }
+
+  const focusTarget = {
+    send: elements.communicationCampaignNameInput,
+    settings: document.querySelector(".communications-settings-panel input"),
+    customers: elements.communicationFilterButtons[0],
+    history: document.querySelector(".communication-history-table"),
+  }[nextView];
+
+  window.requestAnimationFrame(() => {
+    focusTarget?.focus({ preventScroll: isCompactViewport() });
   });
 }
 
@@ -5244,6 +5358,9 @@ function mapMembershipBenefitUsageErrors(details = []) {
 function renderCompanyLoading() {
   elements.companyForm.hidden = true;
   elements.companyPasswordForm.hidden = true;
+  elements.companySubsectionPanels.forEach((panel) => {
+    panel.hidden = true;
+  });
   elements.companyEmpty.hidden = false;
   elements.companyEmpty.textContent = "Cargando configuración...";
 }
@@ -5251,7 +5368,7 @@ function renderCompanyLoading() {
 function renderCompanySettings(settings) {
   elements.companyEmpty.hidden = true;
   elements.companyForm.hidden = false;
-  setCompanyPasswordPanelVisible(false);
+  setCompanySubsection(activeCompanySubsection, { focus: false });
   elements.companyNameInput.value = settings.name ?? "";
   elements.companyEmailInput.value = settings.email ?? "";
   elements.companyPhoneInput.value = settings.phone ?? "";
@@ -7156,7 +7273,7 @@ function setCompanyPasswordPanelVisible(isVisible, options = {}) {
     clearCompanyPasswordForm();
   }
 
-  if (isVisible) {
+  if (isVisible && options.focus !== false) {
     window.requestAnimationFrame(() => {
       elements.companyCurrentPasswordInput.focus({
         preventScroll: isCompactViewport(),
