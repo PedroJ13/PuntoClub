@@ -160,6 +160,8 @@ const elements = {
   companyOpenCampaignsButton: document.querySelector(
     "#company-open-campaigns-button",
   ),
+  companyNavToggle: document.querySelector("#company-nav-toggle"),
+  companySubnav: document.querySelector("#company-side-subnav"),
   communicationViewButtons: [
     ...document.querySelectorAll("[data-communication-view]"),
   ],
@@ -1536,6 +1538,9 @@ elements.communicationFilterButtons.forEach((button) => {
 
 elements.companySubsectionButtons.forEach((button) => {
   button.addEventListener("click", () => {
+    if (activeSection !== "company") {
+      setActiveSection("company", { focus: false });
+    }
     setCompanySubsection(button.dataset.companySubsection);
   });
 });
@@ -1562,6 +1567,9 @@ elements.navButtons.forEach((button) => {
     }
 
     setActiveSection(button.dataset.sectionTarget);
+    if (button.dataset.sectionTarget === "company") {
+      setCompanySubsection("profile");
+    }
   });
 });
 
@@ -1669,6 +1677,7 @@ function setActiveSection(section, options = {}) {
     button.classList.toggle("is-active", isActive);
     button.setAttribute("aria-current", isActive ? "page" : "false");
   });
+  updateCompanySubnavState();
 
   if (
     (nextSection === "operations" || nextSection === "memberships") &&
@@ -1721,6 +1730,7 @@ function setCompanySubsection(subsection, options = {}) {
     "profile",
     "logo",
     "access",
+    "memberships",
     "communications",
   ].includes(subsection)
     ? subsection
@@ -1730,7 +1740,8 @@ function setCompanySubsection(subsection, options = {}) {
   elements.companySubsectionButtons.forEach((button) => {
     const isActive = button.dataset.companySubsection === nextSubsection;
     button.classList.toggle("active", isActive);
-    button.setAttribute("aria-selected", String(isActive));
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-current", isActive ? "page" : "false");
   });
 
   elements.companySubsectionPanels.forEach((panel) => {
@@ -1746,6 +1757,13 @@ function setCompanySubsection(subsection, options = {}) {
     setCompanyPasswordPanelVisible(false, { focus: false, keepForm: true });
   }
 
+  if (nextSubsection === "memberships" && isMembershipsEnabled()) {
+    if (membershipPlans.length === 0) {
+      loadMembershipPlans();
+    }
+    loadMembershipExpirationAlerts();
+  }
+
   if (options.focus === false) {
     return;
   }
@@ -1754,12 +1772,26 @@ function setCompanySubsection(subsection, options = {}) {
     profile: elements.companyNameInput,
     logo: elements.companyLogoFileInput,
     access: elements.companyCurrentPasswordInput,
+    memberships: elements.membershipConfigHost,
     communications: elements.companyOpenCampaignsButton,
   }[nextSubsection];
 
   window.requestAnimationFrame(() => {
     focusTarget?.focus({ preventScroll: isCompactViewport() });
   });
+}
+
+function updateCompanySubnavState() {
+  const isCompanyActive = activeSection === "company";
+  if (elements.companySubnav) {
+    elements.companySubnav.hidden = !isCompanyActive;
+  }
+  if (elements.companyNavToggle) {
+    elements.companyNavToggle.setAttribute(
+      "aria-expanded",
+      String(isCompanyActive),
+    );
+  }
 }
 
 function setCommunicationView(view, options = {}) {
@@ -4558,7 +4590,9 @@ function updateMembershipNavigation(settings) {
     ? Boolean(settings.loyaltyPointsEnabled)
     : true;
   elements.pointsNavButton.hidden = !pointsEnabled && !membershipsEnabled;
-  elements.membershipsNavButton.hidden = true;
+  if (elements.membershipsNavButton) {
+    elements.membershipsNavButton.hidden = true;
+  }
 
   if (!membershipsEnabled) {
     membershipPlans = [];

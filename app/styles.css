@@ -971,6 +971,45 @@ textarea:focus {
   box-shadow: inset 3px 0 0 var(--accent-action);
 }
 
+.side-nav-group {
+  display: grid;
+  gap: 6px;
+}
+
+.side-subnav {
+  display: grid;
+  gap: 4px;
+  padding-left: 10px;
+}
+
+.side-subnav[hidden] {
+  display: none;
+}
+
+.nav-subbutton {
+  width: 100%;
+  min-height: 34px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: rgba(248, 250, 252, 0.74);
+  font-size: 0.84rem;
+  text-align: left;
+}
+
+.nav-subbutton:hover,
+.nav-subbutton.is-active {
+  border-color: rgba(223, 247, 244, 0.22);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.nav-subbutton.is-active {
+  background: rgba(223, 247, 244, 0.16);
+  color: #ffffff;
+  box-shadow: inset 3px 0 0 var(--accent-action);
+}
+
 .workspace {
   min-width: 0;
 }

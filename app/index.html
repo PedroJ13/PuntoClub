@@ -812,21 +812,65 @@
           >
             Atender cliente
           </button>
-          <button
-            class="nav-button"
-            type="button"
-            data-section-target="company"
-          >
-            Mi empresa
-          </button>
-          <button
-            class="nav-button"
-            type="button"
-            data-section-target="memberships"
-            hidden
-          >
-            Membresías
-          </button>
+          <div class="side-nav-group">
+            <button
+              class="nav-button"
+              id="company-nav-toggle"
+              type="button"
+              data-section-target="company"
+              aria-controls="company-side-subnav"
+              aria-expanded="false"
+            >
+              Mi empresa
+            </button>
+            <div
+              class="side-subnav"
+              id="company-side-subnav"
+              aria-label="Secciones de Mi empresa"
+              hidden
+            >
+              <button
+                class="nav-subbutton is-active"
+                type="button"
+                data-company-subsection="profile"
+                aria-current="page"
+              >
+                Perfil
+              </button>
+              <button
+                class="nav-subbutton"
+                type="button"
+                data-company-subsection="logo"
+                aria-current="false"
+              >
+                Logo
+              </button>
+              <button
+                class="nav-subbutton"
+                type="button"
+                data-company-subsection="access"
+                aria-current="false"
+              >
+                Acceso
+              </button>
+              <button
+                class="nav-subbutton"
+                type="button"
+                data-company-subsection="memberships"
+                aria-current="false"
+              >
+                Membresías
+              </button>
+              <button
+                class="nav-subbutton"
+                type="button"
+                data-company-subsection="communications"
+                aria-current="false"
+              >
+                Comunicaciones
+              </button>
+            </div>
+          </div>
           <button
             class="nav-button"
             type="button"
@@ -1603,44 +1647,6 @@
                 </button>
               </div>
 
-              <nav
-                class="section-tabs company-subnav"
-                aria-label="Secciones de Mi empresa"
-              >
-                <button
-                  class="section-tab active"
-                  type="button"
-                  data-company-subsection="profile"
-                  aria-selected="true"
-                >
-                  Perfil
-                </button>
-                <button
-                  class="section-tab"
-                  type="button"
-                  data-company-subsection="logo"
-                  aria-selected="false"
-                >
-                  Logo
-                </button>
-                <button
-                  class="section-tab"
-                  type="button"
-                  data-company-subsection="access"
-                  aria-selected="false"
-                >
-                  Acceso
-                </button>
-                <button
-                  class="section-tab"
-                  type="button"
-                  data-company-subsection="communications"
-                  aria-selected="false"
-                >
-                  Comunicaciones
-                </button>
-              </nav>
-
               <div id="company-status" class="success-message" hidden></div>
               <div id="company-error" class="form-error" hidden></div>
               <div id="company-empty" class="empty-state">
@@ -1995,12 +2001,25 @@
                   </button>
                 </div>
               </section>
-            </section>
 
-            <div
-              id="membership-config-host"
-              class="membership-config-host"
-            ></div>
+              <section
+                id="membership-config-host"
+                class="membership-config-host"
+                data-company-panel="memberships"
+                aria-labelledby="company-memberships-title"
+                hidden
+              >
+                <div class="section-header compact-header">
+                  <div>
+                    <h3 id="company-memberships-title">Membresías</h3>
+                    <p class="section-support">
+                      Configura planes y beneficios como una vista propia de Mi
+                      empresa.
+                    </p>
+                  </div>
+                </div>
+              </section>
+            </section>
           </section>
 
           <section
