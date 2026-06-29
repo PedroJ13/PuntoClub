@@ -29,7 +29,9 @@ let mockBalances = new Map(
     },
   ]),
 );
-let mockActivity = new Map(initialCustomers.map((customer) => [String(customer.id), []]));
+let mockActivity = new Map(
+  initialCustomers.map((customer) => [String(customer.id), []]),
+);
 let mockAuditEvents = [];
 let mockInvoices = new Set();
 let mockCompanySettings = {
@@ -43,6 +45,14 @@ let mockCompanySettings = {
   loyaltyMembershipsEnabled: true,
   status: "active",
   updatedAt: "2026-06-02T15:20:00Z",
+};
+let mockOperationalEmailSettings = {
+  companyId: "1",
+  welcomeEnabled: true,
+  purchaseEnabled: true,
+  redemptionEnabled: true,
+  replyToEmail: "hola@cafecentral.test",
+  updatedAt: "2026-06-29T10:00:00Z",
 };
 let mockMembershipPlans = [
   {
@@ -197,10 +207,9 @@ let nextCustomerMembershipId = 901;
 let nextMembershipBenefitUsageId = 1001;
 let nextMembershipTransactionId = 1101;
 const mockCompanyRegistrationLogoPng = [
-  137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82,
-  0, 0, 0, 1, 0, 0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196,
-  137, 0, 0, 0, 13, 73, 68, 65, 84, 120, 156, 99, 96, 248, 207,
-  192, 0, 0, 3, 1, 1, 0, 24, 221, 141, 181, 0, 0, 0, 0,
+  137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0,
+  0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137, 0, 0, 0, 13, 73, 68, 65, 84, 120,
+  156, 99, 96, 248, 207, 192, 0, 0, 3, 1, 1, 0, 24, 221, 141, 181, 0, 0, 0, 0,
   73, 69, 78, 68, 174, 66, 96, 130,
 ];
 
@@ -223,23 +232,43 @@ export function createCustomerApi(config) {
 
 function createHttpCustomerApi(config) {
   let activeCompanyId = normalizeCompanyId(config.companyId);
-  const companyRegistrationRequestsUrl = buildApiUrl(config, "/api/company-registration-requests");
-  const companyInvitationsValidateUrl = buildApiUrl(config, "/api/company-invitations/validate");
-  const companyInvitationsAcceptUrl = buildApiUrl(config, "/api/company-invitations/accept");
-  const companyPasswordResetsUrl = buildApiUrl(config, "/api/company-password-resets");
+  const companyRegistrationRequestsUrl = buildApiUrl(
+    config,
+    "/api/company-registration-requests",
+  );
+  const companyInvitationsValidateUrl = buildApiUrl(
+    config,
+    "/api/company-invitations/validate",
+  );
+  const companyInvitationsAcceptUrl = buildApiUrl(
+    config,
+    "/api/company-invitations/accept",
+  );
+  const companyPasswordResetsUrl = buildApiUrl(
+    config,
+    "/api/company-password-resets",
+  );
   const companyAuthLoginUrl = buildApiUrl(config, "/api/company-auth/login");
   const companyAuthLogoutUrl = buildApiUrl(config, "/api/company-auth/logout");
-  const companyAuthPasswordUrl = buildApiUrl(config, "/api/company-auth/password");
+  const companyAuthPasswordUrl = buildApiUrl(
+    config,
+    "/api/company-auth/password",
+  );
   const companyLogoUrl = buildApiUrl(config, "/api/my-company/logo");
   const meUrl = buildApiUrl(config, "/api/me");
-  const getActiveCompanyId = () => activeCompanyId || normalizeCompanyId(config.companyId);
+  const getActiveCompanyId = () =>
+    activeCompanyId || normalizeCompanyId(config.companyId);
   const buildCompanyUrl = (path) =>
-    buildApiUrl(config, `/api/companies/${encodeURIComponent(getActiveCompanyId())}${path}`);
+    buildApiUrl(
+      config,
+      `/api/companies/${encodeURIComponent(getActiveCompanyId())}${path}`,
+    );
 
   return {
     sourceLabel: "Datos reales",
     setActiveCompanyId(companyId) {
-      activeCompanyId = normalizeCompanyId(companyId) || normalizeCompanyId(config.companyId);
+      activeCompanyId =
+        normalizeCompanyId(companyId) || normalizeCompanyId(config.companyId);
     },
     getActiveCompanyId() {
       return getActiveCompanyId();
@@ -292,7 +321,10 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async validateCompanyInvitation(token) {
-      const url = new URL(companyInvitationsValidateUrl, window.location.origin);
+      const url = new URL(
+        companyInvitationsValidateUrl,
+        window.location.origin,
+      );
       url.searchParams.set("token", token);
       const response = await fetch(url);
       return parseResponse(response);
@@ -310,7 +342,10 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async validateCompanyPasswordReset(token) {
-      const url = new URL(`${companyPasswordResetsUrl}/validate`, window.location.origin);
+      const url = new URL(
+        `${companyPasswordResetsUrl}/validate`,
+        window.location.origin,
+      );
       url.searchParams.set("token", token);
       const response = await fetch(url);
       return parseResponse(response);
@@ -337,6 +372,28 @@ function createHttpCustomerApi(config) {
         credentials: "include",
         body: JSON.stringify(payload),
       });
+
+      return parseResponse(response);
+    },
+    async getOperationalEmailSettings() {
+      const response = await fetch(
+        buildCompanyUrl("/operational-email-settings"),
+        {
+          credentials: "include",
+        },
+      );
+      return parseResponse(response);
+    },
+    async updateOperationalEmailSettings(payload) {
+      const response = await fetch(
+        buildCompanyUrl("/operational-email-settings"),
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
 
       return parseResponse(response);
     },
@@ -376,7 +433,10 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async listCompanyRegistrationRequests(filters, adminToken) {
-      const url = new URL(companyRegistrationRequestsUrl, window.location.origin);
+      const url = new URL(
+        companyRegistrationRequestsUrl,
+        window.location.origin,
+      );
       url.searchParams.set("status", filters.status || "pending");
       url.searchParams.set("limit", filters.limit || "25");
       const response = await fetch(url, {
@@ -386,38 +446,50 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async getCompanyRegistrationRequestLogo(requestId, adminToken) {
-      const response = await fetch(`${companyRegistrationRequestsUrl}/${encodeURIComponent(requestId)}/logo`, {
-        headers: buildAdminHeaders(adminToken),
-      });
+      const response = await fetch(
+        `${companyRegistrationRequestsUrl}/${encodeURIComponent(requestId)}/logo`,
+        {
+          headers: buildAdminHeaders(adminToken),
+        },
+      );
 
       return parseBlobResponse(response);
     },
     async approveCompanyRegistrationRequest(requestId, payload, adminToken) {
-      const response = await fetch(`${companyRegistrationRequestsUrl}/${encodeURIComponent(requestId)}/approve`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...buildAdminHeaders(adminToken),
+      const response = await fetch(
+        `${companyRegistrationRequestsUrl}/${encodeURIComponent(requestId)}/approve`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...buildAdminHeaders(adminToken),
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
 
       return parseResponse(response);
     },
     async rejectCompanyRegistrationRequest(requestId, payload, adminToken) {
-      const response = await fetch(`${companyRegistrationRequestsUrl}/${encodeURIComponent(requestId)}/reject`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...buildAdminHeaders(adminToken),
+      const response = await fetch(
+        `${companyRegistrationRequestsUrl}/${encodeURIComponent(requestId)}/reject`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...buildAdminHeaders(adminToken),
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
 
       return parseResponse(response);
     },
     async resendCompanyInvitation(invitationId, adminToken) {
-      const url = buildApiUrl(config, `/api/company-invitations/${encodeURIComponent(invitationId)}/resend`);
+      const url = buildApiUrl(
+        config,
+        `/api/company-invitations/${encodeURIComponent(invitationId)}/resend`,
+      );
       const response = await fetch(url, {
         method: "POST",
         headers: buildAdminHeaders(adminToken),
@@ -426,7 +498,10 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async searchCustomers(search) {
-      const url = new URL(buildCompanyUrl("/customers"), window.location.origin);
+      const url = new URL(
+        buildCompanyUrl("/customers"),
+        window.location.origin,
+      );
       if (search) {
         url.searchParams.set("search", search);
       }
@@ -461,7 +536,10 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async getActivityReport(filters) {
-      const url = new URL(buildCompanyUrl("/reports/activity"), window.location.origin);
+      const url = new URL(
+        buildCompanyUrl("/reports/activity"),
+        window.location.origin,
+      );
       url.searchParams.set("from", filters.from);
       url.searchParams.set("to", filters.to);
       url.searchParams.set("type", filters.type || "all");
@@ -471,7 +549,10 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async getMembershipFinancialReport(filters) {
-      const url = new URL(buildApiUrl(config, "/api/reports/memberships-financial"), window.location.origin);
+      const url = new URL(
+        buildApiUrl(config, "/api/reports/memberships-financial"),
+        window.location.origin,
+      );
       url.searchParams.set("from", filters.from);
       url.searchParams.set("to", filters.to);
       const response = await fetch(url, {
@@ -480,7 +561,10 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async getCustomerReport(filters) {
-      const url = new URL(buildCompanyUrl("/reports/customer"), window.location.origin);
+      const url = new URL(
+        buildCompanyUrl("/reports/customer"),
+        window.location.origin,
+      );
       url.searchParams.set("search", filters.search);
       url.searchParams.set("from", filters.from);
       url.searchParams.set("to", filters.to);
@@ -491,7 +575,10 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async getAuditEvents(filters) {
-      const url = new URL(buildCompanyUrl("/audit/events"), window.location.origin);
+      const url = new URL(
+        buildCompanyUrl("/audit/events"),
+        window.location.origin,
+      );
       url.searchParams.set("from", filters.from);
       url.searchParams.set("to", filters.to);
       url.searchParams.set("limit", filters.limit || "25");
@@ -501,7 +588,10 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async listMembershipPlans(filters = {}) {
-      const url = new URL(buildApiUrl(config, "/api/membership-plans"), window.location.origin);
+      const url = new URL(
+        buildApiUrl(config, "/api/membership-plans"),
+        window.location.origin,
+      );
       url.searchParams.set("status", filters.status || "all");
       const response = await fetch(url, {
         credentials: "include",
@@ -509,40 +599,64 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async createMembershipPlan(payload) {
-      const response = await fetch(buildApiUrl(config, "/api/membership-plans"), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        buildApiUrl(config, "/api/membership-plans"),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
       return parseResponse(response);
     },
     async updateMembershipPlan(planId, payload) {
-      const response = await fetch(buildApiUrl(config, `/api/membership-plans/${encodeURIComponent(planId)}`), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        buildApiUrl(
+          config,
+          `/api/membership-plans/${encodeURIComponent(planId)}`,
+        ),
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
       return parseResponse(response);
     },
     async activateMembershipPlan(planId) {
-      const response = await fetch(buildApiUrl(config, `/api/membership-plans/${encodeURIComponent(planId)}/activate`), {
-        method: "POST",
-        credentials: "include",
-      });
+      const response = await fetch(
+        buildApiUrl(
+          config,
+          `/api/membership-plans/${encodeURIComponent(planId)}/activate`,
+        ),
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
       return parseResponse(response);
     },
     async deactivateMembershipPlan(planId) {
-      const response = await fetch(buildApiUrl(config, `/api/membership-plans/${encodeURIComponent(planId)}/deactivate`), {
-        method: "POST",
-        credentials: "include",
-      });
+      const response = await fetch(
+        buildApiUrl(
+          config,
+          `/api/membership-plans/${encodeURIComponent(planId)}/deactivate`,
+        ),
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
       return parseResponse(response);
     },
     async listMembershipBenefits(planId, filters = {}) {
       const url = new URL(
-        buildApiUrl(config, `/api/membership-plans/${encodeURIComponent(planId)}/benefits`),
+        buildApiUrl(
+          config,
+          `/api/membership-plans/${encodeURIComponent(planId)}/benefits`,
+        ),
         window.location.origin,
       );
       url.searchParams.set("status", filters.status || "all");
@@ -552,30 +666,48 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async createMembershipBenefit(planId, payload) {
-      const response = await fetch(buildApiUrl(config, `/api/membership-plans/${encodeURIComponent(planId)}/benefits`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        buildApiUrl(
+          config,
+          `/api/membership-plans/${encodeURIComponent(planId)}/benefits`,
+        ),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
       return parseResponse(response);
     },
     async updateMembershipBenefit(benefitId, payload) {
-      const response = await fetch(buildApiUrl(config, `/api/membership-benefits/${encodeURIComponent(benefitId)}`), {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        buildApiUrl(
+          config,
+          `/api/membership-benefits/${encodeURIComponent(benefitId)}`,
+        ),
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
       return parseResponse(response);
     },
     async createCustomerMembership(customerId, payload) {
-      const response = await fetch(buildApiUrl(config, `/api/customers/${encodeURIComponent(customerId)}/memberships`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        buildApiUrl(
+          config,
+          `/api/customers/${encodeURIComponent(customerId)}/memberships`,
+        ),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
       return parseResponse(response);
     },
     async renewCustomerMembership(customerId, customerMembershipId, payload) {
@@ -595,7 +727,10 @@ function createHttpCustomerApi(config) {
     },
     async listCustomerMemberships(customerId, filters = {}) {
       const url = new URL(
-        buildApiUrl(config, `/api/customers/${encodeURIComponent(customerId)}/memberships`),
+        buildApiUrl(
+          config,
+          `/api/customers/${encodeURIComponent(customerId)}/memberships`,
+        ),
         window.location.origin,
       );
       url.searchParams.set("status", filters.status || "all");
@@ -606,7 +741,10 @@ function createHttpCustomerApi(config) {
     },
     async listMembershipTransactions(customerId, filters = {}) {
       const url = new URL(
-        buildApiUrl(config, `/api/customers/${encodeURIComponent(customerId)}/membership-transactions`),
+        buildApiUrl(
+          config,
+          `/api/customers/${encodeURIComponent(customerId)}/membership-transactions`,
+        ),
         window.location.origin,
       );
       url.searchParams.set("from", filters.from);
@@ -617,7 +755,10 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async listMembershipExpirationAlerts(filters = {}) {
-      const url = new URL(buildApiUrl(config, "/api/memberships/expiration-alerts"), window.location.origin);
+      const url = new URL(
+        buildApiUrl(config, "/api/memberships/expiration-alerts"),
+        window.location.origin,
+      );
       url.searchParams.set("status", filters.status || "active");
       url.searchParams.set("withinDays", filters.withinDays || "5");
       const response = await fetch(url, {
@@ -626,17 +767,26 @@ function createHttpCustomerApi(config) {
       return parseResponse(response);
     },
     async createMembershipBenefitUsage(customerId, payload) {
-      const response = await fetch(buildApiUrl(config, `/api/customers/${encodeURIComponent(customerId)}/membership-benefit-usages`), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        buildApiUrl(
+          config,
+          `/api/customers/${encodeURIComponent(customerId)}/membership-benefit-usages`,
+        ),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
       return parseResponse(response);
     },
     async listMembershipBenefitUsages(customerId, filters = {}) {
       const url = new URL(
-        buildApiUrl(config, `/api/customers/${encodeURIComponent(customerId)}/membership-benefit-usages`),
+        buildApiUrl(
+          config,
+          `/api/customers/${encodeURIComponent(customerId)}/membership-benefit-usages`,
+        ),
         window.location.origin,
       );
       url.searchParams.set("from", filters.from);
@@ -744,7 +894,10 @@ function createMockCustomerApi() {
 
       const nextSettings = normalizeCompanySettingsPayload(payload);
       const changedFields = Object.entries(nextSettings)
-        .filter(([field, value]) => String(mockCompanySettings[field] ?? "") !== String(value ?? ""))
+        .filter(
+          ([field, value]) =>
+            String(mockCompanySettings[field] ?? "") !== String(value ?? ""),
+        )
         .map(([field]) => field);
 
       if (changedFields.length > 0) {
@@ -762,6 +915,21 @@ function createMockCustomerApi() {
       }
 
       return { ...mockCompanySettings };
+    },
+    async getOperationalEmailSettings() {
+      await wait(250);
+      return { ...mockOperationalEmailSettings };
+    },
+    async updateOperationalEmailSettings(payload) {
+      await wait(350);
+      validateOperationalEmailSettings(payload);
+      mockOperationalEmailSettings = {
+        ...mockOperationalEmailSettings,
+        ...payload,
+        replyToEmail: payload.replyToEmail || null,
+        updatedAt: new Date().toISOString(),
+      };
+      return { ...mockOperationalEmailSettings };
     },
     async uploadCompanyLogo(file) {
       await wait(450);
@@ -797,7 +965,9 @@ function createMockCustomerApi() {
         ? { available: true, contentType: payload.logoFile.type || null }
         : { available: false, contentType: null };
 
-      if (normalize(request.companyEmail) === normalize(mockCompanySettings.email)) {
+      if (
+        normalize(request.companyEmail) === normalize(mockCompanySettings.email)
+      ) {
         throw new ApiError(
           "COMPANY_ALREADY_EXISTS",
           "Ya existe una empresa registrada con ese correo.",
@@ -840,7 +1010,10 @@ function createMockCustomerApi() {
       };
 
       nextCompanyRegistrationRequestId += 1;
-      mockCompanyRegistrationRequests = [result, ...mockCompanyRegistrationRequests];
+      mockCompanyRegistrationRequests = [
+        result,
+        ...mockCompanyRegistrationRequests,
+      ];
       recordMockAuditEvent({
         eventType: "company.registration.submitted",
         entityType: "company_registration_request",
@@ -854,10 +1027,20 @@ function createMockCustomerApi() {
       validateMockAdminToken(adminToken);
       const status = filters.status || "pending";
       const limit = Number(filters.limit || 25);
-      const allowedStatuses = new Set(["pending", "approved", "rejected", "cancelled", "all"]);
+      const allowedStatuses = new Set([
+        "pending",
+        "approved",
+        "rejected",
+        "cancelled",
+        "all",
+      ]);
 
       if (!allowedStatuses.has(status) || ![10, 25, 50].includes(limit)) {
-        throw new ApiError("VALIDATION_ERROR", "Revisa los filtros antes de continuar.", []);
+        throw new ApiError(
+          "VALIDATION_ERROR",
+          "Revisa los filtros antes de continuar.",
+          [],
+        );
       }
 
       const items = mockCompanyRegistrationRequests
@@ -870,14 +1053,22 @@ function createMockCustomerApi() {
     async getCompanyRegistrationRequestLogo(requestId, adminToken) {
       await wait(250);
       validateMockAdminToken(adminToken);
-      const request = mockCompanyRegistrationRequests.find((item) => String(item.id) === String(requestId));
+      const request = mockCompanyRegistrationRequests.find(
+        (item) => String(item.id) === String(requestId),
+      );
 
       if (!request) {
-        throw new ApiError("COMPANY_REGISTRATION_REQUEST_NOT_FOUND", "Solicitud no encontrada.");
+        throw new ApiError(
+          "COMPANY_REGISTRATION_REQUEST_NOT_FOUND",
+          "Solicitud no encontrada.",
+        );
       }
 
       if (!request.requestedLogo?.available) {
-        throw new ApiError("COMPANY_REGISTRATION_LOGO_NOT_FOUND", "Logo no disponible.");
+        throw new ApiError(
+          "COMPANY_REGISTRATION_LOGO_NOT_FOUND",
+          "Logo no disponible.",
+        );
       }
 
       return createMockCompanyRegistrationLogoBlob();
@@ -956,11 +1147,17 @@ function createMockCustomerApi() {
       const invitation = request?.invitation;
 
       if (!invitation) {
-        throw new ApiError("INVITATION_NOT_FOUND", "La invitacion no esta disponible.");
+        throw new ApiError(
+          "INVITATION_NOT_FOUND",
+          "La invitacion no esta disponible.",
+        );
       }
 
       if (invitation.status === "accepted") {
-        throw new ApiError("INVITATION_ALREADY_ACCEPTED", "La invitacion ya fue aceptada.");
+        throw new ApiError(
+          "INVITATION_ALREADY_ACCEPTED",
+          "La invitacion ya fue aceptada.",
+        );
       }
 
       if (invitation.status !== "pending") {
@@ -983,7 +1180,10 @@ function createMockCustomerApi() {
       await wait(450);
 
       if (search.trim().toLowerCase() === "error") {
-        throw new ApiError("INTERNAL_ERROR", "No pudimos consultar clientes. Intenta de nuevo.");
+        throw new ApiError(
+          "INTERNAL_ERROR",
+          "No pudimos consultar clientes. Intenta de nuevo.",
+        );
       }
 
       const normalizedSearch = normalize(search);
@@ -1006,13 +1206,16 @@ function createMockCustomerApi() {
       );
       const emailExists =
         payload.email &&
-        mockCustomers.some((customer) => normalize(customer.email) === normalize(payload.email));
+        mockCustomers.some(
+          (customer) => normalize(customer.email) === normalize(payload.email),
+        );
 
       if (phoneExists || emailExists) {
         const existingCustomer = mockCustomers.find(
           (customer) =>
             normalize(customer.phone) === normalize(payload.phone) ||
-            (payload.email && normalize(customer.email) === normalize(payload.email)),
+            (payload.email &&
+              normalize(customer.email) === normalize(payload.email)),
         );
         recordMockAuditEvent({
           eventType: "customer.rejected_duplicate",
@@ -1068,7 +1271,9 @@ function createMockCustomerApi() {
       await wait(450);
       validatePurchase(payload);
 
-      const customer = mockCustomers.find((item) => String(item.id) === String(payload.customerId));
+      const customer = mockCustomers.find(
+        (item) => String(item.id) === String(payload.customerId),
+      );
 
       if (!customer) {
         throw new ApiError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.");
@@ -1081,12 +1286,17 @@ function createMockCustomerApi() {
           customer,
           summary: `Compra rechazada por factura duplicada ${payload.invoiceNumber.trim()}.`,
         });
-        throw new ApiError("DUPLICATE_INVOICE", "La factura ya existe para esta empresa.");
+        throw new ApiError(
+          "DUPLICATE_INVOICE",
+          "La factura ya existe para esta empresa.",
+        );
       }
 
       mockInvoices.add(normalize(payload.invoiceNumber));
       const amount = Number(payload.amount);
-      const pointsEarned = Math.round(amount * (Number(mockCompanySettings.pointsPercentage) / 100));
+      const pointsEarned = Math.round(
+        amount * (Number(mockCompanySettings.pointsPercentage) / 100),
+      );
       const currentBalance = mockBalances.get(String(customer.id));
       const balance = {
         customerId: String(customer.id),
@@ -1130,7 +1340,9 @@ function createMockCustomerApi() {
       await wait(450);
       validateRedemption(payload);
 
-      const customer = mockCustomers.find((item) => String(item.id) === String(payload.customerId));
+      const customer = mockCustomers.find(
+        (item) => String(item.id) === String(payload.customerId),
+      );
 
       if (!customer) {
         throw new ApiError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.");
@@ -1146,7 +1358,10 @@ function createMockCustomerApi() {
           customer,
           summary: `Canje rechazado por saldo insuficiente. Solicitud ${pointsRedeemed} pts.`,
         });
-        throw new ApiError("INSUFFICIENT_POINTS", "El cliente no tiene puntos suficientes.");
+        throw new ApiError(
+          "INSUFFICIENT_POINTS",
+          "El cliente no tiene puntos suficientes.",
+        );
       }
 
       const balance = {
@@ -1233,8 +1448,14 @@ function createMockCustomerApi() {
       await wait(300);
       validateMembershipFinancialReportFilters(filters);
       const items = mockMembershipTransactions
-        .filter((transaction) => transaction.transactionDate >= filters.from && transaction.transactionDate <= filters.to)
-        .filter((transaction) => ["new_membership", "renewal"].includes(transaction.transactionType))
+        .filter(
+          (transaction) =>
+            transaction.transactionDate >= filters.from &&
+            transaction.transactionDate <= filters.to,
+        )
+        .filter((transaction) =>
+          ["new_membership", "renewal"].includes(transaction.transactionType),
+        )
         .map((transaction) => ({
           ...cloneMembershipTransaction(transaction),
           customerName: findMockCustomer(transaction.customerId).name,
@@ -1297,8 +1518,13 @@ function createMockCustomerApi() {
 
       const limit = Number(filters.limit || 25);
       const items = mockAuditEvents
-        .filter((event) => !filters.from || event.occurredAt.slice(0, 10) >= filters.from)
-        .filter((event) => !filters.to || event.occurredAt.slice(0, 10) <= filters.to)
+        .filter(
+          (event) =>
+            !filters.from || event.occurredAt.slice(0, 10) >= filters.from,
+        )
+        .filter(
+          (event) => !filters.to || event.occurredAt.slice(0, 10) <= filters.to,
+        )
         .slice(0, limit);
 
       return {
@@ -1426,19 +1652,32 @@ function createMockCustomerApi() {
       validateMembershipActivation(payload);
 
       if (plan.status !== "active") {
-        throw new ApiError("MEMBERSHIP_PLAN_INACTIVE", "Este plan esta inactivo.");
+        throw new ApiError(
+          "MEMBERSHIP_PLAN_INACTIVE",
+          "Este plan esta inactivo.",
+        );
       }
 
-      if (mockCustomerMemberships.some((membership) => String(membership.customerId) === String(customer.id) && membership.status === "active")) {
-        throw new ApiError("CUSTOMER_ALREADY_HAS_ACTIVE_MEMBERSHIP", "El cliente ya tiene una membresia activa.");
+      if (
+        mockCustomerMemberships.some(
+          (membership) =>
+            String(membership.customerId) === String(customer.id) &&
+            membership.status === "active",
+        )
+      ) {
+        throw new ApiError(
+          "CUSTOMER_ALREADY_HAS_ACTIVE_MEMBERSHIP",
+          "El cliente ya tiene una membresia activa.",
+        );
       }
 
       const startDate = payload.startDate;
       const endDate = calculateMembershipEndDate(startDate, plan.durationDays);
       const now = new Date().toISOString();
-      const pricePaid = payload.amount === "" || payload.amount == null
-        ? Number(payload.pricePaid)
-        : Number(payload.amount);
+      const pricePaid =
+        payload.amount === "" || payload.amount == null
+          ? Number(payload.pricePaid)
+          : Number(payload.amount);
       const membership = {
         id: String(nextCustomerMembershipId),
         companyId: mockCompanySettings.id,
@@ -1451,7 +1690,10 @@ function createMockCustomerApi() {
         endDate,
         status: "active",
         pricePaid,
-        expirationAlert: calculateExpirationAlert(endDate, plan.renewalNoticeDays),
+        expirationAlert: calculateExpirationAlert(
+          endDate,
+          plan.renewalNoticeDays,
+        ),
         createdAt: now,
         cancelledAt: null,
         cancelledByLabel: null,
@@ -1497,29 +1739,46 @@ function createMockCustomerApi() {
       const customer = findMockCustomer(customerId);
       validateMembershipRenewal(payload);
       const membership = mockCustomerMemberships.find(
-        (item) => String(item.id) === String(customerMembershipId) && String(item.customerId) === String(customer.id),
+        (item) =>
+          String(item.id) === String(customerMembershipId) &&
+          String(item.customerId) === String(customer.id),
       );
 
       if (!membership) {
-        throw new ApiError("CUSTOMER_MEMBERSHIP_NOT_FOUND", "Membresia no encontrada.");
+        throw new ApiError(
+          "CUSTOMER_MEMBERSHIP_NOT_FOUND",
+          "Membresia no encontrada.",
+        );
       }
       if (membership.status === "cancelled") {
-        throw new ApiError("CUSTOMER_MEMBERSHIP_CANCELLED", "La membresia esta cancelada.");
+        throw new ApiError(
+          "CUSTOMER_MEMBERSHIP_CANCELLED",
+          "La membresia esta cancelada.",
+        );
       }
 
-      const plan = findMockMembershipPlan(membership.planId || membership.membershipPlanId);
+      const plan = findMockMembershipPlan(
+        membership.planId || membership.membershipPlanId,
+      );
       const transactionDate = getToday();
-      const nextStartDate = membership.status === "active" && membership.endDate >= transactionDate
-        ? addDaysIso(membership.endDate, 1)
-        : transactionDate;
-      const nextEndDate = calculateMembershipEndDate(nextStartDate, plan.durationDays);
+      const nextStartDate =
+        membership.status === "active" && membership.endDate >= transactionDate
+          ? addDaysIso(membership.endDate, 1)
+          : transactionDate;
+      const nextEndDate = calculateMembershipEndDate(
+        nextStartDate,
+        plan.durationDays,
+      );
       const amount = Number(payload.amount);
 
       Object.assign(membership, {
         endDate: nextEndDate,
         status: "active",
         pricePaid: amount,
-        expirationAlert: calculateExpirationAlert(nextEndDate, plan.renewalNoticeDays),
+        expirationAlert: calculateExpirationAlert(
+          nextEndDate,
+          plan.renewalNoticeDays,
+        ),
       });
 
       const transaction = createMockMembershipTransaction({
@@ -1565,8 +1824,13 @@ function createMockCustomerApi() {
         customerId: String(customerId),
         status,
         items: mockCustomerMemberships
-          .filter((membership) => String(membership.customerId) === String(customerId))
-          .filter((membership) => status === "all" || membership.status === status)
+          .filter(
+            (membership) =>
+              String(membership.customerId) === String(customerId),
+          )
+          .filter(
+            (membership) => status === "all" || membership.status === status,
+          )
           .map(cloneCustomerMembership),
       };
     },
@@ -1579,8 +1843,15 @@ function createMockCustomerApi() {
         from: filters.from,
         to: filters.to,
         items: mockMembershipTransactions
-          .filter((transaction) => String(transaction.customerId) === String(customerId))
-          .filter((transaction) => transaction.transactionDate >= filters.from && transaction.transactionDate <= filters.to)
+          .filter(
+            (transaction) =>
+              String(transaction.customerId) === String(customerId),
+          )
+          .filter(
+            (transaction) =>
+              transaction.transactionDate >= filters.from &&
+              transaction.transactionDate <= filters.to,
+          )
           .map(cloneMembershipTransaction),
       };
     },
@@ -1595,10 +1866,15 @@ function createMockCustomerApi() {
         items: mockCustomerMemberships
           .filter((membership) => {
             if (status === "active") {
-              return membership.status === "active" && membership.endDate >= today;
+              return (
+                membership.status === "active" && membership.endDate >= today
+              );
             }
             if (status === "expired") {
-              return membership.status === "expired" || (membership.status === "active" && membership.endDate < today);
+              return (
+                membership.status === "expired" ||
+                (membership.status === "active" && membership.endDate < today)
+              );
             }
             return membership.status === status;
           })
@@ -1618,31 +1894,53 @@ function createMockCustomerApi() {
             status: membership.status,
             ...calculateExpirationAlert(membership.endDate, withinDays),
           }))
-          .filter((item) => status !== "active" || item.daysUntilExpiration <= withinDays),
+          .filter(
+            (item) =>
+              status !== "active" || item.daysUntilExpiration <= withinDays,
+          ),
       };
     },
     async createMembershipBenefitUsage(customerId, payload) {
       await wait(350);
       const customer = findMockCustomer(customerId);
       const activeMembership = mockCustomerMemberships.find(
-        (membership) => String(membership.customerId) === String(customer.id) && membership.status === "active",
+        (membership) =>
+          String(membership.customerId) === String(customer.id) &&
+          membership.status === "active",
       );
 
       if (!activeMembership) {
-        throw new ApiError("CUSTOMER_MEMBERSHIP_NOT_ACTIVE", "El cliente no tiene membresia activa.");
+        throw new ApiError(
+          "CUSTOMER_MEMBERSHIP_NOT_ACTIVE",
+          "El cliente no tiene membresia activa.",
+        );
       }
 
       validateMembershipBenefitUsage(payload);
-      if (payload.customerMembershipId && String(payload.customerMembershipId) !== String(activeMembership.id)) {
-        throw new ApiError("CUSTOMER_MEMBERSHIP_NOT_ACTIVE", "La membresia no esta activa. Renuevala antes de aplicar beneficios.");
+      if (
+        payload.customerMembershipId &&
+        String(payload.customerMembershipId) !== String(activeMembership.id)
+      ) {
+        throw new ApiError(
+          "CUSTOMER_MEMBERSHIP_NOT_ACTIVE",
+          "La membresia no esta activa. Renuevala antes de aplicar beneficios.",
+        );
       }
 
-      const benefit = findMockMembershipBenefit(payload.benefitId || payload.membershipBenefitId);
+      const benefit = findMockMembershipBenefit(
+        payload.benefitId || payload.membershipBenefitId,
+      );
       if (String(benefit.planId) !== String(activeMembership.planId)) {
-        throw new ApiError("MEMBERSHIP_BENEFIT_NOT_IN_ACTIVE_PLAN", "El beneficio no pertenece al plan activo.");
+        throw new ApiError(
+          "MEMBERSHIP_BENEFIT_NOT_IN_ACTIVE_PLAN",
+          "El beneficio no pertenece al plan activo.",
+        );
       }
       if (benefit.status !== "active") {
-        throw new ApiError("MEMBERSHIP_BENEFIT_INACTIVE", "El beneficio esta inactivo.");
+        throw new ApiError(
+          "MEMBERSHIP_BENEFIT_INACTIVE",
+          "El beneficio esta inactivo.",
+        );
       }
 
       const quantity = Number(payload.quantity || 1);
@@ -1654,13 +1952,22 @@ function createMockCustomerApi() {
 
       if (benefit.usageLimit) {
         const usedQuantity = mockMembershipBenefitUsages
-          .filter((usage) => String(usage.customerMembershipId) === String(activeMembership.id))
+          .filter(
+            (usage) =>
+              String(usage.customerMembershipId) ===
+              String(activeMembership.id),
+          )
           .filter((usage) => String(usage.benefitId) === String(benefit.id))
-          .filter((usage) => usage.usagePeriodStartDate === usagePeriodStartDate)
+          .filter(
+            (usage) => usage.usagePeriodStartDate === usagePeriodStartDate,
+          )
           .reduce((sum, usage) => sum + Number(usage.quantity), 0);
 
         if (usedQuantity + quantity > Number(benefit.usageLimit)) {
-          throw new ApiError("MEMBERSHIP_BENEFIT_USAGE_LIMIT_EXCEEDED", "Limite de uso alcanzado.");
+          throw new ApiError(
+            "MEMBERSHIP_BENEFIT_USAGE_LIMIT_EXCEEDED",
+            "Limite de uso alcanzado.",
+          );
         }
       }
 
@@ -1715,7 +2022,10 @@ function createMockCustomerApi() {
         to: filters.to,
         items: mockMembershipBenefitUsages
           .filter((usage) => String(usage.customerId) === String(customerId))
-          .filter((usage) => usage.usageDate >= filters.from && usage.usageDate <= filters.to)
+          .filter(
+            (usage) =>
+              usage.usageDate >= filters.from && usage.usageDate <= filters.to,
+          )
           .map(cloneMembershipBenefitUsage),
       };
     },
@@ -1758,7 +2068,10 @@ function validateMembershipPlan(payload) {
   }
 
   if (!Number.isInteger(durationDays) || durationDays <= 0) {
-    details.push({ field: "durationDays", message: "La duracion debe ser mayor que 0." });
+    details.push({
+      field: "durationDays",
+      message: "La duracion debe ser mayor que 0.",
+    });
   }
 
   if (!Number.isFinite(price) || price < 0) {
@@ -1766,7 +2079,10 @@ function validateMembershipPlan(payload) {
   }
 
   if (!Number.isInteger(renewalNoticeDays) || renewalNoticeDays < 0) {
-    details.push({ field: "renewalNoticeDays", message: "El aviso debe ser 0 o mayor." });
+    details.push({
+      field: "renewalNoticeDays",
+      message: "El aviso debe ser 0 o mayor.",
+    });
   }
 
   if (!["active", "inactive"].includes(status)) {
@@ -1774,7 +2090,11 @@ function validateMembershipPlan(payload) {
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los campos del plan antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los campos del plan antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -1805,32 +2125,57 @@ function validateMembershipBenefit(payload) {
     details.push({ field: "benefitType", message: "El tipo no es valido." });
   }
 
-  if (type === "discount" && (!Number.isFinite(discountPercent) || discountPercent <= 0 || discountPercent > 100)) {
-    details.push({ field: "discountPercent", message: "Ingresa un descuento mayor que 0 y maximo 100." });
+  if (
+    type === "discount" &&
+    (!Number.isFinite(discountPercent) ||
+      discountPercent <= 0 ||
+      discountPercent > 100)
+  ) {
+    details.push({
+      field: "discountPercent",
+      message: "Ingresa un descuento mayor que 0 y maximo 100.",
+    });
   }
 
   if (["allowance", "free_item"].includes(type)) {
     if (!Number.isFinite(includedQuantity) || includedQuantity <= 0) {
-      details.push({ field: "includedQuantity", message: "Ingresa una cantidad incluida mayor que 0." });
+      details.push({
+        field: "includedQuantity",
+        message: "Ingresa una cantidad incluida mayor que 0.",
+      });
     }
     if (!Number.isInteger(usageLimit) || usageLimit <= 0) {
-      details.push({ field: "usageLimit", message: "Ingresa un limite de uso mayor que 0." });
+      details.push({
+        field: "usageLimit",
+        message: "Ingresa un limite de uso mayor que 0.",
+      });
     }
     if (usagePeriod === "none") {
-      details.push({ field: "usagePeriod", message: "Selecciona un periodo para controlar este beneficio." });
+      details.push({
+        field: "usagePeriod",
+        message: "Selecciona un periodo para controlar este beneficio.",
+      });
     }
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los campos del beneficio antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los campos del beneficio antes de continuar.",
+      details,
+    );
   }
 }
 
 function validateMembershipActivation(payload) {
   const details = [];
   const planId = Number(payload?.planId);
-  const rawAmount = payload?.amount === "" || payload?.amount == null ? payload?.pricePaid : payload.amount;
-  const amount = rawAmount === "" || rawAmount == null ? null : Number(rawAmount);
+  const rawAmount =
+    payload?.amount === "" || payload?.amount == null
+      ? payload?.pricePaid
+      : payload.amount;
+  const amount =
+    rawAmount === "" || rawAmount == null ? null : Number(rawAmount);
   const paymentMethod = String(payload?.paymentMethod || "").trim();
 
   if (!Number.isInteger(planId) || planId <= 0) {
@@ -1838,11 +2183,19 @@ function validateMembershipActivation(payload) {
   }
 
   if (!isIsoDate(payload?.startDate)) {
-    details.push({ field: "startDate", message: "Selecciona una fecha valida." });
+    details.push({
+      field: "startDate",
+      message: "Selecciona una fecha valida.",
+    });
   }
 
-  if (!["cash", "card", "credit", "transfer", "other"].includes(paymentMethod)) {
-    details.push({ field: "paymentMethod", message: "Selecciona metodo de pago." });
+  if (
+    !["cash", "card", "credit", "transfer", "other"].includes(paymentMethod)
+  ) {
+    details.push({
+      field: "paymentMethod",
+      message: "Selecciona metodo de pago.",
+    });
   }
 
   if (amount == null || !Number.isFinite(amount) || amount < 0) {
@@ -1850,17 +2203,29 @@ function validateMembershipActivation(payload) {
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa el pago de membresia antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa el pago de membresia antes de continuar.",
+      details,
+    );
   }
 }
 
 function validateMembershipRenewal(payload) {
   const details = [];
-  const amount = payload?.amount === "" || payload?.amount == null ? null : Number(payload.amount);
+  const amount =
+    payload?.amount === "" || payload?.amount == null
+      ? null
+      : Number(payload.amount);
   const paymentMethod = String(payload?.paymentMethod || "").trim();
 
-  if (!["cash", "card", "credit", "transfer", "other"].includes(paymentMethod)) {
-    details.push({ field: "paymentMethod", message: "Selecciona metodo de pago." });
+  if (
+    !["cash", "card", "credit", "transfer", "other"].includes(paymentMethod)
+  ) {
+    details.push({
+      field: "paymentMethod",
+      message: "Selecciona metodo de pago.",
+    });
   }
 
   if (amount == null || !Number.isFinite(amount) || amount < 0) {
@@ -1868,39 +2233,68 @@ function validateMembershipRenewal(payload) {
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa la renovacion de membresia antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa la renovacion de membresia antes de continuar.",
+      details,
+    );
   }
 }
 
 function validateMembershipBenefitUsage(payload) {
   const details = [];
   const benefitId = Number(payload?.benefitId || payload?.membershipBenefitId);
-  const customerMembershipId = payload?.customerMembershipId == null ? null : Number(payload.customerMembershipId);
-  const quantity = payload?.quantity == null || payload.quantity === "" ? 1 : Number(payload.quantity);
+  const customerMembershipId =
+    payload?.customerMembershipId == null
+      ? null
+      : Number(payload.customerMembershipId);
+  const quantity =
+    payload?.quantity == null || payload.quantity === ""
+      ? 1
+      : Number(payload.quantity);
   const note = String(payload?.note || "").trim();
 
   if (!Number.isInteger(benefitId) || benefitId <= 0) {
     details.push({ field: "benefitId", message: "Selecciona un beneficio." });
   }
 
-  if (customerMembershipId != null && (!Number.isInteger(customerMembershipId) || customerMembershipId <= 0)) {
-    details.push({ field: "customerMembershipId", message: "La membresia no es valida." });
+  if (
+    customerMembershipId != null &&
+    (!Number.isInteger(customerMembershipId) || customerMembershipId <= 0)
+  ) {
+    details.push({
+      field: "customerMembershipId",
+      message: "La membresia no es valida.",
+    });
   }
 
   if (!isIsoDate(payload?.usageDate)) {
-    details.push({ field: "usageDate", message: "Selecciona una fecha valida." });
+    details.push({
+      field: "usageDate",
+      message: "Selecciona una fecha valida.",
+    });
   }
 
   if (!Number.isInteger(quantity) || quantity <= 0) {
-    details.push({ field: "quantity", message: "La cantidad debe ser mayor que 0." });
+    details.push({
+      field: "quantity",
+      message: "La cantidad debe ser mayor que 0.",
+    });
   }
 
   if (note.length > 500) {
-    details.push({ field: "note", message: "La nota debe tener 500 caracteres o menos." });
+    details.push({
+      field: "note",
+      message: "La nota debe tener 500 caracteres o menos.",
+    });
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa el uso del beneficio antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa el uso del beneficio antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -1917,14 +2311,21 @@ function validateMembershipBenefitUsageFilters(filters) {
 
   if (isIsoDate(filters?.from) && isIsoDate(filters?.to)) {
     if (filters.from > filters.to) {
-      details.push({ field: "from", message: "La fecha desde debe ser anterior o igual a hasta." });
+      details.push({
+        field: "from",
+        message: "La fecha desde debe ser anterior o igual a hasta.",
+      });
     } else if (getDateRangeDays(filters.from, filters.to) > 31) {
       details.push({ field: "to", message: "Consulte 31 dias o menos." });
     }
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa el rango de usos antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa el rango de usos antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -1941,14 +2342,21 @@ function validateMembershipTransactionsFilters(filters) {
 
   if (isIsoDate(filters?.from) && isIsoDate(filters?.to)) {
     if (filters.from > filters.to) {
-      details.push({ field: "from", message: "La fecha desde debe ser anterior o igual a hasta." });
+      details.push({
+        field: "from",
+        message: "La fecha desde debe ser anterior o igual a hasta.",
+      });
     } else if (getDateRangeDays(filters.from, filters.to) > 31) {
       details.push({ field: "to", message: "Consulte 31 dias o menos." });
     }
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa el rango de transacciones antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa el rango de transacciones antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -1959,16 +2367,27 @@ function normalizeMembershipBenefitPayload(payload) {
     benefitType: payload.benefitType || "informational",
     appliesToType: payload.appliesToType || "text",
     appliesToName: normalizeNullableText(payload.appliesToName),
-    discountPercent: payload.discountPercent === "" || payload.discountPercent == null ? null : Number(payload.discountPercent),
-    includedQuantity: payload.includedQuantity === "" || payload.includedQuantity == null ? null : Number(payload.includedQuantity),
-    usageLimit: payload.usageLimit === "" || payload.usageLimit == null ? null : Number(payload.usageLimit),
+    discountPercent:
+      payload.discountPercent === "" || payload.discountPercent == null
+        ? null
+        : Number(payload.discountPercent),
+    includedQuantity:
+      payload.includedQuantity === "" || payload.includedQuantity == null
+        ? null
+        : Number(payload.includedQuantity),
+    usageLimit:
+      payload.usageLimit === "" || payload.usageLimit == null
+        ? null
+        : Number(payload.usageLimit),
     usagePeriod: payload.usagePeriod || "none",
     status: payload.status || "active",
   };
 }
 
 function findMockMembershipPlan(planId) {
-  const plan = mockMembershipPlans.find((item) => String(item.id) === String(planId));
+  const plan = mockMembershipPlans.find(
+    (item) => String(item.id) === String(planId),
+  );
 
   if (!plan) {
     throw new ApiError("MEMBERSHIP_PLAN_NOT_FOUND", "Plan no encontrado.");
@@ -1978,17 +2397,24 @@ function findMockMembershipPlan(planId) {
 }
 
 function findMockMembershipBenefit(benefitId) {
-  const benefit = mockMembershipBenefits.find((item) => String(item.id) === String(benefitId));
+  const benefit = mockMembershipBenefits.find(
+    (item) => String(item.id) === String(benefitId),
+  );
 
   if (!benefit) {
-    throw new ApiError("MEMBERSHIP_BENEFIT_NOT_FOUND", "Beneficio no encontrado.");
+    throw new ApiError(
+      "MEMBERSHIP_BENEFIT_NOT_FOUND",
+      "Beneficio no encontrado.",
+    );
   }
 
   return benefit;
 }
 
 function findMockCustomer(customerId) {
-  const customer = mockCustomers.find((item) => String(item.id) === String(customerId));
+  const customer = mockCustomers.find(
+    (item) => String(item.id) === String(customerId),
+  );
 
   if (!customer) {
     throw new ApiError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.");
@@ -2000,7 +2426,9 @@ function findMockCustomer(customerId) {
 function refreshMockBenefitCounts() {
   mockMembershipPlans = mockMembershipPlans.map((plan) => ({
     ...plan,
-    benefitCount: mockMembershipBenefits.filter((benefit) => String(benefit.planId) === String(plan.id)).length,
+    benefitCount: mockMembershipBenefits.filter(
+      (benefit) => String(benefit.planId) === String(plan.id),
+    ).length,
   }));
 }
 
@@ -2016,7 +2444,9 @@ function cloneCustomerMembership(membership) {
   return {
     ...membership,
     plan: membership.plan ? { ...membership.plan } : null,
-    expirationAlert: membership.expirationAlert ? { ...membership.expirationAlert } : null,
+    expirationAlert: membership.expirationAlert
+      ? { ...membership.expirationAlert }
+      : null,
   };
 }
 
@@ -2063,7 +2493,11 @@ function calculateMembershipEndDate(startDate, durationDays) {
   return date.toISOString().slice(0, 10);
 }
 
-function calculateUsagePeriodStartDate(usageDate, usagePeriod, membershipStartDate) {
+function calculateUsagePeriodStartDate(
+  usageDate,
+  usagePeriod,
+  membershipStartDate,
+) {
   if (usagePeriod === "membership_term") {
     return membershipStartDate;
   }
@@ -2085,7 +2519,11 @@ function calculateUsagePeriodStartDate(usageDate, usagePeriod, membershipStartDa
 
 function calculateExpirationAlert(endDate, warningDays = 5) {
   const today = new Date();
-  const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+  const todayUtc = Date.UTC(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
   const endUtc = new Date(`${endDate}T00:00:00Z`).getTime();
   const daysUntilExpiration = Math.round((endUtc - todayUtc) / 86400000);
   let state = "none";
@@ -2111,7 +2549,9 @@ function isIsoDate(value) {
   }
 
   const date = new Date(`${value}T00:00:00Z`);
-  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+  return (
+    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+  );
 }
 
 function validateCustomer(payload) {
@@ -2125,49 +2565,121 @@ function validateCustomer(payload) {
     details.push({ field: "phone", message: "El telefono es requerido." });
   }
 
-  if (payload.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email.trim())) {
-    details.push({ field: "email", message: "El correo no tiene un formato valido." });
+  if (
+    payload.email.trim() &&
+    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email.trim())
+  ) {
+    details.push({
+      field: "email",
+      message: "El correo no tiene un formato valido.",
+    });
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los campos marcados antes de continuar.",
+      details,
+    );
   }
 }
 
 function validateCompanySettings(payload) {
   const details = [];
   const editableFields = ["name", "email", "phone", "pointsPercentage"];
-  const hasEditableField = editableFields.some((field) => hasOwn(payload, field));
+  const hasEditableField = editableFields.some((field) =>
+    hasOwn(payload, field),
+  );
   const name = String(payload.name ?? "").trim();
   const email = String(payload.email ?? "").trim();
   const phone = String(payload.phone ?? "").trim();
   const pointsPercentage = Number(payload.pointsPercentage);
 
   if (!hasEditableField) {
-    details.push({ field: "body", message: "Envie al menos un campo editable." });
+    details.push({
+      field: "body",
+      message: "Envie al menos un campo editable.",
+    });
   }
 
   if (hasOwn(payload, "name") && (!name || name.length > 160)) {
-    details.push({ field: "name", message: "El nombre es requerido y debe tener 160 caracteres o menos." });
+    details.push({
+      field: "name",
+      message: "El nombre es requerido y debe tener 160 caracteres o menos.",
+    });
   }
 
-  if (hasOwn(payload, "email") && email && (!isEmail(email) || email.length > 254)) {
-      details.push({ field: "email", message: "El correo no tiene un formato valido." });
+  if (
+    hasOwn(payload, "email") &&
+    email &&
+    (!isEmail(email) || email.length > 254)
+  ) {
+    details.push({
+      field: "email",
+      message: "El correo no tiene un formato valido.",
+    });
   }
 
-  if (hasOwn(payload, "phone") && phone && (phone.length < 7 || phone.length > 32)) {
-    details.push({ field: "phone", message: "El telefono debe tener entre 7 y 32 caracteres." });
+  if (
+    hasOwn(payload, "phone") &&
+    phone &&
+    (phone.length < 7 || phone.length > 32)
+  ) {
+    details.push({
+      field: "phone",
+      message: "El telefono debe tener entre 7 y 32 caracteres.",
+    });
   }
 
   if (
     hasOwn(payload, "pointsPercentage") &&
-    (!Number.isFinite(pointsPercentage) || pointsPercentage <= 0 || pointsPercentage > 100)
+    (!Number.isFinite(pointsPercentage) ||
+      pointsPercentage <= 0 ||
+      pointsPercentage > 100)
   ) {
-    details.push({ field: "pointsPercentage", message: "El porcentaje debe ser mayor que 0 y menor o igual que 100." });
+    details.push({
+      field: "pointsPercentage",
+      message: "El porcentaje debe ser mayor que 0 y menor o igual que 100.",
+    });
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa la configuracion de empresa antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa la configuracion de empresa antes de continuar.",
+      details,
+    );
+  }
+}
+
+function validateOperationalEmailSettings(payload) {
+  const details = [];
+  const replyToEmail = String(payload.replyToEmail ?? "").trim();
+
+  ["welcomeEnabled", "purchaseEnabled", "redemptionEnabled"].forEach(
+    (field) => {
+      if (typeof payload[field] !== "boolean") {
+        details.push({
+          field,
+          message: "El valor debe ser activo o inactivo.",
+        });
+      }
+    },
+  );
+
+  if (replyToEmail && (!isEmail(replyToEmail) || replyToEmail.length > 254)) {
+    details.push({
+      field: "replyToEmail",
+      message: "El correo reply-to no tiene un formato valido.",
+    });
+  }
+
+  if (details.length > 0) {
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa la configuracion de correos antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -2188,11 +2700,17 @@ function validateMockCompanyLogo(file) {
   }
 
   if (!allowedTypes.has(file.type)) {
-    throw new ApiError("UNSUPPORTED_MEDIA_TYPE", "El tipo de archivo no esta permitido. Usa PNG, JPG o WebP.");
+    throw new ApiError(
+      "UNSUPPORTED_MEDIA_TYPE",
+      "El tipo de archivo no esta permitido. Usa PNG, JPG o WebP.",
+    );
   }
 
   if (file.size > 1048576) {
-    throw new ApiError("UPLOAD_TOO_LARGE", "El archivo supera el tamano maximo permitido.");
+    throw new ApiError(
+      "UPLOAD_TOO_LARGE",
+      "El archivo supera el tamano maximo permitido.",
+    );
   }
 }
 
@@ -2214,46 +2732,75 @@ function validateCompanyRegistrationRequest(payload) {
   });
 
   if (!companyName || companyName.length > 160) {
-    details.push({ field: "companyName", message: "El nombre de empresa es requerido." });
+    details.push({
+      field: "companyName",
+      message: "El nombre de empresa es requerido.",
+    });
   }
 
   if (!companyEmail || !isEmail(companyEmail) || companyEmail.length > 254) {
-    details.push({ field: "companyEmail", message: "El correo de empresa no es valido." });
+    details.push({
+      field: "companyEmail",
+      message: "El correo de empresa no es valido.",
+    });
   }
 
   if (!companyAddress || companyAddress.length > 300) {
-    details.push({ field: "companyAddress", message: "La direccion es requerida." });
+    details.push({
+      field: "companyAddress",
+      message: "La direccion es requerida.",
+    });
   }
 
   if (companyPhone.length > 32) {
-    details.push({ field: "companyPhone", message: "El telefono de empresa debe tener 32 caracteres o menos." });
+    details.push({
+      field: "companyPhone",
+      message: "El telefono de empresa debe tener 32 caracteres o menos.",
+    });
   }
 
   if (contactName.length > 160) {
-    details.push({ field: "contactName", message: "El contacto debe tener 160 caracteres o menos." });
+    details.push({
+      field: "contactName",
+      message: "El contacto debe tener 160 caracteres o menos.",
+    });
   }
 
   if (!contactEmail || !isEmail(contactEmail) || contactEmail.length > 254) {
-    details.push({ field: "contactEmail", message: "El correo de contacto no es valido." });
+    details.push({
+      field: "contactEmail",
+      message: "El correo de contacto no es valido.",
+    });
   }
 
   if (contactPhone.length > 32) {
-    details.push({ field: "contactPhone", message: "El telefono de contacto debe tener 32 caracteres o menos." });
+    details.push({
+      field: "contactPhone",
+      message: "El telefono de contacto debe tener 32 caracteres o menos.",
+    });
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los campos marcados antes de continuar.",
+      details,
+    );
   }
 }
 
 function normalizeCompanyRegistrationPayload(payload) {
   return {
     companyName: String(payload.companyName ?? "").trim(),
-    companyEmail: String(payload.companyEmail ?? "").trim().toLowerCase(),
+    companyEmail: String(payload.companyEmail ?? "")
+      .trim()
+      .toLowerCase(),
     companyPhone: normalizeNullableText(payload.companyPhone),
     companyAddress: String(payload.companyAddress ?? "").trim(),
     contactName: normalizeNullableText(payload.contactName),
-    contactEmail: String(payload.contactEmail ?? "").trim().toLowerCase(),
+    contactEmail: String(payload.contactEmail ?? "")
+      .trim()
+      .toLowerCase(),
     contactPhone: normalizeNullableText(payload.contactPhone),
   };
 }
@@ -2272,10 +2819,15 @@ function validateMockAdminToken(adminToken) {
 }
 
 function findPendingMockRegistrationRequest(requestId) {
-  const request = mockCompanyRegistrationRequests.find((item) => String(item.id) === String(requestId));
+  const request = mockCompanyRegistrationRequests.find(
+    (item) => String(item.id) === String(requestId),
+  );
 
   if (!request || request.status !== "pending") {
-    throw new ApiError("COMPANY_REGISTRATION_REQUEST_NOT_FOUND", "Solicitud no encontrada.");
+    throw new ApiError(
+      "COMPANY_REGISTRATION_REQUEST_NOT_FOUND",
+      "Solicitud no encontrada.",
+    );
   }
 
   return request;
@@ -2289,7 +2841,9 @@ function cloneMockRegistrationRequest(request) {
 }
 
 function createMockCompanyRegistrationLogoBlob() {
-  return new Blob([new Uint8Array(mockCompanyRegistrationLogoPng)], { type: "image/png" });
+  return new Blob([new Uint8Array(mockCompanyRegistrationLogoPng)], {
+    type: "image/png",
+  });
 }
 
 function addDaysIso(value, days) {
@@ -2306,7 +2860,11 @@ function validateMockCompanyInvitation(token) {
     throw new ApiError("INTERNAL_ERROR", "No se pudo validar la invitacion.");
   }
 
-  if (!normalizedToken || normalizedToken === "invalid" || normalizedToken === "invalid-token") {
+  if (
+    !normalizedToken ||
+    normalizedToken === "invalid" ||
+    normalizedToken === "invalid-token"
+  ) {
     return { valid: false, reason: "invalid" };
   }
 
@@ -2349,14 +2907,21 @@ function requestMockCompanyPasswordReset(payload, adminToken = "") {
   }
 
   const email = normalize(payload.email);
-  const user = mockLocalCompanyUsers.find((item) => normalize(item.email) === email);
+  const user = mockLocalCompanyUsers.find(
+    (item) => normalize(item.email) === email,
+  );
   if (!user) {
     if (isAdminRequest) {
-      throw new ApiError("COMPANY_USER_NOT_FOUND", "No hay un acceso activo para ese correo.");
+      throw new ApiError(
+        "COMPANY_USER_NOT_FOUND",
+        "No hay un acceso activo para ese correo.",
+      );
     }
 
     return {
-      email: String(payload.email || "").trim().toLowerCase(),
+      email: String(payload.email || "")
+        .trim()
+        .toLowerCase(),
       status: "accepted",
       sentAt: new Date().toISOString(),
     };
@@ -2392,7 +2957,11 @@ function requestMockCompanyPasswordReset(payload, adminToken = "") {
 function validateMockCompanyPasswordReset(token) {
   const normalizedToken = normalize(token);
 
-  if (!normalizedToken || normalizedToken === "invalid" || normalizedToken === "invalid-token") {
+  if (
+    !normalizedToken ||
+    normalizedToken === "invalid" ||
+    normalizedToken === "invalid-token"
+  ) {
     return { valid: false, reason: "invalid" };
   }
 
@@ -2432,15 +3001,22 @@ function completeMockCompanyPasswordReset(payload) {
   const validation = validateMockCompanyPasswordReset(payload.token);
   if (!validation.valid) {
     throw new ApiError(
-      validation.reason === "expired" ? "PASSWORD_RESET_EXPIRED" : "PASSWORD_RESET_INVALID",
+      validation.reason === "expired"
+        ? "PASSWORD_RESET_EXPIRED"
+        : "PASSWORD_RESET_INVALID",
       "El enlace de recuperacion no es valido.",
     );
   }
 
   const reset = mockPasswordResetTokens.get(normalize(payload.token));
-  const user = mockLocalCompanyUsers.find((item) => normalize(item.email) === normalize(reset.email));
+  const user = mockLocalCompanyUsers.find(
+    (item) => normalize(item.email) === normalize(reset.email),
+  );
   if (!user) {
-    throw new ApiError("COMPANY_USER_NOT_FOUND", "No hay un acceso activo para ese correo.");
+    throw new ApiError(
+      "COMPANY_USER_NOT_FOUND",
+      "No hay un acceso activo para ese correo.",
+    );
   }
 
   user.password = String(payload.password);
@@ -2466,16 +3042,22 @@ function acceptMockCompanyInvitation(payload) {
   }
 
   const email = normalize(invitation.email);
-  const existingUser = mockLocalCompanyUsers.find((user) => normalize(user.email) === email);
+  const existingUser = mockLocalCompanyUsers.find(
+    (user) => normalize(user.email) === email,
+  );
   if (existingUser) {
-    throw new ApiError("COMPANY_USER_ALREADY_EXISTS", "Ya existe un usuario para esa invitacion.");
+    throw new ApiError(
+      "COMPANY_USER_ALREADY_EXISTS",
+      "Ya existe un usuario para esa invitacion.",
+    );
   }
 
   const now = new Date().toISOString();
   const user = {
     id: String(nextCompanyUserId),
     email: invitation.email,
-    displayName: String(payload.displayName || "").trim() || invitation.companyName,
+    displayName:
+      String(payload.displayName || "").trim() || invitation.companyName,
     role: invitation.role,
     status: "active",
     password: payload.password,
@@ -2503,7 +3085,9 @@ function acceptMockCompanyInvitation(payload) {
 function loginMockCompany(payload) {
   validateCompanyAuthLoginPayload(payload);
   const email = normalize(payload.email);
-  const user = mockLocalCompanyUsers.find((item) => normalize(item.email) === email);
+  const user = mockLocalCompanyUsers.find(
+    (item) => normalize(item.email) === email,
+  );
 
   if (!user || user.password !== payload.password) {
     throw new ApiError("UNAUTHORIZED", "Correo o contraseña incorrectos.");
@@ -2534,9 +3118,18 @@ function changeMockCompanyPassword(payload) {
     throw new ApiError("UNAUTHORIZED", "Authentication is required.");
   }
 
-  const user = mockLocalCompanyUsers.find((item) => String(item.id) === String(mockAuthIdentity.user.id));
-  if (!user || user.status !== "active" || user.password !== payload.currentPassword) {
-    throw new ApiError("INVALID_CURRENT_PASSWORD", "Current password is invalid.");
+  const user = mockLocalCompanyUsers.find(
+    (item) => String(item.id) === String(mockAuthIdentity.user.id),
+  );
+  if (
+    !user ||
+    user.status !== "active" ||
+    user.password !== payload.currentPassword
+  ) {
+    throw new ApiError(
+      "INVALID_CURRENT_PASSWORD",
+      "Current password is invalid.",
+    );
   }
 
   user.password = String(payload.newPassword);
@@ -2553,28 +3146,42 @@ function validateInvitationAcceptPayload(payload) {
   const password = String(body.password || "");
 
   if (!String(body.token || "").trim()) {
-    details.push({ field: "token", message: "La invitacion no esta disponible." });
+    details.push({
+      field: "token",
+      message: "La invitacion no esta disponible.",
+    });
   }
 
   if (String(body.displayName || "").trim().length > 160) {
-    details.push({ field: "displayName", message: "El nombre debe tener 160 caracteres o menos." });
+    details.push({
+      field: "displayName",
+      message: "El nombre debe tener 160 caracteres o menos.",
+    });
   }
 
   if (!isStrongPassword(password)) {
     details.push({
       field: "password",
-      message: "La contraseña debe tener 10 a 128 caracteres e incluir letras y numeros.",
+      message:
+        "La contraseña debe tener 10 a 128 caracteres e incluir letras y numeros.",
     });
   }
 
   ["companyId", "email", "externalSubject"].forEach((field) => {
     if (hasOwn(body, field)) {
-      details.push({ field, message: "El campo no debe enviarse desde el frontend." });
+      details.push({
+        field,
+        message: "El campo no debe enviarse desde el frontend.",
+      });
     }
   });
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los campos marcados antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -2592,7 +3199,11 @@ function validateCompanyAuthLoginPayload(payload) {
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los campos marcados antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -2603,27 +3214,46 @@ function validateCompanyPasswordChangePayload(payload) {
   const passwordConfirmation = String(payload?.passwordConfirmation || "");
 
   if (!currentPassword || currentPassword.length > 128) {
-    details.push({ field: "currentPassword", message: "Ingresa la contraseña actual." });
+    details.push({
+      field: "currentPassword",
+      message: "Ingresa la contraseña actual.",
+    });
   }
 
   if (!isStrongPassword(newPassword)) {
-    details.push({ field: "newPassword", message: "Usa una contraseña segura." });
+    details.push({
+      field: "newPassword",
+      message: "Usa una contraseña segura.",
+    });
   } else if (newPassword === currentPassword) {
-    details.push({ field: "newPassword", message: "La nueva contraseña debe ser distinta." });
+    details.push({
+      field: "newPassword",
+      message: "La nueva contraseña debe ser distinta.",
+    });
   }
 
   if (!passwordConfirmation || passwordConfirmation !== newPassword) {
-    details.push({ field: "passwordConfirmation", message: "La confirmacion debe coincidir." });
+    details.push({
+      field: "passwordConfirmation",
+      message: "La confirmacion debe coincidir.",
+    });
   }
 
   ["email", "companyId", "userId"].forEach((field) => {
     if (hasOwn(payload || {}, field)) {
-      details.push({ field, message: "El campo no debe enviarse desde el frontend." });
+      details.push({
+        field,
+        message: "El campo no debe enviarse desde el frontend.",
+      });
     }
   });
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los campos marcados antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -2636,7 +3266,11 @@ function validateCompanyPasswordResetRequestPayload(payload) {
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los campos marcados antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -2651,18 +3285,26 @@ function validateCompanyPasswordResetCompletePayload(payload) {
   if (!isStrongPassword(password)) {
     details.push({
       field: "password",
-      message: "La contrasena debe tener 10 a 128 caracteres e incluir letras y numeros.",
+      message:
+        "La contrasena debe tener 10 a 128 caracteres e incluir letras y numeros.",
     });
   }
 
   ["companyId", "userId", "email"].forEach((field) => {
     if (hasOwn(payload || {}, field)) {
-      details.push({ field, message: "El campo no debe enviarse desde el frontend." });
+      details.push({
+        field,
+        message: "El campo no debe enviarse desde el frontend.",
+      });
     }
   });
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los campos marcados antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -2672,10 +3314,16 @@ function throwInvitationStateError(reason) {
   }
 
   if (reason === "accepted") {
-    throw new ApiError("INVITATION_ALREADY_ACCEPTED", "La invitacion ya fue aceptada.");
+    throw new ApiError(
+      "INVITATION_ALREADY_ACCEPTED",
+      "La invitacion ya fue aceptada.",
+    );
   }
 
-  throw new ApiError("INVITATION_NOT_FOUND", "La invitacion no esta disponible.");
+  throw new ApiError(
+    "INVITATION_NOT_FOUND",
+    "La invitacion no esta disponible.",
+  );
 }
 
 function isStrongPassword(password) {
@@ -2700,7 +3348,10 @@ function validatePurchase(payload) {
   }
 
   if (!String(payload.invoiceNumber ?? "").trim()) {
-    details.push({ field: "invoiceNumber", message: "El comprobante es requerido." });
+    details.push({
+      field: "invoiceNumber",
+      message: "El comprobante es requerido.",
+    });
   }
 
   if (!String(payload.purchaseDate ?? "").trim()) {
@@ -2708,11 +3359,18 @@ function validatePurchase(payload) {
   }
 
   if (!Number.isFinite(Number(payload.amount)) || Number(payload.amount) <= 0) {
-    details.push({ field: "amount", message: "El monto debe ser mayor que 0." });
+    details.push({
+      field: "amount",
+      message: "El monto debe ser mayor que 0.",
+    });
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los campos marcados antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -2726,19 +3384,32 @@ function validateRedemption(payload) {
   }
 
   if (!String(payload.redemptionDate ?? "").trim()) {
-    details.push({ field: "redemptionDate", message: "La fecha es requerida." });
+    details.push({
+      field: "redemptionDate",
+      message: "La fecha es requerida.",
+    });
   }
 
   if (!Number.isInteger(pointsRedeemed) || pointsRedeemed <= 0) {
-    details.push({ field: "pointsRedeemed", message: "Los puntos deben ser un entero mayor que 0." });
+    details.push({
+      field: "pointsRedeemed",
+      message: "Los puntos deben ser un entero mayor que 0.",
+    });
   }
 
   if (note.length > 500) {
-    details.push({ field: "note", message: "La nota debe tener 500 caracteres o menos." });
+    details.push({
+      field: "note",
+      message: "La nota debe tener 500 caracteres o menos.",
+    });
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los campos marcados antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los campos marcados antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -2757,19 +3428,31 @@ function validateReportFilters(filters) {
   }
 
   if (from && to && from > to) {
-    details.push({ field: "to", message: "La fecha hasta debe ser igual o posterior a desde." });
+    details.push({
+      field: "to",
+      message: "La fecha hasta debe ser igual o posterior a desde.",
+    });
   }
 
   if (isDateOnly(from) && isDateOnly(to) && getDateRangeDays(from, to) > 31) {
     details.push({ field: "to", message: "El rango maximo es de 31 dias." });
   }
 
-  if (!["all", "purchase", "redemption", "membership", "benefit"].includes(type)) {
-    details.push({ field: "type", message: "El tipo de reporte no es valido." });
+  if (
+    !["all", "purchase", "redemption", "membership", "benefit"].includes(type)
+  ) {
+    details.push({
+      field: "type",
+      message: "El tipo de reporte no es valido.",
+    });
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los filtros del reporte antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los filtros del reporte antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -2787,7 +3470,10 @@ function validateMembershipFinancialReportFilters(filters) {
   }
 
   if (from && to && from > to) {
-    details.push({ field: "to", message: "La fecha hasta debe ser igual o posterior a desde." });
+    details.push({
+      field: "to",
+      message: "La fecha hasta debe ser igual o posterior a desde.",
+    });
   }
 
   if (isDateOnly(from) && isDateOnly(to) && getDateRangeDays(from, to) > 31) {
@@ -2795,7 +3481,11 @@ function validateMembershipFinancialReportFilters(filters) {
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los filtros del reporte de membresias antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los filtros del reporte de membresias antes de continuar.",
+      details,
+    );
   }
 }
 
@@ -2818,7 +3508,10 @@ function validateAuditFilters(filters) {
   }
 
   if (isDateOnly(from) && isDateOnly(to) && from > to) {
-    details.push({ field: "to", message: "La fecha hasta debe ser igual o posterior a desde." });
+    details.push({
+      field: "to",
+      message: "La fecha hasta debe ser igual o posterior a desde.",
+    });
   }
 
   if (isDateOnly(from) && isDateOnly(to) && getDateRangeDays(from, to) > 31) {
@@ -2826,15 +3519,28 @@ function validateAuditFilters(filters) {
   }
 
   if (!Number.isInteger(limit) || ![10, 25, 50].includes(limit)) {
-    details.push({ field: "limit", message: "El limite debe ser 10, 25 o 50." });
+    details.push({
+      field: "limit",
+      message: "El limite debe ser 10, 25 o 50.",
+    });
   }
 
   if (details.length > 0) {
-    throw new ApiError("VALIDATION_ERROR", "Revisa los filtros de auditoria antes de continuar.", details);
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los filtros de auditoria antes de continuar.",
+      details,
+    );
   }
 }
 
-function recordMockAuditEvent({ eventType, entityType, entityId = null, customer = null, summary }) {
+function recordMockAuditEvent({
+  eventType,
+  entityType,
+  entityId = null,
+  customer = null,
+  summary,
+}) {
   const event = {
     id: String(nextAuditEventId),
     occurredAt: new Date().toISOString(),
@@ -2886,7 +3592,11 @@ function findCustomerReportCandidates(search) {
       const phone = String(customer.phone ?? "").trim();
       const email = normalizeCustomerReportSearch(customer.email);
       const name = normalizeCustomerReportSearch(customer.name);
-      return phone === rawSearch || email === normalizedSearch || name.includes(normalizedSearch);
+      return (
+        phone === rawSearch ||
+        email === normalizedSearch ||
+        name.includes(normalizedSearch)
+      );
     })
     .slice(0, 6);
 }
@@ -2894,33 +3604,38 @@ function findCustomerReportCandidates(search) {
 function getMockCustomerReportMovements(customer, filters) {
   const type = filters.type || "all";
   const customerId = String(customer.id);
-  const activityItems = (mockActivity.get(customerId) ?? [])
-    .map((item) => normalizeReportItem(customer, item));
+  const activityItems = (mockActivity.get(customerId) ?? []).map((item) =>
+    normalizeReportItem(customer, item),
+  );
   const membershipItems = mockMembershipTransactions
     .filter((transaction) => String(transaction.customerId) === customerId)
-    .map((transaction) => normalizeReportItem(customer, {
-      type: "membership",
-      id: transaction.id,
-      date: transaction.transactionDate,
-      createdAt: transaction.createdAt,
-      amount: transaction.amount,
-      points: 0,
-      planName: transaction.planName,
-      note: transaction.note,
-    }));
+    .map((transaction) =>
+      normalizeReportItem(customer, {
+        type: "membership",
+        id: transaction.id,
+        date: transaction.transactionDate,
+        createdAt: transaction.createdAt,
+        amount: transaction.amount,
+        points: 0,
+        planName: transaction.planName,
+        note: transaction.note,
+      }),
+    );
   const benefitItems = mockMembershipBenefitUsages
     .filter((usage) => String(usage.customerId) === customerId)
-    .map((usage) => normalizeReportItem(customer, {
-      type: "benefit",
-      id: usage.id,
-      date: usage.usageDate,
-      createdAt: usage.usedAt,
-      points: 0,
-      quantity: usage.quantity,
-      planName: usage.planName,
-      benefitName: usage.benefitName,
-      note: usage.note,
-    }));
+    .map((usage) =>
+      normalizeReportItem(customer, {
+        type: "benefit",
+        id: usage.id,
+        date: usage.usageDate,
+        createdAt: usage.usedAt,
+        points: 0,
+        quantity: usage.quantity,
+        planName: usage.planName,
+        benefitName: usage.benefitName,
+        note: usage.note,
+      }),
+    );
 
   return [...activityItems, ...membershipItems, ...benefitItems]
     .filter((item) => item.date >= filters.from && item.date <= filters.to)
@@ -2981,7 +3696,9 @@ function buildReportSummary(items) {
 }
 
 function buildMembershipFinancialReportSummary(items) {
-  const newMemberships = items.filter((item) => item.transactionType === "new_membership");
+  const newMemberships = items.filter(
+    (item) => item.transactionType === "new_membership",
+  );
   const renewals = items.filter((item) => item.transactionType === "renewal");
   const paymentMethods = items.reduce((summary, item) => {
     const current = summary[item.paymentMethod] || {
@@ -2997,9 +3714,15 @@ function buildMembershipFinancialReportSummary(items) {
 
   return {
     newMembershipCount: newMemberships.length,
-    newMembershipAmount: newMemberships.reduce((total, item) => total + Number(item.amount ?? 0), 0),
+    newMembershipAmount: newMemberships.reduce(
+      (total, item) => total + Number(item.amount ?? 0),
+      0,
+    ),
     renewalCount: renewals.length,
-    renewalAmount: renewals.reduce((total, item) => total + Number(item.amount ?? 0), 0),
+    renewalAmount: renewals.reduce(
+      (total, item) => total + Number(item.amount ?? 0),
+      0,
+    ),
     paymentMethods,
   };
 }
@@ -3010,7 +3733,9 @@ function isDateOnly(value) {
   }
 
   const date = new Date(`${value}T00:00:00`);
-  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value;
+  return (
+    !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === value
+  );
 }
 
 function isEmail(value) {

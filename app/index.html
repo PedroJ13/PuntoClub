@@ -1965,32 +1965,102 @@
                   <div>
                     <h3 id="company-communications-title">Comunicaciones</h3>
                     <p class="section-support">
-                      Configura correos y prepara campañas sin activar envíos
-                      reales.
+                      Configura los correos operativos que acompañan acciones
+                      del programa. Las promociones siguen bloqueadas.
                     </p>
                   </div>
                 </div>
-                <div class="company-communications-grid">
-                  <div>
-                    <span class="communication-state-pill">
-                      Operativos activos
-                    </span>
-                    <strong>Bienvenida, compra y canje</strong>
-                    <p>
-                      Los correos transaccionales siguen separados de las
-                      campañas promocionales.
-                    </p>
+                <div
+                  id="company-operational-email-status"
+                  class="success-message"
+                  hidden
+                ></div>
+                <div
+                  id="company-operational-email-error"
+                  class="form-error"
+                  hidden
+                ></div>
+                <form
+                  id="company-operational-email-form"
+                  class="company-operational-email-form"
+                  novalidate
+                >
+                  <div class="communication-switch-list">
+                    <label class="communication-switch">
+                      <input
+                        id="company-email-welcome-enabled"
+                        type="checkbox"
+                      />
+                      <span>
+                        <strong>Bienvenida al registrar cliente</strong>
+                        <small
+                          >Enviar cuando se registre un cliente con
+                          correo.</small
+                        >
+                      </span>
+                    </label>
+                    <label class="communication-switch">
+                      <input
+                        id="company-email-purchase-enabled"
+                        type="checkbox"
+                      />
+                      <span>
+                        <strong>Compra registrada</strong>
+                        <small
+                          >Puntos ganados y saldo total como snapshot.</small
+                        >
+                      </span>
+                    </label>
+                    <label class="communication-switch">
+                      <input
+                        id="company-email-redemption-enabled"
+                        type="checkbox"
+                      />
+                      <span>
+                        <strong>Canje o redención</strong>
+                        <small>Puntos redimidos y saldo actualizado.</small>
+                      </span>
+                    </label>
+                    <label class="communication-switch is-locked">
+                      <input type="checkbox" disabled />
+                      <span>
+                        <strong>Promociones y campañas</strong>
+                        <small
+                          >Se mantienen bloqueadas para envíos reales.</small
+                        >
+                      </span>
+                    </label>
                   </div>
-                  <div>
-                    <span class="communication-state-pill">
-                      Promociones pausadas
-                    </span>
-                    <strong>Envío real bloqueado</strong>
-                    <p>
-                      El envío real requiere dominio promocional, baja y cuotas.
+
+                  <div class="field">
+                    <label for="company-email-reply-to">Reply-to</label>
+                    <input
+                      id="company-email-reply-to"
+                      name="replyToEmail"
+                      maxlength="254"
+                      inputmode="email"
+                      autocomplete="email"
+                    />
+                    <p class="field-help">
+                      Opcional. Las respuestas de clientes pueden ir a este
+                      correo.
                     </p>
+                    <p
+                      class="field-error"
+                      id="company-email-reply-to-error"
+                    ></p>
                   </div>
-                </div>
+
+                  <div class="form-actions">
+                    <button
+                      id="save-company-operational-email-button"
+                      type="submit"
+                      data-icon="save"
+                    >
+                      Guardar correos operativos
+                    </button>
+                  </div>
+                </form>
                 <div class="form-actions">
                   <button
                     id="company-open-campaigns-button"

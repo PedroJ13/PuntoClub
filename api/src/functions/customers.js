@@ -3,6 +3,7 @@ const { getCompanyId, handle, ok, created, readJson } = require('../lib/http');
 const { ApiError, mapSqlError } = require('../lib/errors');
 const { auditBestEffort } = require('../lib/audit');
 const { validateCustomerPayload } = require('../lib/validators');
+const operationalEmails = require('../lib/operationalEmails');
 const repository = require('../lib/repository');
 
 app.http('listCustomers', {
@@ -49,6 +50,18 @@ app.http('createCustomer', {
       customerId: customer.id,
       metadata: { emailProvided: Boolean(customer.email) }
     });
+
+    await operationalEmails.sendOperationalEmailBestEffort(repository, {
+      companyId,
+      eventType: 'welcome',
+      idempotencyKey: `welcome:customer:${customer.id}`,
+      sourceEntityType: 'customer',
+      sourceEntityId: customer.id,
+      customerId: customer.id
+    }, {
+      company: await repository.getCompanySettings(companyId),
+      customer
+    }, context);
 
     return created(customer);
   })

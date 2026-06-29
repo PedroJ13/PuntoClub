@@ -3,6 +3,7 @@ const { getCompanyId, handle, created, readJson } = require('../lib/http');
 const { ApiError, mapSqlError } = require('../lib/errors');
 const { auditBestEffort } = require('../lib/audit');
 const { calculatePointsEarned, validatePurchasePayload } = require('../lib/validators');
+const operationalEmails = require('../lib/operationalEmails');
 const repository = require('../lib/repository');
 
 app.http('createPurchase', {
@@ -52,6 +53,25 @@ app.http('createPurchase', {
         pointsEarned: purchase.pointsEarned
       }
     });
+
+    const [customer, balance, companySettings] = await Promise.all([
+      repository.getCustomerById(companyId, purchase.customerId),
+      repository.getBalance(companyId, purchase.customerId),
+      repository.getCompanySettings(companyId)
+    ]);
+    await operationalEmails.sendOperationalEmailBestEffort(repository, {
+      companyId,
+      eventType: 'purchase',
+      idempotencyKey: `purchase:${purchase.id}`,
+      sourceEntityType: 'purchase',
+      sourceEntityId: purchase.id,
+      customerId: purchase.customerId
+    }, {
+      company: companySettings,
+      customer,
+      purchase,
+      balance
+    }, context);
 
     return created(purchase);
   })

@@ -3,6 +3,7 @@ const { getCompanyId, handle, created, readJson } = require('../lib/http');
 const { mapSqlError } = require('../lib/errors');
 const { auditBestEffort } = require('../lib/audit');
 const { validateRedemptionPayload } = require('../lib/validators');
+const operationalEmails = require('../lib/operationalEmails');
 const repository = require('../lib/repository');
 
 app.http('createRedemption', {
@@ -45,6 +46,23 @@ app.http('createRedemption', {
         balanceAfter: redemption.balanceAfter
       }
     });
+
+    const [customer, companySettings] = await Promise.all([
+      repository.getCustomerById(companyId, redemption.customerId),
+      repository.getCompanySettings(companyId)
+    ]);
+    await operationalEmails.sendOperationalEmailBestEffort(repository, {
+      companyId,
+      eventType: 'redemption',
+      idempotencyKey: `redemption:${redemption.id}`,
+      sourceEntityType: 'redemption',
+      sourceEntityId: redemption.id,
+      customerId: redemption.customerId
+    }, {
+      company: companySettings,
+      customer,
+      redemption
+    }, context);
 
     return created(redemption);
   })

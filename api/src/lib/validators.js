@@ -177,6 +177,35 @@ function validateCompanySettingsPatchPayload(payload) {
   };
 }
 
+function parseOptionalBoolean(value, field, details) {
+  if (typeof value !== 'boolean') {
+    details.push({ field, message: `${field} must be true or false.` });
+    return false;
+  }
+
+  return value;
+}
+
+function validateOperationalEmailSettingsPayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const welcomeEnabled = parseOptionalBoolean(body.welcomeEnabled, 'welcomeEnabled', details);
+  const purchaseEnabled = parseOptionalBoolean(body.purchaseEnabled, 'purchaseEnabled', details);
+  const redemptionEnabled = parseOptionalBoolean(body.redemptionEnabled, 'redemptionEnabled', details);
+  const replyToEmail = validateEmailField(body.replyToEmail, 'replyToEmail', details, { required: false });
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    welcomeEnabled,
+    purchaseEnabled,
+    redemptionEnabled,
+    replyToEmail
+  };
+}
+
 function validateCompanyRegistrationRequestPayload(payload) {
   const details = [];
   const body = payload || {};
@@ -1223,6 +1252,7 @@ module.exports = {
   validateMembershipTransactionsQuery,
   validateMembershipFinancialReportQuery,
   validateMyCompanyPatchPayload,
+  validateOperationalEmailSettingsPayload,
   validatePurchasePayload,
   validateRedemptionPayload
 };

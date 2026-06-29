@@ -151,6 +151,50 @@ function mapMyCompany(row) {
   };
 }
 
+function mapOperationalEmailSettings(row) {
+  return {
+    companyId: toApiId(row.company_id),
+    welcomeEnabled: Boolean(row.welcome_enabled),
+    purchaseEnabled: Boolean(row.purchase_enabled),
+    redemptionEnabled: Boolean(row.redemption_enabled),
+    replyToEmail: row.reply_to_email || null,
+    updatedAt: toIsoTimestamp(row.updated_at)
+  };
+}
+
+function mapOperationalEmailEvent(row) {
+  return {
+    id: toApiId(row.id),
+    companyId: toApiId(row.company_id),
+    eventType: row.event_type,
+    idempotencyKey: row.idempotency_key,
+    sourceEntityType: row.source_entity_type,
+    sourceEntityId: toApiId(row.source_entity_id),
+    customerId: toApiId(row.customer_id),
+    status: row.status,
+    createdAt: toIsoTimestamp(row.created_at),
+    updatedAt: toIsoTimestamp(row.updated_at)
+  };
+}
+
+function mapOperationalEmailMessage(row) {
+  return {
+    id: toApiId(row.id),
+    eventId: toApiId(row.event_id),
+    companyId: toApiId(row.company_id),
+    customerId: toApiId(row.customer_id),
+    recipientEmail: row.recipient_email || null,
+    subject: row.subject || null,
+    status: row.status,
+    provider: row.provider || null,
+    providerMessageId: row.provider_message_id || null,
+    lastError: row.last_error || null,
+    createdAt: toIsoTimestamp(row.created_at),
+    sentAt: toIsoTimestamp(row.sent_at),
+    updatedAt: toIsoTimestamp(row.updated_at)
+  };
+}
+
 function mapMembershipPlan(row) {
   return {
     id: toApiId(row.id),
@@ -643,6 +687,304 @@ async function updateCompanyLogo(companyId, logo) {
   }
 
   return mapMyCompany(result.recordset[0]);
+}
+
+async function getOperationalEmailSettings(companyId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .query(`
+      SELECT
+        companies.id AS company_id,
+        COALESCE(settings.welcome_enabled, CONVERT(bit, 1)) AS welcome_enabled,
+        COALESCE(settings.purchase_enabled, CONVERT(bit, 1)) AS purchase_enabled,
+        COALESCE(settings.redemption_enabled, CONVERT(bit, 1)) AS redemption_enabled,
+        settings.reply_to_email,
+        COALESCE(settings.updated_at, companies.updated_at) AS updated_at
+      FROM dbo.Companies AS companies
+      LEFT JOIN dbo.CompanyOperationalEmailSettings AS settings
+        ON settings.company_id = companies.id
+      WHERE companies.id = @company_id
+        AND companies.status = 'active'
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+  }
+
+  return mapOperationalEmailSettings(result.recordset[0]);
+}
+
+async function updateOperationalEmailSettings(companyId, settings) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('company_id', sql.BigInt, companyId)
+    .input('welcome_enabled', sql.Bit, settings.welcomeEnabled)
+    .input('purchase_enabled', sql.Bit, settings.purchaseEnabled)
+    .input('redemption_enabled', sql.Bit, settings.redemptionEnabled)
+    .input('reply_to_email', sql.NVarChar(254), settings.replyToEmail)
+    .query(`
+      MERGE dbo.CompanyOperationalEmailSettings AS target
+      USING (
+        SELECT
+          @company_id AS company_id,
+          @welcome_enabled AS welcome_enabled,
+          @purchase_enabled AS purchase_enabled,
+          @redemption_enabled AS redemption_enabled,
+          @reply_to_email AS reply_to_email
+      ) AS source
+      ON target.company_id = source.company_id
+      WHEN MATCHED THEN
+        UPDATE SET
+          welcome_enabled = source.welcome_enabled,
+          purchase_enabled = source.purchase_enabled,
+          redemption_enabled = source.redemption_enabled,
+          reply_to_email = source.reply_to_email,
+          updated_at = SYSUTCDATETIME()
+      WHEN NOT MATCHED THEN
+        INSERT (
+          company_id,
+          welcome_enabled,
+          purchase_enabled,
+          redemption_enabled,
+          reply_to_email
+        )
+        VALUES (
+          source.company_id,
+          source.welcome_enabled,
+          source.purchase_enabled,
+          source.redemption_enabled,
+          source.reply_to_email
+        )
+      OUTPUT
+        INSERTED.company_id,
+        INSERTED.welcome_enabled,
+        INSERTED.purchase_enabled,
+        INSERTED.redemption_enabled,
+        INSERTED.reply_to_email,
+        INSERTED.updated_at;
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+  }
+
+  return mapOperationalEmailSettings(result.recordset[0]);
+}
+
+async function createOperationalEmailEventIfNeeded(event) {
+  const sql = getSql();
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+
+  await transaction.begin();
+
+  try {
+    const existingResult = await new sql.Request(transaction)
+      .input('company_id', sql.BigInt, event.companyId)
+      .input('idempotency_key', sql.NVarChar(160), event.idempotencyKey)
+      .query(`
+        SELECT TOP (1)
+          id,
+          company_id,
+          event_type,
+          idempotency_key,
+          source_entity_type,
+          source_entity_id,
+          customer_id,
+          status,
+          created_at,
+          updated_at
+        FROM dbo.OperationalEmailEvents WITH (UPDLOCK, HOLDLOCK)
+        WHERE company_id = @company_id
+          AND idempotency_key = @idempotency_key
+      `);
+
+    if (existingResult.recordset.length) {
+      await transaction.commit();
+      return {
+        event: mapOperationalEmailEvent(existingResult.recordset[0]),
+        created: false
+      };
+    }
+
+    const insertResult = await new sql.Request(transaction)
+      .input('company_id', sql.BigInt, event.companyId)
+      .input('event_type', sql.VarChar(40), event.eventType)
+      .input('idempotency_key', sql.NVarChar(160), event.idempotencyKey)
+      .input('source_entity_type', sql.VarChar(40), event.sourceEntityType)
+      .input('source_entity_id', sql.BigInt, event.sourceEntityId)
+      .input('customer_id', sql.BigInt, event.customerId)
+      .query(`
+        INSERT INTO dbo.OperationalEmailEvents (
+          company_id,
+          event_type,
+          idempotency_key,
+          source_entity_type,
+          source_entity_id,
+          customer_id
+        )
+        OUTPUT
+          INSERTED.id,
+          INSERTED.company_id,
+          INSERTED.event_type,
+          INSERTED.idempotency_key,
+          INSERTED.source_entity_type,
+          INSERTED.source_entity_id,
+          INSERTED.customer_id,
+          INSERTED.status,
+          INSERTED.created_at,
+          INSERTED.updated_at
+        VALUES (
+          @company_id,
+          @event_type,
+          @idempotency_key,
+          @source_entity_type,
+          @source_entity_id,
+          @customer_id
+        )
+      `);
+
+    await transaction.commit();
+    return {
+      event: mapOperationalEmailEvent(insertResult.recordset[0]),
+      created: true
+    };
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch {
+      // Preserve original error.
+    }
+    throw error;
+  }
+}
+
+async function createOperationalEmailMessage(message) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request()
+    .input('event_id', sql.BigInt, message.eventId)
+    .input('company_id', sql.BigInt, message.companyId)
+    .input('customer_id', sql.BigInt, message.customerId)
+    .input('recipient_email', sql.NVarChar(254), message.recipientEmail)
+    .input('subject', sql.NVarChar(200), message.subject)
+    .input('status', sql.VarChar(20), message.status || 'pending')
+    .input('provider', sql.VarChar(40), message.provider)
+    .input('last_error', sql.NVarChar(1000), message.lastError)
+    .query(`
+      INSERT INTO dbo.OperationalEmailMessages (
+        event_id,
+        company_id,
+        customer_id,
+        recipient_email,
+        subject,
+        status,
+        provider,
+        last_error
+      )
+      OUTPUT
+        INSERTED.id,
+        INSERTED.event_id,
+        INSERTED.company_id,
+        INSERTED.customer_id,
+        INSERTED.recipient_email,
+        INSERTED.subject,
+        INSERTED.status,
+        INSERTED.provider,
+        INSERTED.provider_message_id,
+        INSERTED.last_error,
+        INSERTED.created_at,
+        INSERTED.sent_at,
+        INSERTED.updated_at
+      VALUES (
+        @event_id,
+        @company_id,
+        @customer_id,
+        @recipient_email,
+        @subject,
+        @status,
+        @provider,
+        @last_error
+      )
+    `);
+
+  return mapOperationalEmailMessage(result.recordset[0]);
+}
+
+async function recordOperationalEmailAttempt(messageId, eventId, companyId, attempt) {
+  const sql = getSql();
+  const pool = await getPool();
+  const status = attempt.status === 'sent' ? 'sent' : attempt.status === 'failed' ? 'failed' : 'skipped';
+  const errorMessage = attempt.errorMessage || attempt.reason || null;
+
+  const countResult = await pool.request()
+    .input('message_id', sql.BigInt, messageId)
+    .query(`
+      SELECT COUNT(1) AS attempt_count
+      FROM dbo.OperationalEmailAttempts
+      WHERE message_id = @message_id
+    `);
+  const attemptNumber = Number(countResult.recordset[0].attempt_count || 0) + 1;
+
+  await pool.request()
+    .input('message_id', sql.BigInt, messageId)
+    .input('event_id', sql.BigInt, eventId)
+    .input('company_id', sql.BigInt, companyId)
+    .input('attempt_number', sql.Int, attemptNumber)
+    .input('provider', sql.VarChar(40), attempt.provider || 'acs-email')
+    .input('status', sql.VarChar(20), status)
+    .input('provider_message_id', sql.NVarChar(200), attempt.id || null)
+    .input('error_message', sql.NVarChar(1000), errorMessage)
+    .query(`
+      INSERT INTO dbo.OperationalEmailAttempts (
+        message_id,
+        event_id,
+        company_id,
+        attempt_number,
+        provider,
+        status,
+        provider_message_id,
+        error_message
+      )
+      VALUES (
+        @message_id,
+        @event_id,
+        @company_id,
+        @attempt_number,
+        @provider,
+        @status,
+        @provider_message_id,
+        @error_message
+      )
+    `);
+
+  await pool.request()
+    .input('message_id', sql.BigInt, messageId)
+    .input('event_id', sql.BigInt, eventId)
+    .input('status', sql.VarChar(20), status)
+    .input('provider', sql.VarChar(40), attempt.provider || 'acs-email')
+    .input('provider_message_id', sql.NVarChar(200), attempt.id || null)
+    .input('last_error', sql.NVarChar(1000), errorMessage)
+    .query(`
+      UPDATE dbo.OperationalEmailMessages
+      SET
+        status = @status,
+        provider = @provider,
+        provider_message_id = @provider_message_id,
+        last_error = @last_error,
+        sent_at = CASE WHEN @status = 'sent' THEN SYSUTCDATETIME() ELSE sent_at END,
+        updated_at = SYSUTCDATETIME()
+      WHERE id = @message_id;
+
+      UPDATE dbo.OperationalEmailEvents
+      SET
+        status = @status,
+        updated_at = SYSUTCDATETIME()
+      WHERE id = @event_id;
+    `);
 }
 
 async function listCompanyRegistrationRequests(filters) {
@@ -3435,6 +3777,8 @@ module.exports = {
   createMembershipBenefitUsage,
   createMembershipBenefit,
   createMembershipPlan,
+  createOperationalEmailEventIfNeeded,
+  createOperationalEmailMessage,
   createPurchase,
   createRedemption,
   customerExists,
@@ -3453,6 +3797,7 @@ module.exports = {
   getCompanySettings,
   getCustomerReport,
   getCustomerById,
+  getOperationalEmailSettings,
   getLocalPasswordUserByEmail,
   getMembershipFinancialReport,
   getActiveCustomerMembership,
@@ -3482,6 +3827,7 @@ module.exports = {
   mapMembershipPlan,
   mapMyCompany,
   recordAuthAttemptFailure,
+  recordOperationalEmailAttempt,
   rejectCompanyRegistrationRequest,
   revokeCompanySession,
   completeCompanyPasswordReset,
@@ -3493,6 +3839,7 @@ module.exports = {
   updateCompanyRegistrationRequestLogo,
   updateCompanySettings,
   updateCompanyUserPassword,
+  updateOperationalEmailSettings,
   updateMembershipBenefit,
   updateMembershipPlan
 };

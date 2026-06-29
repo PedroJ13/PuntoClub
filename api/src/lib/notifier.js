@@ -538,7 +538,7 @@ async function sendEmailViaAcs(message, config, options = {}) {
   }
 
   const client = options.client || new EmailClient(config.connectionString);
-  const poller = await client.beginSend({
+  const payload = {
     senderAddress: message.senderAddress,
     senderDisplayName: message.senderDisplayName,
     content: {
@@ -549,7 +549,13 @@ async function sendEmailViaAcs(message, config, options = {}) {
     recipients: {
       to: message.to
     }
-  });
+  };
+
+  if (message.replyTo && message.replyTo.length) {
+    payload.replyTo = message.replyTo;
+  }
+
+  const poller = await client.beginSend(payload);
   const result = await poller.pollUntilDone();
 
   return {

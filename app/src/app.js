@@ -160,6 +160,31 @@ const elements = {
   companyOpenCampaignsButton: document.querySelector(
     "#company-open-campaigns-button",
   ),
+  companyOperationalEmailForm: document.querySelector(
+    "#company-operational-email-form",
+  ),
+  companyEmailWelcomeEnabledInput: document.querySelector(
+    "#company-email-welcome-enabled",
+  ),
+  companyEmailPurchaseEnabledInput: document.querySelector(
+    "#company-email-purchase-enabled",
+  ),
+  companyEmailRedemptionEnabledInput: document.querySelector(
+    "#company-email-redemption-enabled",
+  ),
+  companyEmailReplyToInput: document.querySelector("#company-email-reply-to"),
+  companyEmailReplyToError: document.querySelector(
+    "#company-email-reply-to-error",
+  ),
+  companyOperationalEmailStatus: document.querySelector(
+    "#company-operational-email-status",
+  ),
+  companyOperationalEmailError: document.querySelector(
+    "#company-operational-email-error",
+  ),
+  saveCompanyOperationalEmailButton: document.querySelector(
+    "#save-company-operational-email-button",
+  ),
   companyNavToggle: document.querySelector("#company-nav-toggle"),
   companySubnav: document.querySelector("#company-side-subnav"),
   communicationViewButtons: [
@@ -894,6 +919,7 @@ let currentMembershipFinancialReport = null;
 let currentCustomerReport = null;
 let currentAuditEvents = null;
 let currentCompanySettings = null;
+let currentOperationalEmailSettings = null;
 let currentAuthIdentity = null;
 let currentInvitation = null;
 let membershipPlans = [];
@@ -1216,6 +1242,14 @@ elements.companyPasswordForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   await submitCompanyPasswordChange();
 });
+
+elements.companyOperationalEmailForm.addEventListener(
+  "submit",
+  async (event) => {
+    event.preventDefault();
+    await submitOperationalEmailSettings();
+  },
+);
 
 elements.resetCompanyPasswordFormButton.addEventListener("click", () => {
   clearCompanyPasswordForm();
@@ -2742,6 +2776,7 @@ async function loadCompanySettings() {
     renderCompanySettings(settings);
     renderActiveCompanyIdentity(settings);
     updateMembershipNavigation(settings);
+    await loadOperationalEmailSettings({ silent: true });
     if (activeSection === "memberships") {
       await loadMembershipPlans();
     }
@@ -2753,6 +2788,27 @@ async function loadCompanySettings() {
   } finally {
     stopLoading();
     setCompanyLoading(false);
+  }
+}
+
+async function loadOperationalEmailSettings(options = {}) {
+  clearOperationalEmailMessages();
+
+  try {
+    const settings = await api.getOperationalEmailSettings();
+    currentOperationalEmailSettings = settings;
+    renderOperationalEmailSettings(settings);
+  } catch (error) {
+    currentOperationalEmailSettings = null;
+    renderOperationalEmailSettings({
+      welcomeEnabled: true,
+      purchaseEnabled: true,
+      redemptionEnabled: true,
+      replyToEmail: "",
+    });
+    if (!options.silent) {
+      renderOperationalEmailError(error);
+    }
   }
 }
 
@@ -2780,6 +2836,36 @@ async function submitCompanySettings() {
   } finally {
     stopLoading();
     setCompanySubmitting(false);
+  }
+}
+
+async function submitOperationalEmailSettings() {
+  clearOperationalEmailMessages();
+
+  if (!validateOperationalEmailSettingsForm()) {
+    return;
+  }
+
+  setOperationalEmailSubmitting(true);
+  const stopLoading = startGlobalLoading("Estamos guardando los correos...");
+
+  const payload = {
+    welcomeEnabled: elements.companyEmailWelcomeEnabledInput.checked,
+    purchaseEnabled: elements.companyEmailPurchaseEnabledInput.checked,
+    redemptionEnabled: elements.companyEmailRedemptionEnabledInput.checked,
+    replyToEmail: elements.companyEmailReplyToInput.value.trim() || null,
+  };
+
+  try {
+    const settings = await api.updateOperationalEmailSettings(payload);
+    currentOperationalEmailSettings = settings;
+    renderOperationalEmailSettings(settings);
+    showOperationalEmailStatus("Correos operativos actualizados.");
+  } catch (error) {
+    renderOperationalEmailError(error);
+  } finally {
+    stopLoading();
+    setOperationalEmailSubmitting(false);
   }
 }
 
@@ -5416,6 +5502,19 @@ function renderCompanySettings(settings) {
   renderCompanyLogo(settings);
 }
 
+function renderOperationalEmailSettings(settings) {
+  elements.companyEmailWelcomeEnabledInput.checked = Boolean(
+    settings.welcomeEnabled,
+  );
+  elements.companyEmailPurchaseEnabledInput.checked = Boolean(
+    settings.purchaseEnabled,
+  );
+  elements.companyEmailRedemptionEnabledInput.checked = Boolean(
+    settings.redemptionEnabled,
+  );
+  elements.companyEmailReplyToInput.value = settings.replyToEmail || "";
+}
+
 function renderCompanySettingsError(error) {
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
     error.details.forEach((detail) => {
@@ -5454,6 +5553,28 @@ function renderCompanySettingsError(error) {
   }
 
   showCompanyError("No pudimos cargar la informacion de la empresa.");
+}
+
+function renderOperationalEmailError(error) {
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    error.details.forEach((detail) => {
+      if (detail.field === "replyToEmail") {
+        elements.companyEmailReplyToError.textContent =
+          "Ingresa un correo reply-to válido.";
+      }
+    });
+    showOperationalEmailError("Revisa los campos marcados antes de continuar.");
+    return;
+  }
+
+  if (isAuthRequiredError(error)) {
+    showOperationalEmailError(getAuthRequiredMessage());
+    return;
+  }
+
+  showOperationalEmailError(
+    "No pudimos cargar o guardar la configuración de correos.",
+  );
 }
 
 function renderCompanyPasswordChangeError(error) {
@@ -7017,6 +7138,16 @@ function showCompanyPasswordError(message) {
   elements.companyPasswordError.textContent = message;
 }
 
+function showOperationalEmailStatus(message) {
+  elements.companyOperationalEmailStatus.hidden = false;
+  elements.companyOperationalEmailStatus.textContent = message;
+}
+
+function showOperationalEmailError(message) {
+  elements.companyOperationalEmailError.hidden = false;
+  elements.companyOperationalEmailError.textContent = message;
+}
+
 function showCompanyLogoStatus(message) {
   elements.companyLogoStatus.hidden = false;
   elements.companyLogoStatus.textContent = message;
@@ -7263,6 +7394,14 @@ function clearCompanyPasswordMessages() {
   elements.companyPasswordError.textContent = "";
   elements.companyPasswordStatus.hidden = true;
   elements.companyPasswordStatus.textContent = "";
+}
+
+function clearOperationalEmailMessages() {
+  elements.companyEmailReplyToError.textContent = "";
+  elements.companyOperationalEmailError.hidden = true;
+  elements.companyOperationalEmailError.textContent = "";
+  elements.companyOperationalEmailStatus.hidden = true;
+  elements.companyOperationalEmailStatus.textContent = "";
 }
 
 function clearCompanyPasswordForm(options = {}) {
@@ -7656,6 +7795,18 @@ function setCompanyPasswordSubmitting(isSubmitting) {
   setButtonText(
     elements.saveCompanyPasswordButton,
     isSubmitting ? "Actualizando..." : "Actualizar contraseña",
+  );
+}
+
+function setOperationalEmailSubmitting(isSubmitting) {
+  elements.saveCompanyOperationalEmailButton.disabled = isSubmitting;
+  elements.companyEmailWelcomeEnabledInput.disabled = isSubmitting;
+  elements.companyEmailPurchaseEnabledInput.disabled = isSubmitting;
+  elements.companyEmailRedemptionEnabledInput.disabled = isSubmitting;
+  elements.companyEmailReplyToInput.disabled = isSubmitting;
+  setButtonText(
+    elements.saveCompanyOperationalEmailButton,
+    isSubmitting ? "Guardando..." : "Guardar correos operativos",
   );
 }
 
@@ -8236,6 +8387,18 @@ function validateCompanyPasswordChangeForm() {
   }
 
   return isValid;
+}
+
+function validateOperationalEmailSettingsForm() {
+  const replyToEmail = elements.companyEmailReplyToInput.value.trim();
+  if (replyToEmail && !isEmail(replyToEmail)) {
+    elements.companyEmailReplyToError.textContent =
+      "Ingresa un correo reply-to válido.";
+    showOperationalEmailError("Revisa los datos ingresados.");
+    return false;
+  }
+
+  return true;
 }
 
 function togglePasswordVisibility(input, button) {
