@@ -1683,8 +1683,6 @@ renderCustomerReportPrompt();
 renderAuditPrompt();
 renderAdminPrompt();
 renderCommunicationPreview();
-loadPromotionalCampaigns();
-loadPromotionalRecipients();
 renderCommunicationHistory();
 
 if (isInvitationPage) {
@@ -1926,7 +1924,7 @@ function setCommunicationView(view, options = {}) {
   });
 }
 
-async function loadPromotionalCampaigns() {
+async function loadPromotionalCampaigns(options = {}) {
   clearCommunicationCampaignMessages();
 
   try {
@@ -1948,7 +1946,9 @@ async function loadPromotionalCampaigns() {
       renderCommunicationHistory();
     }
   } catch (error) {
-    renderCommunicationCampaignError(error);
+    if (!options.silent) {
+      renderCommunicationCampaignError(error);
+    }
   }
 }
 
@@ -2000,7 +2000,7 @@ async function loadPromotionalCampaignPreview() {
   }
 }
 
-async function loadPromotionalRecipients() {
+async function loadPromotionalRecipients(options = {}) {
   try {
     const result = await api.listPromotionalRecipients({
       status: activeCommunicationFilter,
@@ -2011,7 +2011,9 @@ async function loadPromotionalRecipients() {
   } catch (error) {
     communicationCustomers = [];
     renderCommunicationCustomers();
-    renderCommunicationCampaignError(error);
+    if (!options.silent) {
+      renderCommunicationCampaignError(error);
+    }
   }
 }
 
@@ -3113,6 +3115,8 @@ async function loadCompanySettings() {
     renderActiveCompanyIdentity(settings);
     updateMembershipNavigation(settings);
     await loadOperationalEmailSettings({ silent: true });
+    await loadPromotionalCampaigns({ silent: true });
+    await loadPromotionalRecipients({ silent: true });
     if (activeSection === "memberships") {
       await loadMembershipPlans();
     }

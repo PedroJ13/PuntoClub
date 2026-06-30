@@ -1,6 +1,6 @@
 const { app } = require("@azure/functions");
 const { ApiError } = require("../lib/errors");
-const { created, getCompanyId, handle, ok, readJson } = require("../lib/http");
+const { created, handle, ok, readJson } = require("../lib/http");
 const {
   parsePositiveInteger,
   validatePromotionalCampaignListQuery,
@@ -10,6 +10,7 @@ const {
   validatePromotionalUnsubscribePayload,
 } = require("../lib/validators");
 const repository = require("../lib/repository");
+const { requireSessionIdentity } = require("./companyAuth");
 
 const defaultPreviewCustomer = {
   name: "Maria Fernandez",
@@ -60,12 +61,37 @@ async function getCampaignId(request) {
   return parsePositiveInteger(request.params.campaignId, "campaignId");
 }
 
+async function getPromotionalCompanyId(
+  request,
+  getIdentity = requireSessionIdentity,
+) {
+  const routeCompanyId = parsePositiveInteger(
+    request.params.companyId,
+    "companyId",
+  );
+  const identity = await getIdentity(request);
+  const sessionCompanyId = parsePositiveInteger(
+    identity?.company?.id,
+    "sessionCompanyId",
+  );
+
+  if (routeCompanyId !== sessionCompanyId) {
+    throw new ApiError(
+      403,
+      "FORBIDDEN",
+      "Company session is not allowed to access this company.",
+    );
+  }
+
+  return sessionCompanyId;
+}
+
 app.http("listPromotionalCampaigns", {
   methods: ["GET"],
   authLevel: "anonymous",
   route: "companies/{companyId}/promotional-campaigns",
   handler: handle(async (request) => {
-    const companyId = await getCompanyId(request);
+    const companyId = await getPromotionalCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const filters = validatePromotionalCampaignListQuery(request.query);
     const result = await repository.listPromotionalCampaigns(
@@ -81,7 +107,7 @@ app.http("createPromotionalCampaign", {
   authLevel: "anonymous",
   route: "companies/{companyId}/promotional-campaigns",
   handler: handle(async (request) => {
-    const companyId = await getCompanyId(request);
+    const companyId = await getPromotionalCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const payload = validatePromotionalCampaignPayload(await readJson(request));
     const campaign = await repository.createPromotionalCampaign(
@@ -97,7 +123,7 @@ app.http("getPromotionalCampaign", {
   authLevel: "anonymous",
   route: "companies/{companyId}/promotional-campaigns/{campaignId}",
   handler: handle(async (request) => {
-    const companyId = await getCompanyId(request);
+    const companyId = await getPromotionalCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const campaignId = await getCampaignId(request);
     const [campaign, recipients] = await Promise.all([
@@ -113,7 +139,7 @@ app.http("previewPromotionalCampaign", {
   authLevel: "anonymous",
   route: "companies/{companyId}/promotional-campaigns/{campaignId}/preview",
   handler: handle(async (request) => {
-    const companyId = await getCompanyId(request);
+    const companyId = await getPromotionalCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const campaignId = await getCampaignId(request);
     const [campaign, company] = await Promise.all([
@@ -130,7 +156,7 @@ app.http("listPromotionalRecipients", {
   authLevel: "anonymous",
   route: "companies/{companyId}/promotional-recipients",
   handler: handle(async (request) => {
-    const companyId = await getCompanyId(request);
+    const companyId = await getPromotionalCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const filters = validatePromotionalRecipientQuery(request.query);
     const result = await repository.listPromotionalRecipients(
@@ -146,7 +172,7 @@ app.http("selectPromotionalCampaignRecipients", {
   authLevel: "anonymous",
   route: "companies/{companyId}/promotional-campaigns/{campaignId}/recipients",
   handler: handle(async (request) => {
-    const companyId = await getCompanyId(request);
+    const companyId = await getPromotionalCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const campaignId = await getCampaignId(request);
     const payload = validatePromotionalRecipientSelectionPayload(
@@ -166,7 +192,7 @@ app.http("sendPromotionalCampaign", {
   authLevel: "anonymous",
   route: "companies/{companyId}/promotional-campaigns/{campaignId}/send",
   handler: handle(async (request) => {
-    const companyId = await getCompanyId(request);
+    const companyId = await getPromotionalCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const campaignId = await getCampaignId(request);
     const campaign = await repository.getPromotionalCampaignById(
@@ -203,7 +229,7 @@ app.http("unsubscribePromotionalCustomer", {
   authLevel: "anonymous",
   route: "companies/{companyId}/promotional-unsubscribe",
   handler: handle(async (request) => {
-    const companyId = await getCompanyId(request);
+    const companyId = await getPromotionalCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const payload = validatePromotionalUnsubscribePayload(
       await readJson(request),
@@ -215,3 +241,8 @@ app.http("unsubscribePromotionalCustomer", {
     return ok(result);
   }),
 });
+
+module.exports = {
+  buildPreview,
+  getPromotionalCompanyId,
+};
