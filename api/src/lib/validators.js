@@ -499,6 +499,7 @@ function validatePromotionalRecipientSelectionPayload(payload) {
 
 function validatePromotionalSendPayload(payload) {
   const body = payload || {};
+  const recipientSelection = validatePromotionalRecipientSelectionPayload(body);
 
   if (body.confirmSend !== true) {
     throw validationError([
@@ -509,7 +510,7 @@ function validatePromotionalSendPayload(payload) {
     ]);
   }
 
-  return { confirmSend: true };
+  return { confirmSend: true, customerIds: recipientSelection.customerIds };
 }
 
 function validatePromotionalUnsubscribePayload(payload) {

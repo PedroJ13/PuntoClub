@@ -493,7 +493,7 @@ function createHttpCustomerApi(config) {
       );
       return parseResponse(response);
     },
-    async sendPromotionalCampaign(campaignId) {
+    async sendPromotionalCampaign(campaignId, customerIds = []) {
       const response = await fetch(
         buildCompanyUrl(
           `/promotional-campaigns/${encodeURIComponent(campaignId)}/send`,
@@ -502,7 +502,7 @@ function createHttpCustomerApi(config) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ confirmSend: true }),
+          body: JSON.stringify({ confirmSend: true, customerIds }),
         },
       );
       return parseResponse(response);
@@ -1171,10 +1171,38 @@ function createMockCustomerApi() {
         skipped,
       };
     },
-    async sendPromotionalCampaign(campaignId) {
+    async sendPromotionalCampaign(campaignId, customerIds = []) {
       await wait(250);
       const campaign = findMockPromotionalCampaign(campaignId);
-      const recipients = cloneMockPromotionalRecipients(campaign.id);
+      validatePromotionalRecipientSelection({ customerIds });
+      const recipients = customerIds
+        .map((customerId) => {
+          const candidate = mapMockPromotionalRecipientCandidate(
+            mockCustomers.find(
+              (customer) => String(customer.id) === String(customerId),
+            ),
+          );
+
+          if (!candidate || !candidate.eligible) {
+            return null;
+          }
+
+          return {
+            id: `${campaign.id}-${candidate.customerId}`,
+            campaignId: campaign.id,
+            companyId: mockCompanySettings.id,
+            customerId: candidate.customerId,
+            customerName: candidate.name,
+            recipientEmail: candidate.email,
+            pointsBalanceSnapshot: candidate.pointsBalance,
+            preferenceStatusSnapshot: candidate.promotionalStatus,
+            status: "pending",
+            skipReason: null,
+            selectedAt: new Date().toISOString(),
+            sentAt: null,
+          };
+        })
+        .filter(Boolean);
       const sentAt = new Date().toISOString();
       const sentRecipients = recipients.map((recipient) => ({
         ...recipient,
@@ -1187,6 +1215,7 @@ function createMockCustomerApi() {
       mockPromotionalCampaignRecipients.set(campaign.id, sentRecipients);
       Object.assign(campaign, {
         status: "sent",
+        recipientCount: sentRecipients.length,
         pendingCount: 0,
         sentCount: sentRecipients.length,
         failedCount: 0,

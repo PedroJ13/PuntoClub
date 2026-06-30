@@ -147,6 +147,9 @@ const elements = {
   communicationSaveCampaignButton: document.querySelector(
     "#communication-save-campaign-button",
   ),
+  communicationCampaignList: document.querySelector(
+    "#communication-campaign-list",
+  ),
   communicationSendButton: document.querySelector("#communication-send-button"),
   communicationCampaignStatus: document.querySelector(
     "#communication-campaign-status",
@@ -161,8 +164,14 @@ const elements = {
   communicationSelectedCount: document.querySelector(
     "#communication-selected-count",
   ),
-  communicationSaveRecipientsButton: document.querySelector(
-    "#communication-save-recipients-button",
+  communicationSelectAllButton: document.querySelector(
+    "#communication-select-all-button",
+  ),
+  communicationSelectPointsButton: document.querySelector(
+    "#communication-select-points-button",
+  ),
+  communicationClearSelectionButton: document.querySelector(
+    "#communication-clear-selection-button",
   ),
   communicationFilterButtons: [
     ...document.querySelectorAll("[data-communication-filter]"),
@@ -964,10 +973,11 @@ let adminRequestLogoPreviewRequestId = null;
 let adminRequestLogoPreviewLoadId = 0;
 let pendingAdminConfirmation = null;
 let globalLoadingTimer = null;
-let activeCommunicationFilter = "subscribed";
+let activeCommunicationFilter = "all";
 let activeCompanySubsection = "profile";
 let activeCommunicationView = "send";
 let currentPromotionalCampaign = null;
+let communicationCampaigns = [];
 let promotionalRecipients = [];
 let selectedPromotionalRecipientIds = new Set();
 const customerBalances = new Map();
@@ -1611,6 +1621,7 @@ elements.communicationCustomerList.addEventListener("change", (event) => {
     );
   }
   updatePromotionalSelectionSummary();
+  updatePromotionalSendState();
 });
 
 elements.communicationCustomerList.addEventListener("click", async (event) => {
@@ -1622,12 +1633,31 @@ elements.communicationCustomerList.addEventListener("click", async (event) => {
   await unsubscribePromotionalCustomer(button.dataset.promotionalUnsubscribeId);
 });
 
-elements.communicationSaveRecipientsButton.addEventListener(
-  "click",
-  async () => {
-    await savePromotionalCampaignRecipients();
-  },
-);
+elements.communicationSelectAllButton.addEventListener("click", () => {
+  selectPromotionalRecipientsByRule((customer) => customer.eligible);
+});
+
+elements.communicationSelectPointsButton.addEventListener("click", () => {
+  selectPromotionalRecipientsByRule(
+    (customer) => customer.eligible && Number(customer.pointsBalance || 0) > 0,
+  );
+});
+
+elements.communicationClearSelectionButton.addEventListener("click", () => {
+  selectedPromotionalRecipientIds = new Set();
+  renderCommunicationCustomers();
+  updatePromotionalSelectionSummary();
+  updatePromotionalSendState();
+});
+
+elements.communicationCampaignList.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-promotional-campaign-id]");
+  if (!button) {
+    return;
+  }
+
+  await selectPromotionalCampaign(button.dataset.promotionalCampaignId);
+});
 
 elements.communicationSendButton.addEventListener("click", async () => {
   await sendPromotionalCampaign();
@@ -1903,7 +1933,9 @@ function setCommunicationView(view, options = {}) {
   });
 
   elements.communicationPanels.forEach((panel) => {
-    panel.hidden = panel.dataset.communicationPanel !== nextView;
+    panel.hidden = !String(panel.dataset.communicationPanel || "")
+      .split(" ")
+      .includes(nextView);
   });
 
   if (options.focus === false) {
@@ -1930,22 +1962,39 @@ async function loadPromotionalCampaigns(options = {}) {
       status: "all",
       limit: 10,
     });
+    communicationCampaigns = result.items || [];
+    renderCommunicationCampaignList();
     currentPromotionalCampaign = result.items?.[0] || null;
     if (currentPromotionalCampaign) {
-      renderPromotionalCampaignForm(currentPromotionalCampaign);
-      const detail = await api.getPromotionalCampaign(
-        currentPromotionalCampaign.id,
-      );
-      promotionalRecipients = detail.recipients || [];
-      selectedPromotionalRecipientIds = new Set(
-        promotionalRecipients.map((recipient) => String(recipient.customerId)),
-      );
-      updatePromotionalSelectionSummary();
-      updatePromotionalSendState();
-      renderCommunicationHistory();
+      await selectPromotionalCampaign(currentPromotionalCampaign.id, {
+        silent: true,
+      });
     } else {
+      selectedPromotionalRecipientIds = new Set();
       updatePromotionalSendState();
+      renderCommunicationCampaignList();
     }
+  } catch (error) {
+    if (!options.silent) {
+      renderCommunicationCampaignError(error);
+    }
+  }
+}
+
+async function selectPromotionalCampaign(campaignId, options = {}) {
+  clearCommunicationCampaignMessages();
+
+  try {
+    const detail = await api.getPromotionalCampaign(campaignId);
+    currentPromotionalCampaign = detail.campaign;
+    promotionalRecipients = detail.recipients || [];
+    selectedPromotionalRecipientIds = new Set();
+    renderPromotionalCampaignForm(currentPromotionalCampaign);
+    renderCommunicationCampaignList();
+    renderCommunicationHistory();
+    updatePromotionalSelectionSummary();
+    updatePromotionalSendState();
+    await loadPromotionalCampaignPreview();
   } catch (error) {
     if (!options.silent) {
       renderCommunicationCampaignError(error);
@@ -1966,11 +2015,18 @@ async function submitPromotionalCampaignDraft() {
   setPromotionalCampaignSubmitting(true);
   try {
     currentPromotionalCampaign = await api.createPromotionalCampaign(payload);
+    communicationCampaigns = [
+      currentPromotionalCampaign,
+      ...communicationCampaigns.filter(
+        (campaign) => campaign.id !== currentPromotionalCampaign.id,
+      ),
+    ];
     selectedPromotionalRecipientIds = new Set();
     promotionalRecipients = [];
     showCommunicationCampaignStatus(
-      "Borrador guardado. Ahora selecciona hasta 5 destinatarios elegibles.",
+      "Campaña guardada. Ahora elige destinatarios para este envío.",
     );
+    renderCommunicationCampaignList();
     updatePromotionalSendState();
     await loadPromotionalCampaignPreview();
     await loadPromotionalRecipients();
@@ -2019,54 +2075,6 @@ async function loadPromotionalRecipients(options = {}) {
   }
 }
 
-async function savePromotionalCampaignRecipients() {
-  clearCommunicationCampaignMessages();
-
-  if (!currentPromotionalCampaign) {
-    showCommunicationCampaignError(
-      "Guarda primero el borrador de campaña antes de seleccionar destinatarios.",
-    );
-    return;
-  }
-
-  if (selectedPromotionalRecipientIds.size === 0) {
-    showCommunicationCampaignError("Selecciona al menos un destinatario.");
-    return;
-  }
-
-  if (selectedPromotionalRecipientIds.size > 5) {
-    showCommunicationCampaignError(
-      "El MVP permite hasta 5 destinatarios por campaña.",
-    );
-    return;
-  }
-
-  elements.communicationSaveRecipientsButton.disabled = true;
-  try {
-    const result = await api.selectPromotionalCampaignRecipients(
-      currentPromotionalCampaign.id,
-      [...selectedPromotionalRecipientIds],
-    );
-    promotionalRecipients = result.recipients || [];
-    currentPromotionalCampaign = {
-      ...currentPromotionalCampaign,
-      status: promotionalRecipients.length ? "ready" : "draft",
-      recipientCount: promotionalRecipients.length,
-      pendingCount: promotionalRecipients.length,
-    };
-    showCommunicationCampaignStatus(
-      `${promotionalRecipients.length} destinatarios guardados. Revisa el preview antes de enviar.`,
-    );
-    renderCommunicationHistory();
-    updatePromotionalSelectionSummary();
-    updatePromotionalSendState();
-  } catch (error) {
-    renderCommunicationCampaignError(error);
-  } finally {
-    elements.communicationSaveRecipientsButton.disabled = false;
-  }
-}
-
 async function unsubscribePromotionalCustomer(customerId) {
   clearCommunicationCampaignMessages();
 
@@ -2096,23 +2104,30 @@ async function sendPromotionalCampaign() {
   clearCommunicationCampaignMessages();
 
   if (!currentPromotionalCampaign) {
-    showCommunicationCampaignError("Guarda primero el borrador de campaña.");
+    showCommunicationCampaignError(
+      "Elige una campaña guardada antes de enviar.",
+    );
     return;
   }
 
-  const pendingRecipients = promotionalRecipients.filter(
-    (recipient) => recipient.status === "pending",
-  );
+  const selectedCustomerIds = [...selectedPromotionalRecipientIds];
 
-  if (!pendingRecipients.length) {
+  if (!selectedCustomerIds.length) {
     showCommunicationCampaignError(
-      "Guarda al menos un destinatario seleccionado antes de enviar.",
+      "Selecciona al menos un destinatario elegible para este envío.",
+    );
+    return;
+  }
+
+  if (selectedCustomerIds.length > 5) {
+    showCommunicationCampaignError(
+      "El MVP permite hasta 5 destinatarios por envío.",
     );
     return;
   }
 
   const confirmed = window.confirm(
-    `Vas a enviar "${currentPromotionalCampaign.name}" a ${pendingRecipients.length} destinatario${pendingRecipients.length === 1 ? "" : "s"} seleccionado${pendingRecipients.length === 1 ? "" : "s"}. No se enviará a clientes no seleccionados ni dados de baja. ¿Confirmas el envío real?`,
+    `Vas a enviar "${currentPromotionalCampaign.name}" a ${selectedCustomerIds.length} destinatario${selectedCustomerIds.length === 1 ? "" : "s"} seleccionado${selectedCustomerIds.length === 1 ? "" : "s"}. No se enviará a clientes no seleccionados ni dados de baja. ¿Confirmas el envío real?`,
   );
 
   if (!confirmed) {
@@ -2125,13 +2140,22 @@ async function sendPromotionalCampaign() {
   try {
     const result = await api.sendPromotionalCampaign(
       currentPromotionalCampaign.id,
+      selectedCustomerIds,
     );
     currentPromotionalCampaign = result.campaign || currentPromotionalCampaign;
+    communicationCampaigns = communicationCampaigns.map((campaign) =>
+      String(campaign.id) === String(currentPromotionalCampaign.id)
+        ? currentPromotionalCampaign
+        : campaign,
+    );
     promotionalRecipients = result.recipients || promotionalRecipients;
+    selectedPromotionalRecipientIds = new Set();
     showCommunicationCampaignStatus(
       `Envío finalizado: ${result.summary?.sent || 0} enviado${result.summary?.sent === 1 ? "" : "s"}, ${result.summary?.failed || 0} fallido${result.summary?.failed === 1 ? "" : "s"} y ${result.summary?.skipped || 0} omitido${result.summary?.skipped === 1 ? "" : "s"}.`,
     );
     renderCommunicationHistory();
+    renderCommunicationCampaignList();
+    renderCommunicationCustomers();
     updatePromotionalSelectionSummary();
   } catch (error) {
     renderCommunicationCampaignError(error);
@@ -2148,6 +2172,36 @@ function renderPromotionalCampaignForm(campaign) {
   elements.communicationIncludePointsInput.checked = Boolean(
     campaign.includePoints,
   );
+}
+
+function renderCommunicationCampaignList() {
+  if (!elements.communicationCampaignList) {
+    return;
+  }
+
+  if (!communicationCampaigns.length) {
+    elements.communicationCampaignList.innerHTML =
+      '<div class="empty-state">No hay campañas guardadas.</div>';
+    return;
+  }
+
+  elements.communicationCampaignList.innerHTML = communicationCampaigns
+    .map((campaign) => {
+      const isActive =
+        String(currentPromotionalCampaign?.id) === String(campaign.id);
+      return `
+        <button
+          class="communication-campaign-option${isActive ? " is-active" : ""}"
+          type="button"
+          data-promotional-campaign-id="${escapeHtml(campaign.id)}"
+          aria-pressed="${isActive ? "true" : "false"}"
+        >
+          <strong>${escapeHtml(campaign.name)}</strong>
+          <span>${escapeHtml(campaign.subject)}</span>
+        </button>
+      `;
+    })
+    .join("");
 }
 
 function renderCommunicationPreview(preview = null) {
@@ -2204,8 +2258,9 @@ function renderCommunicationCustomers() {
 
   const customers = communicationCustomers.filter(
     (customer) =>
+      activeCommunicationFilter === "all" ||
       (customer.promotionalStatus || customer.status) ===
-      activeCommunicationFilter,
+        activeCommunicationFilter,
   );
 
   if (!customers.length) {
@@ -2225,8 +2280,9 @@ function renderCommunicationCustomerCard(customer) {
   const checked = selectedPromotionalRecipientIds.has(String(customerId));
   const disabled =
     !customer.eligible || selectedPromotionalRecipientIds.size >= 5;
+  const disabledReason = getCommunicationBlockedReason(customer);
   return `
-    <article class="communication-customer-card">
+    <article class="communication-customer-card${disabled && !checked ? " is-disabled" : ""}">
       <label class="communication-recipient-check">
         <input
           type="checkbox"
@@ -2246,6 +2302,11 @@ function renderCommunicationCustomerCard(customer) {
       </div>
       <span class="communication-state-pill">${escapeHtml(getCommunicationPreferenceLabel(status))}</span>
       ${
+        disabledReason
+          ? `<p class="communication-disabled-reason">${escapeHtml(disabledReason)}</p>`
+          : ""
+      }
+      ${
         status === "subscribed"
           ? `<button
               class="secondary-button communication-unsubscribe-button"
@@ -2258,6 +2319,28 @@ function renderCommunicationCustomerCard(customer) {
       }
     </article>
   `;
+}
+
+function selectPromotionalRecipientsByRule(predicate) {
+  const selectedIds = [];
+
+  for (const customer of communicationCustomers) {
+    if (selectedIds.length >= 5) {
+      break;
+    }
+
+    if (predicate(customer)) {
+      selectedIds.push(String(customer.customerId || customer.id));
+    }
+  }
+
+  selectedPromotionalRecipientIds = new Set(selectedIds);
+  renderCommunicationCustomers();
+  updatePromotionalSelectionSummary();
+  updatePromotionalSendState();
+  showCommunicationCampaignStatus(
+    `${selectedIds.length} destinatario${selectedIds.length === 1 ? "" : "s"} seleccionado${selectedIds.length === 1 ? "" : "s"} para este envío.`,
+  );
 }
 
 function renderCommunicationHistory() {
@@ -2288,10 +2371,27 @@ function getCommunicationPreferenceLabel(status) {
   const labels = {
     subscribed: "Suscrito",
     unsubscribed: "Baja promocional",
+    suppressed: "Suprimido",
     blocked: "No apto",
   };
 
   return labels[status] ?? "Sin estado";
+}
+
+function getCommunicationBlockedReason(customer) {
+  if (customer.eligible) {
+    return null;
+  }
+
+  const reason = customer.blockedReason || customer.blocked || customer.status;
+  const labels = {
+    missing_email: "No tiene correo válido.",
+    unsubscribed: "Dado de baja de promociones.",
+    suppressed: "Correo suprimido para promociones.",
+    blocked: "No apto para este envío.",
+  };
+
+  return labels[reason] || "No apto para este envío.";
 }
 
 function getPromotionalRecipientStatusLabel(status) {
@@ -2308,23 +2408,19 @@ function getPromotionalRecipientStatusLabel(status) {
 function updatePromotionalSelectionSummary() {
   const count = selectedPromotionalRecipientIds.size;
   elements.communicationSelectedCount.textContent = `${count} seleccionado${count === 1 ? "" : "s"} de 5`;
-  elements.communicationSaveRecipientsButton.disabled =
-    count === 0 || count > 5;
+  elements.communicationClearSelectionButton.disabled = count === 0;
 }
 
 function updatePromotionalSendState() {
-  const pendingCount = promotionalRecipients.filter(
-    (recipient) => recipient.status === "pending",
-  ).length;
+  const selectedCount = selectedPromotionalRecipientIds.size;
   const canSend =
     Boolean(currentPromotionalCampaign) &&
-    currentPromotionalCampaign.status === "ready" &&
-    pendingCount > 0 &&
-    pendingCount <= 5;
+    selectedCount > 0 &&
+    selectedCount <= 5;
 
   elements.communicationSendButton.disabled = !canSend;
   elements.communicationSendButton.textContent = canSend
-    ? `Enviar a ${pendingCount}`
+    ? `Enviar a ${selectedCount}`
     : "Enviar campaña";
 }
 

@@ -3353,9 +3353,8 @@
                 <div>
                   <h2 id="communications-campaign-title">Enviar campañas</h2>
                   <p class="section-support">
-                    Crea un borrador promocional, selecciona hasta 5 clientes
-                    elegibles y revisa el preview. El envío real sigue
-                    bloqueado.
+                    Elige una campaña guardada, revisa el preview y selecciona
+                    hasta 5 clientes elegibles al momento de enviar.
                   </p>
                 </div>
               </div>
@@ -3365,6 +3364,21 @@
                 hidden
               ></p>
               <p class="error-message" id="communication-campaign-error"></p>
+
+              <div class="communication-saved-campaigns">
+                <div class="section-header compact">
+                  <div>
+                    <h3>Campañas guardadas</h3>
+                    <p class="section-support">
+                      Selecciona una plantilla para preparar un envío.
+                    </p>
+                  </div>
+                </div>
+                <div
+                  id="communication-campaign-list"
+                  class="communication-campaign-list"
+                ></div>
+              </div>
 
               <form
                 id="communication-campaign-form"
@@ -3433,8 +3447,8 @@
                 </div>
               </form>
               <p class="section-support">
-                El envío real requiere destinatarios guardados, confirmación y
-                feature flag activo.
+                El envío real requiere campaña guardada, destinatarios
+                seleccionados, confirmación y feature flag activo.
               </p>
             </section>
 
@@ -3465,17 +3479,17 @@
 
             <section
               class="communications-customers-panel zone-card"
-              data-communication-panel="customers"
+              data-communication-panel="send customers"
               aria-labelledby="communications-customers-title"
             >
               <div class="section-header">
                 <div>
                   <h2 id="communications-customers-title">
-                    Clientes y preferencias
+                    Seleccionar destinatarios
                   </h2>
                   <p class="section-support">
-                    Selección manual de destinatarios elegibles. La baja
-                    promocional no elimina puntos, beneficios ni historial.
+                    Los dados de baja aparecen visibles, pero no pueden
+                    seleccionarse. No se envía a clientes no seleccionados.
                   </p>
                 </div>
               </div>
@@ -3485,10 +3499,24 @@
                 >
                 <button
                   class="secondary-button"
-                  id="communication-save-recipients-button"
+                  id="communication-select-all-button"
                   type="button"
                 >
-                  Guardar destinatarios
+                  Seleccionar elegibles
+                </button>
+                <button
+                  class="secondary-button"
+                  id="communication-select-points-button"
+                  type="button"
+                >
+                  Con puntos
+                </button>
+                <button
+                  class="secondary-button"
+                  id="communication-clear-selection-button"
+                  type="button"
+                >
+                  Limpiar selección
                 </button>
               </div>
               <div
@@ -3498,6 +3526,13 @@
               >
                 <button
                   class="secondary-button is-active"
+                  type="button"
+                  data-communication-filter="all"
+                >
+                  Todos
+                </button>
+                <button
+                  class="secondary-button"
                   type="button"
                   data-communication-filter="subscribed"
                 >

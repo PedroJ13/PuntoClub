@@ -72,12 +72,24 @@ test("promotional unsubscribe keeps optional campaign context", () => {
 });
 
 test("promotional send requires explicit confirmation payload", () => {
-  assert.deepEqual(validatePromotionalSendPayload({ confirmSend: true }), {
-    confirmSend: true,
-  });
+  assert.deepEqual(
+    validatePromotionalSendPayload({ confirmSend: true, customerIds: [10] }),
+    {
+      confirmSend: true,
+      customerIds: [10],
+    },
+  );
 
   assert.throws(
-    () => validatePromotionalSendPayload({ confirmSend: false }),
+    () =>
+      validatePromotionalSendPayload({
+        confirmSend: false,
+        customerIds: [10],
+      }),
+    (error) => error instanceof ApiError && error.code === "VALIDATION_ERROR",
+  );
+  assert.throws(
+    () => validatePromotionalSendPayload({ confirmSend: true }),
     (error) => error instanceof ApiError && error.code === "VALIDATION_ERROR",
   );
 });
@@ -145,7 +157,16 @@ test("promotional email renders only the selected recipient message", () => {
 test("promotional send skips unsubscribed recipients and sends selected subscribed recipients", async () => {
   const sentMessages = [];
   const savedResults = [];
+  const selectedPayloads = [];
   const fakeRepository = {
+    async replacePromotionalCampaignRecipients(
+      companyId,
+      campaignId,
+      customerIds,
+    ) {
+      selectedPayloads.push({ companyId, campaignId, customerIds });
+      return { recipients: [], skipped: [] };
+    },
     async beginPromotionalCampaignSend() {
       return {
         id: "5",
@@ -195,6 +216,7 @@ test("promotional send skips unsubscribed recipients and sends selected subscrib
   const result = await sendPromotionalCampaignToRecipients({
     companyId: 10,
     campaignId: 5,
+    customerIds: [100, 101],
     emailConfig: {
       senderAddress: "DoNotReply@example.com",
       senderDisplayName: "Punto Club",
@@ -206,6 +228,9 @@ test("promotional send skips unsubscribed recipients and sends selected subscrib
     },
   });
 
+  assert.deepEqual(selectedPayloads, [
+    { companyId: 10, campaignId: 5, customerIds: [100, 101] },
+  ]);
   assert.equal(sentMessages.length, 1);
   assert.equal(sentMessages[0].to[0].address, "ana@example.com");
   assert.deepEqual(result.summary, {

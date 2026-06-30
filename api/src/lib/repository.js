@@ -1443,11 +1443,11 @@ async function replacePromotionalCampaignRecipients(
     }
 
     const campaign = campaignResult.recordset[0];
-    if (!["draft", "ready"].includes(campaign.status)) {
+    if (!["draft", "ready", "sent", "failed"].includes(campaign.status)) {
       throw new ApiError(
         409,
         "PROMOTIONAL_CAMPAIGN_NOT_EDITABLE",
-        "Promotional campaign recipients cannot be changed in this status.",
+        "Promotional campaign cannot prepare recipients in this status.",
       );
     }
 

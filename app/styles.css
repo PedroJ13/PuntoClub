@@ -2379,9 +2379,34 @@ body:not(.public-registration-mode)
 
 .communication-switch-list,
 .communication-campaign-form,
+.communication-campaign-list,
 .communication-customer-list {
   display: grid;
   gap: 10px;
+}
+
+.communication-saved-campaigns {
+  margin-bottom: 14px;
+}
+
+.communication-campaign-option {
+  width: 100%;
+  justify-content: flex-start;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--text);
+  text-align: left;
+}
+
+.communication-campaign-option.is-active {
+  border-color: rgba(15, 118, 110, 0.42);
+  background: var(--accent-soft);
+}
+
+.communication-campaign-option span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 750;
 }
 
 .communication-switch {
@@ -2515,6 +2540,14 @@ body:not(.public-registration-mode)
     minmax(120px, auto) minmax(110px, auto);
   gap: 10px;
   align-items: center;
+}
+
+.communication-customer-card.is-disabled {
+  background: var(--surface-strong);
+}
+
+.communication-disabled-reason {
+  grid-column: 2 / -1;
 }
 
 .communication-recipient-check input {

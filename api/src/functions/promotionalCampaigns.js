@@ -126,10 +126,19 @@ function getPromotionalRecipientSkipReason(recipient) {
 async function sendPromotionalCampaignToRecipients({
   companyId,
   campaignId,
+  customerIds,
   emailConfig,
   sendEmail = (message) => notifier.sendEmailViaAcs(message, emailConfig),
   repositoryAdapter = repository,
 }) {
+  if (Array.isArray(customerIds)) {
+    await repositoryAdapter.replacePromotionalCampaignRecipients(
+      companyId,
+      campaignId,
+      customerIds,
+    );
+  }
+
   const campaign = await repositoryAdapter.beginPromotionalCampaignSend(
     companyId,
     campaignId,
@@ -361,7 +370,7 @@ app.http("sendPromotionalCampaign", {
     const companyId = await getPromotionalCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const campaignId = await getCampaignId(request);
-    validatePromotionalSendPayload(await readJson(request));
+    const payload = validatePromotionalSendPayload(await readJson(request));
 
     if (!isPromotionalSendEnabled()) {
       throw new ApiError(
@@ -383,6 +392,7 @@ app.http("sendPromotionalCampaign", {
     const result = await sendPromotionalCampaignToRecipients({
       companyId,
       campaignId,
+      customerIds: payload.customerIds,
       emailConfig,
     });
     return ok(result);
