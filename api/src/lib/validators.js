@@ -497,6 +497,21 @@ function validatePromotionalRecipientSelectionPayload(payload) {
   return { customerIds: normalizedIds };
 }
 
+function validatePromotionalSendPayload(payload) {
+  const body = payload || {};
+
+  if (body.confirmSend !== true) {
+    throw validationError([
+      {
+        field: "confirmSend",
+        message: "confirmSend must be true to send a promotional campaign.",
+      },
+    ]);
+  }
+
+  return { confirmSend: true };
+}
+
 function validatePromotionalUnsubscribePayload(payload) {
   const details = [];
   const body = payload || {};
@@ -2059,6 +2074,7 @@ module.exports = {
   validatePromotionalCampaignPayload,
   validatePromotionalRecipientQuery,
   validatePromotionalRecipientSelectionPayload,
+  validatePromotionalSendPayload,
   validatePromotionalUnsubscribePayload,
   validatePurchasePayload,
   validateRedemptionPayload,

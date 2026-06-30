@@ -1629,10 +1629,8 @@ elements.communicationSaveRecipientsButton.addEventListener(
   },
 );
 
-elements.communicationSendButton.addEventListener("click", () => {
-  showCommunicationCampaignError(
-    "El envío real de promociones sigue bloqueado hasta una decisión explícita.",
-  );
+elements.communicationSendButton.addEventListener("click", async () => {
+  await sendPromotionalCampaign();
 });
 
 elements.companySubsectionButtons.forEach((button) => {
@@ -1943,7 +1941,10 @@ async function loadPromotionalCampaigns(options = {}) {
         promotionalRecipients.map((recipient) => String(recipient.customerId)),
       );
       updatePromotionalSelectionSummary();
+      updatePromotionalSendState();
       renderCommunicationHistory();
+    } else {
+      updatePromotionalSendState();
     }
   } catch (error) {
     if (!options.silent) {
@@ -1970,6 +1971,7 @@ async function submitPromotionalCampaignDraft() {
     showCommunicationCampaignStatus(
       "Borrador guardado. Ahora selecciona hasta 5 destinatarios elegibles.",
     );
+    updatePromotionalSendState();
     await loadPromotionalCampaignPreview();
     await loadPromotionalRecipients();
   } catch (error) {
@@ -2053,10 +2055,11 @@ async function savePromotionalCampaignRecipients() {
       pendingCount: promotionalRecipients.length,
     };
     showCommunicationCampaignStatus(
-      `${promotionalRecipients.length} destinatarios guardados. El envío real sigue bloqueado.`,
+      `${promotionalRecipients.length} destinatarios guardados. Revisa el preview antes de enviar.`,
     );
     renderCommunicationHistory();
     updatePromotionalSelectionSummary();
+    updatePromotionalSendState();
   } catch (error) {
     renderCommunicationCampaignError(error);
   } finally {
@@ -2083,8 +2086,57 @@ async function unsubscribePromotionalCustomer(customerId) {
     await loadPromotionalRecipients();
     renderCommunicationHistory();
     updatePromotionalSelectionSummary();
+    updatePromotionalSendState();
   } catch (error) {
     renderCommunicationCampaignError(error);
+  }
+}
+
+async function sendPromotionalCampaign() {
+  clearCommunicationCampaignMessages();
+
+  if (!currentPromotionalCampaign) {
+    showCommunicationCampaignError("Guarda primero el borrador de campaña.");
+    return;
+  }
+
+  const pendingRecipients = promotionalRecipients.filter(
+    (recipient) => recipient.status === "pending",
+  );
+
+  if (!pendingRecipients.length) {
+    showCommunicationCampaignError(
+      "Guarda al menos un destinatario seleccionado antes de enviar.",
+    );
+    return;
+  }
+
+  const confirmed = window.confirm(
+    `Vas a enviar "${currentPromotionalCampaign.name}" a ${pendingRecipients.length} destinatario${pendingRecipients.length === 1 ? "" : "s"} seleccionado${pendingRecipients.length === 1 ? "" : "s"}. No se enviará a clientes no seleccionados ni dados de baja. ¿Confirmas el envío real?`,
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  elements.communicationSendButton.disabled = true;
+  elements.communicationSendButton.textContent = "Enviando...";
+
+  try {
+    const result = await api.sendPromotionalCampaign(
+      currentPromotionalCampaign.id,
+    );
+    currentPromotionalCampaign = result.campaign || currentPromotionalCampaign;
+    promotionalRecipients = result.recipients || promotionalRecipients;
+    showCommunicationCampaignStatus(
+      `Envío finalizado: ${result.summary?.sent || 0} enviado${result.summary?.sent === 1 ? "" : "s"}, ${result.summary?.failed || 0} fallido${result.summary?.failed === 1 ? "" : "s"} y ${result.summary?.skipped || 0} omitido${result.summary?.skipped === 1 ? "" : "s"}.`,
+    );
+    renderCommunicationHistory();
+    updatePromotionalSelectionSummary();
+  } catch (error) {
+    renderCommunicationCampaignError(error);
+  } finally {
+    updatePromotionalSendState();
   }
 }
 
@@ -2260,6 +2312,22 @@ function updatePromotionalSelectionSummary() {
     count === 0 || count > 5;
 }
 
+function updatePromotionalSendState() {
+  const pendingCount = promotionalRecipients.filter(
+    (recipient) => recipient.status === "pending",
+  ).length;
+  const canSend =
+    Boolean(currentPromotionalCampaign) &&
+    currentPromotionalCampaign.status === "ready" &&
+    pendingCount > 0 &&
+    pendingCount <= 5;
+
+  elements.communicationSendButton.disabled = !canSend;
+  elements.communicationSendButton.textContent = canSend
+    ? `Enviar a ${pendingCount}`
+    : "Enviar campaña";
+}
+
 function clearCommunicationCampaignMessages() {
   elements.communicationCampaignStatus.hidden = true;
   elements.communicationCampaignStatus.textContent = "";
@@ -2283,7 +2351,17 @@ function renderCommunicationCampaignError(error) {
 
   if (error instanceof ApiError && error.code === "PROMOTIONAL_SEND_BLOCKED") {
     showCommunicationCampaignError(
-      "El envío real de promociones sigue bloqueado por feature flag.",
+      "El envío real de promociones no está habilitado en el servidor.",
+    );
+    return;
+  }
+
+  if (
+    error instanceof ApiError &&
+    error.code === "PROMOTIONAL_EMAIL_NOT_CONFIGURED"
+  ) {
+    showCommunicationCampaignError(
+      "El remitente de correo promocional no está configurado.",
     );
     return;
   }

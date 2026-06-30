@@ -245,6 +245,15 @@ function mapPromotionalRecipient(row) {
   };
 }
 
+function mapPromotionalSendRecipient(row) {
+  return {
+    ...mapPromotionalRecipient(row),
+    currentRecipientEmail: row.current_recipient_email || null,
+    currentPreferenceStatus:
+      row.current_preference_status || row.preference_status_snapshot,
+  };
+}
+
 function mapEligiblePromotionalCustomer(row) {
   return {
     customerId: toApiId(row.customer_id),
@@ -1261,6 +1270,92 @@ async function updatePromotionalCampaignPreviewAt(companyId, campaignId) {
     `);
 }
 
+async function beginPromotionalCampaignSend(companyId, campaignId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+
+  await transaction.begin();
+
+  try {
+    const campaignResult = await new sql.Request(transaction)
+      .input("company_id", sql.BigInt, companyId)
+      .input("campaign_id", sql.BigInt, campaignId).query(`
+        SELECT
+          campaigns.id,
+          campaigns.status,
+          campaigns.recipient_limit,
+          COUNT(recipients.id) AS pending_count
+        FROM dbo.PromotionalCampaigns AS campaigns WITH (UPDLOCK, HOLDLOCK)
+        LEFT JOIN dbo.PromotionalCampaignRecipients AS recipients
+          ON recipients.campaign_id = campaigns.id
+         AND recipients.status = 'pending'
+        WHERE campaigns.company_id = @company_id
+          AND campaigns.id = @campaign_id
+        GROUP BY campaigns.id, campaigns.status, campaigns.recipient_limit
+      `);
+
+    if (!campaignResult.recordset.length) {
+      throw new ApiError(
+        404,
+        "PROMOTIONAL_CAMPAIGN_NOT_FOUND",
+        "Promotional campaign was not found.",
+      );
+    }
+
+    const campaign = campaignResult.recordset[0];
+    const pendingCount = Number(campaign.pending_count || 0);
+    const recipientLimit = Number(campaign.recipient_limit || 5);
+
+    if (campaign.status !== "ready") {
+      throw new ApiError(
+        409,
+        "PROMOTIONAL_CAMPAIGN_NOT_READY",
+        "Promotional campaign must be ready before sending.",
+      );
+    }
+
+    if (!pendingCount) {
+      throw new ApiError(
+        409,
+        "PROMOTIONAL_RECIPIENTS_REQUIRED",
+        "Promotional campaign requires selected recipients before sending.",
+      );
+    }
+
+    if (pendingCount > recipientLimit) {
+      throw new ApiError(
+        409,
+        "PROMOTIONAL_RECIPIENT_LIMIT_EXCEEDED",
+        "Promotional recipient limit exceeded.",
+      );
+    }
+
+    await new sql.Request(transaction)
+      .input("company_id", sql.BigInt, companyId)
+      .input("campaign_id", sql.BigInt, campaignId).query(`
+        UPDATE dbo.PromotionalCampaigns
+        SET
+          status = 'sending',
+          confirmed_at = COALESCE(confirmed_at, SYSUTCDATETIME()),
+          updated_at = SYSUTCDATETIME()
+        WHERE company_id = @company_id
+          AND id = @campaign_id
+      `);
+
+    await transaction.commit();
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch {
+      // Preserve original error.
+    }
+    throw error;
+  }
+
+  return getPromotionalCampaignById(companyId, campaignId);
+}
+
 async function listPromotionalRecipients(companyId, filters = {}) {
   const sql = getSql();
   const pool = await getPool();
@@ -1532,6 +1627,187 @@ async function listPromotionalCampaignRecipients(companyId, campaignId) {
     `);
 
   return result.recordset.map(mapPromotionalRecipient);
+}
+
+async function listPendingPromotionalCampaignRecipientsForSend(
+  companyId,
+  campaignId,
+) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("campaign_id", sql.BigInt, campaignId).query(`
+      SELECT
+        recipients.id,
+        recipients.campaign_id,
+        recipients.company_id,
+        recipients.customer_id,
+        customers.name AS customer_name,
+        recipients.recipient_email,
+        NULLIF(LTRIM(RTRIM(customers.email)), '') AS current_recipient_email,
+        recipients.points_balance_snapshot,
+        recipients.preference_status_snapshot,
+        COALESCE(preferences.promotional_status, 'subscribed') AS current_preference_status,
+        recipients.status,
+        recipients.skip_reason,
+        recipients.provider,
+        recipients.provider_message_id,
+        recipients.last_error,
+        recipients.selected_at,
+        recipients.sent_at,
+        recipients.updated_at
+      FROM dbo.PromotionalCampaignRecipients AS recipients
+      INNER JOIN dbo.Customers AS customers
+        ON customers.company_id = recipients.company_id
+       AND customers.id = recipients.customer_id
+      LEFT JOIN dbo.CustomerPromotionalEmailPreferences AS preferences
+        ON preferences.company_id = recipients.company_id
+       AND preferences.customer_id = recipients.customer_id
+      WHERE recipients.company_id = @company_id
+        AND recipients.campaign_id = @campaign_id
+        AND recipients.status = 'pending'
+      ORDER BY recipients.id ASC
+    `);
+
+  return result.recordset.map(mapPromotionalSendRecipient);
+}
+
+async function recordPromotionalCampaignRecipientResult(
+  companyId,
+  campaignId,
+  recipientId,
+  result,
+) {
+  const sql = getSql();
+  const pool = await getPool();
+  const status = result.status || "failed";
+  const provider = result.provider || null;
+  const providerMessageId = result.providerMessageId || result.id || null;
+  const lastError = result.lastError || result.reason || null;
+  const skipReason = result.skipReason || null;
+  const sentAt = status === "sent" ? new Date() : null;
+  const updateResult = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("campaign_id", sql.BigInt, campaignId)
+    .input("recipient_id", sql.BigInt, recipientId)
+    .input("status", sql.VarChar(20), status)
+    .input("skip_reason", sql.NVarChar(300), skipReason)
+    .input("provider", sql.VarChar(40), provider)
+    .input("provider_message_id", sql.NVarChar(200), providerMessageId)
+    .input("last_error", sql.NVarChar(1000), lastError)
+    .input("sent_at", sql.DateTime2, sentAt).query(`
+      UPDATE recipients
+      SET
+        status = @status,
+        skip_reason = @skip_reason,
+        provider = @provider,
+        provider_message_id = @provider_message_id,
+        last_error = @last_error,
+        sent_at = @sent_at,
+        updated_at = SYSUTCDATETIME()
+      OUTPUT
+        INSERTED.id,
+        INSERTED.campaign_id,
+        INSERTED.company_id,
+        INSERTED.customer_id,
+        customers.name AS customer_name,
+        INSERTED.recipient_email,
+        INSERTED.points_balance_snapshot,
+        INSERTED.preference_status_snapshot,
+        INSERTED.status,
+        INSERTED.skip_reason,
+        INSERTED.provider,
+        INSERTED.provider_message_id,
+        INSERTED.last_error,
+        INSERTED.selected_at,
+        INSERTED.sent_at,
+        INSERTED.updated_at
+      FROM dbo.PromotionalCampaignRecipients AS recipients
+      INNER JOIN dbo.Customers AS customers
+        ON customers.company_id = recipients.company_id
+       AND customers.id = recipients.customer_id
+      WHERE recipients.company_id = @company_id
+        AND recipients.campaign_id = @campaign_id
+        AND recipients.id = @recipient_id
+        AND recipients.status = 'pending'
+    `);
+
+  if (!updateResult.recordset.length) {
+    throw new ApiError(
+      404,
+      "PROMOTIONAL_RECIPIENT_NOT_FOUND",
+      "Promotional recipient was not found.",
+    );
+  }
+
+  return mapPromotionalRecipient(updateResult.recordset[0]);
+}
+
+async function completePromotionalCampaignSend(companyId, campaignId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("campaign_id", sql.BigInt, campaignId).query(`
+      WITH counts AS (
+        SELECT
+          SUM(CASE WHEN status = 'sent' THEN 1 ELSE 0 END) AS sent_count,
+          SUM(CASE WHEN status = 'failed' THEN 1 ELSE 0 END) AS failed_count,
+          SUM(CASE WHEN status = 'skipped' THEN 1 ELSE 0 END) AS skipped_count
+        FROM dbo.PromotionalCampaignRecipients
+        WHERE company_id = @company_id
+          AND campaign_id = @campaign_id
+      )
+      UPDATE campaigns
+      SET
+        status = CASE
+          WHEN COALESCE(counts.sent_count, 0) > 0 THEN 'sent'
+          ELSE 'failed'
+        END,
+        sent_at = CASE
+          WHEN COALESCE(counts.sent_count, 0) > 0 THEN COALESCE(campaigns.sent_at, SYSUTCDATETIME())
+          ELSE campaigns.sent_at
+        END,
+        updated_at = SYSUTCDATETIME()
+      OUTPUT
+        INSERTED.id,
+        INSERTED.company_id,
+        INSERTED.name,
+        INSERTED.subject,
+        INSERTED.body_text,
+        INSERTED.include_points,
+        INSERTED.status,
+        INSERTED.recipient_limit,
+        INSERTED.last_preview_at,
+        INSERTED.confirmed_at,
+        INSERTED.sent_at,
+        INSERTED.cancelled_at,
+        INSERTED.created_at,
+        INSERTED.updated_at,
+        COALESCE(counts.sent_count, 0) + COALESCE(counts.failed_count, 0) + COALESCE(counts.skipped_count, 0) AS recipient_count,
+        0 AS pending_count,
+        COALESCE(counts.sent_count, 0) AS sent_count,
+        COALESCE(counts.failed_count, 0) AS failed_count,
+        COALESCE(counts.skipped_count, 0) AS skipped_count
+      FROM dbo.PromotionalCampaigns AS campaigns
+      CROSS JOIN counts
+      WHERE campaigns.company_id = @company_id
+        AND campaigns.id = @campaign_id
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(
+      404,
+      "PROMOTIONAL_CAMPAIGN_NOT_FOUND",
+      "Promotional campaign was not found.",
+    );
+  }
+
+  return mapPromotionalCampaign(result.recordset[0]);
 }
 
 async function unsubscribePromotionalCustomer(
@@ -4664,6 +4940,7 @@ async function listMembershipExpirationAlerts(companyId, filters = {}) {
 module.exports = {
   acceptCompanyInvitationWithPassword,
   approveCompanyRegistrationRequest,
+  beginPromotionalCampaignSend,
   calculateExpirationAlert,
   calculateMembershipEndDate,
   calculateUsagePeriodStartDate,
@@ -4714,6 +4991,7 @@ module.exports = {
   listMembershipPlans,
   listPromotionalCampaignRecipients,
   listPromotionalCampaigns,
+  listPendingPromotionalCampaignRecipientsForSend,
   listPromotionalRecipients,
   listCustomers,
   listCompanyRegistrationRequests,
@@ -4733,6 +5011,7 @@ module.exports = {
   mapMyCompany,
   recordAuthAttemptFailure,
   recordOperationalEmailAttempt,
+  recordPromotionalCampaignRecipientResult,
   rejectCompanyRegistrationRequest,
   revokeCompanySession,
   completeCompanyPasswordReset,
@@ -4747,6 +5026,7 @@ module.exports = {
   updateCompanyUserPassword,
   updateOperationalEmailSettings,
   updatePromotionalCampaignPreviewAt,
+  completePromotionalCampaignSend,
   updateMembershipBenefit,
   updateMembershipPlan,
 };

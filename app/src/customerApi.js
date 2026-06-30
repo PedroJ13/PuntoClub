@@ -500,7 +500,9 @@ function createHttpCustomerApi(config) {
         ),
         {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           credentials: "include",
+          body: JSON.stringify({ confirmSend: true }),
         },
       );
       return parseResponse(response);
@@ -1169,12 +1171,40 @@ function createMockCustomerApi() {
         skipped,
       };
     },
-    async sendPromotionalCampaign() {
+    async sendPromotionalCampaign(campaignId) {
       await wait(250);
-      throw new ApiError(
-        "PROMOTIONAL_SEND_BLOCKED",
-        "El envío real de promociones sigue bloqueado por feature flag.",
-      );
+      const campaign = findMockPromotionalCampaign(campaignId);
+      const recipients = cloneMockPromotionalRecipients(campaign.id);
+      const sentAt = new Date().toISOString();
+      const sentRecipients = recipients.map((recipient) => ({
+        ...recipient,
+        status: "sent",
+        provider: "mock-email",
+        providerMessageId: `mock-${recipient.id}`,
+        sentAt,
+      }));
+
+      mockPromotionalCampaignRecipients.set(campaign.id, sentRecipients);
+      Object.assign(campaign, {
+        status: "sent",
+        pendingCount: 0,
+        sentCount: sentRecipients.length,
+        failedCount: 0,
+        skippedCount: 0,
+        sentAt,
+        updatedAt: sentAt,
+      });
+
+      return {
+        campaign: cloneMockPromotionalCampaign(campaign),
+        summary: {
+          selected: sentRecipients.length,
+          sent: sentRecipients.length,
+          failed: 0,
+          skipped: 0,
+        },
+        recipients: cloneMockPromotionalRecipients(campaign.id),
+      };
     },
     async unsubscribePromotionalCustomer(payload) {
       await wait(300);
