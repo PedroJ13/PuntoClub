@@ -54,6 +54,28 @@ let mockOperationalEmailSettings = {
   replyToEmail: "hola@cafecentral.test",
   updatedAt: "2026-06-29T10:00:00Z",
 };
+let mockPromotionalCampaigns = [
+  {
+    id: "701",
+    companyId: "1",
+    name: "Promo clientes frecuentes",
+    subject: "Promo especial para clientes frecuentes",
+    bodyText:
+      "Hola {{customer.name}}, {{company.name}} tiene una promoción para clientes de Punto Club.",
+    includePoints: true,
+    status: "draft",
+    recipientLimit: 5,
+    recipientCount: 0,
+    pendingCount: 0,
+    sentCount: 0,
+    failedCount: 0,
+    skippedCount: 0,
+    createdAt: "2026-06-29T10:00:00Z",
+    updatedAt: "2026-06-29T10:00:00Z",
+  },
+];
+let mockPromotionalCampaignRecipients = new Map([["701", []]]);
+let mockPromotionalPreferences = new Map();
 let mockMembershipPlans = [
   {
     id: "501",
@@ -206,6 +228,7 @@ let nextMembershipBenefitId = 803;
 let nextCustomerMembershipId = 901;
 let nextMembershipBenefitUsageId = 1001;
 let nextMembershipTransactionId = 1101;
+let nextPromotionalCampaignId = 702;
 const mockCompanyRegistrationLogoPng = [
   137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 1, 0,
   0, 0, 1, 8, 6, 0, 0, 0, 31, 21, 196, 137, 0, 0, 0, 13, 73, 68, 65, 84, 120,
@@ -395,6 +418,103 @@ function createHttpCustomerApi(config) {
         },
       );
 
+      return parseResponse(response);
+    },
+    async listPromotionalCampaigns(filters = {}) {
+      const url = new URL(
+        buildCompanyUrl("/promotional-campaigns"),
+        window.location.origin,
+      );
+      url.searchParams.set("status", filters.status || "all");
+      url.searchParams.set("limit", filters.limit || "25");
+      const response = await fetch(url, {
+        credentials: "include",
+      });
+      return parseResponse(response);
+    },
+    async createPromotionalCampaign(payload) {
+      const response = await fetch(buildCompanyUrl("/promotional-campaigns"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(payload),
+      });
+      return parseResponse(response);
+    },
+    async getPromotionalCampaign(campaignId) {
+      const response = await fetch(
+        buildCompanyUrl(
+          `/promotional-campaigns/${encodeURIComponent(campaignId)}`,
+        ),
+        {
+          credentials: "include",
+        },
+      );
+      return parseResponse(response);
+    },
+    async previewPromotionalCampaign(campaignId) {
+      const response = await fetch(
+        buildCompanyUrl(
+          `/promotional-campaigns/${encodeURIComponent(campaignId)}/preview`,
+        ),
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+      return parseResponse(response);
+    },
+    async listPromotionalRecipients(filters = {}) {
+      const url = new URL(
+        buildCompanyUrl("/promotional-recipients"),
+        window.location.origin,
+      );
+      url.searchParams.set("status", filters.status || "subscribed");
+      url.searchParams.set("limit", filters.limit || "25");
+      if (filters.search) {
+        url.searchParams.set("search", filters.search);
+      }
+      const response = await fetch(url, {
+        credentials: "include",
+      });
+      return parseResponse(response);
+    },
+    async selectPromotionalCampaignRecipients(campaignId, customerIds) {
+      const response = await fetch(
+        buildCompanyUrl(
+          `/promotional-campaigns/${encodeURIComponent(campaignId)}/recipients`,
+        ),
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ customerIds }),
+        },
+      );
+      return parseResponse(response);
+    },
+    async sendPromotionalCampaign(campaignId) {
+      const response = await fetch(
+        buildCompanyUrl(
+          `/promotional-campaigns/${encodeURIComponent(campaignId)}/send`,
+        ),
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+      return parseResponse(response);
+    },
+    async unsubscribePromotionalCustomer(payload) {
+      const response = await fetch(
+        buildCompanyUrl("/promotional-unsubscribe"),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
       return parseResponse(response);
     },
     async uploadCompanyLogo(file) {
@@ -930,6 +1050,176 @@ function createMockCustomerApi() {
         updatedAt: new Date().toISOString(),
       };
       return { ...mockOperationalEmailSettings };
+    },
+    async listPromotionalCampaigns(filters = {}) {
+      await wait(250);
+      const status = filters.status || "all";
+      const items = mockPromotionalCampaigns
+        .filter((campaign) => status === "all" || campaign.status === status)
+        .map(cloneMockPromotionalCampaign);
+      return { status, limit: Number(filters.limit || 25), items };
+    },
+    async createPromotionalCampaign(payload) {
+      await wait(350);
+      validatePromotionalCampaign(payload);
+      const now = new Date().toISOString();
+      const campaign = {
+        id: String(nextPromotionalCampaignId),
+        companyId: mockCompanySettings.id,
+        name: String(payload.name).trim(),
+        subject: String(payload.subject).trim(),
+        bodyText: String(payload.bodyText).trim(),
+        includePoints: Boolean(payload.includePoints),
+        status: "draft",
+        recipientLimit: 5,
+        recipientCount: 0,
+        pendingCount: 0,
+        sentCount: 0,
+        failedCount: 0,
+        skippedCount: 0,
+        createdAt: now,
+        updatedAt: now,
+      };
+      nextPromotionalCampaignId += 1;
+      mockPromotionalCampaigns = [campaign, ...mockPromotionalCampaigns];
+      mockPromotionalCampaignRecipients.set(campaign.id, []);
+      return cloneMockPromotionalCampaign(campaign);
+    },
+    async getPromotionalCampaign(campaignId) {
+      await wait(250);
+      const campaign = findMockPromotionalCampaign(campaignId);
+      return {
+        campaign: cloneMockPromotionalCampaign(campaign),
+        recipients: cloneMockPromotionalRecipients(campaign.id),
+      };
+    },
+    async previewPromotionalCampaign(campaignId) {
+      await wait(250);
+      const campaign = findMockPromotionalCampaign(campaignId);
+      return buildMockPromotionalPreview(campaign);
+    },
+    async listPromotionalRecipients(filters = {}) {
+      await wait(300);
+      const status = filters.status || "subscribed";
+      const search = normalize(filters.search || "");
+      const items = mockCustomers
+        .map(mapMockPromotionalRecipientCandidate)
+        .filter(
+          (customer) =>
+            status === "all" || customer.promotionalStatus === status,
+        )
+        .filter(
+          (customer) =>
+            !search ||
+            normalize(customer.name).includes(search) ||
+            normalize(customer.email).includes(search),
+        );
+      return { status, limit: Number(filters.limit || 25), items };
+    },
+    async selectPromotionalCampaignRecipients(campaignId, customerIds) {
+      await wait(350);
+      const campaign = findMockPromotionalCampaign(campaignId);
+      validatePromotionalRecipientSelection({ customerIds });
+      const recipients = [];
+      const skipped = [];
+
+      customerIds.forEach((customerId) => {
+        const candidate = mapMockPromotionalRecipientCandidate(
+          mockCustomers.find(
+            (customer) => String(customer.id) === String(customerId),
+          ),
+        );
+
+        if (!candidate) {
+          skipped.push({ customerId: String(customerId), reason: "not_found" });
+          return;
+        }
+
+        if (!candidate.eligible) {
+          skipped.push({
+            customerId: candidate.customerId,
+            reason: candidate.blockedReason || candidate.promotionalStatus,
+          });
+          return;
+        }
+
+        recipients.push({
+          id: `${campaign.id}-${candidate.customerId}`,
+          campaignId: campaign.id,
+          companyId: mockCompanySettings.id,
+          customerId: candidate.customerId,
+          customerName: candidate.name,
+          recipientEmail: candidate.email,
+          pointsBalanceSnapshot: candidate.pointsBalance,
+          preferenceStatusSnapshot: candidate.promotionalStatus,
+          status: "pending",
+          skipReason: null,
+          selectedAt: new Date().toISOString(),
+          sentAt: null,
+        });
+      });
+
+      mockPromotionalCampaignRecipients.set(campaign.id, recipients);
+      campaign.status = recipients.length ? "ready" : "draft";
+      campaign.recipientCount = recipients.length;
+      campaign.pendingCount = recipients.length;
+      campaign.updatedAt = new Date().toISOString();
+      return {
+        recipients: cloneMockPromotionalRecipients(campaign.id),
+        skipped,
+      };
+    },
+    async sendPromotionalCampaign() {
+      await wait(250);
+      throw new ApiError(
+        "PROMOTIONAL_SEND_BLOCKED",
+        "El envío real de promociones sigue bloqueado por feature flag.",
+      );
+    },
+    async unsubscribePromotionalCustomer(payload) {
+      await wait(300);
+      const customerId = String(payload?.customerId || "");
+      const customer = mockCustomers.find(
+        (item) => String(item.id) === customerId,
+      );
+
+      if (!customer) {
+        throw new ApiError("CUSTOMER_NOT_FOUND", "No encontramos ese cliente.");
+      }
+
+      mockPromotionalPreferences.set(customerId, {
+        promotionalStatus: "unsubscribed",
+        unsubscribedAt: new Date().toISOString(),
+        reason: String(payload?.reason || "").trim() || null,
+      });
+
+      mockPromotionalCampaignRecipients.forEach((recipients, campaignId) => {
+        const nextRecipients = recipients.filter(
+          (recipient) => String(recipient.customerId) !== customerId,
+        );
+        mockPromotionalCampaignRecipients.set(campaignId, nextRecipients);
+      });
+
+      mockPromotionalCampaigns = mockPromotionalCampaigns.map((campaign) => {
+        const recipients =
+          mockPromotionalCampaignRecipients.get(campaign.id) || [];
+        return {
+          ...campaign,
+          recipientCount: recipients.length,
+          pendingCount: recipients.filter(
+            (recipient) => recipient.status === "pending",
+          ).length,
+          updatedAt: new Date().toISOString(),
+        };
+      });
+
+      return {
+        companyId: mockCompanySettings.id,
+        customerId,
+        promotionalStatus: "unsubscribed",
+        message:
+          "Baja promocional registrada. Tus puntos, beneficios e historial se mantienen.",
+      };
     },
     async uploadCompanyLogo(file) {
       await wait(450);
@@ -2681,6 +2971,172 @@ function validateOperationalEmailSettings(payload) {
       details,
     );
   }
+}
+
+function validatePromotionalCampaign(payload) {
+  const details = [];
+  const name = String(payload?.name ?? "").trim();
+  const subject = String(payload?.subject ?? "").trim();
+  const bodyText = String(payload?.bodyText ?? "").trim();
+
+  if (!name || name.length > 160) {
+    details.push({
+      field: "name",
+      message: "El nombre interno es requerido.",
+    });
+  }
+
+  if (!subject || subject.length > 200) {
+    details.push({
+      field: "subject",
+      message: "El asunto es requerido.",
+    });
+  }
+
+  if (!bodyText || bodyText.length > 2000) {
+    details.push({
+      field: "bodyText",
+      message: "El mensaje es requerido.",
+    });
+  }
+
+  if (typeof payload?.includePoints !== "boolean") {
+    details.push({
+      field: "includePoints",
+      message: "Indica si se incluyen puntos disponibles.",
+    });
+  }
+
+  if (details.length > 0) {
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa la campaña antes de continuar.",
+      details,
+    );
+  }
+}
+
+function validatePromotionalRecipientSelection(payload) {
+  const ids = Array.isArray(payload?.customerIds) ? payload.customerIds : [];
+  const details = [];
+
+  if (ids.length === 0) {
+    details.push({
+      field: "customerIds",
+      message: "Selecciona al menos un destinatario.",
+    });
+  }
+
+  if (ids.length > 5) {
+    details.push({
+      field: "customerIds",
+      message: "El MVP permite hasta 5 destinatarios por campaña.",
+    });
+  }
+
+  if (new Set(ids.map(String)).size !== ids.length) {
+    details.push({
+      field: "customerIds",
+      message: "La selección no debe tener clientes duplicados.",
+    });
+  }
+
+  if (details.length > 0) {
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los destinatarios seleccionados.",
+      details,
+    );
+  }
+}
+
+function cloneMockPromotionalCampaign(campaign) {
+  return { ...campaign };
+}
+
+function cloneMockPromotionalRecipients(campaignId) {
+  return (mockPromotionalCampaignRecipients.get(String(campaignId)) || []).map(
+    (recipient) => ({ ...recipient }),
+  );
+}
+
+function findMockPromotionalCampaign(campaignId) {
+  const campaign = mockPromotionalCampaigns.find(
+    (item) => String(item.id) === String(campaignId),
+  );
+
+  if (!campaign) {
+    throw new ApiError(
+      "PROMOTIONAL_CAMPAIGN_NOT_FOUND",
+      "No encontramos esa campaña.",
+    );
+  }
+
+  return campaign;
+}
+
+function mapMockPromotionalRecipientCandidate(customer) {
+  if (!customer) {
+    return null;
+  }
+
+  const email = String(customer.email || "").trim();
+  const balance = mockBalances.get(String(customer.id));
+  const storedPreference = mockPromotionalPreferences.get(String(customer.id));
+  const promotionalStatus =
+    storedPreference?.promotionalStatus ||
+    (normalize(email).includes("ana") ||
+    normalize(customer.name).includes("ana")
+      ? "unsubscribed"
+      : email
+        ? "subscribed"
+        : "suppressed");
+
+  return {
+    customerId: String(customer.id),
+    name: customer.name,
+    email,
+    pointsBalance: Number(balance?.pointsBalance || 0),
+    promotionalStatus,
+    eligible: Boolean(
+      email && isEmail(email) && promotionalStatus === "subscribed",
+    ),
+    blockedReason: !email
+      ? "missing_email"
+      : promotionalStatus === "subscribed"
+        ? null
+        : promotionalStatus,
+  };
+}
+
+function buildMockPromotionalPreview(campaign) {
+  const companyName = mockCompanySettings.name || "Punto Club";
+  const sampleCustomer = {
+    name: "María Fernández",
+    email: "maria@example.com",
+    pointsBalance: 1250,
+  };
+  const render = (value) =>
+    String(value || "")
+      .replaceAll("{{customer.name}}", sampleCustomer.name)
+      .replaceAll("{{company.name}}", companyName)
+      .replaceAll(
+        "{{points.currentBalance}}",
+        String(sampleCustomer.pointsBalance),
+      )
+      .replaceAll("{{promotion.validUntil}}", "31/07/2026");
+
+  return {
+    subject: render(campaign.subject),
+    bodyText: render(campaign.bodyText),
+    pointsLine: campaign.includePoints
+      ? `Tienes ${sampleCustomer.pointsBalance} puntos disponibles en ${companyName}.`
+      : null,
+    footerText: `Recibes este correo porque aceptas promociones de ${companyName} en Punto Club. Puedes dejar de recibir promociones sin perder tus puntos, beneficios, membresías ni historial.`,
+    sampleCustomer,
+    sendBlocked: true,
+    blockReason: "feature_flag_disabled",
+  };
 }
 
 function normalizeCompanySettingsPayload(payload) {

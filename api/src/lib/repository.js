@@ -1,8 +1,8 @@
-const { ApiError } = require('./errors');
-const { getFailedAttemptUpdate } = require('./authRateLimit');
-const { getPool, getSql } = require('./db');
+const { ApiError } = require("./errors");
+const { getFailedAttemptUpdate } = require("./authRateLimit");
+const { getPool, getSql } = require("./db");
 
-const CUSTOMER_SEARCH_COLLATION = 'Latin1_General_100_CI_AI';
+const CUSTOMER_SEARCH_COLLATION = "Latin1_General_100_CI_AI";
 
 function toIsoTimestamp(value) {
   return value instanceof Date ? value.toISOString() : value;
@@ -23,7 +23,7 @@ function mapCustomer(row) {
     phone: row.phone,
     email: row.email,
     createdAt: toIsoTimestamp(row.created_at),
-    updatedAt: toIsoTimestamp(row.updated_at)
+    updatedAt: toIsoTimestamp(row.updated_at),
   };
 }
 
@@ -38,7 +38,7 @@ function mapCompanySettings(row) {
     loyaltyPointsEnabled: Boolean(row.loyalty_points_enabled),
     loyaltyMembershipsEnabled: Boolean(row.loyalty_memberships_enabled),
     status: row.status,
-    updatedAt: toIsoTimestamp(row.updated_at)
+    updatedAt: toIsoTimestamp(row.updated_at),
   };
 }
 
@@ -55,7 +55,9 @@ function mapCompanyRegistrationRequest(row) {
     contactPhone: row.contact_phone,
     requestedLogo: {
       available: requestedLogoAvailable,
-      contentType: requestedLogoAvailable ? row.requested_logo_content_type : null
+      contentType: requestedLogoAvailable
+        ? row.requested_logo_content_type
+        : null,
     },
     status: row.status,
     reviewedAt: toIsoTimestamp(row.reviewed_at),
@@ -63,7 +65,7 @@ function mapCompanyRegistrationRequest(row) {
     reviewNote: row.review_note,
     approvedCompanyId: toApiId(row.approved_company_id),
     createdAt: toIsoTimestamp(row.created_at),
-    updatedAt: toIsoTimestamp(row.updated_at)
+    updatedAt: toIsoTimestamp(row.updated_at),
   };
 }
 
@@ -79,14 +81,14 @@ function mapCompanyInvitation(row) {
     acceptedAt: toIsoTimestamp(row.accepted_at),
     revokedAt: toIsoTimestamp(row.revoked_at),
     createdAt: toIsoTimestamp(row.created_at),
-    createdByLabel: row.created_by_label
+    createdByLabel: row.created_by_label,
   };
 }
 
 function mapCompanyInvitationWithCompany(row) {
   return {
     ...mapCompanyInvitation(row),
-    companyName: row.company_name || null
+    companyName: row.company_name || null,
   };
 }
 
@@ -101,7 +103,7 @@ function mapCompanyUser(row) {
     authProvider: row.auth_provider,
     lastLoginAt: toIsoTimestamp(row.last_login_at),
     createdAt: toIsoTimestamp(row.created_at),
-    updatedAt: toIsoTimestamp(row.updated_at)
+    updatedAt: toIsoTimestamp(row.updated_at),
   };
 }
 
@@ -111,8 +113,8 @@ function mapAuthIdentity(row) {
     company: {
       id: toApiId(row.company_id),
       name: row.company_name,
-      status: row.company_status
-    }
+      status: row.company_status,
+    },
   };
 }
 
@@ -128,7 +130,7 @@ function mapAuthAttemptLimit(row) {
     failedCount: row.failed_count,
     lockedUntil: row.locked_until,
     lastFailedAt: row.last_failed_at,
-    updatedAt: row.updated_at
+    updatedAt: row.updated_at,
   };
 }
 
@@ -140,14 +142,14 @@ function mapMyCompany(row) {
     email: row.email,
     phone: row.phone,
     address: row.address,
-    logoUrl: hasLogo ? '/api/my-company/logo' : null,
+    logoUrl: hasLogo ? "/api/my-company/logo" : null,
     logoContentType: row.logo_content_type,
     logoUpdatedAt: toIsoTimestamp(row.logo_updated_at),
     pointsPercentage: Number(row.points_percentage),
     loyaltyPointsEnabled: Boolean(row.loyalty_points_enabled),
     loyaltyMembershipsEnabled: Boolean(row.loyalty_memberships_enabled),
     status: row.status,
-    updatedAt: toIsoTimestamp(row.updated_at)
+    updatedAt: toIsoTimestamp(row.updated_at),
   };
 }
 
@@ -158,7 +160,7 @@ function mapOperationalEmailSettings(row) {
     purchaseEnabled: Boolean(row.purchase_enabled),
     redemptionEnabled: Boolean(row.redemption_enabled),
     replyToEmail: row.reply_to_email || null,
-    updatedAt: toIsoTimestamp(row.updated_at)
+    updatedAt: toIsoTimestamp(row.updated_at),
   };
 }
 
@@ -173,7 +175,7 @@ function mapOperationalEmailEvent(row) {
     customerId: toApiId(row.customer_id),
     status: row.status,
     createdAt: toIsoTimestamp(row.created_at),
-    updatedAt: toIsoTimestamp(row.updated_at)
+    updatedAt: toIsoTimestamp(row.updated_at),
   };
 }
 
@@ -191,7 +193,67 @@ function mapOperationalEmailMessage(row) {
     lastError: row.last_error || null,
     createdAt: toIsoTimestamp(row.created_at),
     sentAt: toIsoTimestamp(row.sent_at),
-    updatedAt: toIsoTimestamp(row.updated_at)
+    updatedAt: toIsoTimestamp(row.updated_at),
+  };
+}
+
+function mapPromotionalCampaign(row) {
+  return {
+    id: toApiId(row.id),
+    companyId: toApiId(row.company_id),
+    name: row.name,
+    subject: row.subject,
+    bodyText: row.body_text,
+    includePoints: Boolean(row.include_points),
+    status: row.status,
+    recipientLimit: Number(row.recipient_limit || 5),
+    recipientCount: Number(row.recipient_count || 0),
+    pendingCount: Number(row.pending_count || 0),
+    sentCount: Number(row.sent_count || 0),
+    failedCount: Number(row.failed_count || 0),
+    skippedCount: Number(row.skipped_count || 0),
+    lastPreviewAt: toIsoTimestamp(row.last_preview_at),
+    confirmedAt: toIsoTimestamp(row.confirmed_at),
+    sentAt: toIsoTimestamp(row.sent_at),
+    cancelledAt: toIsoTimestamp(row.cancelled_at),
+    createdAt: toIsoTimestamp(row.created_at),
+    updatedAt: toIsoTimestamp(row.updated_at),
+  };
+}
+
+function mapPromotionalRecipient(row) {
+  return {
+    id: toApiId(row.id),
+    campaignId: toApiId(row.campaign_id),
+    companyId: toApiId(row.company_id),
+    customerId: toApiId(row.customer_id),
+    customerName: row.customer_name || null,
+    recipientEmail: row.recipient_email,
+    pointsBalanceSnapshot:
+      row.points_balance_snapshot == null
+        ? null
+        : Number(row.points_balance_snapshot),
+    preferenceStatusSnapshot: row.preference_status_snapshot,
+    status: row.status,
+    skipReason: row.skip_reason || null,
+    provider: row.provider || null,
+    providerMessageId: row.provider_message_id || null,
+    lastError: row.last_error || null,
+    selectedAt: toIsoTimestamp(row.selected_at),
+    sentAt: toIsoTimestamp(row.sent_at),
+    updatedAt: toIsoTimestamp(row.updated_at),
+  };
+}
+
+function mapEligiblePromotionalCustomer(row) {
+  return {
+    customerId: toApiId(row.customer_id),
+    name: row.name,
+    email: row.email || null,
+    pointsBalance: Number(row.points_balance || 0),
+    promotionalStatus: row.promotional_status,
+    eligible: Boolean(row.eligible),
+    blockedReason: row.blocked_reason || null,
   };
 }
 
@@ -207,7 +269,7 @@ function mapMembershipPlan(row) {
     status: row.status,
     benefitCount: Number(row.benefit_count || 0),
     createdAt: toIsoTimestamp(row.created_at),
-    updatedAt: toIsoTimestamp(row.updated_at)
+    updatedAt: toIsoTimestamp(row.updated_at),
   };
 }
 
@@ -220,13 +282,15 @@ function mapMembershipBenefit(row) {
     benefitType: row.benefit_type,
     appliesToType: row.applies_to_type,
     appliesToName: row.applies_to_name,
-    discountPercent: row.discount_percent == null ? null : Number(row.discount_percent),
-    includedQuantity: row.included_quantity == null ? null : Number(row.included_quantity),
+    discountPercent:
+      row.discount_percent == null ? null : Number(row.discount_percent),
+    includedQuantity:
+      row.included_quantity == null ? null : Number(row.included_quantity),
     usageLimit: row.usage_limit,
     usagePeriod: row.usage_period,
     status: row.status,
     createdAt: toIsoTimestamp(row.created_at),
-    updatedAt: toIsoTimestamp(row.updated_at)
+    updatedAt: toIsoTimestamp(row.updated_at),
   };
 }
 
@@ -253,31 +317,39 @@ function calculateMembershipEndDate(startDate, durationDays) {
 function calculateExpirationAlert(endDate, options = {}) {
   const today = parseDateOnly(options.today || new Date());
   const expirationDate = parseDateOnly(endDate);
-  const warningDays = Number.isInteger(options.warningDays) ? options.warningDays : 5;
-  const daysUntilExpiration = Math.round((expirationDate.getTime() - today.getTime()) / 86400000);
-  let state = 'none';
+  const warningDays = Number.isInteger(options.warningDays)
+    ? options.warningDays
+    : 5;
+  const daysUntilExpiration = Math.round(
+    (expirationDate.getTime() - today.getTime()) / 86400000,
+  );
+  let state = "none";
   let message = null;
 
   if (daysUntilExpiration < 0) {
-    state = 'expired';
-    message = 'La membresia esta vencida.';
+    state = "expired";
+    message = "La membresia esta vencida.";
   } else if (daysUntilExpiration === 0) {
-    state = 'expires_today';
-    message = 'La membresia vence hoy.';
+    state = "expires_today";
+    message = "La membresia vence hoy.";
   } else if (daysUntilExpiration <= warningDays) {
-    state = 'expiring_soon';
+    state = "expiring_soon";
     message = `La membresia vence en ${daysUntilExpiration} dias.`;
   }
 
   return {
     state,
     daysUntilExpiration,
-    message
+    message,
   };
 }
 
-function calculateUsagePeriodStartDate(usageDate, usagePeriod, membershipStartDate) {
-  if (usagePeriod === 'membership_term') {
+function calculateUsagePeriodStartDate(
+  usageDate,
+  usagePeriod,
+  membershipStartDate,
+) {
+  if (usagePeriod === "membership_term") {
     return toIsoDate(membershipStartDate);
   }
 
@@ -286,13 +358,13 @@ function calculateUsagePeriodStartDate(usageDate, usagePeriod, membershipStartDa
     return usageDate;
   }
 
-  if (usagePeriod === 'week') {
+  if (usagePeriod === "week") {
     const day = date.getUTCDay();
     const offset = day === 0 ? -6 : 1 - day;
     return toIsoDate(addDays(date, offset));
   }
 
-  if (usagePeriod === 'month') {
+  if (usagePeriod === "month") {
     return `${toIsoDate(date).slice(0, 8)}01`;
   }
 
@@ -302,7 +374,7 @@ function calculateUsagePeriodStartDate(usageDate, usagePeriod, membershipStartDa
 function mapCustomerMembership(row, options = {}) {
   const plan = {
     id: toApiId(row.membership_plan_id),
-    name: row.plan_name
+    name: row.plan_name,
   };
 
   return {
@@ -319,19 +391,20 @@ function mapCustomerMembership(row, options = {}) {
     pricePaid: row.price_paid == null ? null : Number(row.price_paid),
     expirationAlert: calculateExpirationAlert(row.end_date, {
       today: options.today,
-      warningDays: row.renewal_notice_days == null ? 5 : Number(row.renewal_notice_days)
+      warningDays:
+        row.renewal_notice_days == null ? 5 : Number(row.renewal_notice_days),
     }),
     createdAt: toIsoTimestamp(row.created_at),
     cancelledAt: toIsoTimestamp(row.cancelled_at),
     cancelledByLabel: row.cancelled_by_label || null,
-    cancelNote: row.cancel_note || null
+    cancelNote: row.cancel_note || null,
   };
 }
 
 function mapMembershipExpirationAlert(row, options = {}) {
   const expirationAlert = calculateExpirationAlert(row.end_date, {
     today: options.today,
-    warningDays: options.withinDays
+    warningDays: options.withinDays,
   });
 
   return {
@@ -350,7 +423,7 @@ function mapMembershipExpirationAlert(row, options = {}) {
     status: row.status,
     daysUntilExpiration: expirationAlert.daysUntilExpiration,
     state: expirationAlert.state,
-    message: expirationAlert.message
+    message: expirationAlert.message,
   };
 }
 
@@ -372,7 +445,7 @@ function mapMembershipBenefitUsage(row) {
     quantity: Number(row.quantity),
     note: row.note || null,
     usedAt: toIsoTimestamp(row.used_at),
-    createdByLabel: row.created_by_label || null
+    createdByLabel: row.created_by_label || null,
   };
 }
 
@@ -391,7 +464,7 @@ function mapMembershipTransaction(row) {
     transactionDate: toIsoDate(row.transaction_date),
     note: row.note || null,
     createdAt: toIsoTimestamp(row.created_at),
-    createdByLabel: row.created_by_label || null
+    createdByLabel: row.created_by_label || null,
   };
 }
 
@@ -411,7 +484,7 @@ function mapMembershipFinancialReportTransaction(row) {
     amount: Number(row.amount),
     transactionDate: toIsoDate(row.transaction_date),
     createdAt: toIsoTimestamp(row.created_at),
-    note: row.note || null
+    note: row.note || null,
   };
 }
 
@@ -430,7 +503,7 @@ function mapCompanyRegistrationRequestWithInvitation(row) {
       accepted_at: row.invitation_accepted_at,
       revoked_at: row.invitation_revoked_at,
       created_at: row.invitation_created_at,
-      created_by_label: row.invitation_created_by_label
+      created_by_label: row.invitation_created_by_label,
     });
   }
 
@@ -440,8 +513,7 @@ function mapCompanyRegistrationRequestWithInvitation(row) {
 async function ensureActiveCompany(companyId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
+  const result = await pool.request().input("company_id", sql.BigInt, companyId)
     .query(`
       SELECT id, points_percentage
       FROM dbo.Companies
@@ -450,7 +522,7 @@ async function ensureActiveCompany(companyId) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+    throw new ApiError(404, "COMPANY_NOT_FOUND", "Company was not found.");
   }
 
   return result.recordset[0];
@@ -459,10 +531,10 @@ async function ensureActiveCompany(companyId) {
 async function getAuthAttemptLimit(scope, subjectHash) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('scope', sql.VarChar(40), scope)
-    .input('subject_hash', sql.VarBinary(32), subjectHash)
-    .query(`
+  const result = await pool
+    .request()
+    .input("scope", sql.VarChar(40), scope)
+    .input("subject_hash", sql.VarBinary(32), subjectHash).query(`
       SELECT TOP (1)
         scope,
         subject_hash,
@@ -479,7 +551,12 @@ async function getAuthAttemptLimit(scope, subjectHash) {
   return mapAuthAttemptLimit(result.recordset[0]);
 }
 
-async function recordAuthAttemptFailure(scope, subjectHash, policy, now = new Date()) {
+async function recordAuthAttemptFailure(
+  scope,
+  subjectHash,
+  policy,
+  now = new Date(),
+) {
   const sql = getSql();
   const pool = await getPool();
   const transaction = new sql.Transaction(pool);
@@ -489,9 +566,8 @@ async function recordAuthAttemptFailure(scope, subjectHash, policy, now = new Da
   try {
     const request = new sql.Request(transaction);
     const result = await request
-      .input('scope', sql.VarChar(40), scope)
-      .input('subject_hash', sql.VarBinary(32), subjectHash)
-      .query(`
+      .input("scope", sql.VarChar(40), scope)
+      .input("subject_hash", sql.VarBinary(32), subjectHash).query(`
         SELECT TOP (1)
           scope,
           subject_hash,
@@ -505,17 +581,20 @@ async function recordAuthAttemptFailure(scope, subjectHash, policy, now = new Da
           AND subject_hash = @subject_hash
       `);
 
-    const next = getFailedAttemptUpdate(mapAuthAttemptLimit(result.recordset[0]), policy, now);
+    const next = getFailedAttemptUpdate(
+      mapAuthAttemptLimit(result.recordset[0]),
+      policy,
+      now,
+    );
 
     if (result.recordset.length) {
       await new sql.Request(transaction)
-        .input('scope', sql.VarChar(40), scope)
-        .input('subject_hash', sql.VarBinary(32), subjectHash)
-        .input('window_started_at', sql.DateTime2, next.windowStartedAt)
-        .input('failed_count', sql.Int, next.failedCount)
-        .input('locked_until', sql.DateTime2, next.lockedUntil)
-        .input('last_failed_at', sql.DateTime2, next.lastFailedAt)
-        .query(`
+        .input("scope", sql.VarChar(40), scope)
+        .input("subject_hash", sql.VarBinary(32), subjectHash)
+        .input("window_started_at", sql.DateTime2, next.windowStartedAt)
+        .input("failed_count", sql.Int, next.failedCount)
+        .input("locked_until", sql.DateTime2, next.lockedUntil)
+        .input("last_failed_at", sql.DateTime2, next.lastFailedAt).query(`
           UPDATE dbo.AuthAttemptLimits
           SET
             window_started_at = @window_started_at,
@@ -528,13 +607,12 @@ async function recordAuthAttemptFailure(scope, subjectHash, policy, now = new Da
         `);
     } else {
       await new sql.Request(transaction)
-        .input('scope', sql.VarChar(40), scope)
-        .input('subject_hash', sql.VarBinary(32), subjectHash)
-        .input('window_started_at', sql.DateTime2, next.windowStartedAt)
-        .input('failed_count', sql.Int, next.failedCount)
-        .input('locked_until', sql.DateTime2, next.lockedUntil)
-        .input('last_failed_at', sql.DateTime2, next.lastFailedAt)
-        .query(`
+        .input("scope", sql.VarChar(40), scope)
+        .input("subject_hash", sql.VarBinary(32), subjectHash)
+        .input("window_started_at", sql.DateTime2, next.windowStartedAt)
+        .input("failed_count", sql.Int, next.failedCount)
+        .input("locked_until", sql.DateTime2, next.lockedUntil)
+        .input("last_failed_at", sql.DateTime2, next.lastFailedAt).query(`
           INSERT INTO dbo.AuthAttemptLimits (
             scope,
             subject_hash,
@@ -569,10 +647,10 @@ async function recordAuthAttemptFailure(scope, subjectHash, policy, now = new Da
 async function clearAuthAttemptLimit(scope, subjectHash) {
   const sql = getSql();
   const pool = await getPool();
-  await pool.request()
-    .input('scope', sql.VarChar(40), scope)
-    .input('subject_hash', sql.VarBinary(32), subjectHash)
-    .query(`
+  await pool
+    .request()
+    .input("scope", sql.VarChar(40), scope)
+    .input("subject_hash", sql.VarBinary(32), subjectHash).query(`
       DELETE FROM dbo.AuthAttemptLimits
       WHERE scope = @scope
         AND subject_hash = @subject_hash
@@ -582,8 +660,7 @@ async function clearAuthAttemptLimit(scope, subjectHash) {
 async function getCompanySettings(companyId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
+  const result = await pool.request().input("company_id", sql.BigInt, companyId)
     .query(`
       SELECT
         id,
@@ -602,7 +679,7 @@ async function getCompanySettings(companyId) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+    throw new ApiError(404, "COMPANY_NOT_FOUND", "Company was not found.");
   }
 
   const row = result.recordset[0];
@@ -612,13 +689,14 @@ async function getCompanySettings(companyId) {
 async function updateCompanySettings(companyId, settings) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('name', sql.NVarChar(160), settings.name)
-    .input('email', sql.NVarChar(254), settings.email)
-    .input('phone', sql.NVarChar(32), settings.phone)
-    .input('logo_url', sql.NVarChar(2048), settings.logoUrl)
-    .input('points_percentage', sql.Decimal(5, 2), settings.pointsPercentage)
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("name", sql.NVarChar(160), settings.name)
+    .input("email", sql.NVarChar(254), settings.email)
+    .input("phone", sql.NVarChar(32), settings.phone)
+    .input("logo_url", sql.NVarChar(2048), settings.logoUrl)
+    .input("points_percentage", sql.Decimal(5, 2), settings.pointsPercentage)
     .query(`
       UPDATE dbo.Companies
       SET
@@ -644,7 +722,7 @@ async function updateCompanySettings(companyId, settings) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+    throw new ApiError(404, "COMPANY_NOT_FOUND", "Company was not found.");
   }
 
   return mapCompanySettings(result.recordset[0]);
@@ -653,11 +731,11 @@ async function updateCompanySettings(companyId, settings) {
 async function updateCompanyLogo(companyId, logo) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('logo_blob_path', sql.NVarChar(500), logo.blobPath)
-    .input('logo_content_type', sql.VarChar(80), logo.contentType)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("logo_blob_path", sql.NVarChar(500), logo.blobPath)
+    .input("logo_content_type", sql.VarChar(80), logo.contentType).query(`
       UPDATE dbo.Companies
       SET
         logo_blob_path = @logo_blob_path,
@@ -683,7 +761,7 @@ async function updateCompanyLogo(companyId, logo) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+    throw new ApiError(404, "COMPANY_NOT_FOUND", "Company was not found.");
   }
 
   return mapMyCompany(result.recordset[0]);
@@ -692,8 +770,7 @@ async function updateCompanyLogo(companyId, logo) {
 async function getOperationalEmailSettings(companyId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
+  const result = await pool.request().input("company_id", sql.BigInt, companyId)
     .query(`
       SELECT
         companies.id AS company_id,
@@ -710,7 +787,7 @@ async function getOperationalEmailSettings(companyId) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+    throw new ApiError(404, "COMPANY_NOT_FOUND", "Company was not found.");
   }
 
   return mapOperationalEmailSettings(result.recordset[0]);
@@ -719,13 +796,13 @@ async function getOperationalEmailSettings(companyId) {
 async function updateOperationalEmailSettings(companyId, settings) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('welcome_enabled', sql.Bit, settings.welcomeEnabled)
-    .input('purchase_enabled', sql.Bit, settings.purchaseEnabled)
-    .input('redemption_enabled', sql.Bit, settings.redemptionEnabled)
-    .input('reply_to_email', sql.NVarChar(254), settings.replyToEmail)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("welcome_enabled", sql.Bit, settings.welcomeEnabled)
+    .input("purchase_enabled", sql.Bit, settings.purchaseEnabled)
+    .input("redemption_enabled", sql.Bit, settings.redemptionEnabled)
+    .input("reply_to_email", sql.NVarChar(254), settings.replyToEmail).query(`
       MERGE dbo.CompanyOperationalEmailSettings AS target
       USING (
         SELECT
@@ -768,7 +845,7 @@ async function updateOperationalEmailSettings(companyId, settings) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+    throw new ApiError(404, "COMPANY_NOT_FOUND", "Company was not found.");
   }
 
   return mapOperationalEmailSettings(result.recordset[0]);
@@ -783,9 +860,8 @@ async function createOperationalEmailEventIfNeeded(event) {
 
   try {
     const existingResult = await new sql.Request(transaction)
-      .input('company_id', sql.BigInt, event.companyId)
-      .input('idempotency_key', sql.NVarChar(160), event.idempotencyKey)
-      .query(`
+      .input("company_id", sql.BigInt, event.companyId)
+      .input("idempotency_key", sql.NVarChar(160), event.idempotencyKey).query(`
         SELECT TOP (1)
           id,
           company_id,
@@ -806,18 +882,17 @@ async function createOperationalEmailEventIfNeeded(event) {
       await transaction.commit();
       return {
         event: mapOperationalEmailEvent(existingResult.recordset[0]),
-        created: false
+        created: false,
       };
     }
 
     const insertResult = await new sql.Request(transaction)
-      .input('company_id', sql.BigInt, event.companyId)
-      .input('event_type', sql.VarChar(40), event.eventType)
-      .input('idempotency_key', sql.NVarChar(160), event.idempotencyKey)
-      .input('source_entity_type', sql.VarChar(40), event.sourceEntityType)
-      .input('source_entity_id', sql.BigInt, event.sourceEntityId)
-      .input('customer_id', sql.BigInt, event.customerId)
-      .query(`
+      .input("company_id", sql.BigInt, event.companyId)
+      .input("event_type", sql.VarChar(40), event.eventType)
+      .input("idempotency_key", sql.NVarChar(160), event.idempotencyKey)
+      .input("source_entity_type", sql.VarChar(40), event.sourceEntityType)
+      .input("source_entity_id", sql.BigInt, event.sourceEntityId)
+      .input("customer_id", sql.BigInt, event.customerId).query(`
         INSERT INTO dbo.OperationalEmailEvents (
           company_id,
           event_type,
@@ -850,7 +925,7 @@ async function createOperationalEmailEventIfNeeded(event) {
     await transaction.commit();
     return {
       event: mapOperationalEmailEvent(insertResult.recordset[0]),
-      created: true
+      created: true,
     };
   } catch (error) {
     try {
@@ -865,16 +940,16 @@ async function createOperationalEmailEventIfNeeded(event) {
 async function createOperationalEmailMessage(message) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('event_id', sql.BigInt, message.eventId)
-    .input('company_id', sql.BigInt, message.companyId)
-    .input('customer_id', sql.BigInt, message.customerId)
-    .input('recipient_email', sql.NVarChar(254), message.recipientEmail)
-    .input('subject', sql.NVarChar(200), message.subject)
-    .input('status', sql.VarChar(20), message.status || 'pending')
-    .input('provider', sql.VarChar(40), message.provider)
-    .input('last_error', sql.NVarChar(1000), message.lastError)
-    .query(`
+  const result = await pool
+    .request()
+    .input("event_id", sql.BigInt, message.eventId)
+    .input("company_id", sql.BigInt, message.companyId)
+    .input("customer_id", sql.BigInt, message.customerId)
+    .input("recipient_email", sql.NVarChar(254), message.recipientEmail)
+    .input("subject", sql.NVarChar(200), message.subject)
+    .input("status", sql.VarChar(20), message.status || "pending")
+    .input("provider", sql.VarChar(40), message.provider)
+    .input("last_error", sql.NVarChar(1000), message.lastError).query(`
       INSERT INTO dbo.OperationalEmailMessages (
         event_id,
         company_id,
@@ -914,31 +989,41 @@ async function createOperationalEmailMessage(message) {
   return mapOperationalEmailMessage(result.recordset[0]);
 }
 
-async function recordOperationalEmailAttempt(messageId, eventId, companyId, attempt) {
+async function recordOperationalEmailAttempt(
+  messageId,
+  eventId,
+  companyId,
+  attempt,
+) {
   const sql = getSql();
   const pool = await getPool();
-  const status = attempt.status === 'sent' ? 'sent' : attempt.status === 'failed' ? 'failed' : 'skipped';
+  const status =
+    attempt.status === "sent"
+      ? "sent"
+      : attempt.status === "failed"
+        ? "failed"
+        : "skipped";
   const errorMessage = attempt.errorMessage || attempt.reason || null;
 
-  const countResult = await pool.request()
-    .input('message_id', sql.BigInt, messageId)
-    .query(`
+  const countResult = await pool
+    .request()
+    .input("message_id", sql.BigInt, messageId).query(`
       SELECT COUNT(1) AS attempt_count
       FROM dbo.OperationalEmailAttempts
       WHERE message_id = @message_id
     `);
   const attemptNumber = Number(countResult.recordset[0].attempt_count || 0) + 1;
 
-  await pool.request()
-    .input('message_id', sql.BigInt, messageId)
-    .input('event_id', sql.BigInt, eventId)
-    .input('company_id', sql.BigInt, companyId)
-    .input('attempt_number', sql.Int, attemptNumber)
-    .input('provider', sql.VarChar(40), attempt.provider || 'acs-email')
-    .input('status', sql.VarChar(20), status)
-    .input('provider_message_id', sql.NVarChar(200), attempt.id || null)
-    .input('error_message', sql.NVarChar(1000), errorMessage)
-    .query(`
+  await pool
+    .request()
+    .input("message_id", sql.BigInt, messageId)
+    .input("event_id", sql.BigInt, eventId)
+    .input("company_id", sql.BigInt, companyId)
+    .input("attempt_number", sql.Int, attemptNumber)
+    .input("provider", sql.VarChar(40), attempt.provider || "acs-email")
+    .input("status", sql.VarChar(20), status)
+    .input("provider_message_id", sql.NVarChar(200), attempt.id || null)
+    .input("error_message", sql.NVarChar(1000), errorMessage).query(`
       INSERT INTO dbo.OperationalEmailAttempts (
         message_id,
         event_id,
@@ -961,14 +1046,14 @@ async function recordOperationalEmailAttempt(messageId, eventId, companyId, atte
       )
     `);
 
-  await pool.request()
-    .input('message_id', sql.BigInt, messageId)
-    .input('event_id', sql.BigInt, eventId)
-    .input('status', sql.VarChar(20), status)
-    .input('provider', sql.VarChar(40), attempt.provider || 'acs-email')
-    .input('provider_message_id', sql.NVarChar(200), attempt.id || null)
-    .input('last_error', sql.NVarChar(1000), errorMessage)
-    .query(`
+  await pool
+    .request()
+    .input("message_id", sql.BigInt, messageId)
+    .input("event_id", sql.BigInt, eventId)
+    .input("status", sql.VarChar(20), status)
+    .input("provider", sql.VarChar(40), attempt.provider || "acs-email")
+    .input("provider_message_id", sql.NVarChar(200), attempt.id || null)
+    .input("last_error", sql.NVarChar(1000), errorMessage).query(`
       UPDATE dbo.OperationalEmailMessages
       SET
         status = @status,
@@ -987,14 +1072,562 @@ async function recordOperationalEmailAttempt(messageId, eventId, companyId, atte
     `);
 }
 
+async function listPromotionalCampaigns(companyId, filters = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const status = filters.status === "all" ? null : filters.status || null;
+  const limit = filters.limit || 25;
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("status", sql.VarChar(20), status)
+    .input("limit", sql.Int, limit).query(`
+      SELECT TOP (@limit)
+        campaigns.id,
+        campaigns.company_id,
+        campaigns.name,
+        campaigns.subject,
+        campaigns.body_text,
+        campaigns.include_points,
+        campaigns.status,
+        campaigns.recipient_limit,
+        campaigns.last_preview_at,
+        campaigns.confirmed_at,
+        campaigns.sent_at,
+        campaigns.cancelled_at,
+        campaigns.created_at,
+        campaigns.updated_at,
+        COUNT(recipients.id) AS recipient_count,
+        SUM(CASE WHEN recipients.status = 'pending' THEN 1 ELSE 0 END) AS pending_count,
+        SUM(CASE WHEN recipients.status = 'sent' THEN 1 ELSE 0 END) AS sent_count,
+        SUM(CASE WHEN recipients.status = 'failed' THEN 1 ELSE 0 END) AS failed_count,
+        SUM(CASE WHEN recipients.status = 'skipped' THEN 1 ELSE 0 END) AS skipped_count
+      FROM dbo.PromotionalCampaigns AS campaigns
+      LEFT JOIN dbo.PromotionalCampaignRecipients AS recipients
+        ON recipients.campaign_id = campaigns.id
+      WHERE campaigns.company_id = @company_id
+        AND (@status IS NULL OR campaigns.status = @status)
+      GROUP BY
+        campaigns.id,
+        campaigns.company_id,
+        campaigns.name,
+        campaigns.subject,
+        campaigns.body_text,
+        campaigns.include_points,
+        campaigns.status,
+        campaigns.recipient_limit,
+        campaigns.last_preview_at,
+        campaigns.confirmed_at,
+        campaigns.sent_at,
+        campaigns.cancelled_at,
+        campaigns.created_at,
+        campaigns.updated_at
+      ORDER BY campaigns.created_at DESC, campaigns.id DESC
+    `);
+
+  return {
+    status: filters.status || "all",
+    limit,
+    items: result.recordset.map(mapPromotionalCampaign),
+  };
+}
+
+async function getPromotionalCampaignById(companyId, campaignId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("campaign_id", sql.BigInt, campaignId).query(`
+      SELECT
+        campaigns.id,
+        campaigns.company_id,
+        campaigns.name,
+        campaigns.subject,
+        campaigns.body_text,
+        campaigns.include_points,
+        campaigns.status,
+        campaigns.recipient_limit,
+        campaigns.last_preview_at,
+        campaigns.confirmed_at,
+        campaigns.sent_at,
+        campaigns.cancelled_at,
+        campaigns.created_at,
+        campaigns.updated_at,
+        COUNT(recipients.id) AS recipient_count,
+        SUM(CASE WHEN recipients.status = 'pending' THEN 1 ELSE 0 END) AS pending_count,
+        SUM(CASE WHEN recipients.status = 'sent' THEN 1 ELSE 0 END) AS sent_count,
+        SUM(CASE WHEN recipients.status = 'failed' THEN 1 ELSE 0 END) AS failed_count,
+        SUM(CASE WHEN recipients.status = 'skipped' THEN 1 ELSE 0 END) AS skipped_count
+      FROM dbo.PromotionalCampaigns AS campaigns
+      LEFT JOIN dbo.PromotionalCampaignRecipients AS recipients
+        ON recipients.campaign_id = campaigns.id
+      WHERE campaigns.company_id = @company_id
+        AND campaigns.id = @campaign_id
+      GROUP BY
+        campaigns.id,
+        campaigns.company_id,
+        campaigns.name,
+        campaigns.subject,
+        campaigns.body_text,
+        campaigns.include_points,
+        campaigns.status,
+        campaigns.recipient_limit,
+        campaigns.last_preview_at,
+        campaigns.confirmed_at,
+        campaigns.sent_at,
+        campaigns.cancelled_at,
+        campaigns.created_at,
+        campaigns.updated_at
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(
+      404,
+      "PROMOTIONAL_CAMPAIGN_NOT_FOUND",
+      "Promotional campaign was not found.",
+    );
+  }
+
+  return mapPromotionalCampaign(result.recordset[0]);
+}
+
+async function createPromotionalCampaign(companyId, payload, options = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("name", sql.NVarChar(160), payload.name)
+    .input("subject", sql.NVarChar(200), payload.subject)
+    .input("body_text", sql.NVarChar(2000), payload.bodyText)
+    .input("include_points", sql.Bit, payload.includePoints)
+    .input("created_by_user_id", sql.BigInt, options.createdByUserId || null)
+    .query(`
+      INSERT INTO dbo.PromotionalCampaigns (
+        company_id,
+        name,
+        subject,
+        body_text,
+        include_points,
+        created_by_user_id
+      )
+      OUTPUT
+        INSERTED.id,
+        INSERTED.company_id,
+        INSERTED.name,
+        INSERTED.subject,
+        INSERTED.body_text,
+        INSERTED.include_points,
+        INSERTED.status,
+        INSERTED.recipient_limit,
+        INSERTED.last_preview_at,
+        INSERTED.confirmed_at,
+        INSERTED.sent_at,
+        INSERTED.cancelled_at,
+        INSERTED.created_at,
+        INSERTED.updated_at,
+        0 AS recipient_count,
+        0 AS pending_count,
+        0 AS sent_count,
+        0 AS failed_count,
+        0 AS skipped_count
+      VALUES (
+        @company_id,
+        @name,
+        @subject,
+        @body_text,
+        @include_points,
+        @created_by_user_id
+      )
+    `);
+
+  return mapPromotionalCampaign(result.recordset[0]);
+}
+
+async function updatePromotionalCampaignPreviewAt(companyId, campaignId) {
+  const sql = getSql();
+  const pool = await getPool();
+  await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("campaign_id", sql.BigInt, campaignId).query(`
+      UPDATE dbo.PromotionalCampaigns
+      SET
+        last_preview_at = SYSUTCDATETIME(),
+        updated_at = SYSUTCDATETIME()
+      WHERE company_id = @company_id
+        AND id = @campaign_id
+    `);
+}
+
+async function listPromotionalRecipients(companyId, filters = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const status =
+    filters.status === "all" ? null : filters.status || "subscribed";
+  const search =
+    typeof filters.search === "string" ? filters.search.trim() : "";
+  const limit = filters.limit || 25;
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("status", sql.VarChar(20), status)
+    .input("search", sql.NVarChar(254), search || null)
+    .input("search_like", sql.NVarChar(260), search ? `%${search}%` : null)
+    .input("limit", sql.Int, limit).query(`
+      SELECT TOP (@limit)
+        customers.id AS customer_id,
+        customers.name,
+        customers.email,
+        COALESCE(balances.points_balance, 0) AS points_balance,
+        COALESCE(preferences.promotional_status, 'subscribed') AS promotional_status,
+        CONVERT(bit, CASE
+          WHEN customers.email IS NOT NULL
+           AND customers.email LIKE '%_@_%._%'
+           AND COALESCE(preferences.promotional_status, 'subscribed') = 'subscribed'
+          THEN 1 ELSE 0 END) AS eligible,
+        CASE
+          WHEN customers.email IS NULL OR customers.email NOT LIKE '%_@_%._%' THEN 'missing_email'
+          WHEN COALESCE(preferences.promotional_status, 'subscribed') = 'unsubscribed' THEN 'unsubscribed'
+          WHEN COALESCE(preferences.promotional_status, 'subscribed') = 'suppressed' THEN 'suppressed'
+          ELSE NULL
+        END AS blocked_reason
+      FROM dbo.Customers AS customers
+      LEFT JOIN dbo.CustomerPointBalances AS balances
+        ON balances.company_id = customers.company_id
+       AND balances.customer_id = customers.id
+      LEFT JOIN dbo.CustomerPromotionalEmailPreferences AS preferences
+        ON preferences.company_id = customers.company_id
+       AND preferences.customer_id = customers.id
+      WHERE customers.company_id = @company_id
+        AND (@status IS NULL OR COALESCE(preferences.promotional_status, 'subscribed') = @status)
+        AND (
+          @search IS NULL
+          OR customers.email COLLATE ${CUSTOMER_SEARCH_COLLATION} = @search COLLATE ${CUSTOMER_SEARCH_COLLATION}
+          OR customers.name COLLATE ${CUSTOMER_SEARCH_COLLATION} LIKE @search_like COLLATE ${CUSTOMER_SEARCH_COLLATION}
+          OR customers.phone = @search
+        )
+      ORDER BY customers.name ASC, customers.id ASC
+    `);
+
+  return {
+    status: filters.status || "subscribed",
+    limit,
+    items: result.recordset.map(mapEligiblePromotionalCustomer),
+  };
+}
+
+async function replacePromotionalCampaignRecipients(
+  companyId,
+  campaignId,
+  customerIds,
+) {
+  const sql = getSql();
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+
+  await transaction.begin();
+
+  try {
+    const campaignResult = await new sql.Request(transaction)
+      .input("company_id", sql.BigInt, companyId)
+      .input("campaign_id", sql.BigInt, campaignId).query(`
+        SELECT id, status, recipient_limit
+        FROM dbo.PromotionalCampaigns WITH (UPDLOCK, HOLDLOCK)
+        WHERE company_id = @company_id
+          AND id = @campaign_id
+      `);
+
+    if (!campaignResult.recordset.length) {
+      throw new ApiError(
+        404,
+        "PROMOTIONAL_CAMPAIGN_NOT_FOUND",
+        "Promotional campaign was not found.",
+      );
+    }
+
+    const campaign = campaignResult.recordset[0];
+    if (!["draft", "ready"].includes(campaign.status)) {
+      throw new ApiError(
+        409,
+        "PROMOTIONAL_CAMPAIGN_NOT_EDITABLE",
+        "Promotional campaign recipients cannot be changed in this status.",
+      );
+    }
+
+    if (customerIds.length > Number(campaign.recipient_limit || 5)) {
+      throw new ApiError(400, "VALIDATION_ERROR", "Recipient limit exceeded.", [
+        {
+          field: "customerIds",
+          message: `Select ${campaign.recipient_limit} recipients or fewer.`,
+        },
+      ]);
+    }
+
+    await new sql.Request(transaction).input(
+      "campaign_id",
+      sql.BigInt,
+      campaignId,
+    ).query(`
+        DELETE FROM dbo.PromotionalCampaignRecipients
+        WHERE campaign_id = @campaign_id
+          AND status = 'pending'
+      `);
+
+    const inserted = [];
+    const skipped = [];
+
+    for (const customerId of customerIds) {
+      const customerResult = await new sql.Request(transaction)
+        .input("company_id", sql.BigInt, companyId)
+        .input("customer_id", sql.BigInt, customerId).query(`
+          SELECT TOP (1)
+            customers.id AS customer_id,
+            customers.name,
+            customers.email,
+            COALESCE(balances.points_balance, 0) AS points_balance,
+            COALESCE(preferences.promotional_status, 'subscribed') AS promotional_status
+          FROM dbo.Customers AS customers
+          LEFT JOIN dbo.CustomerPointBalances AS balances
+            ON balances.company_id = customers.company_id
+           AND balances.customer_id = customers.id
+          LEFT JOIN dbo.CustomerPromotionalEmailPreferences AS preferences
+            ON preferences.company_id = customers.company_id
+           AND preferences.customer_id = customers.id
+          WHERE customers.company_id = @company_id
+            AND customers.id = @customer_id
+        `);
+
+      if (!customerResult.recordset.length) {
+        skipped.push({ customerId: toApiId(customerId), reason: "not_found" });
+        continue;
+      }
+
+      const customer = customerResult.recordset[0];
+      const email = String(customer.email || "").trim();
+      if (
+        !email ||
+        !email.includes("@") ||
+        customer.promotional_status !== "subscribed"
+      ) {
+        skipped.push({
+          customerId: toApiId(customer.customer_id),
+          reason:
+            !email || !email.includes("@")
+              ? "missing_email"
+              : customer.promotional_status,
+        });
+        continue;
+      }
+
+      const insertResult = await new sql.Request(transaction)
+        .input("campaign_id", sql.BigInt, campaignId)
+        .input("company_id", sql.BigInt, companyId)
+        .input("customer_id", sql.BigInt, customer.customer_id)
+        .input("customer_name", sql.NVarChar(160), customer.name)
+        .input("recipient_email", sql.NVarChar(254), email)
+        .input(
+          "points_balance_snapshot",
+          sql.Int,
+          Number(customer.points_balance || 0),
+        )
+        .input(
+          "preference_status_snapshot",
+          sql.VarChar(20),
+          customer.promotional_status,
+        ).query(`
+          INSERT INTO dbo.PromotionalCampaignRecipients (
+            campaign_id,
+            company_id,
+            customer_id,
+            recipient_email,
+            points_balance_snapshot,
+            preference_status_snapshot
+          )
+          OUTPUT
+            INSERTED.id,
+            INSERTED.campaign_id,
+            INSERTED.company_id,
+            INSERTED.customer_id,
+            @customer_name AS customer_name,
+            INSERTED.recipient_email,
+            INSERTED.points_balance_snapshot,
+            INSERTED.preference_status_snapshot,
+            INSERTED.status,
+            INSERTED.skip_reason,
+            INSERTED.provider,
+            INSERTED.provider_message_id,
+            INSERTED.last_error,
+            INSERTED.selected_at,
+            INSERTED.sent_at,
+            INSERTED.updated_at
+          VALUES (
+            @campaign_id,
+            @company_id,
+            @customer_id,
+            @recipient_email,
+            @points_balance_snapshot,
+            @preference_status_snapshot
+          )
+        `);
+
+      inserted.push(mapPromotionalRecipient(insertResult.recordset[0]));
+    }
+
+    await new sql.Request(transaction)
+      .input("campaign_id", sql.BigInt, campaignId)
+      .input("status", sql.VarChar(20), inserted.length ? "ready" : "draft")
+      .query(`
+        UPDATE dbo.PromotionalCampaigns
+        SET
+          status = @status,
+          updated_at = SYSUTCDATETIME()
+        WHERE id = @campaign_id
+      `);
+
+    await transaction.commit();
+    return { recipients: inserted, skipped };
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch {
+      // Preserve original error.
+    }
+    throw error;
+  }
+}
+
+async function listPromotionalCampaignRecipients(companyId, campaignId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("campaign_id", sql.BigInt, campaignId).query(`
+      SELECT
+        recipients.id,
+        recipients.campaign_id,
+        recipients.company_id,
+        recipients.customer_id,
+        customers.name AS customer_name,
+        recipients.recipient_email,
+        recipients.points_balance_snapshot,
+        recipients.preference_status_snapshot,
+        recipients.status,
+        recipients.skip_reason,
+        recipients.provider,
+        recipients.provider_message_id,
+        recipients.last_error,
+        recipients.selected_at,
+        recipients.sent_at,
+        recipients.updated_at
+      FROM dbo.PromotionalCampaignRecipients AS recipients
+      INNER JOIN dbo.Customers AS customers
+        ON customers.company_id = recipients.company_id
+       AND customers.id = recipients.customer_id
+      WHERE recipients.company_id = @company_id
+        AND recipients.campaign_id = @campaign_id
+      ORDER BY recipients.id ASC
+    `);
+
+  return result.recordset.map(mapPromotionalRecipient);
+}
+
+async function unsubscribePromotionalCustomer(
+  companyId,
+  payload,
+  options = {},
+) {
+  const sql = getSql();
+  const pool = await getPool();
+  const source = options.source || "customer_link";
+
+  await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, payload.customerId)
+    .input("source", sql.VarChar(40), source)
+    .input("reason", sql.NVarChar(300), payload.reason).query(`
+      MERGE dbo.CustomerPromotionalEmailPreferences AS target
+      USING (
+        SELECT
+          @company_id AS company_id,
+          @customer_id AS customer_id,
+          @source AS source,
+          @reason AS reason
+      ) AS source
+      ON target.company_id = source.company_id
+     AND target.customer_id = source.customer_id
+      WHEN MATCHED THEN
+        UPDATE SET
+          promotional_status = 'unsubscribed',
+          unsubscribed_at = COALESCE(target.unsubscribed_at, SYSUTCDATETIME()),
+          unsubscribe_source = source.source,
+          unsubscribe_reason = source.reason,
+          updated_at = SYSUTCDATETIME()
+      WHEN NOT MATCHED THEN
+        INSERT (
+          company_id,
+          customer_id,
+          promotional_status,
+          unsubscribed_at,
+          unsubscribe_source,
+          unsubscribe_reason
+        )
+        VALUES (
+          source.company_id,
+          source.customer_id,
+          'unsubscribed',
+          SYSUTCDATETIME(),
+          source.source,
+          source.reason
+        );
+    `);
+
+  await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, payload.customerId)
+    .input("campaign_id", sql.BigInt, payload.campaignId)
+    .input("recipient_id", sql.BigInt, payload.recipientId)
+    .input("source", sql.VarChar(40), source)
+    .input("reason", sql.NVarChar(300), payload.reason).query(`
+      INSERT INTO dbo.PromotionalUnsubscribeEvents (
+        company_id,
+        customer_id,
+        campaign_id,
+        recipient_id,
+        source,
+        reason
+      )
+      VALUES (
+        @company_id,
+        @customer_id,
+        @campaign_id,
+        @recipient_id,
+        @source,
+        @reason
+      )
+    `);
+
+  return {
+    companyId: toApiId(companyId),
+    customerId: toApiId(payload.customerId),
+    promotionalStatus: "unsubscribed",
+    message:
+      "Baja promocional registrada. Tus puntos, beneficios e historial se mantienen.",
+  };
+}
+
 async function listCompanyRegistrationRequests(filters) {
   const sql = getSql();
   const pool = await getPool();
-  const status = filters.status === 'all' ? null : filters.status;
-  const result = await pool.request()
-    .input('status', sql.VarChar(30), status)
-    .input('limit', sql.Int, filters.limit)
-    .query(`
+  const status = filters.status === "all" ? null : filters.status;
+  const result = await pool
+    .request()
+    .input("status", sql.VarChar(30), status)
+    .input("limit", sql.Int, filters.limit).query(`
       SELECT TOP (@limit)
         requests.id,
         requests.company_name,
@@ -1049,15 +1682,14 @@ async function listCompanyRegistrationRequests(filters) {
   return {
     status: filters.status,
     limit: filters.limit,
-    items: result.recordset.map(mapCompanyRegistrationRequestWithInvitation)
+    items: result.recordset.map(mapCompanyRegistrationRequestWithInvitation),
   };
 }
 
 async function getCompanyLogoMetadata(companyId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
+  const result = await pool.request().input("company_id", sql.BigInt, companyId)
     .query(`
       SELECT
         id,
@@ -1070,33 +1702,37 @@ async function getCompanyLogoMetadata(companyId) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+    throw new ApiError(404, "COMPANY_NOT_FOUND", "Company was not found.");
   }
 
   const row = result.recordset[0];
   if (!row.logo_blob_path) {
-    throw new ApiError(404, 'COMPANY_LOGO_NOT_FOUND', 'Company logo was not found.');
+    throw new ApiError(
+      404,
+      "COMPANY_LOGO_NOT_FOUND",
+      "Company logo was not found.",
+    );
   }
 
   return {
     blobPath: row.logo_blob_path,
     contentType: row.logo_content_type,
-    updatedAt: toIsoTimestamp(row.logo_updated_at)
+    updatedAt: toIsoTimestamp(row.logo_updated_at),
   };
 }
 
 async function createCompanyRegistrationRequest(payload) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_name', sql.NVarChar(160), payload.companyName)
-    .input('company_email', sql.NVarChar(254), payload.companyEmail)
-    .input('company_phone', sql.NVarChar(32), payload.companyPhone)
-    .input('company_address', sql.NVarChar(300), payload.companyAddress)
-    .input('contact_name', sql.NVarChar(160), payload.contactName)
-    .input('contact_email', sql.NVarChar(254), payload.contactEmail)
-    .input('contact_phone', sql.NVarChar(32), payload.contactPhone)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_name", sql.NVarChar(160), payload.companyName)
+    .input("company_email", sql.NVarChar(254), payload.companyEmail)
+    .input("company_phone", sql.NVarChar(32), payload.companyPhone)
+    .input("company_address", sql.NVarChar(300), payload.companyAddress)
+    .input("contact_name", sql.NVarChar(160), payload.contactName)
+    .input("contact_email", sql.NVarChar(254), payload.contactEmail)
+    .input("contact_phone", sql.NVarChar(32), payload.contactPhone).query(`
       INSERT INTO dbo.CompanyRegistrationRequests (
         company_name,
         company_email,
@@ -1141,10 +1777,11 @@ async function createCompanyRegistrationRequest(payload) {
 async function updateCompanyRegistrationRequestLogo(requestId, logo) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('request_id', sql.BigInt, requestId)
-    .input('requested_logo_blob_path', sql.NVarChar(512), logo.blobPath)
-    .input('requested_logo_content_type', sql.NVarChar(100), logo.contentType)
+  const result = await pool
+    .request()
+    .input("request_id", sql.BigInt, requestId)
+    .input("requested_logo_blob_path", sql.NVarChar(512), logo.blobPath)
+    .input("requested_logo_content_type", sql.NVarChar(100), logo.contentType)
     .query(`
       UPDATE dbo.CompanyRegistrationRequests
       SET
@@ -1174,7 +1811,11 @@ async function updateCompanyRegistrationRequestLogo(requestId, logo) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'COMPANY_REGISTRATION_REQUEST_NOT_FOUND', 'Company registration request was not found.');
+    throw new ApiError(
+      404,
+      "COMPANY_REGISTRATION_REQUEST_NOT_FOUND",
+      "Company registration request was not found.",
+    );
   }
 
   return mapCompanyRegistrationRequest(result.recordset[0]);
@@ -1191,15 +1832,14 @@ function mapCompanyPasswordReset(row) {
     sentAt: toIsoTimestamp(row.sent_at),
     usedAt: toIsoTimestamp(row.used_at),
     createdByLabel: row.created_by_label,
-    companyName: row.company_name || null
+    companyName: row.company_name || null,
   };
 }
 
 async function getCompanyRegistrationRequestLogoMetadata(requestId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('request_id', sql.BigInt, requestId)
+  const result = await pool.request().input("request_id", sql.BigInt, requestId)
     .query(`
       SELECT
         id,
@@ -1210,34 +1850,49 @@ async function getCompanyRegistrationRequestLogoMetadata(requestId) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'COMPANY_REGISTRATION_REQUEST_NOT_FOUND', 'Company registration request was not found.');
+    throw new ApiError(
+      404,
+      "COMPANY_REGISTRATION_REQUEST_NOT_FOUND",
+      "Company registration request was not found.",
+    );
   }
 
   const row = result.recordset[0];
   if (!row.requested_logo_blob_path) {
-    throw new ApiError(404, 'COMPANY_REGISTRATION_LOGO_NOT_FOUND', 'Company registration request logo was not found.');
+    throw new ApiError(
+      404,
+      "COMPANY_REGISTRATION_LOGO_NOT_FOUND",
+      "Company registration request logo was not found.",
+    );
   }
 
   return {
     blobPath: row.requested_logo_blob_path,
-    contentType: row.requested_logo_content_type
+    contentType: row.requested_logo_content_type,
   };
 }
 
-async function approveCompanyRegistrationRequest(requestId, payload, options = {}) {
+async function approveCompanyRegistrationRequest(
+  requestId,
+  payload,
+  options = {},
+) {
   const sql = getSql();
   const pool = await getPool();
   const transaction = new sql.Transaction(pool);
-  const actorLabel = options.actorLabel || 'internal';
-  const pointsPercentage = payload.pointsPercentage == null ? 5 : payload.pointsPercentage;
+  const actorLabel = options.actorLabel || "internal";
+  const pointsPercentage =
+    payload.pointsPercentage == null ? 5 : payload.pointsPercentage;
   const invitation = options.invitation || null;
 
   await transaction.begin();
 
   try {
-    const requestResult = await new sql.Request(transaction)
-      .input('request_id', sql.BigInt, requestId)
-      .query(`
+    const requestResult = await new sql.Request(transaction).input(
+      "request_id",
+      sql.BigInt,
+      requestId,
+    ).query(`
         SELECT TOP (1)
           id,
           company_name,
@@ -1255,19 +1910,30 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
       `);
 
     if (!requestResult.recordset.length) {
-      throw new ApiError(404, 'COMPANY_REGISTRATION_REQUEST_NOT_FOUND', 'Company registration request was not found.');
+      throw new ApiError(
+        404,
+        "COMPANY_REGISTRATION_REQUEST_NOT_FOUND",
+        "Company registration request was not found.",
+      );
     }
 
     const request = requestResult.recordset[0];
     const companyResult = await new sql.Request(transaction)
-      .input('name', sql.NVarChar(160), request.company_name)
-      .input('email', sql.NVarChar(254), request.company_email)
-      .input('phone', sql.NVarChar(32), request.company_phone)
-      .input('address', sql.NVarChar(300), request.company_address)
-      .input('logo_blob_path', sql.NVarChar(512), request.requested_logo_blob_path)
-      .input('logo_content_type', sql.NVarChar(100), request.requested_logo_content_type)
-      .input('points_percentage', sql.Decimal(5, 2), pointsPercentage)
-      .query(`
+      .input("name", sql.NVarChar(160), request.company_name)
+      .input("email", sql.NVarChar(254), request.company_email)
+      .input("phone", sql.NVarChar(32), request.company_phone)
+      .input("address", sql.NVarChar(300), request.company_address)
+      .input(
+        "logo_blob_path",
+        sql.NVarChar(512),
+        request.requested_logo_blob_path,
+      )
+      .input(
+        "logo_content_type",
+        sql.NVarChar(100),
+        request.requested_logo_content_type,
+      )
+      .input("points_percentage", sql.Decimal(5, 2), pointsPercentage).query(`
         INSERT INTO dbo.Companies (
           name,
           email,
@@ -1305,10 +1971,10 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
       `);
 
     const reviewResult = await new sql.Request(transaction)
-      .input('request_id', sql.BigInt, requestId)
-      .input('reviewed_by_label', sql.NVarChar(120), actorLabel)
-      .input('review_note', sql.NVarChar(500), payload.reviewNote)
-      .input('approved_company_id', sql.BigInt, companyResult.recordset[0].id)
+      .input("request_id", sql.BigInt, requestId)
+      .input("reviewed_by_label", sql.NVarChar(120), actorLabel)
+      .input("review_note", sql.NVarChar(500), payload.reviewNote)
+      .input("approved_company_id", sql.BigInt, companyResult.recordset[0].id)
       .query(`
         UPDATE dbo.CompanyRegistrationRequests
         SET
@@ -1342,14 +2008,13 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
     let invitationResult = null;
     if (invitation) {
       invitationResult = await new sql.Request(transaction)
-        .input('company_id', sql.BigInt, companyResult.recordset[0].id)
-        .input('registration_request_id', sql.BigInt, requestId)
-        .input('email', sql.NVarChar(254), request.company_email)
-        .input('token_hash', sql.VarBinary(32), invitation.tokenHash)
-        .input('role', sql.VarChar(30), 'owner')
-        .input('expires_at', sql.DateTime2, invitation.expiresAt)
-        .input('created_by_label', sql.NVarChar(120), actorLabel)
-        .query(`
+        .input("company_id", sql.BigInt, companyResult.recordset[0].id)
+        .input("registration_request_id", sql.BigInt, requestId)
+        .input("email", sql.NVarChar(254), request.company_email)
+        .input("token_hash", sql.VarBinary(32), invitation.tokenHash)
+        .input("role", sql.VarChar(30), "owner")
+        .input("expires_at", sql.DateTime2, invitation.expiresAt)
+        .input("created_by_label", sql.NVarChar(120), actorLabel).query(`
           INSERT INTO dbo.CompanyInvitations (
             company_id,
             registration_request_id,
@@ -1394,18 +2059,18 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
         email: company.email,
         phone: company.phone,
         address: company.address,
-        logoUrl: company.logo_blob_path ? '/api/my-company/logo' : null,
+        logoUrl: company.logo_blob_path ? "/api/my-company/logo" : null,
         logoContentType: company.logo_content_type,
         logoUpdatedAt: toIsoTimestamp(company.logo_updated_at),
         status: company.status,
-        pointsPercentage: Number(company.points_percentage)
-      }
+        pointsPercentage: Number(company.points_percentage),
+      },
     };
 
     if (invitationResult) {
       approvedRequest.invitation = {
         ...mapCompanyInvitation(invitationResult.recordset[0]),
-        companyName: company.name
+        companyName: company.name,
       };
     }
 
@@ -1420,15 +2085,19 @@ async function approveCompanyRegistrationRequest(requestId, payload, options = {
   }
 }
 
-async function rejectCompanyRegistrationRequest(requestId, payload, options = {}) {
+async function rejectCompanyRegistrationRequest(
+  requestId,
+  payload,
+  options = {},
+) {
   const sql = getSql();
   const pool = await getPool();
-  const actorLabel = options.actorLabel || 'internal';
-  const result = await pool.request()
-    .input('request_id', sql.BigInt, requestId)
-    .input('reviewed_by_label', sql.NVarChar(120), actorLabel)
-    .input('review_note', sql.NVarChar(500), payload.reviewNote)
-    .query(`
+  const actorLabel = options.actorLabel || "internal";
+  const result = await pool
+    .request()
+    .input("request_id", sql.BigInt, requestId)
+    .input("reviewed_by_label", sql.NVarChar(120), actorLabel)
+    .input("review_note", sql.NVarChar(500), payload.reviewNote).query(`
       UPDATE dbo.CompanyRegistrationRequests
       SET
         status = 'rejected',
@@ -1457,7 +2126,11 @@ async function rejectCompanyRegistrationRequest(requestId, payload, options = {}
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'COMPANY_REGISTRATION_REQUEST_NOT_FOUND', 'Company registration request was not found.');
+    throw new ApiError(
+      404,
+      "COMPANY_REGISTRATION_REQUEST_NOT_FOUND",
+      "Company registration request was not found.",
+    );
   }
 
   return mapCompanyRegistrationRequest(result.recordset[0]);
@@ -1466,8 +2139,7 @@ async function rejectCompanyRegistrationRequest(requestId, payload, options = {}
 async function getInvitationCompany(companyId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
+  const result = await pool.request().input("company_id", sql.BigInt, companyId)
     .query(`
       SELECT id, name
       FROM dbo.Companies
@@ -1476,23 +2148,26 @@ async function getInvitationCompany(companyId) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+    throw new ApiError(404, "COMPANY_NOT_FOUND", "Company was not found.");
   }
 
   return result.recordset[0];
 }
 
-async function ensureRegistrationRequestBelongsToCompany(registrationRequestId, companyId) {
+async function ensureRegistrationRequestBelongsToCompany(
+  registrationRequestId,
+  companyId,
+) {
   if (registrationRequestId == null) {
     return;
   }
 
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('registration_request_id', sql.BigInt, registrationRequestId)
-    .input('company_id', sql.BigInt, companyId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("registration_request_id", sql.BigInt, registrationRequestId)
+    .input("company_id", sql.BigInt, companyId).query(`
       SELECT 1 AS exists_flag
       FROM dbo.CompanyRegistrationRequests
       WHERE id = @registration_request_id
@@ -1500,28 +2175,44 @@ async function ensureRegistrationRequestBelongsToCompany(registrationRequestId, 
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(400, 'VALIDATION_ERROR', 'One or more fields are invalid.', [
-      { field: 'registrationRequestId', message: 'registrationRequestId must belong to the company.' }
-    ]);
+    throw new ApiError(
+      400,
+      "VALIDATION_ERROR",
+      "One or more fields are invalid.",
+      [
+        {
+          field: "registrationRequestId",
+          message: "registrationRequestId must belong to the company.",
+        },
+      ],
+    );
   }
 }
 
-async function createCompanyInvitation(payload, tokenHash, expiresAt, options = {}) {
+async function createCompanyInvitation(
+  payload,
+  tokenHash,
+  expiresAt,
+  options = {},
+) {
   const sql = getSql();
   const pool = await getPool();
-  const actorLabel = options.actorLabel || 'internal';
+  const actorLabel = options.actorLabel || "internal";
   const company = await getInvitationCompany(payload.companyId);
-  await ensureRegistrationRequestBelongsToCompany(payload.registrationRequestId, payload.companyId);
+  await ensureRegistrationRequestBelongsToCompany(
+    payload.registrationRequestId,
+    payload.companyId,
+  );
 
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, payload.companyId)
-    .input('registration_request_id', sql.BigInt, payload.registrationRequestId)
-    .input('email', sql.NVarChar(254), payload.email)
-    .input('token_hash', sql.VarBinary(32), tokenHash)
-    .input('role', sql.VarChar(30), payload.role)
-    .input('expires_at', sql.DateTime2, expiresAt)
-    .input('created_by_label', sql.NVarChar(120), actorLabel)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, payload.companyId)
+    .input("registration_request_id", sql.BigInt, payload.registrationRequestId)
+    .input("email", sql.NVarChar(254), payload.email)
+    .input("token_hash", sql.VarBinary(32), tokenHash)
+    .input("role", sql.VarChar(30), payload.role)
+    .input("expires_at", sql.DateTime2, expiresAt)
+    .input("created_by_label", sql.NVarChar(120), actorLabel).query(`
       INSERT INTO dbo.CompanyInvitations (
         company_id,
         registration_request_id,
@@ -1556,16 +2247,16 @@ async function createCompanyInvitation(payload, tokenHash, expiresAt, options = 
 
   return {
     ...mapCompanyInvitation(result.recordset[0]),
-    companyName: company.name
+    companyName: company.name,
   };
 }
 
 async function getCompanyInvitationByTokenHash(tokenHash) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('token_hash', sql.VarBinary(32), tokenHash)
-    .query(`
+  const result = await pool
+    .request()
+    .input("token_hash", sql.VarBinary(32), tokenHash).query(`
       SELECT TOP (1)
         invitations.id,
         invitations.company_id,
@@ -1585,15 +2276,17 @@ async function getCompanyInvitationByTokenHash(tokenHash) {
       WHERE invitations.token_hash = @token_hash
     `);
 
-  return result.recordset.length ? mapCompanyInvitationWithCompany(result.recordset[0]) : null;
+  return result.recordset.length
+    ? mapCompanyInvitationWithCompany(result.recordset[0])
+    : null;
 }
 
 async function getCompanyInvitationById(invitationId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('invitation_id', sql.BigInt, invitationId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("invitation_id", sql.BigInt, invitationId).query(`
       SELECT TOP (1)
         invitations.id,
         invitations.company_id,
@@ -1613,15 +2306,17 @@ async function getCompanyInvitationById(invitationId) {
       WHERE invitations.id = @invitation_id
     `);
 
-  return result.recordset.length ? mapCompanyInvitationWithCompany(result.recordset[0]) : null;
+  return result.recordset.length
+    ? mapCompanyInvitationWithCompany(result.recordset[0])
+    : null;
 }
 
 async function rotateCompanyInvitationToken(invitationId, tokenHash) {
   const sql = getSql();
   const pool = await getPool();
-  const currentResult = await pool.request()
-    .input('invitation_id', sql.BigInt, invitationId)
-    .query(`
+  const currentResult = await pool
+    .request()
+    .input("invitation_id", sql.BigInt, invitationId).query(`
       SELECT TOP (1)
         invitations.id,
         invitations.status,
@@ -1631,26 +2326,42 @@ async function rotateCompanyInvitationToken(invitationId, tokenHash) {
     `);
 
   if (!currentResult.recordset.length) {
-    throw new ApiError(404, 'INVITATION_NOT_FOUND', 'Company invitation was not found.');
+    throw new ApiError(
+      404,
+      "INVITATION_NOT_FOUND",
+      "Company invitation was not found.",
+    );
   }
 
   const current = currentResult.recordset[0];
-  if (current.status === 'accepted') {
-    throw new ApiError(409, 'INVITATION_ALREADY_ACCEPTED', 'Company invitation was already accepted.');
+  if (current.status === "accepted") {
+    throw new ApiError(
+      409,
+      "INVITATION_ALREADY_ACCEPTED",
+      "Company invitation was already accepted.",
+    );
   }
 
-  if (current.status !== 'pending') {
-    throw new ApiError(404, 'INVITATION_NOT_FOUND', 'Company invitation was not found.');
+  if (current.status !== "pending") {
+    throw new ApiError(
+      404,
+      "INVITATION_NOT_FOUND",
+      "Company invitation was not found.",
+    );
   }
 
   if (current.expires_at < new Date()) {
-    throw new ApiError(409, 'INVITATION_EXPIRED', 'Company invitation is expired.');
+    throw new ApiError(
+      409,
+      "INVITATION_EXPIRED",
+      "Company invitation is expired.",
+    );
   }
 
-  const result = await pool.request()
-    .input('invitation_id', sql.BigInt, invitationId)
-    .input('token_hash', sql.VarBinary(32), tokenHash)
-    .query(`
+  const result = await pool
+    .request()
+    .input("invitation_id", sql.BigInt, invitationId)
+    .input("token_hash", sql.VarBinary(32), tokenHash).query(`
       UPDATE invitations
       SET token_hash = @token_hash
       FROM dbo.CompanyInvitations AS invitations
@@ -1660,13 +2371,21 @@ async function rotateCompanyInvitationToken(invitationId, tokenHash) {
     `);
 
   if (!result.rowsAffected || !result.rowsAffected[0]) {
-    throw new ApiError(409, 'INVITATION_EXPIRED', 'Company invitation is expired.');
+    throw new ApiError(
+      409,
+      "INVITATION_EXPIRED",
+      "Company invitation is expired.",
+    );
   }
 
   return getCompanyInvitationById(invitationId);
 }
 
-async function acceptCompanyInvitationWithPassword(tokenHash, payload, passwordCredentials) {
+async function acceptCompanyInvitationWithPassword(
+  tokenHash,
+  payload,
+  passwordCredentials,
+) {
   const sql = getSql();
   const pool = await getPool();
   const transaction = new sql.Transaction(pool);
@@ -1674,9 +2393,11 @@ async function acceptCompanyInvitationWithPassword(tokenHash, payload, passwordC
   await transaction.begin();
 
   try {
-    const invitationResult = await new sql.Request(transaction)
-      .input('token_hash', sql.VarBinary(32), tokenHash)
-      .query(`
+    const invitationResult = await new sql.Request(transaction).input(
+      "token_hash",
+      sql.VarBinary(32),
+      tokenHash,
+    ).query(`
         SELECT TOP (1)
           invitations.id,
           invitations.company_id,
@@ -1693,35 +2414,62 @@ async function acceptCompanyInvitationWithPassword(tokenHash, payload, passwordC
       `);
 
     if (!invitationResult.recordset.length) {
-      throw new ApiError(404, 'INVITATION_NOT_FOUND', 'Company invitation was not found.');
+      throw new ApiError(
+        404,
+        "INVITATION_NOT_FOUND",
+        "Company invitation was not found.",
+      );
     }
 
     const invitation = invitationResult.recordset[0];
-    if (invitation.status === 'accepted') {
-      throw new ApiError(409, 'INVITATION_ALREADY_ACCEPTED', 'Company invitation was already accepted.');
+    if (invitation.status === "accepted") {
+      throw new ApiError(
+        409,
+        "INVITATION_ALREADY_ACCEPTED",
+        "Company invitation was already accepted.",
+      );
     }
 
-    if (invitation.status !== 'pending') {
-      throw new ApiError(404, 'INVITATION_NOT_FOUND', 'Company invitation was not found.');
+    if (invitation.status !== "pending") {
+      throw new ApiError(
+        404,
+        "INVITATION_NOT_FOUND",
+        "Company invitation was not found.",
+      );
     }
 
     if (invitation.expires_at < new Date()) {
-      throw new ApiError(409, 'INVITATION_EXPIRED', 'Company invitation is expired.');
+      throw new ApiError(
+        409,
+        "INVITATION_EXPIRED",
+        "Company invitation is expired.",
+      );
     }
 
-    if (!['pending_activation', 'active'].includes(invitation.company_status)) {
-      throw new ApiError(404, 'COMPANY_NOT_FOUND', 'Company was not found.');
+    if (!["pending_activation", "active"].includes(invitation.company_status)) {
+      throw new ApiError(404, "COMPANY_NOT_FOUND", "Company was not found.");
     }
 
     const userResult = await new sql.Request(transaction)
-      .input('company_id', sql.BigInt, invitation.company_id)
-      .input('email', sql.NVarChar(254), invitation.email)
-      .input('display_name', sql.NVarChar(160), payload.displayName)
-      .input('role', sql.VarChar(30), invitation.role)
-      .input('password_hash', sql.NVarChar(512), passwordCredentials.passwordHash)
-      .input('password_algorithm', sql.VarChar(40), passwordCredentials.passwordAlgorithm)
-      .input('password_params', sql.NVarChar(300), passwordCredentials.passwordParams)
-      .query(`
+      .input("company_id", sql.BigInt, invitation.company_id)
+      .input("email", sql.NVarChar(254), invitation.email)
+      .input("display_name", sql.NVarChar(160), payload.displayName)
+      .input("role", sql.VarChar(30), invitation.role)
+      .input(
+        "password_hash",
+        sql.NVarChar(512),
+        passwordCredentials.passwordHash,
+      )
+      .input(
+        "password_algorithm",
+        sql.VarChar(40),
+        passwordCredentials.passwordAlgorithm,
+      )
+      .input(
+        "password_params",
+        sql.NVarChar(300),
+        passwordCredentials.passwordParams,
+      ).query(`
         INSERT INTO dbo.CompanyUsers (
           company_id,
           email,
@@ -1759,9 +2507,11 @@ async function acceptCompanyInvitationWithPassword(tokenHash, payload, passwordC
         )
       `);
 
-    await new sql.Request(transaction)
-      .input('invitation_id', sql.BigInt, invitation.id)
-      .query(`
+    await new sql.Request(transaction).input(
+      "invitation_id",
+      sql.BigInt,
+      invitation.id,
+    ).query(`
         UPDATE dbo.CompanyInvitations
         SET
           status = 'accepted',
@@ -1771,10 +2521,15 @@ async function acceptCompanyInvitationWithPassword(tokenHash, payload, passwordC
       `);
 
     let companyStatus = invitation.company_status;
-    if (invitation.role === 'owner' && invitation.company_status === 'pending_activation') {
-      const companyResult = await new sql.Request(transaction)
-        .input('company_id', sql.BigInt, invitation.company_id)
-        .query(`
+    if (
+      invitation.role === "owner" &&
+      invitation.company_status === "pending_activation"
+    ) {
+      const companyResult = await new sql.Request(transaction).input(
+        "company_id",
+        sql.BigInt,
+        invitation.company_id,
+      ).query(`
           UPDATE dbo.Companies
           SET
             status = 'active',
@@ -1797,13 +2552,13 @@ async function acceptCompanyInvitationWithPassword(tokenHash, payload, passwordC
       company: {
         id: toApiId(invitation.company_id),
         name: invitation.company_name,
-        status: companyStatus
+        status: companyStatus,
       },
       invitation: {
         id: toApiId(invitation.id),
         companyId: toApiId(invitation.company_id),
-        role: invitation.role
-      }
+        role: invitation.role,
+      },
     };
   } catch (error) {
     try {
@@ -1818,8 +2573,7 @@ async function acceptCompanyInvitationWithPassword(tokenHash, payload, passwordC
 async function getLocalPasswordUserByEmail(email) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('email', sql.NVarChar(254), email)
+  const result = await pool.request().input("email", sql.NVarChar(254), email)
     .query(`
       SELECT TOP (1)
         users.id,
@@ -1851,10 +2605,10 @@ async function getLocalPasswordUserByEmail(email) {
 async function getLocalPasswordUserById(companyId, companyUserId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('company_user_id', sql.BigInt, companyUserId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("company_user_id", sql.BigInt, companyUserId).query(`
       SELECT TOP (1)
         users.id,
         users.company_id,
@@ -1883,15 +2637,29 @@ async function getLocalPasswordUserById(companyId, companyUserId) {
   return result.recordset.length ? result.recordset[0] : null;
 }
 
-async function updateCompanyUserPassword(companyId, companyUserId, passwordCredentials, currentSessionTokenHash = null) {
+async function updateCompanyUserPassword(
+  companyId,
+  companyUserId,
+  passwordCredentials,
+  currentSessionTokenHash = null,
+) {
   const sql = getSql();
   const pool = await getPool();
-  const request = pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('company_user_id', sql.BigInt, companyUserId)
-    .input('password_hash', sql.NVarChar(512), passwordCredentials.passwordHash)
-    .input('password_algorithm', sql.VarChar(40), passwordCredentials.passwordAlgorithm)
-    .input('password_params', sql.NVarChar(300), passwordCredentials.passwordParams);
+  const request = pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("company_user_id", sql.BigInt, companyUserId)
+    .input("password_hash", sql.NVarChar(512), passwordCredentials.passwordHash)
+    .input(
+      "password_algorithm",
+      sql.VarChar(40),
+      passwordCredentials.passwordAlgorithm,
+    )
+    .input(
+      "password_params",
+      sql.NVarChar(300),
+      passwordCredentials.passwordParams,
+    );
 
   await request.query(`
     UPDATE dbo.CompanyUsers
@@ -1907,15 +2675,20 @@ async function updateCompanyUserPassword(companyId, companyUserId, passwordCrede
       AND auth_provider = 'local_password'
   `);
 
-  const revokeRequest = pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('company_user_id', sql.BigInt, companyUserId);
+  const revokeRequest = pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("company_user_id", sql.BigInt, companyUserId);
   const keepCurrentSessionPredicate = currentSessionTokenHash
-    ? 'AND token_hash <> @current_session_token_hash'
-    : '';
+    ? "AND token_hash <> @current_session_token_hash"
+    : "";
 
   if (currentSessionTokenHash) {
-    revokeRequest.input('current_session_token_hash', sql.VarBinary(32), currentSessionTokenHash);
+    revokeRequest.input(
+      "current_session_token_hash",
+      sql.VarBinary(32),
+      currentSessionTokenHash,
+    );
   }
 
   await revokeRequest.query(`
@@ -1932,19 +2705,24 @@ async function updateCompanyUserPassword(companyId, companyUserId, passwordCrede
   return {
     companyId: toApiId(companyId),
     userId: toApiId(companyUserId),
-    passwordUpdatedAt: new Date().toISOString()
+    passwordUpdatedAt: new Date().toISOString(),
   };
 }
 
-async function createCompanySession(companyId, companyUserId, tokenHash, expiresAt) {
+async function createCompanySession(
+  companyId,
+  companyUserId,
+  tokenHash,
+  expiresAt,
+) {
   const sql = getSql();
   const pool = await getPool();
-  await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('company_user_id', sql.BigInt, companyUserId)
-    .input('token_hash', sql.VarBinary(32), tokenHash)
-    .input('expires_at', sql.DateTime2, expiresAt)
-    .query(`
+  await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("company_user_id", sql.BigInt, companyUserId)
+    .input("token_hash", sql.VarBinary(32), tokenHash)
+    .input("expires_at", sql.DateTime2, expiresAt).query(`
       INSERT INTO dbo.CompanySessions (
         company_id,
         company_user_id,
@@ -1959,10 +2737,10 @@ async function createCompanySession(companyId, companyUserId, tokenHash, expires
       )
     `);
 
-  await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('company_user_id', sql.BigInt, companyUserId)
-    .query(`
+  await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("company_user_id", sql.BigInt, companyUserId).query(`
       UPDATE dbo.CompanyUsers
       SET
         last_login_at = SYSUTCDATETIME(),
@@ -1975,9 +2753,9 @@ async function createCompanySession(companyId, companyUserId, tokenHash, expires
 async function getAuthIdentityBySessionTokenHash(tokenHash) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('token_hash', sql.VarBinary(32), tokenHash)
-    .query(`
+  const result = await pool
+    .request()
+    .input("token_hash", sql.VarBinary(32), tokenHash).query(`
       SELECT TOP (1)
         users.id,
         users.company_id,
@@ -2003,17 +2781,19 @@ async function getAuthIdentityBySessionTokenHash(tokenHash) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(401, 'UNAUTHORIZED', 'Authentication is required.');
+    throw new ApiError(401, "UNAUTHORIZED", "Authentication is required.");
   }
 
   const row = result.recordset[0];
-  if (row.status !== 'active' || row.company_status !== 'active') {
-    throw new ApiError(403, 'FORBIDDEN', 'Company user is not allowed to operate.');
+  if (row.status !== "active" || row.company_status !== "active") {
+    throw new ApiError(
+      403,
+      "FORBIDDEN",
+      "Company user is not allowed to operate.",
+    );
   }
 
-  await pool.request()
-    .input('token_hash', sql.VarBinary(32), tokenHash)
-    .query(`
+  await pool.request().input("token_hash", sql.VarBinary(32), tokenHash).query(`
       UPDATE dbo.CompanySessions
       SET last_seen_at = SYSUTCDATETIME()
       WHERE token_hash = @token_hash
@@ -2026,9 +2806,7 @@ async function getAuthIdentityBySessionTokenHash(tokenHash) {
 async function revokeCompanySession(tokenHash) {
   const sql = getSql();
   const pool = await getPool();
-  await pool.request()
-    .input('token_hash', sql.VarBinary(32), tokenHash)
-    .query(`
+  await pool.request().input("token_hash", sql.VarBinary(32), tokenHash).query(`
       UPDATE dbo.CompanySessions
       SET
         status = 'revoked',
@@ -2041,12 +2819,16 @@ async function revokeCompanySession(tokenHash) {
 async function listCustomers(companyId, search) {
   const sql = getSql();
   const pool = await getPool();
-  const normalizedSearch = typeof search === 'string' ? search.trim() : '';
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('search', sql.NVarChar(254), normalizedSearch || null)
-    .input('search_like', sql.NVarChar(260), normalizedSearch ? `%${normalizedSearch}%` : null)
-    .query(`
+  const normalizedSearch = typeof search === "string" ? search.trim() : "";
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("search", sql.NVarChar(254), normalizedSearch || null)
+    .input(
+      "search_like",
+      sql.NVarChar(260),
+      normalizedSearch ? `%${normalizedSearch}%` : null,
+    ).query(`
       SELECT TOP (50) id, name, phone, email, created_at, updated_at
       FROM dbo.Customers
       WHERE company_id = @company_id
@@ -2065,12 +2847,12 @@ async function listCustomers(companyId, search) {
 async function createCustomer(companyId, payload) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('name', sql.NVarChar(160), payload.name)
-    .input('phone', sql.NVarChar(32), payload.phone)
-    .input('email', sql.NVarChar(254), payload.email)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("name", sql.NVarChar(160), payload.name)
+    .input("phone", sql.NVarChar(32), payload.phone)
+    .input("email", sql.NVarChar(254), payload.email).query(`
       INSERT INTO dbo.Customers (company_id, name, phone, email)
       OUTPUT INSERTED.id, INSERTED.name, INSERTED.phone, INSERTED.email, INSERTED.created_at, INSERTED.updated_at
       VALUES (@company_id, @name, @phone, @email)
@@ -2079,19 +2861,28 @@ async function createCustomer(companyId, payload) {
   return mapCustomer(result.recordset[0]);
 }
 
-async function createCompanyPasswordReset(email, tokenHash, expiresAt, options = {}) {
+async function createCompanyPasswordReset(
+  email,
+  tokenHash,
+  expiresAt,
+  options = {},
+) {
   const sql = getSql();
   const pool = await getPool();
   const user = await getLocalPasswordUserByEmail(email);
 
-  if (!user || user.status !== 'active' || user.company_status !== 'active') {
-    throw new ApiError(404, 'COMPANY_USER_NOT_FOUND', 'Company user was not found.');
+  if (!user || user.status !== "active" || user.company_status !== "active") {
+    throw new ApiError(
+      404,
+      "COMPANY_USER_NOT_FOUND",
+      "Company user was not found.",
+    );
   }
 
-  await pool.request()
-    .input('company_id', sql.BigInt, user.company_id)
-    .input('company_user_id', sql.BigInt, user.id)
-    .query(`
+  await pool
+    .request()
+    .input("company_id", sql.BigInt, user.company_id)
+    .input("company_user_id", sql.BigInt, user.id).query(`
       UPDATE dbo.CompanyPasswordResets
       SET status = 'revoked'
       WHERE company_id = @company_id
@@ -2099,14 +2890,18 @@ async function createCompanyPasswordReset(email, tokenHash, expiresAt, options =
         AND status = 'pending'
     `);
 
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, user.company_id)
-    .input('company_user_id', sql.BigInt, user.id)
-    .input('email', sql.NVarChar(254), user.email)
-    .input('token_hash', sql.VarBinary(32), tokenHash)
-    .input('expires_at', sql.DateTime2, expiresAt)
-    .input('created_by_label', sql.NVarChar(120), options.actorLabel || 'internal')
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, user.company_id)
+    .input("company_user_id", sql.BigInt, user.id)
+    .input("email", sql.NVarChar(254), user.email)
+    .input("token_hash", sql.VarBinary(32), tokenHash)
+    .input("expires_at", sql.DateTime2, expiresAt)
+    .input(
+      "created_by_label",
+      sql.NVarChar(120),
+      options.actorLabel || "internal",
+    ).query(`
       INSERT INTO dbo.CompanyPasswordResets (
         company_id,
         company_user_id,
@@ -2137,16 +2932,16 @@ async function createCompanyPasswordReset(email, tokenHash, expiresAt, options =
 
   return {
     ...mapCompanyPasswordReset(result.recordset[0]),
-    companyName: user.company_name
+    companyName: user.company_name,
   };
 }
 
 async function getCompanyPasswordResetByTokenHash(tokenHash) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('token_hash', sql.VarBinary(32), tokenHash)
-    .query(`
+  const result = await pool
+    .request()
+    .input("token_hash", sql.VarBinary(32), tokenHash).query(`
       SELECT TOP (1)
         resets.id,
         resets.company_id,
@@ -2164,7 +2959,9 @@ async function getCompanyPasswordResetByTokenHash(tokenHash) {
       WHERE resets.token_hash = @token_hash
     `);
 
-  return result.recordset.length ? mapCompanyPasswordReset(result.recordset[0]) : null;
+  return result.recordset.length
+    ? mapCompanyPasswordReset(result.recordset[0])
+    : null;
 }
 
 async function completeCompanyPasswordReset(tokenHash, passwordCredentials) {
@@ -2175,9 +2972,11 @@ async function completeCompanyPasswordReset(tokenHash, passwordCredentials) {
   await transaction.begin();
 
   try {
-    const resetResult = await new sql.Request(transaction)
-      .input('token_hash', sql.VarBinary(32), tokenHash)
-      .query(`
+    const resetResult = await new sql.Request(transaction).input(
+      "token_hash",
+      sql.VarBinary(32),
+      tokenHash,
+    ).query(`
         SELECT TOP (1)
           resets.id,
           resets.company_id,
@@ -2193,37 +2992,63 @@ async function completeCompanyPasswordReset(tokenHash, passwordCredentials) {
       `);
 
     if (!resetResult.recordset.length) {
-      throw new ApiError(404, 'PASSWORD_RESET_NOT_FOUND', 'Password reset was not found.');
+      throw new ApiError(
+        404,
+        "PASSWORD_RESET_NOT_FOUND",
+        "Password reset was not found.",
+      );
     }
 
     const reset = resetResult.recordset[0];
-    if (reset.status === 'used') {
-      throw new ApiError(409, 'PASSWORD_RESET_ALREADY_USED', 'Password reset was already used.');
+    if (reset.status === "used") {
+      throw new ApiError(
+        409,
+        "PASSWORD_RESET_ALREADY_USED",
+        "Password reset was already used.",
+      );
     }
 
-    if (reset.status !== 'pending') {
-      throw new ApiError(404, 'PASSWORD_RESET_NOT_FOUND', 'Password reset was not found.');
+    if (reset.status !== "pending") {
+      throw new ApiError(
+        404,
+        "PASSWORD_RESET_NOT_FOUND",
+        "Password reset was not found.",
+      );
     }
 
     if (reset.expires_at < new Date()) {
-      await new sql.Request(transaction)
-        .input('reset_id', sql.BigInt, reset.id)
+      await new sql.Request(transaction).input("reset_id", sql.BigInt, reset.id)
         .query(`
           UPDATE dbo.CompanyPasswordResets
           SET status = 'expired'
           WHERE id = @reset_id
             AND status = 'pending'
         `);
-      throw new ApiError(409, 'PASSWORD_RESET_EXPIRED', 'Password reset is expired.');
+      throw new ApiError(
+        409,
+        "PASSWORD_RESET_EXPIRED",
+        "Password reset is expired.",
+      );
     }
 
     await new sql.Request(transaction)
-      .input('company_id', sql.BigInt, reset.company_id)
-      .input('company_user_id', sql.BigInt, reset.company_user_id)
-      .input('password_hash', sql.NVarChar(512), passwordCredentials.passwordHash)
-      .input('password_algorithm', sql.VarChar(40), passwordCredentials.passwordAlgorithm)
-      .input('password_params', sql.NVarChar(300), passwordCredentials.passwordParams)
-      .query(`
+      .input("company_id", sql.BigInt, reset.company_id)
+      .input("company_user_id", sql.BigInt, reset.company_user_id)
+      .input(
+        "password_hash",
+        sql.NVarChar(512),
+        passwordCredentials.passwordHash,
+      )
+      .input(
+        "password_algorithm",
+        sql.VarChar(40),
+        passwordCredentials.passwordAlgorithm,
+      )
+      .input(
+        "password_params",
+        sql.NVarChar(300),
+        passwordCredentials.passwordParams,
+      ).query(`
         UPDATE dbo.CompanyUsers
         SET
           password_hash = @password_hash,
@@ -2236,8 +3061,7 @@ async function completeCompanyPasswordReset(tokenHash, passwordCredentials) {
           AND status = 'active'
       `);
 
-    await new sql.Request(transaction)
-      .input('reset_id', sql.BigInt, reset.id)
+    await new sql.Request(transaction).input("reset_id", sql.BigInt, reset.id)
       .query(`
         UPDATE dbo.CompanyPasswordResets
         SET
@@ -2248,9 +3072,8 @@ async function completeCompanyPasswordReset(tokenHash, passwordCredentials) {
       `);
 
     await new sql.Request(transaction)
-      .input('company_id', sql.BigInt, reset.company_id)
-      .input('company_user_id', sql.BigInt, reset.company_user_id)
-      .query(`
+      .input("company_id", sql.BigInt, reset.company_id)
+      .input("company_user_id", sql.BigInt, reset.company_user_id).query(`
         UPDATE dbo.CompanySessions
         SET
           status = 'revoked',
@@ -2265,7 +3088,7 @@ async function completeCompanyPasswordReset(tokenHash, passwordCredentials) {
     return {
       email: reset.email,
       companyName: reset.company_name,
-      completedAt: new Date().toISOString()
+      completedAt: new Date().toISOString(),
     };
   } catch (error) {
     try {
@@ -2280,10 +3103,10 @@ async function completeCompanyPasswordReset(tokenHash, passwordCredentials) {
 async function getCustomerById(companyId, customerId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, customerId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, customerId).query(`
       SELECT id, name, phone, email, created_at, updated_at
       FROM dbo.Customers
       WHERE company_id = @company_id
@@ -2296,10 +3119,10 @@ async function getCustomerById(companyId, customerId) {
 async function customerExists(companyId, customerId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, customerId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, customerId).query(`
       SELECT 1 AS exists_flag
       FROM dbo.Customers
       WHERE company_id = @company_id
@@ -2312,14 +3135,14 @@ async function customerExists(companyId, customerId) {
 async function createPurchase(companyId, payload, pointsEarned) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, payload.customerId)
-    .input('invoice_number', sql.NVarChar(80), payload.invoiceNumber)
-    .input('purchase_date', sql.Date, payload.purchaseDate)
-    .input('amount', sql.Decimal(18, 2), payload.amount)
-    .input('points_earned', sql.Int, pointsEarned)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, payload.customerId)
+    .input("invoice_number", sql.NVarChar(80), payload.invoiceNumber)
+    .input("purchase_date", sql.Date, payload.purchaseDate)
+    .input("amount", sql.Decimal(18, 2), payload.amount)
+    .input("points_earned", sql.Int, pointsEarned).query(`
       INSERT INTO dbo.Purchases (company_id, customer_id, invoice_number, purchase_date, amount, points_earned)
       OUTPUT INSERTED.id, INSERTED.customer_id, INSERTED.invoice_number, INSERTED.purchase_date,
              INSERTED.amount, INSERTED.points_earned, INSERTED.created_at
@@ -2334,17 +3157,17 @@ async function createPurchase(companyId, payload, pointsEarned) {
     purchaseDate: toIsoDate(row.purchase_date),
     amount: Number(row.amount),
     pointsEarned: row.points_earned,
-    createdAt: toIsoTimestamp(row.created_at)
+    createdAt: toIsoTimestamp(row.created_at),
   };
 }
 
 async function getBalance(companyId, customerId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, customerId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, customerId).query(`
       SELECT customer_id, points_earned, points_redeemed, points_balance
       FROM dbo.CustomerPointBalances
       WHERE company_id = @company_id
@@ -2352,7 +3175,11 @@ async function getBalance(companyId, customerId) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'CUSTOMER_NOT_FOUND', 'Customer does not exist for this company.');
+    throw new ApiError(
+      404,
+      "CUSTOMER_NOT_FOUND",
+      "Customer does not exist for this company.",
+    );
   }
 
   const row = result.recordset[0];
@@ -2360,17 +3187,17 @@ async function getBalance(companyId, customerId) {
     customerId: toApiId(row.customer_id),
     pointsEarned: row.points_earned,
     pointsRedeemed: row.points_redeemed,
-    pointsBalance: row.points_balance
+    pointsBalance: row.points_balance,
   };
 }
 
 async function getActivity(companyId, customerId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, customerId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, customerId).query(`
       SELECT 'purchase' AS type, id, purchase_date AS activity_date, invoice_number, amount,
              points_earned AS points, CAST(NULL AS nvarchar(500)) AS note, created_at
       FROM dbo.Purchases
@@ -2392,19 +3219,19 @@ async function getActivity(companyId, customerId) {
     invoiceNumber: row.invoice_number || undefined,
     amount: row.amount == null ? undefined : Number(row.amount),
     note: row.note || undefined,
-    points: row.points
+    points: row.points,
   }));
 }
 
 async function getActivityReport(companyId, filters) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('from', sql.Date, filters.from)
-    .input('to', sql.Date, filters.to)
-    .input('type', sql.VarChar(20), filters.type)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("from", sql.Date, filters.from)
+    .input("to", sql.Date, filters.to)
+    .input("type", sql.VarChar(20), filters.type).query(`
       SELECT 'purchase' AS type, p.id, p.purchase_date AS activity_date,
              p.customer_id, c.name AS customer_name, c.phone AS customer_phone, c.email AS customer_email,
              p.invoice_number, p.amount, p.points_earned AS points,
@@ -2478,13 +3305,13 @@ async function getActivityReport(companyId, filters) {
     invoiceNumber: row.invoice_number || undefined,
     amount: row.amount == null ? undefined : Number(row.amount),
     note: row.note || undefined,
-    points: row.points
+    points: row.points,
   }));
 
   const activeCustomerIds = new Set(items.map((item) => item.customerId));
-  const purchases = items.filter((item) => item.type === 'purchase');
-  const redemptions = items.filter((item) => item.type === 'redemption');
-  const memberships = items.filter((item) => item.type === 'membership');
+  const purchases = items.filter((item) => item.type === "purchase");
+  const redemptions = items.filter((item) => item.type === "redemption");
+  const memberships = items.filter((item) => item.type === "membership");
 
   return {
     from: filters.from,
@@ -2492,37 +3319,46 @@ async function getActivityReport(companyId, filters) {
     type: filters.type,
     summary: {
       purchaseCount: purchases.length,
-      purchaseAmountTotal: purchases.reduce((total, item) => total + (item.amount || 0), 0),
-      pointsEarnedTotal: purchases.reduce((total, item) => total + item.points, 0),
+      purchaseAmountTotal: purchases.reduce(
+        (total, item) => total + (item.amount || 0),
+        0,
+      ),
+      pointsEarnedTotal: purchases.reduce(
+        (total, item) => total + item.points,
+        0,
+      ),
       redemptionCount: redemptions.length,
-      pointsRedeemedTotal: redemptions.reduce((total, item) => total + Math.abs(item.points), 0),
+      pointsRedeemedTotal: redemptions.reduce(
+        (total, item) => total + Math.abs(item.points),
+        0,
+      ),
       membershipCount: memberships.length,
-      activeCustomerCount: activeCustomerIds.size
+      activeCustomerCount: activeCustomerIds.size,
     },
-    items
+    items,
   };
 }
 
 function buildCustomerReportSummary(items) {
   return items.reduce(
     (summary, item) => {
-      if (item.type === 'purchase') {
+      if (item.type === "purchase") {
         summary.purchaseCount += 1;
         summary.purchaseAmountTotal += Number(item.amount || 0);
         summary.pointsEarnedTotal += Number(item.points || 0);
       }
 
-      if (item.type === 'redemption') {
+      if (item.type === "redemption") {
         summary.redemptionCount += 1;
         summary.pointsRedeemedTotal += Math.abs(Number(item.points || 0));
       }
 
-      if (item.type === 'membership') {
+      if (item.type === "membership") {
         summary.membershipCount += 1;
         summary.membershipAmountTotal += Number(item.amount || 0);
       }
 
-      if (item.type === 'benefit') {
+      if (item.type === "benefit") {
         summary.benefitUsageCount += 1;
         summary.benefitQuantityTotal += Number(item.quantity || 0);
       }
@@ -2540,8 +3376,8 @@ function buildCustomerReportSummary(items) {
       membershipCount: 0,
       membershipAmountTotal: 0,
       benefitUsageCount: 0,
-      benefitQuantityTotal: 0
-    }
+      benefitQuantityTotal: 0,
+    },
   );
 }
 
@@ -2549,11 +3385,11 @@ async function getCustomerReport(companyId, filters) {
   const sql = getSql();
   const pool = await getPool();
   const search = filters.search.trim();
-  const candidatesResult = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('search', sql.NVarChar(254), search)
-    .input('search_like', sql.NVarChar(260), `%${search}%`)
-    .query(`
+  const candidatesResult = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("search", sql.NVarChar(254), search)
+    .input("search_like", sql.NVarChar(260), `%${search}%`).query(`
       SELECT TOP (6) id, name, phone, email, created_at, updated_at
       FROM dbo.Customers
       WHERE company_id = @company_id
@@ -2580,35 +3416,35 @@ async function getCustomerReport(companyId, filters) {
     to: filters.to,
     type: filters.type,
     summary: buildCustomerReportSummary([]),
-    items: []
+    items: [],
   };
 
   if (candidates.length === 0) {
     return {
       ...baseReport,
-      status: 'not_found',
+      status: "not_found",
       customer: null,
-      candidates: []
+      candidates: [],
     };
   }
 
   if (candidates.length > 1) {
     return {
       ...baseReport,
-      status: 'ambiguous',
+      status: "ambiguous",
       customer: null,
-      candidates
+      candidates,
     };
   }
 
   const customer = candidates[0];
-  const movementsResult = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, customer.id)
-    .input('from', sql.Date, filters.from)
-    .input('to', sql.Date, filters.to)
-    .input('type', sql.VarChar(20), filters.type)
-    .query(`
+  const movementsResult = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, customer.id)
+    .input("from", sql.Date, filters.from)
+    .input("to", sql.Date, filters.to)
+    .input("type", sql.VarChar(20), filters.type).query(`
       SELECT 'purchase' AS type, purchases.id, purchases.purchase_date AS movement_date,
              purchases.created_at, purchases.invoice_number, purchases.amount,
              purchases.points_earned AS points,
@@ -2694,37 +3530,38 @@ async function getCustomerReport(companyId, filters) {
     quantity: row.quantity == null ? undefined : Number(row.quantity),
     planName: row.plan_name || undefined,
     benefitName: row.benefit_name || undefined,
-    note: row.note || undefined
+    note: row.note || undefined,
   }));
 
   return {
     ...baseReport,
-    status: 'resolved',
+    status: "resolved",
     customer,
     candidates: [],
     summary: buildCustomerReportSummary(items),
-    items
+    items,
   };
 }
 
 async function createRedemption(companyId, payload) {
   const sql = getSql();
   const pool = await getPool();
-  await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, payload.customerId)
-    .input('redemption_date', sql.Date, payload.redemptionDate)
-    .input('points_redeemed', sql.Int, payload.pointsRedeemed)
-    .input('note', sql.NVarChar(500), payload.note)
-    .execute('dbo.RegisterRedemption');
+  await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, payload.customerId)
+    .input("redemption_date", sql.Date, payload.redemptionDate)
+    .input("points_redeemed", sql.Int, payload.pointsRedeemed)
+    .input("note", sql.NVarChar(500), payload.note)
+    .execute("dbo.RegisterRedemption");
 
   const balance = await getBalance(companyId, payload.customerId);
-  const latestResult = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, payload.customerId)
-    .input('redemption_date', sql.Date, payload.redemptionDate)
-    .input('points_redeemed', sql.Int, payload.pointsRedeemed)
-    .query(`
+  const latestResult = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, payload.customerId)
+    .input("redemption_date", sql.Date, payload.redemptionDate)
+    .input("points_redeemed", sql.Int, payload.pointsRedeemed).query(`
       SELECT TOP (1) id, created_at
       FROM dbo.Redemptions
       WHERE company_id = @company_id
@@ -2743,18 +3580,18 @@ async function createRedemption(companyId, payload) {
     pointsRedeemed: payload.pointsRedeemed,
     note: payload.note,
     createdAt: latest ? toIsoTimestamp(latest.created_at) : null,
-    balanceAfter: balance.pointsBalance
+    balanceAfter: balance.pointsBalance,
   };
 }
 
 async function listMembershipPlans(companyId, filters = {}) {
   const sql = getSql();
   const pool = await getPool();
-  const status = filters.status === 'all' ? null : (filters.status || 'active');
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('status', sql.VarChar(20), status)
-    .query(`
+  const status = filters.status === "all" ? null : filters.status || "active";
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("status", sql.VarChar(20), status).query(`
       SELECT
         plans.id,
         plans.company_id,
@@ -2787,18 +3624,18 @@ async function listMembershipPlans(companyId, filters = {}) {
     `);
 
   return {
-    status: filters.status || 'active',
-    items: result.recordset.map(mapMembershipPlan)
+    status: filters.status || "active",
+    items: result.recordset.map(mapMembershipPlan),
   };
 }
 
 async function getMembershipPlanById(companyId, planId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('plan_id', sql.BigInt, planId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("plan_id", sql.BigInt, planId).query(`
       SELECT
         plans.id,
         plans.company_id,
@@ -2830,7 +3667,11 @@ async function getMembershipPlanById(companyId, planId) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'MEMBERSHIP_PLAN_NOT_FOUND', 'Membership plan was not found.');
+    throw new ApiError(
+      404,
+      "MEMBERSHIP_PLAN_NOT_FOUND",
+      "Membership plan was not found.",
+    );
   }
 
   return mapMembershipPlan(result.recordset[0]);
@@ -2839,15 +3680,15 @@ async function getMembershipPlanById(companyId, planId) {
 async function createMembershipPlan(companyId, payload) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('name', sql.NVarChar(120), payload.name)
-    .input('description', sql.NVarChar(500), payload.description)
-    .input('duration_days', sql.Int, payload.durationDays)
-    .input('price', sql.Decimal(18, 2), payload.price)
-    .input('renewal_notice_days', sql.Int, payload.renewalNoticeDays)
-    .input('status', sql.VarChar(20), payload.status)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("name", sql.NVarChar(120), payload.name)
+    .input("description", sql.NVarChar(500), payload.description)
+    .input("duration_days", sql.Int, payload.durationDays)
+    .input("price", sql.Decimal(18, 2), payload.price)
+    .input("renewal_notice_days", sql.Int, payload.renewalNoticeDays)
+    .input("status", sql.VarChar(20), payload.status).query(`
       INSERT INTO dbo.MembershipPlans (
         company_id,
         name,
@@ -2885,16 +3726,16 @@ async function createMembershipPlan(companyId, payload) {
 async function updateMembershipPlan(companyId, planId, payload) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('plan_id', sql.BigInt, planId)
-    .input('name', sql.NVarChar(120), payload.name)
-    .input('description', sql.NVarChar(500), payload.description)
-    .input('duration_days', sql.Int, payload.durationDays)
-    .input('price', sql.Decimal(18, 2), payload.price)
-    .input('renewal_notice_days', sql.Int, payload.renewalNoticeDays)
-    .input('status', sql.VarChar(20), payload.status)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("plan_id", sql.BigInt, planId)
+    .input("name", sql.NVarChar(120), payload.name)
+    .input("description", sql.NVarChar(500), payload.description)
+    .input("duration_days", sql.Int, payload.durationDays)
+    .input("price", sql.Decimal(18, 2), payload.price)
+    .input("renewal_notice_days", sql.Int, payload.renewalNoticeDays)
+    .input("status", sql.VarChar(20), payload.status).query(`
       UPDATE dbo.MembershipPlans
       SET
         name = @name,
@@ -2909,7 +3750,11 @@ async function updateMembershipPlan(companyId, planId, payload) {
     `);
 
   if (!result.rowsAffected[0]) {
-    throw new ApiError(404, 'MEMBERSHIP_PLAN_NOT_FOUND', 'Membership plan was not found.');
+    throw new ApiError(
+      404,
+      "MEMBERSHIP_PLAN_NOT_FOUND",
+      "Membership plan was not found.",
+    );
   }
 
   return getMembershipPlanById(companyId, planId);
@@ -2918,12 +3763,12 @@ async function updateMembershipPlan(companyId, planId, payload) {
 async function listMembershipBenefits(companyId, planId, filters = {}) {
   const sql = getSql();
   const pool = await getPool();
-  const status = filters.status === 'all' ? null : (filters.status || 'active');
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('plan_id', sql.BigInt, planId)
-    .input('status', sql.VarChar(20), status)
-    .query(`
+  const status = filters.status === "all" ? null : filters.status || "active";
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("plan_id", sql.BigInt, planId)
+    .input("status", sql.VarChar(20), status).query(`
       SELECT
         benefits.id,
         benefits.membership_plan_id,
@@ -2949,18 +3794,18 @@ async function listMembershipBenefits(companyId, planId, filters = {}) {
     `);
 
   return {
-    status: filters.status || 'active',
-    items: result.recordset.map(mapMembershipBenefit)
+    status: filters.status || "active",
+    items: result.recordset.map(mapMembershipBenefit),
   };
 }
 
 async function getMembershipBenefitById(companyId, benefitId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('benefit_id', sql.BigInt, benefitId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("benefit_id", sql.BigInt, benefitId).query(`
       SELECT
         benefits.id,
         benefits.membership_plan_id,
@@ -2984,7 +3829,11 @@ async function getMembershipBenefitById(companyId, benefitId) {
     `);
 
   if (!result.recordset.length) {
-    throw new ApiError(404, 'MEMBERSHIP_BENEFIT_NOT_FOUND', 'Membership benefit was not found.');
+    throw new ApiError(
+      404,
+      "MEMBERSHIP_BENEFIT_NOT_FOUND",
+      "Membership benefit was not found.",
+    );
   }
 
   return mapMembershipBenefit(result.recordset[0]);
@@ -2995,20 +3844,20 @@ async function createMembershipBenefit(companyId, planId, payload) {
 
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('membership_plan_id', sql.BigInt, planId)
-    .input('name', sql.NVarChar(120), payload.name)
-    .input('description', sql.NVarChar(500), payload.description)
-    .input('benefit_type', sql.VarChar(30), payload.benefitType)
-    .input('applies_to_type', sql.VarChar(30), payload.appliesToType)
-    .input('applies_to_name', sql.NVarChar(160), payload.appliesToName)
-    .input('discount_percent', sql.Decimal(5, 2), payload.discountPercent)
-    .input('included_quantity', sql.Decimal(18, 2), payload.includedQuantity)
-    .input('usage_limit', sql.Int, payload.usageLimit)
-    .input('usage_period', sql.VarChar(30), payload.usagePeriod)
-    .input('status', sql.VarChar(20), payload.status)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("membership_plan_id", sql.BigInt, planId)
+    .input("name", sql.NVarChar(120), payload.name)
+    .input("description", sql.NVarChar(500), payload.description)
+    .input("benefit_type", sql.VarChar(30), payload.benefitType)
+    .input("applies_to_type", sql.VarChar(30), payload.appliesToType)
+    .input("applies_to_name", sql.NVarChar(160), payload.appliesToName)
+    .input("discount_percent", sql.Decimal(5, 2), payload.discountPercent)
+    .input("included_quantity", sql.Decimal(18, 2), payload.includedQuantity)
+    .input("usage_limit", sql.Int, payload.usageLimit)
+    .input("usage_period", sql.VarChar(30), payload.usagePeriod)
+    .input("status", sql.VarChar(20), payload.status).query(`
       INSERT INTO dbo.MembershipBenefits (
         company_id,
         membership_plan_id,
@@ -3060,20 +3909,20 @@ async function createMembershipBenefit(companyId, planId, payload) {
 async function updateMembershipBenefit(companyId, benefitId, payload) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('benefit_id', sql.BigInt, benefitId)
-    .input('name', sql.NVarChar(120), payload.name)
-    .input('description', sql.NVarChar(500), payload.description)
-    .input('benefit_type', sql.VarChar(30), payload.benefitType)
-    .input('applies_to_type', sql.VarChar(30), payload.appliesToType)
-    .input('applies_to_name', sql.NVarChar(160), payload.appliesToName)
-    .input('discount_percent', sql.Decimal(5, 2), payload.discountPercent)
-    .input('included_quantity', sql.Decimal(18, 2), payload.includedQuantity)
-    .input('usage_limit', sql.Int, payload.usageLimit)
-    .input('usage_period', sql.VarChar(30), payload.usagePeriod)
-    .input('status', sql.VarChar(20), payload.status)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("benefit_id", sql.BigInt, benefitId)
+    .input("name", sql.NVarChar(120), payload.name)
+    .input("description", sql.NVarChar(500), payload.description)
+    .input("benefit_type", sql.VarChar(30), payload.benefitType)
+    .input("applies_to_type", sql.VarChar(30), payload.appliesToType)
+    .input("applies_to_name", sql.NVarChar(160), payload.appliesToName)
+    .input("discount_percent", sql.Decimal(5, 2), payload.discountPercent)
+    .input("included_quantity", sql.Decimal(18, 2), payload.includedQuantity)
+    .input("usage_limit", sql.Int, payload.usageLimit)
+    .input("usage_period", sql.VarChar(30), payload.usagePeriod)
+    .input("status", sql.VarChar(20), payload.status).query(`
       UPDATE benefits
       SET
         benefits.name = @name,
@@ -3095,7 +3944,11 @@ async function updateMembershipBenefit(companyId, benefitId, payload) {
     `);
 
   if (!result.rowsAffected[0]) {
-    throw new ApiError(404, 'MEMBERSHIP_BENEFIT_NOT_FOUND', 'Membership benefit was not found.');
+    throw new ApiError(
+      404,
+      "MEMBERSHIP_BENEFIT_NOT_FOUND",
+      "Membership benefit was not found.",
+    );
   }
 
   return getMembershipBenefitById(companyId, benefitId);
@@ -3104,10 +3957,10 @@ async function updateMembershipBenefit(companyId, benefitId, payload) {
 async function getActiveCustomerMembership(companyId, customerId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, customerId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, customerId).query(`
       SELECT TOP (1)
         memberships.id,
         memberships.company_id,
@@ -3133,17 +3986,19 @@ async function getActiveCustomerMembership(companyId, customerId) {
       ORDER BY memberships.created_at DESC, memberships.id DESC
     `);
 
-  return result.recordset.length ? mapCustomerMembership(result.recordset[0]) : null;
+  return result.recordset.length
+    ? mapCustomerMembership(result.recordset[0])
+    : null;
 }
 
 async function getCustomerMembershipById(companyId, customerId, membershipId) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, customerId)
-    .input('membership_id', sql.BigInt, membershipId)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, customerId)
+    .input("membership_id", sql.BigInt, membershipId).query(`
       SELECT TOP (1)
         memberships.id,
         memberships.company_id,
@@ -3168,7 +4023,9 @@ async function getCustomerMembershipById(companyId, customerId, membershipId) {
         AND memberships.id = @membership_id
     `);
 
-  return result.recordset.length ? mapCustomerMembership(result.recordset[0]) : null;
+  return result.recordset.length
+    ? mapCustomerMembership(result.recordset[0])
+    : null;
 }
 
 async function createCustomerMembership(companyId, customerId, payload) {
@@ -3180,13 +4037,12 @@ async function createCustomerMembership(companyId, customerId, payload) {
 
   try {
     const membershipResult = await new sql.Request(transaction)
-      .input('company_id', sql.BigInt, companyId)
-      .input('customer_id', sql.BigInt, customerId)
-      .input('membership_plan_id', sql.BigInt, payload.planId)
-      .input('start_date', sql.Date, payload.startDate)
-      .input('end_date', sql.Date, payload.endDate)
-      .input('price_paid', sql.Decimal(18, 2), payload.pricePaid)
-      .query(`
+      .input("company_id", sql.BigInt, companyId)
+      .input("customer_id", sql.BigInt, customerId)
+      .input("membership_plan_id", sql.BigInt, payload.planId)
+      .input("start_date", sql.Date, payload.startDate)
+      .input("end_date", sql.Date, payload.endDate)
+      .input("price_paid", sql.Decimal(18, 2), payload.pricePaid).query(`
         INSERT INTO dbo.CustomerMemberships (
           company_id,
           customer_id,
@@ -3222,16 +4078,20 @@ async function createCustomerMembership(companyId, customerId, payload) {
 
     const membershipRow = membershipResult.recordset[0];
     const transactionResult = await new sql.Request(transaction)
-      .input('company_id', sql.BigInt, companyId)
-      .input('customer_id', sql.BigInt, customerId)
-      .input('customer_membership_id', sql.BigInt, membershipRow.id)
-      .input('membership_plan_id', sql.BigInt, payload.planId)
-      .input('transaction_type', sql.VarChar(30), 'new_membership')
-      .input('payment_method', sql.VarChar(30), payload.paymentMethod)
-      .input('amount', sql.Decimal(18, 2), payload.pricePaid)
-      .input('transaction_date', sql.Date, payload.transactionDate || new Date())
-      .input('note', sql.NVarChar(500), payload.note)
-      .input('created_by_label', sql.NVarChar(160), payload.createdByLabel)
+      .input("company_id", sql.BigInt, companyId)
+      .input("customer_id", sql.BigInt, customerId)
+      .input("customer_membership_id", sql.BigInt, membershipRow.id)
+      .input("membership_plan_id", sql.BigInt, payload.planId)
+      .input("transaction_type", sql.VarChar(30), "new_membership")
+      .input("payment_method", sql.VarChar(30), payload.paymentMethod)
+      .input("amount", sql.Decimal(18, 2), payload.pricePaid)
+      .input(
+        "transaction_date",
+        sql.Date,
+        payload.transactionDate || new Date(),
+      )
+      .input("note", sql.NVarChar(500), payload.note)
+      .input("created_by_label", sql.NVarChar(160), payload.createdByLabel)
       .query(`
         INSERT INTO dbo.MembershipTransactions (
           company_id,
@@ -3277,11 +4137,11 @@ async function createCustomerMembership(companyId, customerId, payload) {
     const membership = mapCustomerMembership({
       ...membershipRow,
       plan_name: payload.planName,
-      renewal_notice_days: payload.renewalNoticeDays
+      renewal_notice_days: payload.renewalNoticeDays,
     });
     membership.transaction = mapMembershipTransaction({
       ...transactionResult.recordset[0],
-      plan_name: payload.planName
+      plan_name: payload.planName,
     });
     return membership;
   } catch (error) {
@@ -3294,28 +4154,37 @@ async function createCustomerMembership(companyId, customerId, payload) {
   }
 }
 
-async function renewCustomerMembership(companyId, customerId, membership, plan, payload, actorLabel) {
+async function renewCustomerMembership(
+  companyId,
+  customerId,
+  membership,
+  plan,
+  payload,
+  actorLabel,
+) {
   const sql = getSql();
   const pool = await getPool();
   const today = parseDateOnly(payload.transactionDate || new Date());
   const currentEndDate = parseDateOnly(membership.endDate);
-  const isStillActive = membership.status === 'active' && currentEndDate >= today;
+  const isStillActive =
+    membership.status === "active" && currentEndDate >= today;
   const nextStartDate = isStillActive ? addDays(currentEndDate, 1) : today;
   const nextEndDate = addDays(nextStartDate, Number(plan.durationDays) - 1);
-  const membershipStartDate = isStillActive ? membership.startDate : toIsoDate(nextStartDate);
+  const membershipStartDate = isStillActive
+    ? membership.startDate
+    : toIsoDate(nextStartDate);
   const transaction = new sql.Transaction(pool);
 
   await transaction.begin();
 
   try {
     const membershipResult = await new sql.Request(transaction)
-      .input('company_id', sql.BigInt, companyId)
-      .input('customer_id', sql.BigInt, customerId)
-      .input('customer_membership_id', sql.BigInt, membership.id)
-      .input('start_date', sql.Date, membershipStartDate)
-      .input('end_date', sql.Date, toIsoDate(nextEndDate))
-      .input('price_paid', sql.Decimal(18, 2), payload.amount)
-      .query(`
+      .input("company_id", sql.BigInt, companyId)
+      .input("customer_id", sql.BigInt, customerId)
+      .input("customer_membership_id", sql.BigInt, membership.id)
+      .input("start_date", sql.Date, membershipStartDate)
+      .input("end_date", sql.Date, toIsoDate(nextEndDate))
+      .input("price_paid", sql.Decimal(18, 2), payload.amount).query(`
         UPDATE dbo.CustomerMemberships
         SET
           start_date = @start_date,
@@ -3342,21 +4211,24 @@ async function renewCustomerMembership(companyId, customerId, membership, plan, 
       `);
 
     if (!membershipResult.recordset.length) {
-      throw new ApiError(404, 'CUSTOMER_MEMBERSHIP_NOT_FOUND', 'Customer membership was not found.');
+      throw new ApiError(
+        404,
+        "CUSTOMER_MEMBERSHIP_NOT_FOUND",
+        "Customer membership was not found.",
+      );
     }
 
     const transactionResult = await new sql.Request(transaction)
-      .input('company_id', sql.BigInt, companyId)
-      .input('customer_id', sql.BigInt, customerId)
-      .input('customer_membership_id', sql.BigInt, membership.id)
-      .input('membership_plan_id', sql.BigInt, membership.planId)
-      .input('transaction_type', sql.VarChar(30), 'renewal')
-      .input('payment_method', sql.VarChar(30), payload.paymentMethod)
-      .input('amount', sql.Decimal(18, 2), payload.amount)
-      .input('transaction_date', sql.Date, payload.transactionDate)
-      .input('note', sql.NVarChar(500), payload.note)
-      .input('created_by_label', sql.NVarChar(160), actorLabel)
-      .query(`
+      .input("company_id", sql.BigInt, companyId)
+      .input("customer_id", sql.BigInt, customerId)
+      .input("customer_membership_id", sql.BigInt, membership.id)
+      .input("membership_plan_id", sql.BigInt, membership.planId)
+      .input("transaction_type", sql.VarChar(30), "renewal")
+      .input("payment_method", sql.VarChar(30), payload.paymentMethod)
+      .input("amount", sql.Decimal(18, 2), payload.amount)
+      .input("transaction_date", sql.Date, payload.transactionDate)
+      .input("note", sql.NVarChar(500), payload.note)
+      .input("created_by_label", sql.NVarChar(160), actorLabel).query(`
         INSERT INTO dbo.MembershipTransactions (
           company_id,
           customer_id,
@@ -3401,11 +4273,11 @@ async function renewCustomerMembership(companyId, customerId, membership, plan, 
     const renewedMembership = mapCustomerMembership({
       ...membershipResult.recordset[0],
       plan_name: plan.name,
-      renewal_notice_days: plan.renewalNoticeDays
+      renewal_notice_days: plan.renewalNoticeDays,
     });
     const transactionRow = mapMembershipTransaction({
       ...transactionResult.recordset[0],
-      plan_name: plan.name
+      plan_name: plan.name,
     });
     return { membership: renewedMembership, transaction: transactionRow };
   } catch (error) {
@@ -3421,12 +4293,12 @@ async function renewCustomerMembership(companyId, customerId, membership, plan, 
 async function listCustomerMemberships(companyId, customerId, filters = {}) {
   const sql = getSql();
   const pool = await getPool();
-  const status = filters.status === 'all' ? null : (filters.status || 'active');
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, customerId)
-    .input('status', sql.VarChar(20), status)
-    .query(`
+  const status = filters.status === "all" ? null : filters.status || "active";
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, customerId)
+    .input("status", sql.VarChar(20), status).query(`
       SELECT
         memberships.id,
         memberships.company_id,
@@ -3454,28 +4326,35 @@ async function listCustomerMemberships(companyId, customerId, filters = {}) {
 
   return {
     customerId: toApiId(customerId),
-    status: filters.status || 'active',
-    items: result.recordset.map((row) => mapCustomerMembership(row))
+    status: filters.status || "active",
+    items: result.recordset.map((row) => mapCustomerMembership(row)),
   };
 }
 
-async function createMembershipBenefitUsage(companyId, customerId, membership, benefit, payload, actorLabel) {
+async function createMembershipBenefitUsage(
+  companyId,
+  customerId,
+  membership,
+  benefit,
+  payload,
+  actorLabel,
+) {
   const sql = getSql();
   const pool = await getPool();
   const usagePeriodStartDate = calculateUsagePeriodStartDate(
     payload.usageDate,
     benefit.usagePeriod,
-    membership.startDate
+    membership.startDate,
   );
   const limit = benefit.usageLimit == null ? null : Number(benefit.usageLimit);
 
   if (limit) {
-    const usageResult = await pool.request()
-      .input('company_id', sql.BigInt, companyId)
-      .input('customer_membership_id', sql.BigInt, membership.id)
-      .input('membership_benefit_id', sql.BigInt, benefit.id)
-      .input('usage_period_start_date', sql.Date, usagePeriodStartDate)
-      .query(`
+    const usageResult = await pool
+      .request()
+      .input("company_id", sql.BigInt, companyId)
+      .input("customer_membership_id", sql.BigInt, membership.id)
+      .input("membership_benefit_id", sql.BigInt, benefit.id)
+      .input("usage_period_start_date", sql.Date, usagePeriodStartDate).query(`
         SELECT COALESCE(SUM(quantity), 0) AS used_quantity
         FROM dbo.MembershipBenefitUsages
         WHERE company_id = @company_id
@@ -3486,21 +4365,25 @@ async function createMembershipBenefitUsage(companyId, customerId, membership, b
 
     const usedQuantity = Number(usageResult.recordset[0].used_quantity || 0);
     if (usedQuantity + payload.quantity > limit) {
-      throw new ApiError(409, 'MEMBERSHIP_BENEFIT_USAGE_LIMIT_EXCEEDED', 'Membership benefit usage limit would be exceeded.');
+      throw new ApiError(
+        409,
+        "MEMBERSHIP_BENEFIT_USAGE_LIMIT_EXCEEDED",
+        "Membership benefit usage limit would be exceeded.",
+      );
     }
   }
 
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_membership_id', sql.BigInt, membership.id)
-    .input('membership_benefit_id', sql.BigInt, benefit.id)
-    .input('customer_id', sql.BigInt, customerId)
-    .input('usage_date', sql.Date, payload.usageDate)
-    .input('usage_period_start_date', sql.Date, usagePeriodStartDate)
-    .input('quantity', sql.Int, payload.quantity)
-    .input('note', sql.NVarChar(500), payload.note)
-    .input('created_by_label', sql.NVarChar(160), actorLabel)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_membership_id", sql.BigInt, membership.id)
+    .input("membership_benefit_id", sql.BigInt, benefit.id)
+    .input("customer_id", sql.BigInt, customerId)
+    .input("usage_date", sql.Date, payload.usageDate)
+    .input("usage_period_start_date", sql.Date, usagePeriodStartDate)
+    .input("quantity", sql.Int, payload.quantity)
+    .input("note", sql.NVarChar(500), payload.note)
+    .input("created_by_label", sql.NVarChar(160), actorLabel).query(`
       INSERT INTO dbo.MembershipBenefitUsages (
         company_id,
         customer_membership_id,
@@ -3542,19 +4425,23 @@ async function createMembershipBenefitUsage(companyId, customerId, membership, b
     benefit_name: benefit.name,
     benefit_type: benefit.benefitType,
     membership_plan_id: membership.planId,
-    plan_name: membership.planName
+    plan_name: membership.planName,
   });
 }
 
-async function listMembershipBenefitUsages(companyId, customerId, filters = {}) {
+async function listMembershipBenefitUsages(
+  companyId,
+  customerId,
+  filters = {},
+) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, customerId)
-    .input('from', sql.Date, filters.from)
-    .input('to', sql.Date, filters.to)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, customerId)
+    .input("from", sql.Date, filters.from)
+    .input("to", sql.Date, filters.to).query(`
       SELECT
         usages.id,
         usages.company_id,
@@ -3588,19 +4475,19 @@ async function listMembershipBenefitUsages(companyId, customerId, filters = {}) 
     customerId: toApiId(customerId),
     from: filters.from,
     to: filters.to,
-    items: result.recordset.map(mapMembershipBenefitUsage)
+    items: result.recordset.map(mapMembershipBenefitUsage),
   };
 }
 
 async function listMembershipTransactions(companyId, customerId, filters = {}) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('customer_id', sql.BigInt, customerId)
-    .input('from', sql.Date, filters.from)
-    .input('to', sql.Date, filters.to)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, customerId)
+    .input("from", sql.Date, filters.from)
+    .input("to", sql.Date, filters.to).query(`
       SELECT
         transactions.id,
         transactions.company_id,
@@ -3630,18 +4517,18 @@ async function listMembershipTransactions(companyId, customerId, filters = {}) {
     customerId: toApiId(customerId),
     from: filters.from,
     to: filters.to,
-    items: result.recordset.map(mapMembershipTransaction)
+    items: result.recordset.map(mapMembershipTransaction),
   };
 }
 
 async function getMembershipFinancialReport(companyId, filters = {}) {
   const sql = getSql();
   const pool = await getPool();
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('from', sql.Date, filters.from)
-    .input('to', sql.Date, filters.to)
-    .query(`
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("from", sql.Date, filters.from)
+    .input("to", sql.Date, filters.to).query(`
       SELECT
         transactions.id,
         transactions.customer_id,
@@ -3672,10 +4559,16 @@ async function getMembershipFinancialReport(companyId, filters = {}) {
     `);
 
   const items = result.recordset.map(mapMembershipFinancialReportTransaction);
-  const newMemberships = items.filter((item) => item.transactionType === 'new_membership');
-  const renewals = items.filter((item) => item.transactionType === 'renewal');
+  const newMemberships = items.filter(
+    (item) => item.transactionType === "new_membership",
+  );
+  const renewals = items.filter((item) => item.transactionType === "renewal");
   const paymentMethods = items.reduce((summary, item) => {
-    const current = summary[item.paymentMethod] || { paymentMethod: item.paymentMethod, count: 0, amount: 0 };
+    const current = summary[item.paymentMethod] || {
+      paymentMethod: item.paymentMethod,
+      count: 0,
+      amount: 0,
+    };
     current.count += 1;
     current.amount += item.amount;
     summary[item.paymentMethod] = current;
@@ -3687,25 +4580,30 @@ async function getMembershipFinancialReport(companyId, filters = {}) {
     to: filters.to,
     summary: {
       newMembershipCount: newMemberships.length,
-      newMembershipAmount: newMemberships.reduce((total, item) => total + item.amount, 0),
+      newMembershipAmount: newMemberships.reduce(
+        (total, item) => total + item.amount,
+        0,
+      ),
       renewalCount: renewals.length,
       renewalAmount: renewals.reduce((total, item) => total + item.amount, 0),
-      paymentMethods
+      paymentMethods,
     },
-    items
+    items,
   };
 }
 
 async function listMembershipExpirationAlerts(companyId, filters = {}) {
   const sql = getSql();
   const pool = await getPool();
-  const status = filters.status || 'active';
-  const withinDays = Number.isInteger(filters.withinDays) ? filters.withinDays : 5;
-  const result = await pool.request()
-    .input('company_id', sql.BigInt, companyId)
-    .input('status', sql.VarChar(20), status)
-    .input('within_days', sql.Int, withinDays)
-    .query(`
+  const status = filters.status || "active";
+  const withinDays = Number.isInteger(filters.withinDays)
+    ? filters.withinDays
+    : 5;
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("status", sql.VarChar(20), status)
+    .input("within_days", sql.Int, withinDays).query(`
       DECLARE @today date = CONVERT(date, SYSUTCDATETIME());
 
       SELECT
@@ -3754,10 +4652,12 @@ async function listMembershipExpirationAlerts(companyId, filters = {}) {
   return {
     withinDays,
     status,
-    items: result.recordset.map((row) => mapMembershipExpirationAlert(row, {
-      today: row.today_date,
-      withinDays
-    }))
+    items: result.recordset.map((row) =>
+      mapMembershipExpirationAlert(row, {
+        today: row.today_date,
+        withinDays,
+      }),
+    ),
   };
 }
 
@@ -3779,6 +4679,7 @@ module.exports = {
   createMembershipPlan,
   createOperationalEmailEventIfNeeded,
   createOperationalEmailMessage,
+  createPromotionalCampaign,
   createPurchase,
   createRedemption,
   customerExists,
@@ -3798,6 +4699,7 @@ module.exports = {
   getCustomerReport,
   getCustomerById,
   getOperationalEmailSettings,
+  getPromotionalCampaignById,
   getLocalPasswordUserByEmail,
   getMembershipFinancialReport,
   getActiveCustomerMembership,
@@ -3810,6 +4712,9 @@ module.exports = {
   listMembershipExpirationAlerts,
   listMembershipTransactions,
   listMembershipPlans,
+  listPromotionalCampaignRecipients,
+  listPromotionalCampaigns,
+  listPromotionalRecipients,
   listCustomers,
   listCompanyRegistrationRequests,
   mapCompanyInvitation,
@@ -3835,11 +4740,13 @@ module.exports = {
   renewCustomerMembership,
   toApiId,
   toIsoTimestamp,
+  unsubscribePromotionalCustomer,
   updateCompanyLogo,
   updateCompanyRegistrationRequestLogo,
   updateCompanySettings,
   updateCompanyUserPassword,
   updateOperationalEmailSettings,
+  updatePromotionalCampaignPreviewAt,
   updateMembershipBenefit,
-  updateMembershipPlan
+  updateMembershipPlan,
 };

@@ -3353,11 +3353,18 @@
                 <div>
                   <h2 id="communications-campaign-title">Enviar campañas</h2>
                   <p class="section-support">
-                    Prepara una campaña local, revisa destinatarios y valida el
-                    preview antes de habilitar envíos reales.
+                    Crea un borrador promocional, selecciona hasta 5 clientes
+                    elegibles y revisa el preview. El envío real sigue
+                    bloqueado.
                   </p>
                 </div>
               </div>
+              <p
+                class="status-message"
+                id="communication-campaign-status"
+                hidden
+              ></p>
+              <p class="error-message" id="communication-campaign-error"></p>
 
               <form
                 id="communication-campaign-form"
@@ -3410,6 +3417,9 @@
                 </div>
 
                 <div class="form-actions">
+                  <button id="communication-save-campaign-button" type="submit">
+                    Guardar borrador
+                  </button>
                   <button
                     class="secondary-button"
                     id="communication-preview-button"
@@ -3422,6 +3432,10 @@
                   </button>
                 </div>
               </form>
+              <p class="section-support">
+                El envío real requiere feature flag, baja promocional activa y
+                decisión explícita de publicación.
+              </p>
             </section>
 
             <section
@@ -3460,10 +3474,22 @@
                     Clientes y preferencias
                   </h2>
                   <p class="section-support">
-                    La baja promocional no elimina puntos, beneficios ni
-                    historial.
+                    Selección manual de destinatarios elegibles. La baja
+                    promocional no elimina puntos, beneficios ni historial.
                   </p>
                 </div>
+              </div>
+              <div class="communication-selection-summary">
+                <strong id="communication-selected-count"
+                  >0 seleccionados</strong
+                >
+                <button
+                  class="secondary-button"
+                  id="communication-save-recipients-button"
+                  type="button"
+                >
+                  Guardar destinatarios
+                </button>
               </div>
               <div
                 class="communication-filter-row"
@@ -3513,7 +3539,7 @@
                   <thead>
                     <tr>
                       <th>Fecha</th>
-                      <th>Tipo</th>
+                      <th>Campaña</th>
                       <th>Destinatario</th>
                       <th>Estado</th>
                     </tr>

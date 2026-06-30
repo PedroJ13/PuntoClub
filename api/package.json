@@ -8,7 +8,7 @@
     "serve:local": "node scripts/local-api-server.js",
     "start": "func start",
     "smoke": "node scripts/smoke-test.js",
-    "test": "node --test test/audit.test.js test/auth-rate-limit.test.js test/company-auth.test.js test/company-context.test.js test/company-invitations.test.js test/company-password-resets.test.js test/company-registration.test.js test/db.test.js test/errors.test.js test/internal-admin.test.js test/logo-storage.test.js test/operational-emails.test.js test/repository-approval.test.js test/repository-customer-report.test.js test/repository-customer-search.test.js test/repository-formatters.test.js test/validators.test.js"
+    "test": "node --test test/audit.test.js test/auth-rate-limit.test.js test/company-auth.test.js test/company-context.test.js test/company-invitations.test.js test/company-password-resets.test.js test/company-registration.test.js test/db.test.js test/errors.test.js test/internal-admin.test.js test/logo-storage.test.js test/operational-emails.test.js test/promotional-campaigns.test.js test/repository-approval.test.js test/repository-customer-report.test.js test/repository-customer-search.test.js test/repository-formatters.test.js test/validators.test.js"
   },
   "dependencies": {
     "@azure/communication-email": "^1.1.0",

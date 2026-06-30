@@ -2499,11 +2499,31 @@ body:not(.public-registration-mode)
   color: var(--accent-strong);
 }
 
+.communication-selection-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
 .communication-customer-card {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(130px, auto) minmax(120px, auto);
+  grid-template-columns:
+    auto minmax(0, 1fr) minmax(130px, auto)
+    minmax(120px, auto) minmax(110px, auto);
   gap: 10px;
   align-items: center;
+}
+
+.communication-recipient-check input {
+  width: auto;
+  min-height: 0;
+}
+
+.communication-unsubscribe-button {
+  justify-self: end;
 }
 
 .communication-customer-card p {

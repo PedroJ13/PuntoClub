@@ -1,32 +1,94 @@
-const { validationError } = require('./errors');
+const { validationError } = require("./errors");
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/;
 const maxReportRangeDays = 31;
-const allowedCompanyRoles = new Set(['owner', 'admin', 'staff']);
-const allowedCompanyStatuses = new Set(['pending_activation', 'active', 'inactive']);
-const allowedRegistrationRequestStatuses = new Set(['pending', 'approved', 'rejected', 'cancelled']);
-const allowedInvitationStatuses = new Set(['pending', 'accepted', 'revoked', 'expired']);
-const allowedCompanyUserStatuses = new Set(['invited', 'active', 'disabled']);
-const allowedLogoContentTypes = new Set(['image/png', 'image/jpeg', 'image/webp']);
-const allowedMembershipListStatuses = new Set(['active', 'inactive', 'all']);
-const allowedMembershipStatuses = new Set(['active', 'inactive']);
-const allowedCustomerMembershipListStatuses = new Set(['active', 'expired', 'cancelled', 'all']);
-const allowedMembershipBenefitTypes = new Set(['informational', 'discount', 'allowance', 'free_item']);
-const allowedMembershipAppliesToTypes = new Set(['product', 'service', 'category', 'text']);
-const allowedMembershipUsagePeriods = new Set(['none', 'day', 'week', 'month', 'membership_term']);
-const allowedMembershipPaymentMethods = new Set(['cash', 'card', 'credit', 'transfer', 'other']);
+const allowedCompanyRoles = new Set(["owner", "admin", "staff"]);
+const allowedCompanyStatuses = new Set([
+  "pending_activation",
+  "active",
+  "inactive",
+]);
+const allowedRegistrationRequestStatuses = new Set([
+  "pending",
+  "approved",
+  "rejected",
+  "cancelled",
+]);
+const allowedInvitationStatuses = new Set([
+  "pending",
+  "accepted",
+  "revoked",
+  "expired",
+]);
+const allowedCompanyUserStatuses = new Set(["invited", "active", "disabled"]);
+const allowedLogoContentTypes = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/webp",
+]);
+const allowedMembershipListStatuses = new Set(["active", "inactive", "all"]);
+const allowedMembershipStatuses = new Set(["active", "inactive"]);
+const allowedCustomerMembershipListStatuses = new Set([
+  "active",
+  "expired",
+  "cancelled",
+  "all",
+]);
+const allowedMembershipBenefitTypes = new Set([
+  "informational",
+  "discount",
+  "allowance",
+  "free_item",
+]);
+const allowedMembershipAppliesToTypes = new Set([
+  "product",
+  "service",
+  "category",
+  "text",
+]);
+const allowedMembershipUsagePeriods = new Set([
+  "none",
+  "day",
+  "week",
+  "month",
+  "membership_term",
+]);
+const allowedMembershipPaymentMethods = new Set([
+  "cash",
+  "card",
+  "credit",
+  "transfer",
+  "other",
+]);
+const allowedPromotionalCampaignStatuses = new Set([
+  "draft",
+  "ready",
+  "sending",
+  "sent",
+  "cancelled",
+  "failed",
+  "all",
+]);
+const allowedPromotionalPreferenceStatuses = new Set([
+  "subscribed",
+  "unsubscribed",
+  "suppressed",
+  "all",
+]);
 
 function parsePositiveInteger(value, field) {
   const number = Number(value);
   if (!Number.isInteger(number) || number <= 0) {
-    throw validationError([{ field, message: `${field} must be a positive integer.` }]);
+    throw validationError([
+      { field, message: `${field} must be a positive integer.` },
+    ]);
   }
   return number;
 }
 
 function normalizeText(value) {
-  return typeof value === 'string' ? value.trim() : value;
+  return typeof value === "string" ? value.trim() : value;
 }
 
 function normalizeEmail(value) {
@@ -37,7 +99,10 @@ function normalizeEmail(value) {
 function validateOptionalText(value, field, maxLength, details) {
   const text = normalizeText(value);
   if (text && text.length > maxLength) {
-    details.push({ field, message: `${field} must be ${maxLength} characters or fewer.` });
+    details.push({
+      field,
+      message: `${field} must be ${maxLength} characters or fewer.`,
+    });
   }
   return text || null;
 }
@@ -45,32 +110,44 @@ function validateOptionalText(value, field, maxLength, details) {
 function validateRequiredText(value, field, maxLength, details) {
   const text = normalizeText(value);
   if (!text || text.length > maxLength) {
-    details.push({ field, message: `${field} is required and must be ${maxLength} characters or fewer.` });
+    details.push({
+      field,
+      message: `${field} is required and must be ${maxLength} characters or fewer.`,
+    });
   }
   return text;
 }
 
 function validateEmailField(value, field, details, { required = true } = {}) {
   const email = normalizeEmail(value);
-  if ((!email && required) || (email && (email.length > 254 || !emailPattern.test(email)))) {
-    details.push({ field, message: `${field} must be a valid email and 254 characters or fewer.` });
+  if (
+    (!email && required) ||
+    (email && (email.length > 254 || !emailPattern.test(email)))
+  ) {
+    details.push({
+      field,
+      message: `${field} must be a valid email and 254 characters or fewer.`,
+    });
   }
   return email || null;
 }
 
 function validateDate(value, field, details) {
-  if (typeof value !== 'string' || !isoDatePattern.test(value)) {
+  if (typeof value !== "string" || !isoDatePattern.test(value)) {
     details.push({ field, message: `${field} must use YYYY-MM-DD format.` });
   }
 }
 
 function parseIsoDate(value) {
-  if (typeof value !== 'string' || !isoDatePattern.test(value)) {
+  if (typeof value !== "string" || !isoDatePattern.test(value)) {
     return null;
   }
 
   const date = new Date(`${value}T00:00:00Z`);
-  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== value) {
+  if (
+    Number.isNaN(date.getTime()) ||
+    date.toISOString().slice(0, 10) !== value
+  ) {
     return null;
   }
 
@@ -84,15 +161,24 @@ function validateCustomerPayload(payload) {
   const email = normalizeText(payload && payload.email);
 
   if (!name || name.length > 160) {
-    details.push({ field: 'name', message: 'Name is required and must be 160 characters or fewer.' });
+    details.push({
+      field: "name",
+      message: "Name is required and must be 160 characters or fewer.",
+    });
   }
 
   if (!phone || phone.length > 32) {
-    details.push({ field: 'phone', message: 'Phone is required and must be 32 characters or fewer.' });
+    details.push({
+      field: "phone",
+      message: "Phone is required and must be 32 characters or fewer.",
+    });
   }
 
   if (email && (email.length > 254 || !emailPattern.test(email))) {
-    details.push({ field: 'email', message: 'Email must be valid and 254 characters or fewer.' });
+    details.push({
+      field: "email",
+      message: "Email must be valid and 254 characters or fewer.",
+    });
   }
 
   if (details.length) {
@@ -105,63 +191,102 @@ function validateCustomerPayload(payload) {
 function validateCompanySettingsPatchPayload(payload) {
   const details = [];
   const body = payload || {};
-  const allowedFields = ['name', 'email', 'phone', 'logoUrl', 'pointsPercentage'];
+  const allowedFields = [
+    "name",
+    "email",
+    "phone",
+    "logoUrl",
+    "pointsPercentage",
+  ];
   const patch = {};
-  const providedFields = allowedFields.filter((field) => Object.prototype.hasOwnProperty.call(body, field));
+  const providedFields = allowedFields.filter((field) =>
+    Object.prototype.hasOwnProperty.call(body, field),
+  );
 
   if (!providedFields.length) {
-    details.push({ field: 'body', message: 'At least one editable company setting must be provided.' });
+    details.push({
+      field: "body",
+      message: "At least one editable company setting must be provided.",
+    });
   }
 
-  if (Object.prototype.hasOwnProperty.call(body, 'name')) {
+  if (Object.prototype.hasOwnProperty.call(body, "name")) {
     const name = normalizeText(body.name);
     if (!name || name.length > 160) {
-      details.push({ field: 'name', message: 'Name must be provided and be 160 characters or fewer.' });
+      details.push({
+        field: "name",
+        message: "Name must be provided and be 160 characters or fewer.",
+      });
     } else {
       patch.name = name;
     }
   }
 
-  if (Object.prototype.hasOwnProperty.call(body, 'email')) {
+  if (Object.prototype.hasOwnProperty.call(body, "email")) {
     const email = normalizeText(body.email);
     if (email && (email.length > 254 || !emailPattern.test(email))) {
-      details.push({ field: 'email', message: 'Email must be valid and 254 characters or fewer.' });
+      details.push({
+        field: "email",
+        message: "Email must be valid and 254 characters or fewer.",
+      });
     } else {
       patch.email = email || null;
     }
   }
 
-  if (Object.prototype.hasOwnProperty.call(body, 'phone')) {
+  if (Object.prototype.hasOwnProperty.call(body, "phone")) {
     const phone = normalizeText(body.phone);
     if (phone && (phone.length < 7 || phone.length > 32)) {
-      details.push({ field: 'phone', message: 'Phone must be between 7 and 32 characters when provided.' });
+      details.push({
+        field: "phone",
+        message: "Phone must be between 7 and 32 characters when provided.",
+      });
     } else {
       patch.phone = phone || null;
     }
   }
 
-  if (Object.prototype.hasOwnProperty.call(body, 'logoUrl')) {
+  if (Object.prototype.hasOwnProperty.call(body, "logoUrl")) {
     const logoUrl = normalizeText(body.logoUrl);
     if (logoUrl) {
       try {
         const url = new URL(logoUrl);
-        if (!['http:', 'https:'].includes(url.protocol) || logoUrl.length > 2048) {
-          details.push({ field: 'logoUrl', message: 'Logo URL must be a valid http(s) URL and 2048 characters or fewer.' });
+        if (
+          !["http:", "https:"].includes(url.protocol) ||
+          logoUrl.length > 2048
+        ) {
+          details.push({
+            field: "logoUrl",
+            message:
+              "Logo URL must be a valid http(s) URL and 2048 characters or fewer.",
+          });
         } else {
           patch.logoUrl = logoUrl;
         }
       } catch {
-        details.push({ field: 'logoUrl', message: 'Logo URL must be a valid http(s) URL and 2048 characters or fewer.' });
+        details.push({
+          field: "logoUrl",
+          message:
+            "Logo URL must be a valid http(s) URL and 2048 characters or fewer.",
+        });
       }
     } else {
       patch.logoUrl = null;
     }
   }
 
-  if (Object.prototype.hasOwnProperty.call(body, 'pointsPercentage')) {
+  if (Object.prototype.hasOwnProperty.call(body, "pointsPercentage")) {
     const pointsPercentage = Number(body.pointsPercentage);
-    if (!Number.isFinite(pointsPercentage) || pointsPercentage <= 0 || pointsPercentage > 100) {
-      details.push({ field: 'pointsPercentage', message: 'Points percentage must be greater than 0 and less than or equal to 100.' });
+    if (
+      !Number.isFinite(pointsPercentage) ||
+      pointsPercentage <= 0 ||
+      pointsPercentage > 100
+    ) {
+      details.push({
+        field: "pointsPercentage",
+        message:
+          "Points percentage must be greater than 0 and less than or equal to 100.",
+      });
     } else {
       patch.pointsPercentage = pointsPercentage;
     }
@@ -173,12 +298,12 @@ function validateCompanySettingsPatchPayload(payload) {
 
   return {
     patch,
-    providedFields
+    providedFields,
   };
 }
 
 function parseOptionalBoolean(value, field, details) {
-  if (typeof value !== 'boolean') {
+  if (typeof value !== "boolean") {
     details.push({ field, message: `${field} must be true or false.` });
     return false;
   }
@@ -189,10 +314,27 @@ function parseOptionalBoolean(value, field, details) {
 function validateOperationalEmailSettingsPayload(payload) {
   const details = [];
   const body = payload || {};
-  const welcomeEnabled = parseOptionalBoolean(body.welcomeEnabled, 'welcomeEnabled', details);
-  const purchaseEnabled = parseOptionalBoolean(body.purchaseEnabled, 'purchaseEnabled', details);
-  const redemptionEnabled = parseOptionalBoolean(body.redemptionEnabled, 'redemptionEnabled', details);
-  const replyToEmail = validateEmailField(body.replyToEmail, 'replyToEmail', details, { required: false });
+  const welcomeEnabled = parseOptionalBoolean(
+    body.welcomeEnabled,
+    "welcomeEnabled",
+    details,
+  );
+  const purchaseEnabled = parseOptionalBoolean(
+    body.purchaseEnabled,
+    "purchaseEnabled",
+    details,
+  );
+  const redemptionEnabled = parseOptionalBoolean(
+    body.redemptionEnabled,
+    "redemptionEnabled",
+    details,
+  );
+  const replyToEmail = validateEmailField(
+    body.replyToEmail,
+    "replyToEmail",
+    details,
+    { required: false },
+  );
 
   if (details.length) {
     throw validationError(details);
@@ -202,24 +344,252 @@ function validateOperationalEmailSettingsPayload(payload) {
     welcomeEnabled,
     purchaseEnabled,
     redemptionEnabled,
-    replyToEmail
+    replyToEmail,
   };
+}
+
+function validatePromotionalCampaignPayload(payload, options = {}) {
+  const details = [];
+  const body = payload || {};
+  const partial = Boolean(options.partial);
+  const allowedFields = ["name", "subject", "bodyText", "includePoints"];
+  const providedFields = allowedFields.filter((field) =>
+    Object.prototype.hasOwnProperty.call(body, field),
+  );
+  const campaign = {};
+
+  if (!partial || Object.prototype.hasOwnProperty.call(body, "name")) {
+    campaign.name = validateRequiredText(body.name, "name", 160, details);
+  }
+
+  if (!partial || Object.prototype.hasOwnProperty.call(body, "subject")) {
+    campaign.subject = validateRequiredText(
+      body.subject,
+      "subject",
+      200,
+      details,
+    );
+  }
+
+  if (!partial || Object.prototype.hasOwnProperty.call(body, "bodyText")) {
+    campaign.bodyText = validateRequiredText(
+      body.bodyText,
+      "bodyText",
+      2000,
+      details,
+    );
+  }
+
+  if (!partial || Object.prototype.hasOwnProperty.call(body, "includePoints")) {
+    campaign.includePoints = parseOptionalBoolean(
+      body.includePoints,
+      "includePoints",
+      details,
+    );
+  }
+
+  if (partial && !providedFields.length) {
+    details.push({
+      field: "body",
+      message: "At least one editable campaign field must be provided.",
+    });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return partial ? { patch: campaign, providedFields } : campaign;
+}
+
+function validatePromotionalCampaignListQuery(query) {
+  const status = normalizeText(query.get("status") || "all") || "all";
+  const limit = Number(query.get("limit") || 25);
+
+  if (!allowedPromotionalCampaignStatuses.has(status)) {
+    throw validationError([
+      {
+        field: "status",
+        message:
+          "status must be one of draft, ready, sending, sent, cancelled, failed, all.",
+      },
+    ]);
+  }
+
+  if (!Number.isInteger(limit) || ![10, 25, 50].includes(limit)) {
+    throw validationError([
+      { field: "limit", message: "limit must be one of 10, 25, 50." },
+    ]);
+  }
+
+  return { status, limit };
+}
+
+function validatePromotionalRecipientQuery(query) {
+  const status =
+    normalizeText(query.get("status") || "subscribed") || "subscribed";
+  const limit = Number(query.get("limit") || 25);
+  const search = normalizeText(query.get("search") || "") || "";
+
+  if (!allowedPromotionalPreferenceStatuses.has(status)) {
+    throw validationError([
+      {
+        field: "status",
+        message:
+          "status must be one of subscribed, unsubscribed, suppressed, all.",
+      },
+    ]);
+  }
+
+  if (!Number.isInteger(limit) || ![10, 25, 50].includes(limit)) {
+    throw validationError([
+      { field: "limit", message: "limit must be one of 10, 25, 50." },
+    ]);
+  }
+
+  return { status, limit, search };
+}
+
+function validatePromotionalRecipientSelectionPayload(payload) {
+  const details = [];
+  const customerIds = Array.isArray(payload && payload.customerIds)
+    ? payload.customerIds
+    : null;
+
+  if (!customerIds || customerIds.length === 0) {
+    details.push({
+      field: "customerIds",
+      message: "Select at least one recipient.",
+    });
+  } else if (customerIds.length > 5) {
+    details.push({
+      field: "customerIds",
+      message: "Promotional MVP allows up to 5 recipients per campaign.",
+    });
+  }
+
+  const normalizedIds = (customerIds || []).map((value, index) => {
+    const id = Number(value);
+    if (!Number.isInteger(id) || id <= 0) {
+      details.push({
+        field: `customerIds[${index}]`,
+        message: "customerId must be a positive integer.",
+      });
+      return null;
+    }
+    return id;
+  });
+
+  if (
+    new Set(normalizedIds.filter(Boolean)).size !==
+    normalizedIds.filter(Boolean).length
+  ) {
+    details.push({
+      field: "customerIds",
+      message: "Recipient selection must not contain duplicates.",
+    });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { customerIds: normalizedIds };
+}
+
+function validatePromotionalUnsubscribePayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const customerId = Number(body.customerId);
+  const campaignId = body.campaignId == null ? null : Number(body.campaignId);
+  const recipientId =
+    body.recipientId == null ? null : Number(body.recipientId);
+  const reason = validateOptionalText(body.reason, "reason", 300, details);
+
+  if (!Number.isInteger(customerId) || customerId <= 0) {
+    details.push({
+      field: "customerId",
+      message: "customerId must be a positive integer.",
+    });
+  }
+
+  if (
+    campaignId != null &&
+    (!Number.isInteger(campaignId) || campaignId <= 0)
+  ) {
+    details.push({
+      field: "campaignId",
+      message: "campaignId must be a positive integer when provided.",
+    });
+  }
+
+  if (
+    recipientId != null &&
+    (!Number.isInteger(recipientId) || recipientId <= 0)
+  ) {
+    details.push({
+      field: "recipientId",
+      message: "recipientId must be a positive integer when provided.",
+    });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { customerId, campaignId, recipientId, reason };
 }
 
 function validateCompanyRegistrationRequestPayload(payload) {
   const details = [];
   const body = payload || {};
-  const companyName = validateRequiredText(body.companyName, 'companyName', 160, details);
-  const companyEmail = validateEmailField(body.companyEmail, 'companyEmail', details);
-  const companyAddress = validateRequiredText(body.companyAddress, 'companyAddress', 300, details);
-  const companyPhone = validateOptionalText(body.companyPhone, 'companyPhone', 32, details);
-  const contactName = validateOptionalText(body.contactName, 'contactName', 160, details);
-  const contactEmail = validateEmailField(body.contactEmail, 'contactEmail', details);
-  const contactPhone = validateOptionalText(body.contactPhone, 'contactPhone', 32, details);
+  const companyName = validateRequiredText(
+    body.companyName,
+    "companyName",
+    160,
+    details,
+  );
+  const companyEmail = validateEmailField(
+    body.companyEmail,
+    "companyEmail",
+    details,
+  );
+  const companyAddress = validateRequiredText(
+    body.companyAddress,
+    "companyAddress",
+    300,
+    details,
+  );
+  const companyPhone = validateOptionalText(
+    body.companyPhone,
+    "companyPhone",
+    32,
+    details,
+  );
+  const contactName = validateOptionalText(
+    body.contactName,
+    "contactName",
+    160,
+    details,
+  );
+  const contactEmail = validateEmailField(
+    body.contactEmail,
+    "contactEmail",
+    details,
+  );
+  const contactPhone = validateOptionalText(
+    body.contactPhone,
+    "contactPhone",
+    32,
+    details,
+  );
 
-  for (const forbiddenField of ['requestedLogoUrl', 'companyId', 'password']) {
+  for (const forbiddenField of ["requestedLogoUrl", "companyId", "password"]) {
     if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
-      details.push({ field: forbiddenField, message: `${forbiddenField} is not accepted for company registration.` });
+      details.push({
+        field: forbiddenField,
+        message: `${forbiddenField} is not accepted for company registration.`,
+      });
     }
   }
 
@@ -234,23 +604,46 @@ function validateCompanyRegistrationRequestPayload(payload) {
     companyAddress,
     contactName,
     contactEmail,
-    contactPhone
+    contactPhone,
   };
 }
 
 function validateCompanyRegistrationReviewPayload(payload, action) {
   const details = [];
   const body = payload || {};
-  const reviewNote = validateOptionalText(body.reviewNote, 'reviewNote', 500, details);
-  const pointsPercentageProvided = Object.prototype.hasOwnProperty.call(body, 'pointsPercentage');
-  const pointsPercentage = pointsPercentageProvided ? Number(body.pointsPercentage) : undefined;
+  const reviewNote = validateOptionalText(
+    body.reviewNote,
+    "reviewNote",
+    500,
+    details,
+  );
+  const pointsPercentageProvided = Object.prototype.hasOwnProperty.call(
+    body,
+    "pointsPercentage",
+  );
+  const pointsPercentage = pointsPercentageProvided
+    ? Number(body.pointsPercentage)
+    : undefined;
 
-  if (action === 'reject' && !reviewNote) {
-    details.push({ field: 'reviewNote', message: 'reviewNote is required when rejecting a company registration request.' });
+  if (action === "reject" && !reviewNote) {
+    details.push({
+      field: "reviewNote",
+      message:
+        "reviewNote is required when rejecting a company registration request.",
+    });
   }
 
-  if (pointsPercentageProvided && (!Number.isFinite(pointsPercentage) || pointsPercentage <= 0 || pointsPercentage > 100)) {
-    details.push({ field: 'pointsPercentage', message: 'pointsPercentage must be greater than 0 and less than or equal to 100.' });
+  if (
+    pointsPercentageProvided &&
+    (!Number.isFinite(pointsPercentage) ||
+      pointsPercentage <= 0 ||
+      pointsPercentage > 100)
+  ) {
+    details.push({
+      field: "pointsPercentage",
+      message:
+        "pointsPercentage must be greater than 0 and less than or equal to 100.",
+    });
   }
 
   if (details.length) {
@@ -259,23 +652,33 @@ function validateCompanyRegistrationReviewPayload(payload, action) {
 
   return {
     reviewNote,
-    pointsPercentage: pointsPercentageProvided ? pointsPercentage : undefined
+    pointsPercentage: pointsPercentageProvided ? pointsPercentage : undefined,
   };
 }
 
 function validateCompanyRegistrationRequestListQuery(query) {
   const details = [];
-  const status = normalizeText(query.get('status') || 'pending') || 'pending';
-  const limitValue = query.get('limit') || '25';
-  const allowedStatuses = new Set(['all', ...allowedRegistrationRequestStatuses]);
-  const allowedLimits = new Set(['10', '25', '50']);
+  const status = normalizeText(query.get("status") || "pending") || "pending";
+  const limitValue = query.get("limit") || "25";
+  const allowedStatuses = new Set([
+    "all",
+    ...allowedRegistrationRequestStatuses,
+  ]);
+  const allowedLimits = new Set(["10", "25", "50"]);
 
   if (!allowedStatuses.has(status)) {
-    details.push({ field: 'status', message: 'status must be one of all, pending, approved, rejected, cancelled.' });
+    details.push({
+      field: "status",
+      message:
+        "status must be one of all, pending, approved, rejected, cancelled.",
+    });
   }
 
   if (!allowedLimits.has(limitValue)) {
-    details.push({ field: 'limit', message: 'limit must be one of 10, 25, 50.' });
+    details.push({
+      field: "limit",
+      message: "limit must be one of 10, 25, 50.",
+    });
   }
 
   if (details.length) {
@@ -284,14 +687,16 @@ function validateCompanyRegistrationRequestListQuery(query) {
 
   return {
     status,
-    limit: Number(limitValue)
+    limit: Number(limitValue),
   };
 }
 
-function validateCompanyRole(value, field = 'role') {
-  const role = normalizeText(value || 'owner');
+function validateCompanyRole(value, field = "role") {
+  const role = normalizeText(value || "owner");
   if (!allowedCompanyRoles.has(role)) {
-    throw validationError([{ field, message: `${field} must be one of owner, admin, staff.` }]);
+    throw validationError([
+      { field, message: `${field} must be one of owner, admin, staff.` },
+    ]);
   }
   return role;
 }
@@ -300,22 +705,37 @@ function validateCompanyInvitationPayload(payload) {
   const details = [];
   const body = payload || {};
   const companyId = Number(body.companyId);
-  const registrationRequestId = Object.prototype.hasOwnProperty.call(body, 'registrationRequestId')
+  const registrationRequestId = Object.prototype.hasOwnProperty.call(
+    body,
+    "registrationRequestId",
+  )
     ? Number(body.registrationRequestId)
     : null;
-  const email = validateEmailField(body.email, 'email', details);
-  const role = normalizeText(body.role || 'owner');
+  const email = validateEmailField(body.email, "email", details);
+  const role = normalizeText(body.role || "owner");
 
   if (!Number.isInteger(companyId) || companyId <= 0) {
-    details.push({ field: 'companyId', message: 'companyId must be a positive integer.' });
+    details.push({
+      field: "companyId",
+      message: "companyId must be a positive integer.",
+    });
   }
 
-  if (registrationRequestId != null && (!Number.isInteger(registrationRequestId) || registrationRequestId <= 0)) {
-    details.push({ field: 'registrationRequestId', message: 'registrationRequestId must be a positive integer.' });
+  if (
+    registrationRequestId != null &&
+    (!Number.isInteger(registrationRequestId) || registrationRequestId <= 0)
+  ) {
+    details.push({
+      field: "registrationRequestId",
+      message: "registrationRequestId must be a positive integer.",
+    });
   }
 
   if (!allowedCompanyRoles.has(role)) {
-    details.push({ field: 'role', message: 'role must be one of owner, admin, staff.' });
+    details.push({
+      field: "role",
+      message: "role must be one of owner, admin, staff.",
+    });
   }
 
   if (details.length) {
@@ -326,20 +746,28 @@ function validateCompanyInvitationPayload(payload) {
     companyId,
     registrationRequestId,
     email,
-    role
+    role,
   };
 }
 
 function validateInvitationAcceptPayload(payload) {
   const details = [];
   const body = payload || {};
-  const token = validateRequiredText(body.token, 'token', 2048, details);
-  const displayName = validateOptionalText(body.displayName, 'displayName', 160, details);
-  const password = validatePassword(body.password, 'password', details);
+  const token = validateRequiredText(body.token, "token", 2048, details);
+  const displayName = validateOptionalText(
+    body.displayName,
+    "displayName",
+    160,
+    details,
+  );
+  const password = validatePassword(body.password, "password", details);
 
-  for (const forbiddenField of ['externalSubject', 'companyId', 'email']) {
+  for (const forbiddenField of ["externalSubject", "companyId", "email"]) {
     if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
-      details.push({ field: forbiddenField, message: `${forbiddenField} must not be sent by the frontend.` });
+      details.push({
+        field: forbiddenField,
+        message: `${forbiddenField} must not be sent by the frontend.`,
+      });
     }
   }
 
@@ -350,19 +778,22 @@ function validateInvitationAcceptPayload(payload) {
   return {
     token,
     displayName,
-    password
+    password,
   };
 }
 
 function validatePassword(value, field, details) {
-  const password = typeof value === 'string' ? value : '';
+  const password = typeof value === "string" ? value : "";
   if (
     password.length < 10 ||
     password.length > 128 ||
     !/[A-Za-z]/.test(password) ||
     !/[0-9]/.test(password)
   ) {
-    details.push({ field, message: `${field} must be 10 to 128 characters and include letters and numbers.` });
+    details.push({
+      field,
+      message: `${field} must be 10 to 128 characters and include letters and numbers.`,
+    });
   }
   return password;
 }
@@ -370,11 +801,14 @@ function validatePassword(value, field, details) {
 function validateCompanyAuthLoginPayload(payload) {
   const details = [];
   const body = payload || {};
-  const email = validateEmailField(body.email, 'email', details);
-  const password = typeof body.password === 'string' ? body.password : '';
+  const email = validateEmailField(body.email, "email", details);
+  const password = typeof body.password === "string" ? body.password : "";
 
   if (!password || password.length > 128) {
-    details.push({ field: 'password', message: 'password is required and must be 128 characters or fewer.' });
+    details.push({
+      field: "password",
+      message: "password is required and must be 128 characters or fewer.",
+    });
   }
 
   if (details.length) {
@@ -383,32 +817,53 @@ function validateCompanyAuthLoginPayload(payload) {
 
   return {
     email,
-    password
+    password,
   };
 }
 
 function validateCompanyPasswordChangePayload(payload) {
   const details = [];
   const body = payload || {};
-  const currentPassword = typeof body.currentPassword === 'string' ? body.currentPassword : '';
-  const newPassword = validatePassword(body.newPassword, 'newPassword', details);
-  const passwordConfirmation = typeof body.passwordConfirmation === 'string' ? body.passwordConfirmation : '';
+  const currentPassword =
+    typeof body.currentPassword === "string" ? body.currentPassword : "";
+  const newPassword = validatePassword(
+    body.newPassword,
+    "newPassword",
+    details,
+  );
+  const passwordConfirmation =
+    typeof body.passwordConfirmation === "string"
+      ? body.passwordConfirmation
+      : "";
 
   if (!currentPassword || currentPassword.length > 128) {
-    details.push({ field: 'currentPassword', message: 'currentPassword is required and must be 128 characters or fewer.' });
+    details.push({
+      field: "currentPassword",
+      message:
+        "currentPassword is required and must be 128 characters or fewer.",
+    });
   }
 
   if (newPassword && currentPassword && newPassword === currentPassword) {
-    details.push({ field: 'newPassword', message: 'newPassword must be different from currentPassword.' });
+    details.push({
+      field: "newPassword",
+      message: "newPassword must be different from currentPassword.",
+    });
   }
 
   if (!passwordConfirmation || passwordConfirmation !== newPassword) {
-    details.push({ field: 'passwordConfirmation', message: 'passwordConfirmation must match newPassword.' });
+    details.push({
+      field: "passwordConfirmation",
+      message: "passwordConfirmation must match newPassword.",
+    });
   }
 
-  for (const forbiddenField of ['email', 'companyId', 'userId']) {
+  for (const forbiddenField of ["email", "companyId", "userId"]) {
     if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
-      details.push({ field: forbiddenField, message: `${forbiddenField} must not be sent by the frontend.` });
+      details.push({
+        field: forbiddenField,
+        message: `${forbiddenField} must not be sent by the frontend.`,
+      });
     }
   }
 
@@ -418,45 +873,67 @@ function validateCompanyPasswordChangePayload(payload) {
 
   return {
     currentPassword,
-    newPassword
+    newPassword,
   };
 }
 
 function validateMyCompanyPatchPayload(payload) {
   const details = [];
   const body = payload || {};
-  const allowedFields = ['name', 'phone', 'address', 'pointsPercentage'];
+  const allowedFields = ["name", "phone", "address", "pointsPercentage"];
   const patch = {};
-  const providedFields = allowedFields.filter((field) => Object.prototype.hasOwnProperty.call(body, field));
+  const providedFields = allowedFields.filter((field) =>
+    Object.prototype.hasOwnProperty.call(body, field),
+  );
 
   if (!providedFields.length) {
-    details.push({ field: 'body', message: 'At least one editable company field must be provided.' });
+    details.push({
+      field: "body",
+      message: "At least one editable company field must be provided.",
+    });
   }
 
-  if (Object.prototype.hasOwnProperty.call(body, 'name')) {
-    patch.name = validateRequiredText(body.name, 'name', 160, details);
+  if (Object.prototype.hasOwnProperty.call(body, "name")) {
+    patch.name = validateRequiredText(body.name, "name", 160, details);
   }
 
-  if (Object.prototype.hasOwnProperty.call(body, 'phone')) {
-    patch.phone = validateOptionalText(body.phone, 'phone', 32, details);
+  if (Object.prototype.hasOwnProperty.call(body, "phone")) {
+    patch.phone = validateOptionalText(body.phone, "phone", 32, details);
   }
 
-  if (Object.prototype.hasOwnProperty.call(body, 'address')) {
-    patch.address = validateRequiredText(body.address, 'address', 300, details);
+  if (Object.prototype.hasOwnProperty.call(body, "address")) {
+    patch.address = validateRequiredText(body.address, "address", 300, details);
   }
 
-  if (Object.prototype.hasOwnProperty.call(body, 'pointsPercentage')) {
+  if (Object.prototype.hasOwnProperty.call(body, "pointsPercentage")) {
     const pointsPercentage = Number(body.pointsPercentage);
-    if (!Number.isFinite(pointsPercentage) || pointsPercentage <= 0 || pointsPercentage > 100) {
-      details.push({ field: 'pointsPercentage', message: 'pointsPercentage must be greater than 0 and less than or equal to 100.' });
+    if (
+      !Number.isFinite(pointsPercentage) ||
+      pointsPercentage <= 0 ||
+      pointsPercentage > 100
+    ) {
+      details.push({
+        field: "pointsPercentage",
+        message:
+          "pointsPercentage must be greater than 0 and less than or equal to 100.",
+      });
     } else {
       patch.pointsPercentage = pointsPercentage;
     }
   }
 
-  for (const forbiddenField of ['email', 'status', 'logoUrl', 'logoBlobPath', 'companyId']) {
+  for (const forbiddenField of [
+    "email",
+    "status",
+    "logoUrl",
+    "logoBlobPath",
+    "companyId",
+  ]) {
     if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
-      details.push({ field: forbiddenField, message: `${forbiddenField} is not editable through my-company.` });
+      details.push({
+        field: forbiddenField,
+        message: `${forbiddenField} is not editable through my-company.`,
+      });
     }
   }
 
@@ -466,29 +943,40 @@ function validateMyCompanyPatchPayload(payload) {
 
   return {
     patch,
-    providedFields
+    providedFields,
   };
 }
 
 function validateLogoFileMetadata(file, options = {}) {
   const details = [];
-  const maxBytes = Number(options.maxBytes || process.env.LOGO_MAX_BYTES || 1048576);
+  const maxBytes = Number(
+    options.maxBytes || process.env.LOGO_MAX_BYTES || 1048576,
+  );
   const contentType = normalizeText(file && file.contentType);
   const size = Number(file && file.size);
   const filename = normalizeText(file && file.filename);
 
   if (!contentType || !allowedLogoContentTypes.has(contentType)) {
-    details.push({ field: 'file', message: 'Logo must be a PNG, JPEG, or WebP image.' });
+    details.push({
+      field: "file",
+      message: "Logo must be a PNG, JPEG, or WebP image.",
+    });
   }
 
   if (!Number.isInteger(size) || size <= 0) {
-    details.push({ field: 'file', message: 'Logo file size must be provided.' });
+    details.push({
+      field: "file",
+      message: "Logo file size must be provided.",
+    });
   } else if (Number.isFinite(maxBytes) && size > maxBytes) {
-    details.push({ field: 'file', message: 'Logo file exceeds the allowed size.' });
+    details.push({
+      field: "file",
+      message: "Logo file exceeds the allowed size.",
+    });
   }
 
-  if (filename && filename.toLowerCase().endsWith('.svg')) {
-    details.push({ field: 'file', message: 'SVG logos are not allowed.' });
+  if (filename && filename.toLowerCase().endsWith(".svg")) {
+    details.push({ field: "file", message: "SVG logos are not allowed." });
   }
 
   if (details.length) {
@@ -498,7 +986,7 @@ function validateLogoFileMetadata(file, options = {}) {
   return {
     contentType,
     size,
-    filename: filename || null
+    filename: filename || null,
   };
 }
 
@@ -526,21 +1014,33 @@ function validatePurchasePayload(payload) {
   const purchaseDate = payload && payload.purchaseDate;
 
   if (!Number.isInteger(customerId) || customerId <= 0) {
-    details.push({ field: 'customerId', message: 'Customer id must be a positive integer.' });
+    details.push({
+      field: "customerId",
+      message: "Customer id must be a positive integer.",
+    });
   }
 
   if (!invoiceNumber || invoiceNumber.length > 80) {
-    details.push({ field: 'invoiceNumber', message: 'Invoice number is required and must be 80 characters or fewer.' });
+    details.push({
+      field: "invoiceNumber",
+      message: "Invoice number is required and must be 80 characters or fewer.",
+    });
   }
 
-  validateDate(purchaseDate, 'purchaseDate', details);
+  validateDate(purchaseDate, "purchaseDate", details);
 
   if (!Number.isFinite(amount) || amount <= 0) {
-    details.push({ field: 'amount', message: 'Amount must be greater than 0.' });
+    details.push({
+      field: "amount",
+      message: "Amount must be greater than 0.",
+    });
   }
 
-  if (Object.prototype.hasOwnProperty.call(payload || {}, 'pointsEarned')) {
-    details.push({ field: 'pointsEarned', message: 'pointsEarned is calculated by the API and must not be sent.' });
+  if (Object.prototype.hasOwnProperty.call(payload || {}, "pointsEarned")) {
+    details.push({
+      field: "pointsEarned",
+      message: "pointsEarned is calculated by the API and must not be sent.",
+    });
   }
 
   if (details.length) {
@@ -558,17 +1058,26 @@ function validateRedemptionPayload(payload) {
   const note = normalizeText(payload && payload.note);
 
   if (!Number.isInteger(customerId) || customerId <= 0) {
-    details.push({ field: 'customerId', message: 'Customer id must be a positive integer.' });
+    details.push({
+      field: "customerId",
+      message: "Customer id must be a positive integer.",
+    });
   }
 
-  validateDate(redemptionDate, 'redemptionDate', details);
+  validateDate(redemptionDate, "redemptionDate", details);
 
   if (!Number.isInteger(pointsRedeemed) || pointsRedeemed <= 0) {
-    details.push({ field: 'pointsRedeemed', message: 'Points redeemed must be a positive integer.' });
+    details.push({
+      field: "pointsRedeemed",
+      message: "Points redeemed must be a positive integer.",
+    });
   }
 
   if (note && note.length > 500) {
-    details.push({ field: 'note', message: 'Note must be 500 characters or fewer.' });
+    details.push({
+      field: "note",
+      message: "Note must be 500 characters or fewer.",
+    });
   }
 
   if (details.length) {
@@ -579,20 +1088,30 @@ function validateRedemptionPayload(payload) {
 }
 
 function validateMembershipStatusQuery(query) {
-  const status = normalizeText(query.get('status') || 'active') || 'active';
+  const status = normalizeText(query.get("status") || "active") || "active";
 
   if (!allowedMembershipListStatuses.has(status)) {
-    throw validationError([{ field: 'status', message: 'status must be one of active, inactive, all.' }]);
+    throw validationError([
+      {
+        field: "status",
+        message: "status must be one of active, inactive, all.",
+      },
+    ]);
   }
 
   return { status };
 }
 
 function validateCustomerMembershipStatusQuery(query) {
-  const status = normalizeText(query.get('status') || 'active') || 'active';
+  const status = normalizeText(query.get("status") || "active") || "active";
 
   if (!allowedCustomerMembershipListStatuses.has(status)) {
-    throw validationError([{ field: 'status', message: 'status must be one of active, expired, cancelled, all.' }]);
+    throw validationError([
+      {
+        field: "status",
+        message: "status must be one of active, expired, cancelled, all.",
+      },
+    ]);
   }
 
   return { status };
@@ -600,16 +1119,22 @@ function validateCustomerMembershipStatusQuery(query) {
 
 function validateExpirationAlertsQuery(query) {
   const details = [];
-  const status = normalizeText(query.get('status') || 'active') || 'active';
-  const withinDaysValue = query.get('withinDays') || '5';
+  const status = normalizeText(query.get("status") || "active") || "active";
+  const withinDaysValue = query.get("withinDays") || "5";
   const withinDays = Number(withinDaysValue);
 
-  if (!allowedCustomerMembershipListStatuses.has(status) || status === 'all') {
-    details.push({ field: 'status', message: 'status must be one of active, expired, cancelled.' });
+  if (!allowedCustomerMembershipListStatuses.has(status) || status === "all") {
+    details.push({
+      field: "status",
+      message: "status must be one of active, expired, cancelled.",
+    });
   }
 
   if (!Number.isInteger(withinDays) || withinDays < 0 || withinDays > 365) {
-    details.push({ field: 'withinDays', message: 'withinDays must be an integer from 0 to 365.' });
+    details.push({
+      field: "withinDays",
+      message: "withinDays must be an integer from 0 to 365.",
+    });
   }
 
   if (details.length) {
@@ -621,40 +1146,74 @@ function validateExpirationAlertsQuery(query) {
 
 function validateMembershipActivationPayload(payload) {
   const details = [];
-  const body = payload && typeof payload === 'object' ? payload : {};
-  const rawPlanId = Object.prototype.hasOwnProperty.call(body, 'planId') ? body.planId : body.membershipPlanId;
+  const body = payload && typeof payload === "object" ? payload : {};
+  const rawPlanId = Object.prototype.hasOwnProperty.call(body, "planId")
+    ? body.planId
+    : body.membershipPlanId;
   const planId = Number(rawPlanId);
   const startDate = body.startDate;
-  const amountProvided = Object.prototype.hasOwnProperty.call(body, 'amount') || Object.prototype.hasOwnProperty.call(body, 'pricePaid');
-  const rawAmount = Object.prototype.hasOwnProperty.call(body, 'amount') ? body.amount : body.pricePaid;
-  const amount = amountProvided && rawAmount !== '' && rawAmount != null ? Number(rawAmount) : null;
-  const paymentMethod = normalizeText(body.paymentMethod || '');
+  const amountProvided =
+    Object.prototype.hasOwnProperty.call(body, "amount") ||
+    Object.prototype.hasOwnProperty.call(body, "pricePaid");
+  const rawAmount = Object.prototype.hasOwnProperty.call(body, "amount")
+    ? body.amount
+    : body.pricePaid;
+  const amount =
+    amountProvided && rawAmount !== "" && rawAmount != null
+      ? Number(rawAmount)
+      : null;
+  const paymentMethod = normalizeText(body.paymentMethod || "");
   const note = normalizeText(body.note);
 
   if (!Number.isInteger(planId) || planId <= 0) {
-    details.push({ field: 'planId', message: 'planId must be a positive integer.' });
+    details.push({
+      field: "planId",
+      message: "planId must be a positive integer.",
+    });
   }
 
-  validateDate(startDate, 'startDate', details);
+  validateDate(startDate, "startDate", details);
   if (startDate && !parseIsoDate(startDate)) {
-    details.push({ field: 'startDate', message: 'startDate must be a valid calendar date.' });
+    details.push({
+      field: "startDate",
+      message: "startDate must be a valid calendar date.",
+    });
   }
 
   if (!allowedMembershipPaymentMethods.has(paymentMethod)) {
-    details.push({ field: 'paymentMethod', message: 'paymentMethod must be cash, card, credit, transfer, or other.' });
+    details.push({
+      field: "paymentMethod",
+      message: "paymentMethod must be cash, card, credit, transfer, or other.",
+    });
   }
 
   if (!amountProvided || !Number.isFinite(amount) || amount < 0) {
-    details.push({ field: 'amount', message: 'amount must be zero or greater.' });
+    details.push({
+      field: "amount",
+      message: "amount must be zero or greater.",
+    });
   }
 
   if (note && note.length > 500) {
-    details.push({ field: 'note', message: 'note must be 500 characters or fewer.' });
+    details.push({
+      field: "note",
+      message: "note must be 500 characters or fewer.",
+    });
   }
 
-  for (const forbiddenField of ['companyId', 'customerId', 'endDate', 'status', 'transactionType', 'createdByLabel']) {
+  for (const forbiddenField of [
+    "companyId",
+    "customerId",
+    "endDate",
+    "status",
+    "transactionType",
+    "createdByLabel",
+  ]) {
     if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
-      details.push({ field: forbiddenField, message: `${forbiddenField} is calculated by the API and must not be sent.` });
+      details.push({
+        field: forbiddenField,
+        message: `${forbiddenField} is calculated by the API and must not be sent.`,
+      });
     }
   }
 
@@ -667,39 +1226,65 @@ function validateMembershipActivationPayload(payload) {
     startDate,
     pricePaid: amount,
     paymentMethod,
-    note: note || null
+    note: note || null,
   };
 }
 
 function validateMembershipRenewalPayload(payload) {
   const details = [];
-  const body = payload && typeof payload === 'object' ? payload : {};
-  const rawAmount = Object.prototype.hasOwnProperty.call(body, 'amount') ? body.amount : body.pricePaid;
-  const amount = rawAmount !== '' && rawAmount != null ? Number(rawAmount) : null;
-  const paymentMethod = normalizeText(body.paymentMethod || '');
-  const transactionDate = body.transactionDate || new Date().toISOString().slice(0, 10);
+  const body = payload && typeof payload === "object" ? payload : {};
+  const rawAmount = Object.prototype.hasOwnProperty.call(body, "amount")
+    ? body.amount
+    : body.pricePaid;
+  const amount =
+    rawAmount !== "" && rawAmount != null ? Number(rawAmount) : null;
+  const paymentMethod = normalizeText(body.paymentMethod || "");
+  const transactionDate =
+    body.transactionDate || new Date().toISOString().slice(0, 10);
   const note = normalizeText(body.note);
 
   if (!allowedMembershipPaymentMethods.has(paymentMethod)) {
-    details.push({ field: 'paymentMethod', message: 'paymentMethod must be cash, card, credit, transfer, or other.' });
+    details.push({
+      field: "paymentMethod",
+      message: "paymentMethod must be cash, card, credit, transfer, or other.",
+    });
   }
 
   if (!Number.isFinite(amount) || amount < 0) {
-    details.push({ field: 'amount', message: 'amount must be zero or greater.' });
+    details.push({
+      field: "amount",
+      message: "amount must be zero or greater.",
+    });
   }
 
-  validateDate(transactionDate, 'transactionDate', details);
+  validateDate(transactionDate, "transactionDate", details);
   if (transactionDate && !parseIsoDate(transactionDate)) {
-    details.push({ field: 'transactionDate', message: 'transactionDate must be a valid calendar date.' });
+    details.push({
+      field: "transactionDate",
+      message: "transactionDate must be a valid calendar date.",
+    });
   }
 
   if (note && note.length > 500) {
-    details.push({ field: 'note', message: 'note must be 500 characters or fewer.' });
+    details.push({
+      field: "note",
+      message: "note must be 500 characters or fewer.",
+    });
   }
 
-  for (const forbiddenField of ['companyId', 'customerId', 'customerMembershipId', 'membershipPlanId', 'transactionType', 'createdByLabel']) {
+  for (const forbiddenField of [
+    "companyId",
+    "customerId",
+    "customerMembershipId",
+    "membershipPlanId",
+    "transactionType",
+    "createdByLabel",
+  ]) {
     if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
-      details.push({ field: forbiddenField, message: `${forbiddenField} is calculated by the API and must not be sent.` });
+      details.push({
+        field: forbiddenField,
+        message: `${forbiddenField} is calculated by the API and must not be sent.`,
+      });
     }
   }
 
@@ -711,46 +1296,86 @@ function validateMembershipRenewalPayload(payload) {
     amount,
     paymentMethod,
     transactionDate,
-    note: note || null
+    note: note || null,
   };
 }
 
 function validateMembershipBenefitUsagePayload(payload) {
   const details = [];
-  const body = payload && typeof payload === 'object' ? payload : {};
-  const rawBenefitId = Object.prototype.hasOwnProperty.call(body, 'benefitId') ? body.benefitId : body.membershipBenefitId;
+  const body = payload && typeof payload === "object" ? payload : {};
+  const rawBenefitId = Object.prototype.hasOwnProperty.call(body, "benefitId")
+    ? body.benefitId
+    : body.membershipBenefitId;
   const benefitId = Number(rawBenefitId);
-  const customerMembershipIdProvided = Object.prototype.hasOwnProperty.call(body, 'customerMembershipId');
-  const customerMembershipId = customerMembershipIdProvided ? Number(body.customerMembershipId) : null;
+  const customerMembershipIdProvided = Object.prototype.hasOwnProperty.call(
+    body,
+    "customerMembershipId",
+  );
+  const customerMembershipId = customerMembershipIdProvided
+    ? Number(body.customerMembershipId)
+    : null;
   const usageDate = body.usageDate;
-  const quantityProvided = Object.prototype.hasOwnProperty.call(body, 'quantity');
-  const quantity = quantityProvided && body.quantity !== '' && body.quantity != null ? Number(body.quantity) : 1;
+  const quantityProvided = Object.prototype.hasOwnProperty.call(
+    body,
+    "quantity",
+  );
+  const quantity =
+    quantityProvided && body.quantity !== "" && body.quantity != null
+      ? Number(body.quantity)
+      : 1;
   const note = normalizeText(body.note);
 
   if (!Number.isInteger(benefitId) || benefitId <= 0) {
-    details.push({ field: 'benefitId', message: 'benefitId must be a positive integer.' });
+    details.push({
+      field: "benefitId",
+      message: "benefitId must be a positive integer.",
+    });
   }
 
-  if (customerMembershipIdProvided && (!Number.isInteger(customerMembershipId) || customerMembershipId <= 0)) {
-    details.push({ field: 'customerMembershipId', message: 'customerMembershipId must be a positive integer.' });
+  if (
+    customerMembershipIdProvided &&
+    (!Number.isInteger(customerMembershipId) || customerMembershipId <= 0)
+  ) {
+    details.push({
+      field: "customerMembershipId",
+      message: "customerMembershipId must be a positive integer.",
+    });
   }
 
-  validateDate(usageDate, 'usageDate', details);
+  validateDate(usageDate, "usageDate", details);
   if (usageDate && !parseIsoDate(usageDate)) {
-    details.push({ field: 'usageDate', message: 'usageDate must be a valid calendar date.' });
+    details.push({
+      field: "usageDate",
+      message: "usageDate must be a valid calendar date.",
+    });
   }
 
   if (!Number.isInteger(quantity) || quantity <= 0) {
-    details.push({ field: 'quantity', message: 'quantity must be a positive integer.' });
+    details.push({
+      field: "quantity",
+      message: "quantity must be a positive integer.",
+    });
   }
 
   if (note && note.length > 500) {
-    details.push({ field: 'note', message: 'note must be 500 characters or fewer.' });
+    details.push({
+      field: "note",
+      message: "note must be 500 characters or fewer.",
+    });
   }
 
-  for (const forbiddenField of ['companyId', 'customerId', 'usedAt', 'createdByLabel', 'usagePeriodStartDate']) {
+  for (const forbiddenField of [
+    "companyId",
+    "customerId",
+    "usedAt",
+    "createdByLabel",
+    "usagePeriodStartDate",
+  ]) {
     if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
-      details.push({ field: forbiddenField, message: `${forbiddenField} is calculated by the API and must not be sent.` });
+      details.push({
+        field: forbiddenField,
+        message: `${forbiddenField} is calculated by the API and must not be sent.`,
+      });
     }
   }
 
@@ -763,32 +1388,44 @@ function validateMembershipBenefitUsagePayload(payload) {
     customerMembershipId,
     usageDate,
     quantity,
-    note: note || null
+    note: note || null,
   };
 }
 
 function validateMembershipBenefitUsageQuery(query) {
   const details = [];
-  const from = query.get('from');
-  const to = query.get('to');
+  const from = query.get("from");
+  const to = query.get("to");
   const fromDate = parseIsoDate(from);
   const toDate = parseIsoDate(to);
 
   if (!fromDate) {
-    details.push({ field: 'from', message: 'from is required and must use YYYY-MM-DD format.' });
+    details.push({
+      field: "from",
+      message: "from is required and must use YYYY-MM-DD format.",
+    });
   }
 
   if (!toDate) {
-    details.push({ field: 'to', message: 'to is required and must use YYYY-MM-DD format.' });
+    details.push({
+      field: "to",
+      message: "to is required and must use YYYY-MM-DD format.",
+    });
   }
 
   if (fromDate && toDate) {
     if (fromDate > toDate) {
-      details.push({ field: 'from', message: 'from must be before or equal to to.' });
+      details.push({
+        field: "from",
+        message: "from must be before or equal to to.",
+      });
     } else {
-      const rangeDays = ((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
+      const rangeDays = (toDate.getTime() - fromDate.getTime()) / 86400000 + 1;
       if (rangeDays > maxReportRangeDays) {
-        details.push({ field: 'to', message: `Date range must be ${maxReportRangeDays} days or fewer.` });
+        details.push({
+          field: "to",
+          message: `Date range must be ${maxReportRangeDays} days or fewer.`,
+        });
       }
     }
   }
@@ -802,26 +1439,38 @@ function validateMembershipBenefitUsageQuery(query) {
 
 function validateMembershipTransactionsQuery(query) {
   const details = [];
-  const from = query.get('from');
-  const to = query.get('to');
+  const from = query.get("from");
+  const to = query.get("to");
   const fromDate = parseIsoDate(from);
   const toDate = parseIsoDate(to);
 
   if (!fromDate) {
-    details.push({ field: 'from', message: 'from is required and must use YYYY-MM-DD format.' });
+    details.push({
+      field: "from",
+      message: "from is required and must use YYYY-MM-DD format.",
+    });
   }
 
   if (!toDate) {
-    details.push({ field: 'to', message: 'to is required and must use YYYY-MM-DD format.' });
+    details.push({
+      field: "to",
+      message: "to is required and must use YYYY-MM-DD format.",
+    });
   }
 
   if (fromDate && toDate) {
     if (fromDate > toDate) {
-      details.push({ field: 'from', message: 'from must be before or equal to to.' });
+      details.push({
+        field: "from",
+        message: "from must be before or equal to to.",
+      });
     } else {
-      const rangeDays = ((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
+      const rangeDays = (toDate.getTime() - fromDate.getTime()) / 86400000 + 1;
       if (rangeDays > maxReportRangeDays) {
-        details.push({ field: 'to', message: `Date range must be ${maxReportRangeDays} days or fewer.` });
+        details.push({
+          field: "to",
+          message: `Date range must be ${maxReportRangeDays} days or fewer.`,
+        });
       }
     }
   }
@@ -840,7 +1489,7 @@ function validateMembershipFinancialReportQuery(query) {
 function validateCompanyPasswordResetRequestPayload(payload) {
   const details = [];
   const body = payload || {};
-  const email = validateEmailField(body.email, 'email', details);
+  const email = validateEmailField(body.email, "email", details);
 
   if (details.length) {
     throw validationError(details);
@@ -852,12 +1501,15 @@ function validateCompanyPasswordResetRequestPayload(payload) {
 function validateCompanyPasswordResetCompletePayload(payload) {
   const details = [];
   const body = payload || {};
-  const token = validateRequiredText(body.token, 'token', 2048, details);
-  const password = validatePassword(body.password, 'password', details);
+  const token = validateRequiredText(body.token, "token", 2048, details);
+  const password = validatePassword(body.password, "password", details);
 
-  for (const forbiddenField of ['email', 'companyId', 'userId']) {
+  for (const forbiddenField of ["email", "companyId", "userId"]) {
     if (Object.prototype.hasOwnProperty.call(body, forbiddenField)) {
-      details.push({ field: forbiddenField, message: `${forbiddenField} must not be sent by the frontend.` });
+      details.push({
+        field: forbiddenField,
+        message: `${forbiddenField} must not be sent by the frontend.`,
+      });
     }
   }
 
@@ -873,20 +1525,32 @@ function validateReportDateRange(from, to, details) {
   const toDate = parseIsoDate(to);
 
   if (!fromDate) {
-    details.push({ field: 'from', message: 'from is required and must use YYYY-MM-DD format.' });
+    details.push({
+      field: "from",
+      message: "from is required and must use YYYY-MM-DD format.",
+    });
   }
 
   if (!toDate) {
-    details.push({ field: 'to', message: 'to is required and must use YYYY-MM-DD format.' });
+    details.push({
+      field: "to",
+      message: "to is required and must use YYYY-MM-DD format.",
+    });
   }
 
   if (fromDate && toDate) {
     if (fromDate > toDate) {
-      details.push({ field: 'from', message: 'from must be before or equal to to.' });
+      details.push({
+        field: "from",
+        message: "from must be before or equal to to.",
+      });
     } else {
-      const rangeDays = ((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
+      const rangeDays = (toDate.getTime() - fromDate.getTime()) / 86400000 + 1;
       if (rangeDays > maxReportRangeDays) {
-        details.push({ field: 'to', message: `Date range must be ${maxReportRangeDays} days or fewer.` });
+        details.push({
+          field: "to",
+          message: `Date range must be ${maxReportRangeDays} days or fewer.`,
+        });
       }
     }
   }
@@ -894,11 +1558,18 @@ function validateReportDateRange(from, to, details) {
 
 function validateMembershipPlanPayload(payload, options = {}) {
   const details = [];
-  const body = payload && typeof payload === 'object' ? payload : {};
+  const body = payload && typeof payload === "object" ? payload : {};
   const patch = {};
   const providedFields = [];
   const partial = Boolean(options.partial);
-  const fields = ['name', 'description', 'durationDays', 'price', 'renewalNoticeDays', 'status'];
+  const fields = [
+    "name",
+    "description",
+    "durationDays",
+    "price",
+    "renewalNoticeDays",
+    "status",
+  ];
 
   for (const field of fields) {
     if (!Object.prototype.hasOwnProperty.call(body, field)) {
@@ -907,35 +1578,60 @@ function validateMembershipPlanPayload(payload, options = {}) {
 
     providedFields.push(field);
 
-    if (field === 'name') {
-      patch.name = validateRequiredText(body.name, 'name', 120, details);
-    } else if (field === 'description') {
-      patch.description = validateOptionalText(body.description, 'description', 500, details);
-    } else if (field === 'durationDays') {
+    if (field === "name") {
+      patch.name = validateRequiredText(body.name, "name", 120, details);
+    } else if (field === "description") {
+      patch.description = validateOptionalText(
+        body.description,
+        "description",
+        500,
+        details,
+      );
+    } else if (field === "durationDays") {
       const durationDays = Number(body.durationDays);
-      if (!Number.isInteger(durationDays) || durationDays <= 0 || durationDays > 3660) {
-        details.push({ field: 'durationDays', message: 'durationDays must be a positive integer.' });
+      if (
+        !Number.isInteger(durationDays) ||
+        durationDays <= 0 ||
+        durationDays > 3660
+      ) {
+        details.push({
+          field: "durationDays",
+          message: "durationDays must be a positive integer.",
+        });
       } else {
         patch.durationDays = durationDays;
       }
-    } else if (field === 'price') {
+    } else if (field === "price") {
       const price = Number(body.price);
       if (!Number.isFinite(price) || price < 0) {
-        details.push({ field: 'price', message: 'price must be zero or greater.' });
+        details.push({
+          field: "price",
+          message: "price must be zero or greater.",
+        });
       } else {
         patch.price = price;
       }
-    } else if (field === 'renewalNoticeDays') {
+    } else if (field === "renewalNoticeDays") {
       const renewalNoticeDays = Number(body.renewalNoticeDays);
-      if (!Number.isInteger(renewalNoticeDays) || renewalNoticeDays < 0 || renewalNoticeDays > 365) {
-        details.push({ field: 'renewalNoticeDays', message: 'renewalNoticeDays must be an integer from 0 to 365.' });
+      if (
+        !Number.isInteger(renewalNoticeDays) ||
+        renewalNoticeDays < 0 ||
+        renewalNoticeDays > 365
+      ) {
+        details.push({
+          field: "renewalNoticeDays",
+          message: "renewalNoticeDays must be an integer from 0 to 365.",
+        });
       } else {
         patch.renewalNoticeDays = renewalNoticeDays;
       }
-    } else if (field === 'status') {
+    } else if (field === "status") {
       const status = normalizeText(body.status);
       if (!allowedMembershipStatuses.has(status)) {
-        details.push({ field: 'status', message: 'status must be active or inactive.' });
+        details.push({
+          field: "status",
+          message: "status must be active or inactive.",
+        });
       } else {
         patch.status = status;
       }
@@ -943,19 +1639,25 @@ function validateMembershipPlanPayload(payload, options = {}) {
   }
 
   if (!partial) {
-    if (!Object.prototype.hasOwnProperty.call(body, 'name')) {
-      details.push({ field: 'name', message: 'name is required.' });
+    if (!Object.prototype.hasOwnProperty.call(body, "name")) {
+      details.push({ field: "name", message: "name is required." });
     }
-    if (!Object.prototype.hasOwnProperty.call(body, 'durationDays')) {
-      details.push({ field: 'durationDays', message: 'durationDays is required.' });
+    if (!Object.prototype.hasOwnProperty.call(body, "durationDays")) {
+      details.push({
+        field: "durationDays",
+        message: "durationDays is required.",
+      });
     }
-    if (!Object.prototype.hasOwnProperty.call(body, 'price')) {
-      details.push({ field: 'price', message: 'price is required.' });
+    if (!Object.prototype.hasOwnProperty.call(body, "price")) {
+      details.push({ field: "price", message: "price is required." });
     }
   }
 
   if (partial && !providedFields.length) {
-    details.push({ field: 'body', message: 'At least one editable field is required.' });
+    details.push({
+      field: "body",
+      message: "At least one editable field is required.",
+    });
   }
 
   if (details.length) {
@@ -968,8 +1670,13 @@ function validateMembershipPlanPayload(payload, options = {}) {
       description: patch.description || null,
       durationDays: patch.durationDays,
       price: patch.price,
-      renewalNoticeDays: Object.prototype.hasOwnProperty.call(patch, 'renewalNoticeDays') ? patch.renewalNoticeDays : 5,
-      status: patch.status || 'active'
+      renewalNoticeDays: Object.prototype.hasOwnProperty.call(
+        patch,
+        "renewalNoticeDays",
+      )
+        ? patch.renewalNoticeDays
+        : 5,
+      status: patch.status || "active",
     };
   }
 
@@ -978,21 +1685,21 @@ function validateMembershipPlanPayload(payload, options = {}) {
 
 function validateMembershipBenefitPayload(payload, options = {}) {
   const details = [];
-  const body = payload && typeof payload === 'object' ? payload : {};
+  const body = payload && typeof payload === "object" ? payload : {};
   const patch = {};
   const providedFields = [];
   const partial = Boolean(options.partial);
   const fields = [
-    'name',
-    'description',
-    'benefitType',
-    'appliesToType',
-    'appliesToName',
-    'discountPercent',
-    'includedQuantity',
-    'usageLimit',
-    'usagePeriod',
-    'status'
+    "name",
+    "description",
+    "benefitType",
+    "appliesToType",
+    "appliesToName",
+    "discountPercent",
+    "includedQuantity",
+    "usageLimit",
+    "usagePeriod",
+    "status",
   ];
 
   for (const field of fields) {
@@ -1002,70 +1709,107 @@ function validateMembershipBenefitPayload(payload, options = {}) {
 
     providedFields.push(field);
 
-    if (field === 'name') {
-      patch.name = validateRequiredText(body.name, 'name', 120, details);
-    } else if (field === 'description') {
-      patch.description = validateOptionalText(body.description, 'description', 500, details);
-    } else if (field === 'benefitType') {
+    if (field === "name") {
+      patch.name = validateRequiredText(body.name, "name", 120, details);
+    } else if (field === "description") {
+      patch.description = validateOptionalText(
+        body.description,
+        "description",
+        500,
+        details,
+      );
+    } else if (field === "benefitType") {
       const benefitType = normalizeText(body.benefitType);
       if (!allowedMembershipBenefitTypes.has(benefitType)) {
-        details.push({ field: 'benefitType', message: 'benefitType must be informational, discount, allowance, or free_item.' });
+        details.push({
+          field: "benefitType",
+          message:
+            "benefitType must be informational, discount, allowance, or free_item.",
+        });
       } else {
         patch.benefitType = benefitType;
       }
-    } else if (field === 'appliesToType') {
+    } else if (field === "appliesToType") {
       const appliesToType = normalizeText(body.appliesToType);
       if (!allowedMembershipAppliesToTypes.has(appliesToType)) {
-        details.push({ field: 'appliesToType', message: 'appliesToType must be product, service, category, or text.' });
+        details.push({
+          field: "appliesToType",
+          message: "appliesToType must be product, service, category, or text.",
+        });
       } else {
         patch.appliesToType = appliesToType;
       }
-    } else if (field === 'appliesToName') {
-      patch.appliesToName = validateOptionalText(body.appliesToName, 'appliesToName', 160, details);
-    } else if (field === 'discountPercent') {
-      if (body.discountPercent == null || body.discountPercent === '') {
+    } else if (field === "appliesToName") {
+      patch.appliesToName = validateOptionalText(
+        body.appliesToName,
+        "appliesToName",
+        160,
+        details,
+      );
+    } else if (field === "discountPercent") {
+      if (body.discountPercent == null || body.discountPercent === "") {
         patch.discountPercent = null;
       } else {
         const discountPercent = Number(body.discountPercent);
-        if (!Number.isFinite(discountPercent) || discountPercent <= 0 || discountPercent > 100) {
-          details.push({ field: 'discountPercent', message: 'discountPercent must be greater than 0 and at most 100.' });
+        if (
+          !Number.isFinite(discountPercent) ||
+          discountPercent <= 0 ||
+          discountPercent > 100
+        ) {
+          details.push({
+            field: "discountPercent",
+            message: "discountPercent must be greater than 0 and at most 100.",
+          });
         } else {
           patch.discountPercent = discountPercent;
         }
       }
-    } else if (field === 'includedQuantity') {
-      if (body.includedQuantity == null || body.includedQuantity === '') {
+    } else if (field === "includedQuantity") {
+      if (body.includedQuantity == null || body.includedQuantity === "") {
         patch.includedQuantity = null;
       } else {
         const includedQuantity = Number(body.includedQuantity);
         if (!Number.isFinite(includedQuantity) || includedQuantity <= 0) {
-          details.push({ field: 'includedQuantity', message: 'includedQuantity must be greater than 0.' });
+          details.push({
+            field: "includedQuantity",
+            message: "includedQuantity must be greater than 0.",
+          });
         } else {
           patch.includedQuantity = includedQuantity;
         }
       }
-    } else if (field === 'usageLimit') {
-      if (body.usageLimit == null || body.usageLimit === '') {
+    } else if (field === "usageLimit") {
+      if (body.usageLimit == null || body.usageLimit === "") {
         patch.usageLimit = null;
       } else {
         const usageLimit = Number(body.usageLimit);
         if (!Number.isInteger(usageLimit) || usageLimit <= 0) {
-          details.push({ field: 'usageLimit', message: 'usageLimit must be a positive integer.' });
+          details.push({
+            field: "usageLimit",
+            message: "usageLimit must be a positive integer.",
+          });
         } else {
           patch.usageLimit = usageLimit;
         }
       }
-    } else if (field === 'usagePeriod') {
+    } else if (field === "usagePeriod") {
       const usagePeriod = normalizeText(body.usagePeriod);
       if (!allowedMembershipUsagePeriods.has(usagePeriod)) {
-        details.push({ field: 'usagePeriod', message: 'usagePeriod must be none, day, week, month, or membership_term.' });
+        details.push({
+          field: "usagePeriod",
+          message:
+            "usagePeriod must be none, day, week, month, or membership_term.",
+        });
       } else {
         patch.usagePeriod = usagePeriod;
       }
-    } else if (field === 'status') {
+    } else if (field === "status") {
       const status = normalizeText(body.status);
       if (!allowedMembershipStatuses.has(status)) {
-        details.push({ field: 'status', message: 'status must be active or inactive.' });
+        details.push({
+          field: "status",
+          message: "status must be active or inactive.",
+        });
       } else {
         patch.status = status;
       }
@@ -1073,33 +1817,54 @@ function validateMembershipBenefitPayload(payload, options = {}) {
   }
 
   if (!partial) {
-    if (!Object.prototype.hasOwnProperty.call(body, 'name')) {
-      details.push({ field: 'name', message: 'name is required.' });
+    if (!Object.prototype.hasOwnProperty.call(body, "name")) {
+      details.push({ field: "name", message: "name is required." });
     }
-    if (!Object.prototype.hasOwnProperty.call(body, 'benefitType')) {
-      details.push({ field: 'benefitType', message: 'benefitType is required.' });
+    if (!Object.prototype.hasOwnProperty.call(body, "benefitType")) {
+      details.push({
+        field: "benefitType",
+        message: "benefitType is required.",
+      });
     }
   }
 
-  const finalBenefitType = patch.benefitType || (partial ? null : 'informational');
-  if (!partial && finalBenefitType === 'discount' && !patch.discountPercent) {
-    details.push({ field: 'discountPercent', message: 'discountPercent is required for discount benefits.' });
+  const finalBenefitType =
+    patch.benefitType || (partial ? null : "informational");
+  if (!partial && finalBenefitType === "discount" && !patch.discountPercent) {
+    details.push({
+      field: "discountPercent",
+      message: "discountPercent is required for discount benefits.",
+    });
   }
 
-  if (!partial && ['allowance', 'free_item'].includes(finalBenefitType)) {
+  if (!partial && ["allowance", "free_item"].includes(finalBenefitType)) {
     if (!patch.includedQuantity) {
-      details.push({ field: 'includedQuantity', message: 'includedQuantity is required for allowance or free item benefits.' });
+      details.push({
+        field: "includedQuantity",
+        message:
+          "includedQuantity is required for allowance or free item benefits.",
+      });
     }
     if (!patch.usageLimit) {
-      details.push({ field: 'usageLimit', message: 'usageLimit is required for allowance or free item benefits.' });
+      details.push({
+        field: "usageLimit",
+        message: "usageLimit is required for allowance or free item benefits.",
+      });
     }
-    if (!patch.usagePeriod || patch.usagePeriod === 'none') {
-      details.push({ field: 'usagePeriod', message: 'usagePeriod must not be none for allowance or free item benefits.' });
+    if (!patch.usagePeriod || patch.usagePeriod === "none") {
+      details.push({
+        field: "usagePeriod",
+        message:
+          "usagePeriod must not be none for allowance or free item benefits.",
+      });
     }
   }
 
   if (partial && !providedFields.length) {
-    details.push({ field: 'body', message: 'At least one editable field is required.' });
+    details.push({
+      field: "body",
+      message: "At least one editable field is required.",
+    });
   }
 
   if (details.length) {
@@ -1111,13 +1876,13 @@ function validateMembershipBenefitPayload(payload, options = {}) {
       name: patch.name,
       description: patch.description || null,
       benefitType: patch.benefitType,
-      appliesToType: patch.appliesToType || 'text',
+      appliesToType: patch.appliesToType || "text",
       appliesToName: patch.appliesToName || null,
       discountPercent: patch.discountPercent || null,
       includedQuantity: patch.includedQuantity || null,
       usageLimit: patch.usageLimit || null,
-      usagePeriod: patch.usagePeriod || 'none',
-      status: patch.status || 'active'
+      usagePeriod: patch.usagePeriod || "none",
+      status: patch.status || "active",
     };
   }
 
@@ -1126,13 +1891,16 @@ function validateMembershipBenefitPayload(payload, options = {}) {
 
 function validateActivityReportQuery(query) {
   const details = [];
-  const from = query.get('from');
-  const to = query.get('to');
-  const type = query.get('type') || 'all';
-  const allowedTypes = new Set(['all', 'purchase', 'redemption', 'membership']);
+  const from = query.get("from");
+  const to = query.get("to");
+  const type = query.get("type") || "all";
+  const allowedTypes = new Set(["all", "purchase", "redemption", "membership"]);
 
   if (!allowedTypes.has(type)) {
-    details.push({ field: 'type', message: 'type must be one of all, purchase, redemption, membership.' });
+    details.push({
+      field: "type",
+      message: "type must be one of all, purchase, redemption, membership.",
+    });
   }
 
   validateReportDateRange(from, to, details);
@@ -1146,18 +1914,31 @@ function validateActivityReportQuery(query) {
 
 function validateCustomerReportQuery(query) {
   const details = [];
-  const search = normalizeText(query.get('search'));
-  const from = query.get('from');
-  const to = query.get('to');
-  const type = query.get('type') || 'all';
-  const allowedTypes = new Set(['all', 'purchase', 'redemption', 'membership', 'benefit']);
+  const search = normalizeText(query.get("search"));
+  const from = query.get("from");
+  const to = query.get("to");
+  const type = query.get("type") || "all";
+  const allowedTypes = new Set([
+    "all",
+    "purchase",
+    "redemption",
+    "membership",
+    "benefit",
+  ]);
 
   if (!search || search.length > 254) {
-    details.push({ field: 'search', message: 'search is required and must be 254 characters or fewer.' });
+    details.push({
+      field: "search",
+      message: "search is required and must be 254 characters or fewer.",
+    });
   }
 
   if (!allowedTypes.has(type)) {
-    details.push({ field: 'type', message: 'type must be one of all, purchase, redemption, membership, benefit.' });
+    details.push({
+      field: "type",
+      message:
+        "type must be one of all, purchase, redemption, membership, benefit.",
+    });
   }
 
   validateReportDateRange(from, to, details);
@@ -1171,32 +1952,47 @@ function validateCustomerReportQuery(query) {
 
 function validateAuditEventsQuery(query) {
   const details = [];
-  const from = query.get('from');
-  const to = query.get('to');
-  const limitValue = query.get('limit') || '25';
-  const allowedLimits = new Set(['10', '25', '50']);
+  const from = query.get("from");
+  const to = query.get("to");
+  const limitValue = query.get("limit") || "25";
+  const allowedLimits = new Set(["10", "25", "50"]);
   const fromDate = parseIsoDate(from);
   const toDate = parseIsoDate(to);
 
   if (!fromDate) {
-    details.push({ field: 'from', message: 'from is required and must use YYYY-MM-DD format.' });
+    details.push({
+      field: "from",
+      message: "from is required and must use YYYY-MM-DD format.",
+    });
   }
 
   if (!toDate) {
-    details.push({ field: 'to', message: 'to is required and must use YYYY-MM-DD format.' });
+    details.push({
+      field: "to",
+      message: "to is required and must use YYYY-MM-DD format.",
+    });
   }
 
   if (!allowedLimits.has(limitValue)) {
-    details.push({ field: 'limit', message: 'limit must be one of 10, 25, 50.' });
+    details.push({
+      field: "limit",
+      message: "limit must be one of 10, 25, 50.",
+    });
   }
 
   if (fromDate && toDate) {
     if (fromDate > toDate) {
-      details.push({ field: 'from', message: 'from must be before or equal to to.' });
+      details.push({
+        field: "from",
+        message: "from must be before or equal to to.",
+      });
     } else {
-      const rangeDays = ((toDate.getTime() - fromDate.getTime()) / 86400000) + 1;
+      const rangeDays = (toDate.getTime() - fromDate.getTime()) / 86400000 + 1;
       if (rangeDays > maxReportRangeDays) {
-        details.push({ field: 'to', message: `Date range must be ${maxReportRangeDays} days or fewer.` });
+        details.push({
+          field: "to",
+          message: `Date range must be ${maxReportRangeDays} days or fewer.`,
+        });
       }
     }
   }
@@ -1209,9 +2005,15 @@ function validateAuditEventsQuery(query) {
 }
 
 function calculatePointsEarned(amount, pointsPercentage) {
-  const points = Math.round(Number(amount) * Number(pointsPercentage) / 100);
+  const points = Math.round((Number(amount) * Number(pointsPercentage)) / 100);
   if (!Number.isInteger(points) || points <= 0) {
-    throw validationError([{ field: 'amount', message: 'Amount is too small to earn points with the current company percentage.' }]);
+    throw validationError([
+      {
+        field: "amount",
+        message:
+          "Amount is too small to earn points with the current company percentage.",
+      },
+    ]);
   }
   return points;
 }
@@ -1253,6 +2055,11 @@ module.exports = {
   validateMembershipFinancialReportQuery,
   validateMyCompanyPatchPayload,
   validateOperationalEmailSettingsPayload,
+  validatePromotionalCampaignListQuery,
+  validatePromotionalCampaignPayload,
+  validatePromotionalRecipientQuery,
+  validatePromotionalRecipientSelectionPayload,
+  validatePromotionalUnsubscribePayload,
   validatePurchasePayload,
-  validateRedemptionPayload
+  validateRedemptionPayload,
 };
