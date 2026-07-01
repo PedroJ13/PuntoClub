@@ -14,6 +14,7 @@ const {
   getPromotionalCompanyId,
   sendPromotionalCampaignToRecipients,
 } = require("../src/functions/promotionalCampaigns");
+const repository = require("../src/lib/repository");
 
 function makePromotionRequest({ companyId = "10" } = {}) {
   return {
@@ -241,6 +242,25 @@ test("promotional send skips unsubscribed recipients and sends selected subscrib
   });
   assert.equal(savedResults[1].result.status, "skipped");
   assert.equal(savedResults[1].result.skipReason, "unsubscribed");
+});
+
+test("promotional send default repository adapter exports selected-recipient operations", () => {
+  const requiredMethods = [
+    "replacePromotionalCampaignRecipients",
+    "beginPromotionalCampaignSend",
+    "getCompanySettings",
+    "listPendingPromotionalCampaignRecipientsForSend",
+    "recordPromotionalCampaignRecipientResult",
+    "completePromotionalCampaignSend",
+  ];
+
+  requiredMethods.forEach((methodName) => {
+    assert.equal(
+      typeof repository[methodName],
+      "function",
+      `${methodName} should be exported by repository`,
+    );
+  });
 });
 
 test("promotional recipient skip reason respects current preference and email", () => {

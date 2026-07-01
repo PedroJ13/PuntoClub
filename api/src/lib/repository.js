@@ -5149,6 +5149,7 @@ module.exports = {
   listPromotionalCampaigns,
   listPendingPromotionalCampaignRecipientsForSend,
   listPromotionalRecipients,
+  replacePromotionalCampaignRecipients,
   listCustomers,
   listCompanyRegistrationRequests,
   mapCompanyInvitation,

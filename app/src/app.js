@@ -2197,7 +2197,7 @@ async function sendPromotionalCampaign() {
     renderCommunicationCustomers();
     updatePromotionalSelectionSummary();
   } catch (error) {
-    renderCommunicationCampaignError(error);
+    renderCommunicationCampaignError(error, { action: "send" });
   } finally {
     updatePromotionalSendState();
   }
@@ -2600,13 +2600,33 @@ function showPromotionalSendResult(result) {
   focusCommunicationCampaignMessage(status);
 }
 
-function renderCommunicationCampaignError(error) {
+function renderCommunicationCampaignError(error, options = {}) {
   if (isAuthRequiredError(error)) {
     currentAuthIdentity = null;
     renderSignedOut();
     showLoginPage({ replaceRoute: true });
     showLoginError("Tu sesión expiró. Accede nuevamente a tu panel.");
     return;
+  }
+
+  if (options.action === "send" && error instanceof ApiError) {
+    if (
+      error.code === "INTERNAL_ERROR" ||
+      error.message === "Unexpected API error."
+    ) {
+      showCommunicationCampaignError(
+        "No pudimos confirmar el envío. No lo reintentes todavía; revisa el historial o contacta soporte para confirmar si hubo intento.",
+      );
+      return;
+    }
+
+    if (
+      error.message &&
+      !/password|secret|token|key|connection string/i.test(error.message)
+    ) {
+      showCommunicationCampaignError(error.message);
+      return;
+    }
   }
 
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
