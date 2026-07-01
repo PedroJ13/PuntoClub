@@ -2601,6 +2601,14 @@ function showPromotionalSendResult(result) {
 }
 
 function renderCommunicationCampaignError(error) {
+  if (isAuthRequiredError(error)) {
+    currentAuthIdentity = null;
+    renderSignedOut();
+    showLoginPage({ replaceRoute: true });
+    showLoginError("Tu sesión expiró. Accede nuevamente a tu panel.");
+    return;
+  }
+
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
     showCommunicationCampaignError("Revisa los campos marcados de la campaña.");
     return;
