@@ -197,6 +197,73 @@ function mapOperationalEmailMessage(row) {
   };
 }
 
+function sanitizeOperationalEmailReason(value) {
+  const reason = String(value || "").trim();
+
+  if (!reason) {
+    return null;
+  }
+
+  if (reason === "disabled_by_company_settings") {
+    return "disabled_by_company_settings";
+  }
+
+  if (reason === "customer_without_email") {
+    return "customer_without_email";
+  }
+
+  if (reason === "email_not_configured") {
+    return "email_not_configured";
+  }
+
+  if (reason === "provider_not_sent") {
+    return "provider_not_sent";
+  }
+
+  return "send_failed";
+}
+
+function mapOperationalEmailHistoryItem(row) {
+  return {
+    event: {
+      id: toApiId(row.event_id),
+      type: row.event_type,
+      status: row.event_status,
+      createdAt: toIsoTimestamp(row.event_created_at),
+      updatedAt: toIsoTimestamp(row.event_updated_at),
+    },
+    message: {
+      id: toApiId(row.message_id),
+      status: row.message_status || null,
+      recipientEmail: row.recipient_email || null,
+      subject: row.subject || null,
+      provider: row.provider || null,
+      providerMessageId: row.provider_message_id || null,
+      sentAt: toIsoTimestamp(row.sent_at),
+      updatedAt: toIsoTimestamp(row.message_updated_at),
+    },
+    latestAttempt: row.attempt_id
+      ? {
+          id: toApiId(row.attempt_id),
+          attemptNumber: Number(row.attempt_number || 0),
+          status: row.attempt_status,
+          provider: row.attempt_provider || null,
+          providerMessageId: row.attempt_provider_message_id || null,
+          reason: sanitizeOperationalEmailReason(row.attempt_error_message),
+          attemptedAt: toIsoTimestamp(row.attempted_at),
+        }
+      : null,
+    customer: {
+      id: toApiId(row.customer_id),
+      name: row.customer_name || null,
+      email: row.customer_email || null,
+    },
+    reason: sanitizeOperationalEmailReason(
+      row.attempt_error_message || row.last_error,
+    ),
+  };
+}
+
 function mapPromotionalCampaign(row) {
   return {
     id: toApiId(row.id),
@@ -1079,6 +1146,94 @@ async function recordOperationalEmailAttempt(
         updated_at = SYSUTCDATETIME()
       WHERE id = @event_id;
     `);
+}
+
+async function listOperationalEmailHistory(companyId, filters = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const type = filters.type === "all" ? null : filters.type || null;
+  const status = filters.status === "all" ? null : filters.status || null;
+  const search = String(filters.search || "").trim();
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("from", sql.DateTime2, new Date(`${filters.from}T00:00:00Z`))
+    .input("to_exclusive", sql.DateTime2, new Date(`${filters.to}T00:00:00Z`))
+    .input("type", sql.VarChar(40), type)
+    .input("status", sql.VarChar(20), status)
+    .input("search", sql.NVarChar(254), search)
+    .input("search_like", sql.NVarChar(260), `%${search}%`)
+    .input("limit", sql.Int, filters.limit || 25).query(`
+      WITH LatestAttempts AS (
+        SELECT
+          attempts.id,
+          attempts.message_id,
+          attempts.attempt_number,
+          attempts.provider,
+          attempts.status,
+          attempts.provider_message_id,
+          attempts.error_message,
+          attempts.attempted_at,
+          ROW_NUMBER() OVER (
+            PARTITION BY attempts.message_id
+            ORDER BY attempts.attempt_number DESC, attempts.id DESC
+          ) AS rn
+        FROM dbo.OperationalEmailAttempts AS attempts
+        WHERE attempts.company_id = @company_id
+      )
+      SELECT TOP (@limit)
+        events.id AS event_id,
+        events.event_type,
+        events.status AS event_status,
+        events.created_at AS event_created_at,
+        events.updated_at AS event_updated_at,
+        messages.id AS message_id,
+        messages.recipient_email,
+        messages.subject,
+        messages.status AS message_status,
+        messages.provider,
+        messages.provider_message_id,
+        messages.last_error,
+        messages.sent_at,
+        messages.updated_at AS message_updated_at,
+        attempts.id AS attempt_id,
+        attempts.attempt_number,
+        attempts.status AS attempt_status,
+        attempts.provider AS attempt_provider,
+        attempts.provider_message_id AS attempt_provider_message_id,
+        attempts.error_message AS attempt_error_message,
+        attempts.attempted_at,
+        customers.id AS customer_id,
+        customers.name AS customer_name,
+        customers.email AS customer_email
+      FROM dbo.OperationalEmailEvents AS events
+      LEFT JOIN dbo.OperationalEmailMessages AS messages
+        ON messages.event_id = events.id
+       AND messages.company_id = events.company_id
+      LEFT JOIN LatestAttempts AS attempts
+        ON attempts.message_id = messages.id
+       AND attempts.rn = 1
+      LEFT JOIN dbo.Customers AS customers
+        ON customers.id = events.customer_id
+       AND customers.company_id = events.company_id
+      WHERE events.company_id = @company_id
+        AND events.created_at >= @from
+        AND events.created_at < DATEADD(day, 1, @to_exclusive)
+        AND (@type IS NULL OR events.event_type = @type)
+        AND (@status IS NULL OR events.status = @status OR messages.status = @status)
+        AND (
+          @search = ''
+          OR customers.name COLLATE Latin1_General_100_CI_AI LIKE @search_like COLLATE Latin1_General_100_CI_AI
+          OR customers.email COLLATE Latin1_General_100_CI_AI LIKE @search_like COLLATE Latin1_General_100_CI_AI
+          OR messages.recipient_email COLLATE Latin1_General_100_CI_AI LIKE @search_like COLLATE Latin1_General_100_CI_AI
+        )
+      ORDER BY events.created_at DESC, events.id DESC, messages.id DESC;
+    `);
+
+  return {
+    filters,
+    items: result.recordset.map(mapOperationalEmailHistoryItem),
+  };
 }
 
 async function listPromotionalCampaigns(companyId, filters = {}) {
@@ -4976,6 +5131,7 @@ module.exports = {
   getCustomerReport,
   getCustomerById,
   getOperationalEmailSettings,
+  listOperationalEmailHistory,
   getPromotionalCampaignById,
   getLocalPasswordUserByEmail,
   getMembershipFinancialReport,

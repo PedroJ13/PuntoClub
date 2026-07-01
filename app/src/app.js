@@ -141,8 +141,11 @@ const elements = {
   communicationIncludePointsInput: document.querySelector(
     "#communication-include-points",
   ),
-  communicationPreviewButton: document.querySelector(
-    "#communication-preview-button",
+  communicationCampaignSearchInput: document.querySelector(
+    "#communication-campaign-search",
+  ),
+  communicationNewCampaignButton: document.querySelector(
+    "#communication-new-campaign-button",
   ),
   communicationSaveCampaignButton: document.querySelector(
     "#communication-save-campaign-button",
@@ -212,6 +215,33 @@ const elements = {
   ),
   saveCompanyOperationalEmailButton: document.querySelector(
     "#save-company-operational-email-button",
+  ),
+  companyEmailHistoryFromInput: document.querySelector(
+    "#company-email-history-from",
+  ),
+  companyEmailHistoryToInput: document.querySelector(
+    "#company-email-history-to",
+  ),
+  companyEmailHistoryTypeInput: document.querySelector(
+    "#company-email-history-type",
+  ),
+  companyEmailHistoryStatusInput: document.querySelector(
+    "#company-email-history-status",
+  ),
+  companyEmailHistorySearchInput: document.querySelector(
+    "#company-email-history-search",
+  ),
+  companyEmailHistoryLoadButton: document.querySelector(
+    "#company-email-history-load-button",
+  ),
+  companyEmailHistoryStatusMessage: document.querySelector(
+    "#company-email-history-status-message",
+  ),
+  companyEmailHistoryError: document.querySelector(
+    "#company-email-history-error",
+  ),
+  companyEmailHistoryBody: document.querySelector(
+    "#company-email-history-body",
   ),
   companyNavToggle: document.querySelector("#company-nav-toggle"),
   companySubnav: document.querySelector("#company-side-subnav"),
@@ -948,6 +978,7 @@ let currentCustomerReport = null;
 let currentAuditEvents = null;
 let currentCompanySettings = null;
 let currentOperationalEmailSettings = null;
+let currentOperationalEmailHistory = [];
 let currentAuthIdentity = null;
 let currentInvitation = null;
 let membershipPlans = [];
@@ -976,6 +1007,7 @@ let globalLoadingTimer = null;
 let activeCommunicationFilter = "all";
 let activeCompanySubsection = "profile";
 let activeCommunicationView = "send";
+let isCommunicationCampaignFormOpen = false;
 let currentPromotionalCampaign = null;
 let communicationCampaigns = [];
 let promotionalRecipients = [];
@@ -1283,6 +1315,10 @@ elements.companyOperationalEmailForm.addEventListener(
   },
 );
 
+elements.companyEmailHistoryLoadButton.addEventListener("click", async () => {
+  await loadOperationalEmailHistory();
+});
+
 elements.resetCompanyPasswordFormButton.addEventListener("click", () => {
   clearCompanyPasswordForm();
 });
@@ -1585,10 +1621,6 @@ elements.communicationCampaignForm.addEventListener("submit", async (event) => {
   await submitPromotionalCampaignDraft();
 });
 
-elements.communicationPreviewButton.addEventListener("click", async () => {
-  await loadPromotionalCampaignPreview();
-});
-
 [
   elements.communicationCampaignNameInput,
   elements.communicationCampaignSubjectInput,
@@ -1598,6 +1630,22 @@ elements.communicationPreviewButton.addEventListener("click", async () => {
 ].forEach((control) => {
   control.addEventListener("input", renderCommunicationPreview);
   control.addEventListener("change", renderCommunicationPreview);
+});
+
+elements.communicationNewCampaignButton.addEventListener("click", () => {
+  setCommunicationCampaignFormOpen(!isCommunicationCampaignFormOpen);
+});
+
+elements.communicationCampaignSearchInput.addEventListener("input", () => {
+  renderCommunicationCampaignList();
+});
+
+elements.communicationCampaignList.addEventListener("change", async () => {
+  if (!elements.communicationCampaignList.value) {
+    return;
+  }
+
+  await selectPromotionalCampaign(elements.communicationCampaignList.value);
 });
 
 elements.communicationFilterButtons.forEach((button) => {
@@ -1648,15 +1696,6 @@ elements.communicationClearSelectionButton.addEventListener("click", () => {
   renderCommunicationCustomers();
   updatePromotionalSelectionSummary();
   updatePromotionalSendState();
-});
-
-elements.communicationCampaignList.addEventListener("click", async (event) => {
-  const button = event.target.closest("[data-promotional-campaign-id]");
-  if (!button) {
-    return;
-  }
-
-  await selectPromotionalCampaign(button.dataset.promotionalCampaignId);
 });
 
 elements.communicationSendButton.addEventListener("click", async () => {
@@ -1833,7 +1872,7 @@ function setActiveSection(section, options = {}) {
     company: elements.companyNameInput,
     memberships: elements.membershipCustomerSearchInput,
     reports: elements.reportFromInput,
-    communications: elements.communicationCampaignNameInput,
+    communications: elements.communicationCampaignSearchInput,
     adminCompanies: elements.adminTokenInput,
   }[nextSection];
 
@@ -1943,7 +1982,7 @@ function setCommunicationView(view, options = {}) {
   }
 
   const focusTarget = {
-    send: elements.communicationCampaignNameInput,
+    send: elements.communicationCampaignSearchInput,
     settings: document.querySelector(".communications-settings-panel input"),
     customers: elements.communicationFilterButtons[0],
     history: document.querySelector(".communication-history-table"),
@@ -1973,6 +2012,8 @@ async function loadPromotionalCampaigns(options = {}) {
       selectedPromotionalRecipientIds = new Set();
       updatePromotionalSendState();
       renderCommunicationCampaignList();
+      renderCommunicationPreview();
+      setCommunicationCampaignFormOpen(true, { reset: true });
     }
   } catch (error) {
     if (!options.silent) {
@@ -1989,7 +2030,6 @@ async function selectPromotionalCampaign(campaignId, options = {}) {
     currentPromotionalCampaign = detail.campaign;
     promotionalRecipients = detail.recipients || [];
     selectedPromotionalRecipientIds = new Set();
-    renderPromotionalCampaignForm(currentPromotionalCampaign);
     renderCommunicationCampaignList();
     renderCommunicationHistory();
     updatePromotionalSelectionSummary();
@@ -2026,6 +2066,7 @@ async function submitPromotionalCampaignDraft() {
     showCommunicationCampaignStatus(
       "Campaña guardada. Ahora elige destinatarios para este envío.",
     );
+    setCommunicationCampaignFormOpen(false);
     renderCommunicationCampaignList();
     updatePromotionalSendState();
     await loadPromotionalCampaignPreview();
@@ -2164,14 +2205,34 @@ async function sendPromotionalCampaign() {
   }
 }
 
-function renderPromotionalCampaignForm(campaign) {
-  elements.communicationCampaignNameInput.value = campaign.name || "";
-  elements.communicationCampaignSubjectInput.value = campaign.subject || "";
-  elements.communicationCampaignBodyInput.value =
-    campaign.bodyText || communicationDefaultBody;
-  elements.communicationIncludePointsInput.checked = Boolean(
-    campaign.includePoints,
+function resetPromotionalCampaignForm() {
+  elements.communicationCampaignNameInput.value = "";
+  elements.communicationCampaignSubjectInput.value = "";
+  elements.communicationCampaignAudienceInput.value = "subscribed";
+  elements.communicationCampaignBodyInput.value = communicationDefaultBody;
+  elements.communicationIncludePointsInput.checked = true;
+}
+
+function setCommunicationCampaignFormOpen(isOpen, options = {}) {
+  isCommunicationCampaignFormOpen = isOpen;
+  elements.communicationCampaignForm.hidden = !isOpen;
+  elements.communicationNewCampaignButton.setAttribute(
+    "aria-expanded",
+    String(isOpen),
   );
+  setButtonText(
+    elements.communicationNewCampaignButton,
+    isOpen ? "Ocultar formulario" : "Crear campaña",
+  );
+
+  if (isOpen && options.reset !== false) {
+    resetPromotionalCampaignForm();
+    window.requestAnimationFrame(() => {
+      elements.communicationCampaignNameInput.focus({
+        preventScroll: isCompactViewport(),
+      });
+    });
+  }
 }
 
 function renderCommunicationCampaignList() {
@@ -2179,42 +2240,53 @@ function renderCommunicationCampaignList() {
     return;
   }
 
-  if (!communicationCampaigns.length) {
+  const search = normalize(elements.communicationCampaignSearchInput.value);
+  const campaigns = communicationCampaigns.filter(
+    (campaign) =>
+      !search ||
+      normalize(campaign.name).includes(search) ||
+      normalize(campaign.subject).includes(search),
+  );
+
+  if (!campaigns.length) {
     elements.communicationCampaignList.innerHTML =
-      '<div class="empty-state">No hay campañas guardadas.</div>';
+      '<option value="">No hay campañas guardadas</option>';
+    elements.communicationCampaignList.disabled = true;
     return;
   }
 
-  elements.communicationCampaignList.innerHTML = communicationCampaigns
-    .map((campaign) => {
-      const isActive =
-        String(currentPromotionalCampaign?.id) === String(campaign.id);
-      return `
-        <button
-          class="communication-campaign-option${isActive ? " is-active" : ""}"
-          type="button"
-          data-promotional-campaign-id="${escapeHtml(campaign.id)}"
-          aria-pressed="${isActive ? "true" : "false"}"
-        >
-          <strong>${escapeHtml(campaign.name)}</strong>
-          <span>${escapeHtml(campaign.subject)}</span>
-        </button>
-      `;
-    })
+  elements.communicationCampaignList.disabled = false;
+  elements.communicationCampaignList.innerHTML = campaigns
+    .map(
+      (campaign) => `
+        <option value="${escapeHtml(campaign.id)}">
+          ${escapeHtml(campaign.name)} - ${escapeHtml(campaign.subject)}
+        </option>
+      `,
+    )
     .join("");
+  if (
+    currentPromotionalCampaign &&
+    campaigns.some(
+      (campaign) =>
+        String(campaign.id) === String(currentPromotionalCampaign.id),
+    )
+  ) {
+    elements.communicationCampaignList.value = currentPromotionalCampaign.id;
+  }
 }
 
 function renderCommunicationPreview(preview = null) {
   const companyName = currentCompanySettings?.name || "Punto Club Demo";
   const subject =
     preview?.subject ||
-    elements.communicationCampaignSubjectInput.value.trim() ||
-    "Promo especial para clientes frecuentes";
+    currentPromotionalCampaign?.subject ||
+    "Selecciona una campaña guardada";
   const body =
     preview?.bodyText ||
-    elements.communicationCampaignBodyInput.value.trim() ||
-    "Hola {{customer.name}}, {{company.name}} tiene una promoción para clientes de Punto Club.";
-  const includePoints = elements.communicationIncludePointsInput.checked;
+    currentPromotionalCampaign?.bodyText ||
+    "El preview se mostrará cuando tengas una campaña seleccionada.";
+  const includePoints = Boolean(currentPromotionalCampaign?.includePoints);
   const renderedBody = preview
     ? body
     : body
@@ -2281,6 +2353,8 @@ function renderCommunicationCustomerCard(customer) {
   const disabled =
     !customer.eligible || selectedPromotionalRecipientIds.size >= 5;
   const disabledReason = getCommunicationBlockedReason(customer);
+  const shouldShowDisabledReason =
+    disabledReason && !["unsubscribed", "suppressed"].includes(status);
   return `
     <article class="communication-customer-card${disabled && !checked ? " is-disabled" : ""}">
       <label class="communication-recipient-check">
@@ -2292,17 +2366,17 @@ function renderCommunicationCustomerCard(customer) {
         />
         <span class="sr-only">Seleccionar destinatario</span>
       </label>
-      <div>
+      <div class="communication-customer-identity">
         <strong>${escapeHtml(customer.name)}</strong>
-        <p>${customer.email ? escapeHtml(customer.email) : "Sin correo registrado"}</p>
+        <span>${customer.email ? escapeHtml(customer.email) : "Sin correo registrado"}</span>
       </div>
-      <div>
+      <div class="communication-customer-points">
         <span>Puntos</span>
         <strong>${formatPoints(customer.pointsBalance)}</strong>
       </div>
       <span class="communication-state-pill">${escapeHtml(getCommunicationPreferenceLabel(status))}</span>
       ${
-        disabledReason
+        shouldShowDisabledReason
           ? `<p class="communication-disabled-reason">${escapeHtml(disabledReason)}</p>`
           : ""
       }
@@ -2469,7 +2543,10 @@ function renderCommunicationCampaignError(error) {
 
 function setPromotionalCampaignSubmitting(isSubmitting) {
   elements.communicationSaveCampaignButton.disabled = isSubmitting;
-  elements.communicationPreviewButton.disabled = isSubmitting;
+  setButtonText(
+    elements.communicationSaveCampaignButton,
+    isSubmitting ? "Guardando..." : "Guardar borrador",
+  );
 }
 
 async function loadCustomers(search) {
@@ -3289,6 +3366,7 @@ async function loadCompanySettings() {
     renderActiveCompanyIdentity(settings);
     updateMembershipNavigation(settings);
     await loadOperationalEmailSettings({ silent: true });
+    await loadOperationalEmailHistory({ silent: true });
     await loadPromotionalCampaigns({ silent: true });
     await loadPromotionalRecipients({ silent: true });
     if (activeSection === "memberships") {
@@ -3323,6 +3401,31 @@ async function loadOperationalEmailSettings(options = {}) {
     if (!options.silent) {
       renderOperationalEmailError(error);
     }
+  }
+}
+
+async function loadOperationalEmailHistory(options = {}) {
+  clearOperationalEmailHistoryMessages();
+  setOperationalEmailHistoryDefaults();
+  renderOperationalEmailHistoryLoading();
+  setOperationalEmailHistoryLoading(true);
+
+  try {
+    const filters = getOperationalEmailHistoryFilters();
+    const result = await api.listOperationalEmailHistory(filters);
+    currentOperationalEmailHistory = result.items || [];
+    renderOperationalEmailHistory(currentOperationalEmailHistory);
+    showOperationalEmailHistoryStatus(
+      `${currentOperationalEmailHistory.length} correos encontrados.`,
+    );
+  } catch (error) {
+    currentOperationalEmailHistory = [];
+    renderOperationalEmailHistory([]);
+    if (!options.silent) {
+      renderOperationalEmailHistoryError(error);
+    }
+  } finally {
+    setOperationalEmailHistoryLoading(false);
   }
 }
 
@@ -6029,6 +6132,48 @@ function renderOperationalEmailSettings(settings) {
   elements.companyEmailReplyToInput.value = settings.replyToEmail || "";
 }
 
+function renderOperationalEmailHistoryLoading() {
+  elements.companyEmailHistoryBody.innerHTML = `
+    <tr>
+      <td colspan="6">Cargando historial...</td>
+    </tr>
+  `;
+}
+
+function renderOperationalEmailHistory(items) {
+  if (!items.length) {
+    elements.companyEmailHistoryBody.innerHTML = `
+      <tr>
+        <td colspan="6">No hay correos operativos para los filtros seleccionados.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  elements.companyEmailHistoryBody.innerHTML = items
+    .map((item) => {
+      const event = item.event || {};
+      const message = item.message || {};
+      const customer = item.customer || {};
+      const status = message.status || event.status || "pending";
+      const recipient =
+        message.recipientEmail || customer.email || "Sin correo";
+      const reason = getOperationalEmailReasonLabel(item.reason);
+
+      return `
+        <tr>
+          <td>${escapeHtml(formatDateTime(event.createdAt))}</td>
+          <td>${escapeHtml(getOperationalEmailTypeLabel(event.type))}</td>
+          <td>${escapeHtml(customer.name || "Cliente no disponible")}</td>
+          <td>${escapeHtml(recipient)}</td>
+          <td><span class="status-pill">${escapeHtml(getOperationalEmailStatusLabel(status))}</span></td>
+          <td>${escapeHtml(reason)}</td>
+        </tr>
+      `;
+    })
+    .join("");
+}
+
 function renderCompanySettingsError(error) {
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
     error.details.forEach((detail) => {
@@ -6088,6 +6233,22 @@ function renderOperationalEmailError(error) {
 
   showOperationalEmailError(
     "No pudimos cargar o guardar la configuración de correos.",
+  );
+}
+
+function renderOperationalEmailHistoryError(error) {
+  if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
+    showOperationalEmailHistoryError("Revisa los filtros del historial.");
+    return;
+  }
+
+  if (isAuthRequiredError(error)) {
+    showOperationalEmailHistoryError(getAuthRequiredMessage());
+    return;
+  }
+
+  showOperationalEmailHistoryError(
+    "No pudimos cargar el historial de correos operativos.",
   );
 }
 
@@ -7662,6 +7823,15 @@ function showOperationalEmailError(message) {
   elements.companyOperationalEmailError.textContent = message;
 }
 
+function showOperationalEmailHistoryStatus(message) {
+  elements.companyEmailHistoryStatusMessage.hidden = false;
+  elements.companyEmailHistoryStatusMessage.textContent = message;
+}
+
+function showOperationalEmailHistoryError(message) {
+  elements.companyEmailHistoryError.textContent = message;
+}
+
 function showCompanyLogoStatus(message) {
   elements.companyLogoStatus.hidden = false;
   elements.companyLogoStatus.textContent = message;
@@ -7916,6 +8086,12 @@ function clearOperationalEmailMessages() {
   elements.companyOperationalEmailError.textContent = "";
   elements.companyOperationalEmailStatus.hidden = true;
   elements.companyOperationalEmailStatus.textContent = "";
+}
+
+function clearOperationalEmailHistoryMessages() {
+  elements.companyEmailHistoryError.textContent = "";
+  elements.companyEmailHistoryStatusMessage.hidden = true;
+  elements.companyEmailHistoryStatusMessage.textContent = "";
 }
 
 function clearCompanyPasswordForm(options = {}) {
@@ -8321,6 +8497,14 @@ function setOperationalEmailSubmitting(isSubmitting) {
   setButtonText(
     elements.saveCompanyOperationalEmailButton,
     isSubmitting ? "Guardando..." : "Guardar correos operativos",
+  );
+}
+
+function setOperationalEmailHistoryLoading(isLoading) {
+  elements.companyEmailHistoryLoadButton.disabled = isLoading;
+  setButtonText(
+    elements.companyEmailHistoryLoadButton,
+    isLoading ? "Consultando..." : "Consultar",
   );
 }
 
@@ -8913,6 +9097,64 @@ function validateOperationalEmailSettingsForm() {
   }
 
   return true;
+}
+
+function setOperationalEmailHistoryDefaults() {
+  const today = new Date().toISOString().slice(0, 10);
+  if (!elements.companyEmailHistoryFromInput.value) {
+    elements.companyEmailHistoryFromInput.value = today;
+  }
+  if (!elements.companyEmailHistoryToInput.value) {
+    elements.companyEmailHistoryToInput.value = today;
+  }
+}
+
+function getOperationalEmailHistoryFilters() {
+  return {
+    from: elements.companyEmailHistoryFromInput.value,
+    to: elements.companyEmailHistoryToInput.value,
+    type: elements.companyEmailHistoryTypeInput.value,
+    status: elements.companyEmailHistoryStatusInput.value,
+    search: elements.companyEmailHistorySearchInput.value.trim(),
+    limit: 25,
+  };
+}
+
+function getOperationalEmailTypeLabel(type) {
+  return (
+    {
+      welcome: "Bienvenida",
+      purchase: "Compra",
+      redemption: "Canje",
+    }[type] || "Operativo"
+  );
+}
+
+function getOperationalEmailStatusLabel(status) {
+  return (
+    {
+      pending: "Pendiente",
+      skipped: "Omitido",
+      sent: "Enviado",
+      failed: "Fallido",
+    }[status] || "Pendiente"
+  );
+}
+
+function getOperationalEmailReasonLabel(reason) {
+  if (!reason) {
+    return "Sin errores";
+  }
+
+  return (
+    {
+      disabled_by_company_settings: "Desactivado en configuración",
+      customer_without_email: "Cliente sin correo",
+      email_not_configured: "Correo no configurado",
+      provider_not_sent: "Proveedor no confirmó envío",
+      send_failed: "Fallo al enviar",
+    }[reason] || "No disponible"
+  );
 }
 
 function togglePasswordVisibility(input, button) {

@@ -2245,6 +2245,23 @@ body:not(.public-registration-mode)
   max-width: 760px;
 }
 
+.company-operational-history {
+  display: grid;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.company-email-history-filters {
+  align-items: end;
+}
+
+.company-email-history-table th,
+.company-email-history-table td {
+  vertical-align: top;
+}
+
 .company-communications-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2379,7 +2396,6 @@ body:not(.public-registration-mode)
 
 .communication-switch-list,
 .communication-campaign-form,
-.communication-campaign-list,
 .communication-customer-list {
   display: grid;
   gap: 10px;
@@ -2389,24 +2405,21 @@ body:not(.public-registration-mode)
   margin-bottom: 14px;
 }
 
-.communication-campaign-option {
-  width: 100%;
-  justify-content: flex-start;
-  border: 1px solid var(--line);
-  background: var(--surface);
-  color: var(--text);
-  text-align: left;
+.communication-campaign-picker {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.48fr) minmax(280px, 1fr);
+  gap: 10px;
+  align-items: end;
 }
 
-.communication-campaign-option.is-active {
-  border-color: rgba(15, 118, 110, 0.42);
-  background: var(--accent-soft);
+.communication-campaign-form[hidden] {
+  display: none;
 }
 
-.communication-campaign-option span {
-  color: var(--muted);
-  font-size: 0.84rem;
-  font-weight: 750;
+.communication-campaign-form {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
 }
 
 .communication-switch {
@@ -2533,13 +2546,21 @@ body:not(.public-registration-mode)
   margin-bottom: 10px;
 }
 
+.communication-selection-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
 .communication-customer-card {
   display: grid;
   grid-template-columns:
-    auto minmax(0, 1fr) minmax(130px, auto)
-    minmax(120px, auto) minmax(110px, auto);
-  gap: 10px;
+    auto minmax(0, 1fr) minmax(92px, auto)
+    minmax(116px, auto) minmax(96px, auto);
+  gap: 8px;
   align-items: center;
+  padding-block: 9px;
 }
 
 .communication-customer-card.is-disabled {
@@ -2559,6 +2580,16 @@ body:not(.public-registration-mode)
   justify-self: end;
 }
 
+.communication-customer-identity {
+  min-width: 0;
+}
+
+.communication-customer-identity strong,
+.communication-customer-identity span {
+  display: block;
+}
+
+.communication-customer-identity span,
 .communication-customer-card p {
   margin: 2px 0 0;
   color: var(--muted);
@@ -3286,6 +3317,7 @@ body:not(.public-registration-mode)
   .company-communications-grid,
   .company-registration-controls,
   .communications-kpis,
+  .communication-campaign-picker,
   .communication-campaign-controls,
   .communication-customer-card,
   .registration-summary,
@@ -3306,6 +3338,10 @@ body:not(.public-registration-mode)
   .history-points {
     min-width: 0;
     text-align: left;
+  }
+
+  .communication-selection-actions {
+    justify-content: flex-start;
   }
 
   .admin-companies-section.is-admin-drawer-open .admin-detail-panel {

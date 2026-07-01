@@ -76,6 +76,19 @@ const allowedPromotionalPreferenceStatuses = new Set([
   "suppressed",
   "all",
 ]);
+const allowedOperationalEmailEventTypes = new Set([
+  "welcome",
+  "purchase",
+  "redemption",
+  "all",
+]);
+const allowedOperationalEmailStatuses = new Set([
+  "pending",
+  "skipped",
+  "sent",
+  "failed",
+  "all",
+]);
 
 function parsePositiveInteger(value, field) {
   const number = Number(value);
@@ -345,6 +358,91 @@ function validateOperationalEmailSettingsPayload(payload) {
     purchaseEnabled,
     redemptionEnabled,
     replyToEmail,
+  };
+}
+
+function validateOperationalEmailHistoryQuery(query) {
+  const details = [];
+  const from = query.get("from");
+  const to = query.get("to");
+  const type = normalizeText(query.get("type") || "all") || "all";
+  const status = normalizeText(query.get("status") || "all") || "all";
+  const search = normalizeText(query.get("search") || "") || "";
+  const limitValue = query.get("limit") || "25";
+  const allowedLimits = new Set(["10", "25", "50"]);
+  const fromDate = parseIsoDate(from);
+  const toDate = parseIsoDate(to);
+
+  if (!fromDate) {
+    details.push({
+      field: "from",
+      message: "from is required and must use YYYY-MM-DD format.",
+    });
+  }
+
+  if (!toDate) {
+    details.push({
+      field: "to",
+      message: "to is required and must use YYYY-MM-DD format.",
+    });
+  }
+
+  if (!allowedOperationalEmailEventTypes.has(type)) {
+    details.push({
+      field: "type",
+      message: "type must be one of welcome, purchase, redemption, all.",
+    });
+  }
+
+  if (!allowedOperationalEmailStatuses.has(status)) {
+    details.push({
+      field: "status",
+      message: "status must be one of pending, skipped, sent, failed, all.",
+    });
+  }
+
+  if (!allowedLimits.has(limitValue)) {
+    details.push({
+      field: "limit",
+      message: "limit must be one of 10, 25, 50.",
+    });
+  }
+
+  if (search.length > 254) {
+    details.push({
+      field: "search",
+      message: "search must be 254 characters or fewer.",
+    });
+  }
+
+  if (fromDate && toDate) {
+    if (fromDate > toDate) {
+      details.push({
+        field: "from",
+        message: "from must be before or equal to to.",
+      });
+    } else {
+      const rangeDays = (toDate.getTime() - fromDate.getTime()) / 86400000 + 1;
+      if (rangeDays > maxReportRangeDays) {
+        details.push({
+          field: "to",
+          message: `Date range must be ${maxReportRangeDays} days or fewer.`,
+        });
+      }
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return {
+    from,
+    to,
+    type,
+    status,
+    search,
+    limit: Number(limitValue),
   };
 }
 
@@ -2070,6 +2168,7 @@ module.exports = {
   validateMembershipTransactionsQuery,
   validateMembershipFinancialReportQuery,
   validateMyCompanyPatchPayload,
+  validateOperationalEmailHistoryQuery,
   validateOperationalEmailSettingsPayload,
   validatePromotionalCampaignListQuery,
   validatePromotionalCampaignPayload,

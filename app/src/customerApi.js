@@ -54,6 +54,76 @@ let mockOperationalEmailSettings = {
   replyToEmail: "hola@cafecentral.test",
   updatedAt: "2026-06-29T10:00:00Z",
 };
+const mockOperationalEmailHistory = [
+  {
+    event: {
+      id: "18",
+      type: "welcome",
+      status: "sent",
+      createdAt: "2026-06-30T18:47:03Z",
+      updatedAt: "2026-06-30T18:47:08Z",
+    },
+    message: {
+      id: "18",
+      status: "sent",
+      recipientEmail: "maria@example.com",
+      subject: "Bienvenido a Cafe Central",
+      provider: "acs-email",
+      providerMessageId: "mock-message-18",
+      sentAt: "2026-06-30T18:47:08Z",
+      updatedAt: "2026-06-30T18:47:08Z",
+    },
+    latestAttempt: {
+      id: "18",
+      attemptNumber: 1,
+      status: "sent",
+      provider: "acs-email",
+      providerMessageId: "mock-message-18",
+      reason: null,
+      attemptedAt: "2026-06-30T18:47:08Z",
+    },
+    customer: {
+      id: "10",
+      name: "Maria Soto",
+      email: "maria@example.com",
+    },
+    reason: null,
+  },
+  {
+    event: {
+      id: "19",
+      type: "purchase",
+      status: "skipped",
+      createdAt: "2026-06-30T19:15:00Z",
+      updatedAt: "2026-06-30T19:15:01Z",
+    },
+    message: {
+      id: "19",
+      status: "skipped",
+      recipientEmail: null,
+      subject: "Puntos ganados",
+      provider: "acs-email",
+      providerMessageId: null,
+      sentAt: null,
+      updatedAt: "2026-06-30T19:15:01Z",
+    },
+    latestAttempt: {
+      id: "19",
+      attemptNumber: 1,
+      status: "skipped",
+      provider: "acs-email",
+      providerMessageId: null,
+      reason: "customer_without_email",
+      attemptedAt: "2026-06-30T19:15:01Z",
+    },
+    customer: {
+      id: "11",
+      name: "Jose Vega",
+      email: null,
+    },
+    reason: "customer_without_email",
+  },
+];
 let mockPromotionalCampaigns = [
   {
     id: "701",
@@ -418,6 +488,24 @@ function createHttpCustomerApi(config) {
         },
       );
 
+      return parseResponse(response);
+    },
+    async listOperationalEmailHistory(filters = {}) {
+      const url = new URL(
+        buildCompanyUrl("/operational-email-history"),
+        window.location.origin,
+      );
+      url.searchParams.set("from", filters.from || getTodayIsoDate());
+      url.searchParams.set("to", filters.to || getTodayIsoDate());
+      url.searchParams.set("type", filters.type || "all");
+      url.searchParams.set("status", filters.status || "all");
+      url.searchParams.set("limit", filters.limit || "25");
+      if (filters.search) {
+        url.searchParams.set("search", filters.search);
+      }
+      const response = await fetch(url, {
+        credentials: "include",
+      });
       return parseResponse(response);
     },
     async listPromotionalCampaigns(filters = {}) {
@@ -1052,6 +1140,41 @@ function createMockCustomerApi() {
         updatedAt: new Date().toISOString(),
       };
       return { ...mockOperationalEmailSettings };
+    },
+    async listOperationalEmailHistory(filters = {}) {
+      await wait(250);
+      const type = filters.type || "all";
+      const status = filters.status || "all";
+      const search = normalize(filters.search || "");
+      const items = mockOperationalEmailHistory
+        .filter((item) => type === "all" || item.event.type === type)
+        .filter(
+          (item) =>
+            status === "all" ||
+            item.event.status === status ||
+            item.message.status === status,
+        )
+        .filter((item) => {
+          if (!search) {
+            return true;
+          }
+          return [
+            item.customer?.name,
+            item.customer?.email,
+            item.message?.recipientEmail,
+          ].some((value) => normalize(value || "").includes(search));
+        });
+      return {
+        filters: {
+          from: filters.from || getTodayIsoDate(),
+          to: filters.to || getTodayIsoDate(),
+          type,
+          status,
+          search: filters.search || "",
+          limit: Number(filters.limit || 25),
+        },
+        items,
+      };
     },
     async listPromotionalCampaigns(filters = {}) {
       await wait(250);
@@ -4261,6 +4384,10 @@ function getDateRangeDays(from, to) {
   const fromDate = new Date(`${from}T00:00:00`);
   const toDate = new Date(`${to}T00:00:00`);
   return Math.floor((toDate - fromDate) / 86400000) + 1;
+}
+
+function getTodayIsoDate() {
+  return new Date().toISOString().slice(0, 10);
 }
 
 function normalize(value) {

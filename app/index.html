@@ -2061,6 +2061,90 @@
                     </button>
                   </div>
                 </form>
+                <section
+                  class="company-operational-history"
+                  aria-labelledby="company-operational-history-title"
+                >
+                  <div class="section-header compact-header">
+                    <div>
+                      <h4 id="company-operational-history-title">
+                        Historial de correos operativos
+                      </h4>
+                      <p class="section-support">
+                        Consulta envíos, fallos u omisiones sin reenvío en MVP.
+                      </p>
+                    </div>
+                    <button
+                      class="secondary-button"
+                      id="company-email-history-load-button"
+                      type="button"
+                      data-icon="refresh"
+                    >
+                      Consultar
+                    </button>
+                  </div>
+                  <div class="field-grid company-email-history-filters">
+                    <div class="field">
+                      <label for="company-email-history-from">Desde</label>
+                      <input id="company-email-history-from" type="date" />
+                    </div>
+                    <div class="field">
+                      <label for="company-email-history-to">Hasta</label>
+                      <input id="company-email-history-to" type="date" />
+                    </div>
+                    <div class="field">
+                      <label for="company-email-history-type">Tipo</label>
+                      <select id="company-email-history-type">
+                        <option value="all">Todos</option>
+                        <option value="welcome">Bienvenida</option>
+                        <option value="purchase">Compra</option>
+                        <option value="redemption">Canje</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="company-email-history-status">Estado</label>
+                      <select id="company-email-history-status">
+                        <option value="all">Todos</option>
+                        <option value="sent">Enviado</option>
+                        <option value="failed">Fallido</option>
+                        <option value="skipped">Omitido</option>
+                        <option value="pending">Pendiente</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label for="company-email-history-search"
+                        >Buscar cliente</label
+                      >
+                      <input
+                        id="company-email-history-search"
+                        type="search"
+                        maxlength="254"
+                        placeholder="Nombre o correo"
+                      />
+                    </div>
+                  </div>
+                  <p
+                    id="company-email-history-status-message"
+                    class="status-message"
+                    hidden
+                  ></p>
+                  <p id="company-email-history-error" class="error-message"></p>
+                  <div class="report-table-wrap">
+                    <table class="report-table company-email-history-table">
+                      <thead>
+                        <tr>
+                          <th>Fecha</th>
+                          <th>Tipo</th>
+                          <th>Cliente</th>
+                          <th>Email destino</th>
+                          <th>Estado</th>
+                          <th>Motivo</th>
+                        </tr>
+                      </thead>
+                      <tbody id="company-email-history-body"></tbody>
+                    </table>
+                  </div>
+                </section>
                 <div class="form-actions">
                   <button
                     id="company-open-campaigns-button"
@@ -3373,17 +3457,50 @@
                       Selecciona una plantilla para preparar un envío.
                     </p>
                   </div>
+                  <button
+                    class="secondary-button"
+                    id="communication-new-campaign-button"
+                    type="button"
+                    data-icon="plus"
+                    aria-expanded="false"
+                  >
+                    Crear campaña
+                  </button>
                 </div>
-                <div
-                  id="communication-campaign-list"
-                  class="communication-campaign-list"
-                ></div>
+                <div class="communication-campaign-picker">
+                  <div class="field">
+                    <label for="communication-campaign-search"
+                      >Buscar campaña</label
+                    >
+                    <input
+                      id="communication-campaign-search"
+                      type="search"
+                      maxlength="160"
+                      placeholder="Nombre o asunto"
+                    />
+                  </div>
+                  <div class="field">
+                    <label for="communication-campaign-list"
+                      >Campaña seleccionada</label
+                    >
+                    <select id="communication-campaign-list"></select>
+                  </div>
+                </div>
               </div>
 
               <form
                 id="communication-campaign-form"
                 class="communication-campaign-form"
+                hidden
               >
+                <div class="section-header compact">
+                  <div>
+                    <h3>Nueva campaña</h3>
+                    <p class="section-support">
+                      Guarda el borrador para seleccionarlo y preparar el envío.
+                    </p>
+                  </div>
+                </div>
                 <div class="field-grid communication-campaign-controls">
                   <div class="field">
                     <label for="communication-campaign-name"
@@ -3434,18 +3551,13 @@
                   <button id="communication-save-campaign-button" type="submit">
                     Guardar borrador
                   </button>
-                  <button
-                    class="secondary-button"
-                    id="communication-preview-button"
-                    type="button"
-                  >
-                    Previsualizar
-                  </button>
-                  <button id="communication-send-button" type="button" disabled>
-                    Enviar campaña
-                  </button>
                 </div>
               </form>
+              <div class="form-actions communication-send-actions">
+                <button id="communication-send-button" type="button" disabled>
+                  Enviar campaña
+                </button>
+              </div>
               <p class="section-support">
                 El envío real requiere campaña guardada, destinatarios
                 seleccionados, confirmación y feature flag activo.
@@ -3497,27 +3609,32 @@
                 <strong id="communication-selected-count"
                   >0 seleccionados</strong
                 >
-                <button
-                  class="secondary-button"
-                  id="communication-select-all-button"
-                  type="button"
+                <div
+                  class="communication-selection-actions"
+                  aria-label="Acciones rapidas de seleccion"
                 >
-                  Seleccionar elegibles
-                </button>
-                <button
-                  class="secondary-button"
-                  id="communication-select-points-button"
-                  type="button"
-                >
-                  Con puntos
-                </button>
-                <button
-                  class="secondary-button"
-                  id="communication-clear-selection-button"
-                  type="button"
-                >
-                  Limpiar selección
-                </button>
+                  <button
+                    class="secondary-button"
+                    id="communication-select-all-button"
+                    type="button"
+                  >
+                    Seleccionar elegibles
+                  </button>
+                  <button
+                    class="secondary-button"
+                    id="communication-select-points-button"
+                    type="button"
+                  >
+                    Con puntos
+                  </button>
+                  <button
+                    class="secondary-button"
+                    id="communication-clear-selection-button"
+                    type="button"
+                  >
+                    Limpiar selección
+                  </button>
+                </div>
               </div>
               <div
                 class="communication-filter-row"
