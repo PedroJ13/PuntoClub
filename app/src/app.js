@@ -2191,9 +2191,7 @@ async function sendPromotionalCampaign() {
     );
     promotionalRecipients = result.recipients || promotionalRecipients;
     selectedPromotionalRecipientIds = new Set();
-    showCommunicationCampaignStatus(
-      `Envío finalizado: ${result.summary?.sent || 0} enviado${result.summary?.sent === 1 ? "" : "s"}, ${result.summary?.failed || 0} fallido${result.summary?.failed === 1 ? "" : "s"} y ${result.summary?.skipped || 0} omitido${result.summary?.skipped === 1 ? "" : "s"}.`,
-    );
+    showPromotionalSendResult(result);
     renderCommunicationHistory();
     renderCommunicationCampaignList();
     renderCommunicationCustomers();
@@ -2500,7 +2498,7 @@ function updatePromotionalSendState() {
 
 function clearCommunicationCampaignMessages() {
   elements.communicationCampaignStatus.hidden = true;
-  elements.communicationCampaignStatus.textContent = "";
+  elements.communicationCampaignStatus.replaceChildren();
   elements.communicationCampaignError.textContent = "";
 }
 
@@ -2509,8 +2507,97 @@ function showCommunicationCampaignStatus(message) {
   elements.communicationCampaignStatus.textContent = message;
 }
 
-function showCommunicationCampaignError(message) {
+function focusCommunicationCampaignMessage(element) {
+  if (!element) {
+    return;
+  }
+
+  window.requestAnimationFrame(() => {
+    element.scrollIntoView({ behavior: "smooth", block: "center" });
+    element.focus({ preventScroll: true });
+  });
+}
+
+function showCommunicationCampaignError(message, shouldFocus = true) {
   elements.communicationCampaignError.textContent = message;
+  if (shouldFocus) {
+    focusCommunicationCampaignMessage(elements.communicationCampaignError);
+  }
+}
+
+function formatPromotionalResultReason(reason) {
+  const rawReason = String(reason || "").trim();
+
+  if (!rawReason) {
+    return "";
+  }
+
+  const knownReasons = {
+    missing_email: "No tiene correo válido.",
+    not_found: "Cliente no encontrado.",
+    suppressed: "Correo suprimido.",
+    unsubscribed: "Cliente dado de baja.",
+    provider_not_sent: "El proveedor no confirmó el envío.",
+    send_failed: "El proveedor reportó un fallo de envío.",
+  };
+
+  if (knownReasons[rawReason]) {
+    return knownReasons[rawReason];
+  }
+
+  if (/password|secret|token|key|connection string/i.test(rawReason)) {
+    return "El servidor rechazó el envío. Revisa el historial técnico.";
+  }
+
+  return rawReason.slice(0, 160);
+}
+
+function showPromotionalSendResult(result) {
+  const summary = result?.summary || {};
+  const sent = Number(summary.sent || 0);
+  const failed = Number(summary.failed || 0);
+  const skipped = Number(summary.skipped || 0);
+  const recipients = Array.isArray(result?.recipients) ? result.recipients : [];
+  const status = elements.communicationCampaignStatus;
+  const heading = document.createElement("strong");
+  const details = document.createElement("span");
+
+  heading.textContent = `Envío finalizado: ${sent} enviado${sent === 1 ? "" : "s"}, ${failed} fallido${failed === 1 ? "" : "s"} y ${skipped} omitido${skipped === 1 ? "" : "s"}.`;
+  details.textContent = recipients.length
+    ? "Resultado guardado para los destinatarios seleccionados."
+    : "No se registraron destinatarios procesados.";
+
+  status.replaceChildren(heading, details);
+
+  if (recipients.length) {
+    const list = document.createElement("ul");
+    list.className = "communication-send-results";
+
+    recipients.forEach((recipient) => {
+      const item = document.createElement("li");
+      const label = document.createElement("strong");
+      const reason = formatPromotionalResultReason(
+        recipient.lastError || recipient.skipReason,
+      );
+
+      label.textContent = getPromotionalRecipientStatusLabel(recipient.status);
+      item.append(label);
+      item.append(
+        `: ${recipient.customerName || recipient.recipientEmail || "Cliente"}`,
+      );
+
+      if (reason) {
+        item.append(` - ${reason}`);
+      }
+
+      list.append(item);
+    });
+
+    status.append(list);
+  }
+
+  status.hidden = false;
+  focusCommunicationCampaignMessage(status);
 }
 
 function renderCommunicationCampaignError(error) {
@@ -2536,9 +2623,14 @@ function renderCommunicationCampaignError(error) {
     return;
   }
 
-  showCommunicationCampaignError(
-    "No pudimos cargar o guardar la campaña promocional.",
-  );
+  const safeMessage =
+    error instanceof ApiError &&
+    error.message &&
+    !/password|secret|token|key|connection string/i.test(error.message)
+      ? error.message
+      : "No pudimos cargar o guardar la campaña promocional.";
+
+  showCommunicationCampaignError(safeMessage);
 }
 
 function setPromotionalCampaignSubmitting(isSubmitting) {

@@ -1585,6 +1585,29 @@ body:not(.public-registration-mode)
   color: var(--success);
 }
 
+.status-message:focus,
+.error-message:focus {
+  outline: 3px solid rgba(15, 118, 110, 0.2);
+  outline-offset: 3px;
+}
+
+.status-message strong,
+.status-message span {
+  display: block;
+}
+
+.communication-send-results {
+  display: grid;
+  gap: 5px;
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-weight: 800;
+}
+
+.communication-send-results strong {
+  display: inline;
+}
+
 .customer-form,
 .purchase-form,
 .redemption-form,
