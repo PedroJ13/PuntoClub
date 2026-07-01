@@ -3442,18 +3442,6 @@
                   </p>
                 </div>
               </div>
-              <div
-                class="status-message"
-                id="communication-campaign-status"
-                tabindex="-1"
-                hidden
-              ></div>
-              <p
-                class="error-message"
-                id="communication-campaign-error"
-                tabindex="-1"
-              ></p>
-
               <div class="communication-saved-campaigns">
                 <div class="section-header compact">
                   <div>
@@ -3567,10 +3555,28 @@
                 El envío real requiere campaña guardada, destinatarios
                 seleccionados, confirmación y feature flag activo.
               </p>
+              <div
+                class="communication-result-panel"
+                id="communication-result-panel"
+                hidden
+              >
+                <span>Resultado</span>
+                <div
+                  class="status-message"
+                  id="communication-campaign-status"
+                  tabindex="-1"
+                  hidden
+                ></div>
+                <p
+                  class="error-message"
+                  id="communication-campaign-error"
+                  tabindex="-1"
+                ></p>
+              </div>
             </section>
 
             <section
-              class="communications-preview-panel zone-card"
+              class="communications-preview-panel zone-card is-collapsed"
               data-communication-panel="send"
               aria-labelledby="communications-preview-title"
             >
@@ -3581,16 +3587,27 @@
                     Los puntos se muestran como snapshot al preparar el envío.
                   </p>
                 </div>
+                <button
+                  class="secondary-button"
+                  id="communication-preview-toggle"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="communication-preview-content"
+                >
+                  Ver preview
+                </button>
               </div>
-              <article
-                id="communication-preview"
-                class="communication-preview"
-              ></article>
-              <div class="communication-variable-list">
-                <span>{{customer.name}}</span>
-                <span>{{company.name}}</span>
-                <span>{{points.currentBalance}}</span>
-                <span>{{promotion.validUntil}}</span>
+              <div id="communication-preview-content" hidden>
+                <article
+                  id="communication-preview"
+                  class="communication-preview"
+                ></article>
+                <div class="communication-variable-list">
+                  <span>{{customer.name}}</span>
+                  <span>{{company.name}}</span>
+                  <span>{{points.currentBalance}}</span>
+                  <span>{{promotion.validUntil}}</span>
+                </div>
               </div>
             </section>
 

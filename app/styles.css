@@ -2445,6 +2445,41 @@ body:not(.public-registration-mode)
   border-top: 1px solid var(--line);
 }
 
+.communication-send-actions {
+  margin-top: 14px;
+}
+
+.communication-result-panel {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  background: var(--surface-strong);
+}
+
+.communication-result-panel[hidden] {
+  display: none;
+}
+
+.communication-result-panel > span {
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.communication-result-panel .status-message,
+.communication-result-panel .error-message {
+  margin: 0;
+}
+
+.communications-preview-panel.is-collapsed {
+  align-self: start;
+}
+
 .communication-switch {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);

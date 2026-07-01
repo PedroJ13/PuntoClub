@@ -153,6 +153,9 @@ const elements = {
   communicationCampaignList: document.querySelector(
     "#communication-campaign-list",
   ),
+  communicationResultPanel: document.querySelector(
+    "#communication-result-panel",
+  ),
   communicationSendButton: document.querySelector("#communication-send-button"),
   communicationCampaignStatus: document.querySelector(
     "#communication-campaign-status",
@@ -161,6 +164,12 @@ const elements = {
     "#communication-campaign-error",
   ),
   communicationPreview: document.querySelector("#communication-preview"),
+  communicationPreviewContent: document.querySelector(
+    "#communication-preview-content",
+  ),
+  communicationPreviewToggle: document.querySelector(
+    "#communication-preview-toggle",
+  ),
   communicationCustomerList: document.querySelector(
     "#communication-customer-list",
   ),
@@ -1008,6 +1017,7 @@ let activeCommunicationFilter = "all";
 let activeCompanySubsection = "profile";
 let activeCommunicationView = "send";
 let isCommunicationCampaignFormOpen = false;
+let isCommunicationPreviewExpanded = false;
 let currentPromotionalCampaign = null;
 let communicationCampaigns = [];
 let promotionalRecipients = [];
@@ -1702,6 +1712,10 @@ elements.communicationSendButton.addEventListener("click", async () => {
   await sendPromotionalCampaign();
 });
 
+elements.communicationPreviewToggle.addEventListener("click", () => {
+  setCommunicationPreviewExpanded(!isCommunicationPreviewExpanded);
+});
+
 elements.companySubsectionButtons.forEach((button) => {
   button.addEventListener("click", () => {
     if (activeSection !== "company") {
@@ -2003,6 +2017,22 @@ function setCommunicationView(view, options = {}) {
   window.requestAnimationFrame(() => {
     focusTarget?.focus({ preventScroll: isCompactViewport() });
   });
+}
+
+function setCommunicationPreviewExpanded(isExpanded) {
+  isCommunicationPreviewExpanded = isExpanded;
+  elements.communicationPreviewContent.hidden = !isExpanded;
+  elements.communicationPreviewToggle.setAttribute(
+    "aria-expanded",
+    String(isExpanded),
+  );
+  setButtonText(
+    elements.communicationPreviewToggle,
+    isExpanded ? "Ocultar preview" : "Ver preview",
+  );
+  elements.communicationPreviewToggle
+    .closest(".communications-preview-panel")
+    ?.classList.toggle("is-collapsed", !isExpanded);
 }
 
 async function ensureCurrentSessionForOperations() {
@@ -2529,12 +2559,14 @@ function updatePromotionalSendState() {
 }
 
 function clearCommunicationCampaignMessages() {
+  elements.communicationResultPanel.hidden = true;
   elements.communicationCampaignStatus.hidden = true;
   elements.communicationCampaignStatus.replaceChildren();
   elements.communicationCampaignError.textContent = "";
 }
 
 function showCommunicationCampaignStatus(message) {
+  elements.communicationResultPanel.hidden = false;
   elements.communicationCampaignStatus.hidden = false;
   elements.communicationCampaignStatus.textContent = message;
 }
@@ -2551,6 +2583,7 @@ function focusCommunicationCampaignMessage(element) {
 }
 
 function showCommunicationCampaignError(message, shouldFocus = true) {
+  elements.communicationResultPanel.hidden = false;
   elements.communicationCampaignError.textContent = message;
   if (shouldFocus) {
     focusCommunicationCampaignMessage(elements.communicationCampaignError);
@@ -2629,6 +2662,7 @@ function showPromotionalSendResult(result) {
   }
 
   status.hidden = false;
+  elements.communicationResultPanel.hidden = false;
   focusCommunicationCampaignMessage(status);
 }
 
