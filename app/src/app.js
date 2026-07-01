@@ -1711,24 +1711,36 @@ elements.companySubsectionButtons.forEach((button) => {
   });
 });
 
-elements.companyOpenCampaignsButton.addEventListener("click", () => {
-  setActiveSection("communications");
-  setCommunicationView("send");
+elements.companyOpenCampaignsButton.addEventListener("click", async () => {
+  await openCommunicationSendView();
 });
 
 elements.communicationViewButtons.forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", async () => {
+    if (
+      button.dataset.communicationView === "send" &&
+      !(await ensureCurrentSessionForOperations())
+    ) {
+      return;
+    }
     setCommunicationView(button.dataset.communicationView);
   });
 });
 
 elements.navButtons.forEach((button) => {
-  button.addEventListener("click", () => {
+  button.addEventListener("click", async () => {
     if (
       button.dataset.sectionTarget === "adminCompanies" &&
       !isAdminCompaniesRoute()
     ) {
       window.location.assign("/admin-companies");
+      return;
+    }
+
+    if (
+      button.dataset.sectionTarget === "communications" &&
+      !(await ensureCurrentSessionForOperations())
+    ) {
       return;
     }
 
@@ -1991,6 +2003,26 @@ function setCommunicationView(view, options = {}) {
   window.requestAnimationFrame(() => {
     focusTarget?.focus({ preventScroll: isCompactViewport() });
   });
+}
+
+async function ensureCurrentSessionForOperations() {
+  const identity = await refreshAuthIdentity({ silent: true });
+
+  if (identity) {
+    return true;
+  }
+
+  redirectToLoginForExpiredSession();
+  return false;
+}
+
+async function openCommunicationSendView() {
+  if (!(await ensureCurrentSessionForOperations())) {
+    return;
+  }
+
+  setActiveSection("communications");
+  setCommunicationView("send");
 }
 
 async function loadPromotionalCampaigns(options = {}) {
@@ -2601,11 +2633,8 @@ function showPromotionalSendResult(result) {
 }
 
 function renderCommunicationCampaignError(error, options = {}) {
-  if (isAuthRequiredError(error)) {
-    currentAuthIdentity = null;
-    renderSignedOut();
-    showLoginPage({ replaceRoute: true });
-    showLoginError("Tu sesión expiró. Accede nuevamente a tu panel.");
+  if (isSessionInvalidForActiveCompanyError(error)) {
+    redirectToLoginForExpiredSession();
     return;
   }
 
@@ -3494,6 +3523,10 @@ async function loadCompanySettings() {
     }
   } catch (error) {
     currentCompanySettings = null;
+    if (isSessionInvalidForActiveCompanyError(error)) {
+      redirectToLoginForExpiredSession();
+      return;
+    }
     renderActiveCompanyIdentity(currentAuthIdentity?.company || null);
     updateMembershipNavigation(null);
     renderCompanySettingsError(error);
@@ -7826,6 +7859,22 @@ function isAuthRequiredError(error) {
     error instanceof ApiError &&
     ["UNAUTHORIZED", "FORBIDDEN"].includes(error.code)
   );
+}
+
+function isSessionInvalidForActiveCompanyError(error) {
+  return (
+    isAuthRequiredError(error) ||
+    (Boolean(currentAuthIdentity) &&
+      error instanceof ApiError &&
+      error.code === "COMPANY_NOT_FOUND")
+  );
+}
+
+function redirectToLoginForExpiredSession() {
+  currentAuthIdentity = null;
+  renderSignedOut();
+  showLoginPage({ replaceRoute: true });
+  showLoginError("Tu sesión expiró. Accede nuevamente a tu panel.");
 }
 
 function isAdminPermissionError(error) {
