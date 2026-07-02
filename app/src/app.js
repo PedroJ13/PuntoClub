@@ -1671,14 +1671,18 @@ elements.communicationCampaignImageInput.addEventListener("change", () => {
   clearCommunicationCampaignImageMessages();
   const [file] = elements.communicationCampaignImageInput.files;
   if (!file) {
+    renderCommunicationCampaignImage(currentPromotionalCampaign?.image || null);
+    updatePromotionalSendState();
     return;
   }
   const message = getCampaignImageValidationMessage(file);
   if (message) {
     elements.communicationCampaignImageError.textContent = message;
+    updatePromotionalSendState();
     return;
   }
   renderCommunicationImageDraft(file);
+  updatePromotionalSendState();
 });
 
 elements.communicationUploadImageButton.addEventListener("click", async () => {
@@ -2241,6 +2245,7 @@ async function uploadPromotionalCampaignImage() {
   const validationMessage = getCampaignImageValidationMessage(file);
   if (validationMessage) {
     elements.communicationCampaignImageError.textContent = validationMessage;
+    updatePromotionalSendState();
     return;
   }
 
@@ -2262,12 +2267,14 @@ async function uploadPromotionalCampaignImage() {
     elements.communicationCampaignImageInput.value = "";
     renderCommunicationCampaignImage(result.image);
     renderCommunicationPreview();
+    updatePromotionalSendState();
     elements.communicationCampaignImageStatus.textContent =
       "Imagen agregada.";
   } catch (error) {
     renderCommunicationCampaignImageError(error);
   } finally {
     setCommunicationImageSubmitting(false);
+    updatePromotionalSendState();
   }
 }
 
@@ -2296,12 +2303,14 @@ async function deletePromotionalCampaignImage() {
     );
     renderCommunicationCampaignImage(null);
     renderCommunicationPreview();
+    updatePromotionalSendState();
     elements.communicationCampaignImageStatus.textContent =
       "Imagen eliminada.";
   } catch (error) {
     renderCommunicationCampaignImageError(error);
   } finally {
     setCommunicationImageSubmitting(false);
+    updatePromotionalSendState();
   }
 }
 
@@ -2369,6 +2378,13 @@ async function sendPromotionalCampaign() {
   if (selectedCustomerIds.length > 5) {
     showCommunicationCampaignError(
       "El MVP permite hasta 5 destinatarios por envío.",
+    );
+    return;
+  }
+
+  if (hasPendingCampaignImageSelection()) {
+    showCommunicationCampaignError(
+      "Hay una imagen seleccionada sin guardar. Presiona Agregar imagen o limpia la selección antes de enviar.",
     );
     return;
   }
@@ -2523,7 +2539,7 @@ function renderCommunicationImageDraft(file) {
   elements.communicationCampaignImagePreview.hidden = false;
   elements.communicationCampaignImagePreviewText.hidden = true;
   elements.communicationCampaignImageStatus.textContent =
-    "Imagen lista para guardar.";
+    "Imagen seleccionada. Presiona Agregar imagen para guardarla antes de enviar.";
 }
 
 function renderCommunicationCampaignImage(image) {
@@ -2588,6 +2604,10 @@ function formatFileSize(bytes) {
     return `${(size / 1048576).toFixed(1)} MB`;
   }
   return `${Math.max(1, Math.round(size / 1024))} KB`;
+}
+
+function hasPendingCampaignImageSelection() {
+  return Boolean(elements.communicationCampaignImageInput.files?.length);
 }
 
 function renderCommunicationPreview(preview = null) {
@@ -2817,15 +2837,19 @@ function updatePromotionalSelectionSummary() {
 
 function updatePromotionalSendState() {
   const selectedCount = selectedPromotionalRecipientIds.size;
+  const hasPendingImage = hasPendingCampaignImageSelection();
   const canSend =
     Boolean(currentPromotionalCampaign) &&
     selectedCount > 0 &&
-    selectedCount <= 5;
+    selectedCount <= 5 &&
+    !hasPendingImage;
 
   elements.communicationSendButton.disabled = !canSend;
-  elements.communicationSendButton.textContent = canSend
-    ? `Enviar a ${selectedCount}`
-    : "Enviar campaña";
+  elements.communicationSendButton.textContent = hasPendingImage
+    ? "Guarda la imagen"
+    : canSend
+      ? `Enviar a ${selectedCount}`
+      : "Enviar campaña";
 }
 
 function clearCommunicationCampaignMessages() {
