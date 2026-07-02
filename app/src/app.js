@@ -141,6 +141,27 @@ const elements = {
   communicationIncludePointsInput: document.querySelector(
     "#communication-include-points",
   ),
+  communicationCampaignImageInput: document.querySelector(
+    "#communication-campaign-image",
+  ),
+  communicationCampaignImageError: document.querySelector(
+    "#communication-campaign-image-error",
+  ),
+  communicationCampaignImageStatus: document.querySelector(
+    "#communication-campaign-image-status",
+  ),
+  communicationCampaignImagePreview: document.querySelector(
+    "#communication-image-preview",
+  ),
+  communicationCampaignImagePreviewText: document.querySelector(
+    "#communication-image-preview-text",
+  ),
+  communicationUploadImageButton: document.querySelector(
+    "#communication-upload-image-button",
+  ),
+  communicationDeleteImageButton: document.querySelector(
+    "#communication-delete-image-button",
+  ),
   communicationCampaignSearchInput: document.querySelector(
     "#communication-campaign-search",
   ),
@@ -1646,6 +1667,28 @@ elements.communicationCampaignForm.addEventListener("submit", async (event) => {
   control.addEventListener("change", renderCommunicationPreview);
 });
 
+elements.communicationCampaignImageInput.addEventListener("change", () => {
+  clearCommunicationCampaignImageMessages();
+  const [file] = elements.communicationCampaignImageInput.files;
+  if (!file) {
+    return;
+  }
+  const message = getCampaignImageValidationMessage(file);
+  if (message) {
+    elements.communicationCampaignImageError.textContent = message;
+    return;
+  }
+  renderCommunicationImageDraft(file);
+});
+
+elements.communicationUploadImageButton.addEventListener("click", async () => {
+  await uploadPromotionalCampaignImage();
+});
+
+elements.communicationDeleteImageButton.addEventListener("click", async () => {
+  await deletePromotionalCampaignImage();
+});
+
 elements.communicationNewCampaignButton.addEventListener("click", () => {
   setCommunicationCampaignFormOpen(!isCommunicationCampaignFormOpen);
 });
@@ -2102,6 +2145,7 @@ async function selectPromotionalCampaign(campaignId, options = {}) {
     currentPromotionalCampaign = detail.campaign;
     promotionalRecipients = detail.recipients || [];
     selectedPromotionalRecipientIds = new Set();
+    renderCommunicationCampaignImage(currentPromotionalCampaign.image || null);
     renderCommunicationCampaignList();
     renderCommunicationHistory();
     updatePromotionalSelectionSummary();
@@ -2135,6 +2179,7 @@ async function submitPromotionalCampaignDraft() {
     ];
     selectedPromotionalRecipientIds = new Set();
     promotionalRecipients = [];
+    renderCommunicationCampaignImage(currentPromotionalCampaign.image || null);
     showCommunicationCampaignStatus(
       "Campaña guardada. Ahora elige destinatarios para este envío.",
     );
@@ -2168,6 +2213,83 @@ async function loadPromotionalCampaignPreview() {
     renderCommunicationPreview(preview);
   } catch (error) {
     renderCommunicationCampaignError(error);
+  }
+}
+
+async function uploadPromotionalCampaignImage() {
+  clearCommunicationCampaignImageMessages();
+
+  if (!currentPromotionalCampaign) {
+    elements.communicationCampaignImageError.textContent =
+      "Guarda la campaña antes de agregar una imagen.";
+    return;
+  }
+
+  const [file] = elements.communicationCampaignImageInput.files;
+  const validationMessage = getCampaignImageValidationMessage(file);
+  if (validationMessage) {
+    elements.communicationCampaignImageError.textContent = validationMessage;
+    return;
+  }
+
+  setCommunicationImageSubmitting(true);
+  try {
+    const result = await api.uploadPromotionalCampaignImage(
+      currentPromotionalCampaign.id,
+      file,
+    );
+    currentPromotionalCampaign = {
+      ...currentPromotionalCampaign,
+      image: result.image,
+    };
+    communicationCampaigns = communicationCampaigns.map((campaign) =>
+      String(campaign.id) === String(currentPromotionalCampaign.id)
+        ? currentPromotionalCampaign
+        : campaign,
+    );
+    elements.communicationCampaignImageInput.value = "";
+    renderCommunicationCampaignImage(result.image);
+    renderCommunicationPreview();
+    elements.communicationCampaignImageStatus.textContent =
+      "Imagen agregada.";
+  } catch (error) {
+    renderCommunicationCampaignImageError(error);
+  } finally {
+    setCommunicationImageSubmitting(false);
+  }
+}
+
+async function deletePromotionalCampaignImage() {
+  clearCommunicationCampaignImageMessages();
+
+  if (!currentPromotionalCampaign?.image) {
+    return;
+  }
+
+  if (!window.confirm("¿Eliminar imagen de esta campaña?")) {
+    return;
+  }
+
+  setCommunicationImageSubmitting(true);
+  try {
+    await api.deletePromotionalCampaignImage(currentPromotionalCampaign.id);
+    currentPromotionalCampaign = {
+      ...currentPromotionalCampaign,
+      image: null,
+    };
+    communicationCampaigns = communicationCampaigns.map((campaign) =>
+      String(campaign.id) === String(currentPromotionalCampaign.id)
+        ? currentPromotionalCampaign
+        : campaign,
+    );
+    renderCommunicationCampaignImage(null);
+    renderCommunicationPreview();
+    elements.communicationCampaignImageStatus.textContent =
+      "Imagen eliminada.";
+  } catch (error) {
+    renderCommunicationCampaignImageError(error);
+  } finally {
+    setCommunicationImageSubmitting(false);
   }
 }
 
@@ -2281,6 +2403,9 @@ function resetPromotionalCampaignForm() {
   elements.communicationCampaignAudienceInput.value = "subscribed";
   elements.communicationCampaignBodyInput.value = communicationDefaultBody;
   elements.communicationIncludePointsInput.checked = true;
+  elements.communicationCampaignImageInput.value = "";
+  clearCommunicationCampaignImageMessages();
+  renderCommunicationCampaignImage(currentPromotionalCampaign?.image || null);
 }
 
 function setCommunicationCampaignFormOpen(isOpen, options = {}) {
@@ -2346,6 +2471,104 @@ function renderCommunicationCampaignList() {
   }
 }
 
+function getCampaignImageValidationMessage(file) {
+  if (!file) {
+    return "Selecciona una imagen para la campaña.";
+  }
+
+  const allowedTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+  if (!allowedTypes.has(file.type)) {
+    return "Usa una imagen JPG, PNG o WebP.";
+  }
+
+  if (file.size > 1048576) {
+    return "La imagen supera el límite de 1 MB.";
+  }
+
+  return "";
+}
+
+function clearCommunicationCampaignImageMessages() {
+  elements.communicationCampaignImageError.textContent = "";
+  elements.communicationCampaignImageStatus.textContent = "";
+}
+
+function renderCommunicationImageDraft(file) {
+  const draftUrl = URL.createObjectURL(file);
+  elements.communicationCampaignImagePreview.src = draftUrl;
+  elements.communicationCampaignImagePreview.onload = () => {
+    URL.revokeObjectURL(draftUrl);
+  };
+  elements.communicationCampaignImagePreview.hidden = false;
+  elements.communicationCampaignImagePreviewText.hidden = true;
+  elements.communicationCampaignImageStatus.textContent =
+    "Imagen lista para guardar.";
+}
+
+function renderCommunicationCampaignImage(image) {
+  clearCommunicationCampaignImageMessages();
+  const imageUrl = image?.imageUrl ? api.getCampaignImageUrl(image.imageUrl) : "";
+  elements.communicationCampaignImagePreview.hidden = !imageUrl;
+  elements.communicationCampaignImagePreviewText.hidden = Boolean(imageUrl);
+  elements.communicationCampaignImagePreviewText.textContent = "Sin imagen";
+  elements.communicationCampaignImagePreview.alt =
+    image?.altText || "Preview de imagen de campaña";
+  elements.communicationCampaignImagePreview.removeAttribute("src");
+
+  if (imageUrl) {
+    elements.communicationCampaignImagePreview.src = imageUrl;
+    elements.communicationCampaignImageStatus.textContent = `${image.fileName || "Imagen"} · ${formatFileSize(image.sizeBytes || 0)}`;
+  }
+
+  elements.communicationDeleteImageButton.disabled = !imageUrl;
+  setButtonText(
+    elements.communicationUploadImageButton,
+    imageUrl ? "Reemplazar" : "Agregar imagen",
+  );
+}
+
+function renderCommunicationCampaignImageError(error) {
+  const code = error instanceof ApiError ? error.code : "";
+  const messages = {
+    PROMOTIONAL_CAMPAIGN_IMAGE_REQUIRED:
+      "Selecciona una imagen para la campaña.",
+    PROMOTIONAL_CAMPAIGN_IMAGE_UNSUPPORTED_TYPE:
+      "Usa una imagen JPG, PNG o WebP.",
+    PROMOTIONAL_CAMPAIGN_IMAGE_TOO_LARGE:
+      "La imagen supera el límite de 1 MB.",
+    PROMOTIONAL_CAMPAIGN_IMAGE_INVALID:
+      "No pudimos leer la imagen. Intenta con otro archivo.",
+    PROMOTIONAL_CAMPAIGN_NOT_EDITABLE:
+      "No se puede modificar la imagen de una campaña enviada.",
+    UNAUTHORIZED: "Tu sesión venció. Inicia sesión para continuar.",
+    FORBIDDEN: "No tienes permiso para modificar esta campaña.",
+  };
+  elements.communicationCampaignImageError.textContent =
+    messages[code] || "No se pudo guardar la imagen. Intenta de nuevo.";
+}
+
+function setCommunicationImageSubmitting(isSubmitting) {
+  elements.communicationUploadImageButton.disabled = isSubmitting;
+  elements.communicationDeleteImageButton.disabled =
+    isSubmitting || !currentPromotionalCampaign?.image;
+  setButtonText(
+    elements.communicationUploadImageButton,
+    isSubmitting
+      ? "Guardando..."
+      : currentPromotionalCampaign?.image
+        ? "Reemplazar"
+        : "Agregar imagen",
+  );
+}
+
+function formatFileSize(bytes) {
+  const size = Number(bytes || 0);
+  if (size >= 1048576) {
+    return `${(size / 1048576).toFixed(1)} MB`;
+  }
+  return `${Math.max(1, Math.round(size / 1024))} KB`;
+}
+
 function renderCommunicationPreview(preview = null) {
   const companyName = currentCompanySettings?.name || "Punto Club Demo";
   const subject =
@@ -2357,6 +2580,8 @@ function renderCommunicationPreview(preview = null) {
     currentPromotionalCampaign?.bodyText ||
     "El preview se mostrará cuando tengas una campaña seleccionada.";
   const includePoints = Boolean(currentPromotionalCampaign?.includePoints);
+  const image = preview?.image || currentPromotionalCampaign?.image || null;
+  const imageUrl = image?.imageUrl ? api.getCampaignImageUrl(image.imageUrl) : "";
   const renderedBody = preview
     ? body
     : body
@@ -2373,6 +2598,11 @@ function renderCommunicationPreview(preview = null) {
       <span>Asunto</span>
       <h3>${escapeHtml(subject)}</h3>
     </div>
+    ${
+      imageUrl
+        ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(image.altText || currentPromotionalCampaign?.name || "Imagen de campaña")}" />`
+        : ""
+    }
     <p>${escapeHtml(renderedBody)}</p>
     ${
       preview?.pointsLine

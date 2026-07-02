@@ -12,6 +12,14 @@ const {
 } = require("../lib/validators");
 const notifier = require("../lib/notifier");
 const repository = require("../lib/repository");
+const {
+  buildCampaignImageBlobPath,
+  downloadCampaignImageBlob,
+  getCampaignAssetConfig,
+  parseCampaignImageMultipart,
+  uploadCampaignImageBlob,
+  validateCampaignImageFile,
+} = require("../lib/campaignAssetStorage");
 const { requireSessionIdentity } = require("./companyAuth");
 
 const defaultPreviewCustomer = {
@@ -38,7 +46,28 @@ function renderTemplate(value, { company, customer, campaign }) {
     .replaceAll("{{promotion.validUntil}}", campaign.validUntil || "");
 }
 
-function buildPreview(campaign, company, customer = defaultPreviewCustomer) {
+function buildAbsoluteApiUrl(path, request) {
+  if (/^https?:\/\//i.test(String(path || ""))) {
+    return path;
+  }
+
+  const apiBaseUrl =
+    process.env.PUBLIC_API_BASE_URL ||
+    (request && request.url
+      ? new URL("/api", request.url).toString().replace(/\/$/, "")
+      : "");
+
+  return apiBaseUrl
+    ? `${apiBaseUrl}${String(path || "").replace(/^\/api/, "")}`
+    : path;
+}
+
+function buildPreview(
+  campaign,
+  company,
+  customer = defaultPreviewCustomer,
+  options = {},
+) {
   const bodyText = renderTemplate(campaign.bodyText, {
     company,
     customer,
@@ -54,6 +83,16 @@ function buildPreview(campaign, company, customer = defaultPreviewCustomer) {
     pointsLine,
     footerText: `Recibes este correo porque aceptas promociones de ${company.name} en Punto Club. Puedes dejar de recibir promociones sin perder tus puntos, beneficios, membresias ni historial.`,
     sampleCustomer: customer,
+    image: campaign.image
+      ? {
+          fileName: campaign.image.fileName,
+          altText:
+            campaign.image.altText || campaign.name || "Imagen de promocion",
+          imageUrl: options.absoluteImageUrl
+            ? buildAbsoluteApiUrl(campaign.image.imageUrl, options.request)
+            : campaign.image.imageUrl,
+        }
+      : null,
     sendBlocked: !isPromotionalSendEnabled(),
     blockReason: isPromotionalSendEnabled() ? null : "feature_flag_disabled",
   };
@@ -65,7 +104,9 @@ function buildPromotionalEmail(campaign, company, recipient, emailConfig) {
     email: recipient.currentRecipientEmail || recipient.recipientEmail,
     pointsBalance: recipient.pointsBalanceSnapshot || 0,
   };
-  const preview = buildPreview(campaign, company, customer);
+  const preview = buildPreview(campaign, company, customer, {
+    absoluteImageUrl: true,
+  });
   const pointsText =
     campaign.includePoints && preview.pointsLine
       ? `\n\n${preview.pointsLine}`
@@ -86,6 +127,9 @@ function buildPromotionalEmail(campaign, company, recipient, emailConfig) {
     '<div style="margin:0 0 14px;font-size:14px;font-weight:700;color:#115e59">Punto Club</div>',
     '<div style="border:1px solid #d9e1e5;border-radius:8px;background:#ffffff;padding:24px">',
     `<h1 style="font-size:22px;line-height:1.2;margin:0 0 12px;color:#172026">${notifier.escapeHtml(preview.subject)}</h1>`,
+    preview.image
+      ? `<img src="${notifier.escapeHtml(preview.image.imageUrl)}" alt="${notifier.escapeHtml(preview.image.altText)}" style="display:block;width:100%;max-width:592px;height:auto;margin:0 0 16px;border-radius:6px" />`
+      : "",
     `<p>${notifier.escapeHtml(preview.bodyText).replaceAll("\n", "<br>")}</p>`,
     preview.pointsLine
       ? `<p><strong>Puntos disponibles:</strong> ${notifier.escapeHtml(preview.pointsLine)}</p>`
@@ -150,6 +194,12 @@ async function sendPromotionalCampaignToRecipients({
       campaignId,
     ),
   ]);
+  if (typeof repositoryAdapter.getActivePromotionalCampaignImage === "function") {
+    campaign.image = await repositoryAdapter.getActivePromotionalCampaignImage(
+      companyId,
+      campaignId,
+    );
+  }
   const results = [];
 
   for (const recipient of recipients) {
@@ -305,6 +355,10 @@ app.http("getPromotionalCampaign", {
       repository.getPromotionalCampaignById(companyId, campaignId),
       repository.listPromotionalCampaignRecipients(companyId, campaignId),
     ]);
+    campaign.image = await repository.getActivePromotionalCampaignImage(
+      companyId,
+      campaignId,
+    );
     return ok({ campaign, recipients });
   }),
 });
@@ -317,12 +371,152 @@ app.http("previewPromotionalCampaign", {
     const companyId = await getPromotionalCompanyId(request);
     await repository.ensureActiveCompany(companyId);
     const campaignId = await getCampaignId(request);
-    const [campaign, company] = await Promise.all([
+    const [campaign, company, image] = await Promise.all([
       repository.getPromotionalCampaignById(companyId, campaignId),
       repository.getCompanySettings(companyId),
+      repository.getActivePromotionalCampaignImage(companyId, campaignId),
     ]);
+    campaign.image = image;
     await repository.updatePromotionalCampaignPreviewAt(companyId, campaignId);
-    return ok(buildPreview(campaign, company));
+    return ok(buildPreview(campaign, company, defaultPreviewCustomer, { request }));
+  }),
+});
+
+app.http("getPromotionalCampaignImage", {
+  methods: ["GET"],
+  authLevel: "anonymous",
+  route: "companies/{companyId}/promotional-campaigns/{campaignId}/image",
+  handler: handle(async (request) => {
+    const companyId = await getPromotionalCompanyId(request);
+    await repository.ensureActiveCompany(companyId);
+    const campaignId = await getCampaignId(request);
+    await repository.getPromotionalCampaignById(companyId, campaignId);
+    const image = await repository.getActivePromotionalCampaignImage(
+      companyId,
+      campaignId,
+    );
+    return ok({ image });
+  }),
+});
+
+app.http("uploadPromotionalCampaignImage", {
+  methods: ["POST"],
+  authLevel: "anonymous",
+  route: "companies/{companyId}/promotional-campaigns/{campaignId}/image",
+  handler: handle(async (request) => {
+    const identity = await requireSessionIdentity(request);
+    const companyId = await getPromotionalCompanyId(request, async () => identity);
+    await repository.ensureActiveCompany(companyId);
+    const campaignId = await getCampaignId(request);
+    const campaign = await repository.getPromotionalCampaignById(
+      companyId,
+      campaignId,
+    );
+
+    if (!["draft", "ready"].includes(campaign.status)) {
+      throw new ApiError(
+        409,
+        "PROMOTIONAL_CAMPAIGN_NOT_EDITABLE",
+        "Promotional campaign image can only be changed before sending.",
+      );
+    }
+
+    const config = getCampaignAssetConfig();
+    const body = Buffer.from(await request.arrayBuffer());
+    const file = parseCampaignImageMultipart(
+      body,
+      request.headers.get("content-type"),
+    );
+    const metadata = validateCampaignImageFile(file, {
+      maxBytes: config.maxBytes,
+      allowedMimeTypes: config.allowedMimeTypes,
+    });
+    const blobPath = buildCampaignImageBlobPath(
+      companyId,
+      campaignId,
+      metadata.contentType,
+    );
+
+    await uploadCampaignImageBlob(
+      blobPath,
+      file.buffer,
+      metadata.contentType,
+      { config },
+    );
+    const image = await repository.replacePromotionalCampaignImage(
+      companyId,
+      campaignId,
+      {
+        blobContainer: config.container,
+        blobPath,
+        originalFileName: metadata.originalFileName,
+        contentType: metadata.contentType,
+        sizeBytes: metadata.size,
+        checksumSha256: metadata.checksumSha256,
+        altText: campaign.name,
+      },
+      {
+        createdByUserId: identity.user.id,
+        updatedByUserId: identity.user.id,
+      },
+    );
+
+    return ok({ image });
+  }),
+});
+
+app.http("deletePromotionalCampaignImage", {
+  methods: ["DELETE"],
+  authLevel: "anonymous",
+  route: "companies/{companyId}/promotional-campaigns/{campaignId}/image",
+  handler: handle(async (request) => {
+    const identity = await requireSessionIdentity(request);
+    const companyId = await getPromotionalCompanyId(request, async () => identity);
+    await repository.ensureActiveCompany(companyId);
+    const campaignId = await getCampaignId(request);
+    await repository.getPromotionalCampaignById(companyId, campaignId);
+    await repository.deletePromotionalCampaignImage(companyId, campaignId, {
+      updatedByUserId: identity.user.id,
+    });
+    return ok({ deleted: true });
+  }),
+});
+
+app.http("renderPromotionalCampaignImage", {
+  methods: ["GET"],
+  authLevel: "anonymous",
+  route: "public/promotional-campaign-images/{publicId}",
+  handler: handle(async (request) => {
+    const publicId = String(request.params.publicId || "").trim();
+
+    if (
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+        publicId,
+      )
+    ) {
+      throw new ApiError(
+        404,
+        "PROMOTIONAL_CAMPAIGN_IMAGE_NOT_FOUND",
+        "Campaign image was not found.",
+      );
+    }
+
+    const image = await repository.getPromotionalCampaignImageByPublicId(
+      publicId,
+    );
+    const buffer = await downloadCampaignImageBlob(image.blobPath, {
+      config: getCampaignAssetConfig(),
+    });
+
+    return {
+      status: 200,
+      body: buffer,
+      headers: {
+        "Cache-Control": "public, max-age=86400",
+        "Content-Length": String(buffer.length),
+        "Content-Type": image.contentType,
+      },
+    };
   }),
 });
 

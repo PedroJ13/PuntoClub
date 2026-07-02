@@ -10,6 +10,10 @@ const {
   uploadLogoBlob,
   validateLogoFile
 } = require('../src/lib/logoStorage');
+const {
+  buildCampaignImageBlobPath,
+  validateCampaignImageFile
+} = require('../src/lib/campaignAssetStorage');
 
 const pngBytes = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]);
 
@@ -139,6 +143,25 @@ test('buildRegistrationRequestLogoBlobPath scopes generated paths by request key
   assert.match(
     buildRegistrationRequestLogoBlobPath('request-10', 'image/png', 'logo-id'),
     /^registration-requests\/request-10\/logo\/logo-id\.png$/
+  );
+});
+
+test('validateCampaignImageFile rejects SVG campaign images', () => {
+  assert.throws(
+    () => validateCampaignImageFile({
+      buffer: Buffer.from('<svg></svg>'),
+      contentType: 'image/svg+xml',
+      filename: 'promo.svg',
+      size: 11
+    }),
+    (error) => error.code === 'PROMOTIONAL_CAMPAIGN_IMAGE_UNSUPPORTED_TYPE'
+  );
+});
+
+test('buildCampaignImageBlobPath scopes paths by company and campaign', () => {
+  assert.match(
+    buildCampaignImageBlobPath('8', '701', 'image/jpeg', 'image-id'),
+    /^companies\/8\/campaigns\/701\/images\/image-id\.jpg$/
   );
 });
 

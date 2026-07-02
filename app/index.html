@@ -3532,6 +3532,65 @@
                   <textarea id="communication-campaign-body"></textarea>
                 </div>
 
+                <section
+                  class="communication-image-panel"
+                  aria-labelledby="communication-image-title"
+                >
+                  <div>
+                    <h4 id="communication-image-title">Imagen opcional</h4>
+                    <p class="section-support">
+                      JPG, PNG o WebP. Máximo 1 MB.
+                    </p>
+                  </div>
+                  <div class="communication-image-preview">
+                    <span id="communication-image-preview-text"
+                      >Sin imagen</span
+                    >
+                    <img
+                      id="communication-image-preview"
+                      alt="Preview de imagen de campaña"
+                      hidden
+                    />
+                  </div>
+                  <div class="communication-image-actions">
+                    <div class="field">
+                      <label for="communication-campaign-image"
+                        >Imagen de campaña</label
+                      >
+                      <input
+                        id="communication-campaign-image"
+                        type="file"
+                        accept="image/png,image/jpeg,image/webp"
+                      />
+                      <p
+                        class="field-error"
+                        id="communication-campaign-image-error"
+                      ></p>
+                    </div>
+                    <div class="form-actions">
+                      <button
+                        class="secondary-button"
+                        id="communication-upload-image-button"
+                        type="button"
+                      >
+                        Agregar imagen
+                      </button>
+                      <button
+                        class="secondary-button"
+                        id="communication-delete-image-button"
+                        type="button"
+                        disabled
+                      >
+                        Eliminar
+                      </button>
+                    </div>
+                    <p
+                      class="status-message"
+                      id="communication-campaign-image-status"
+                    ></p>
+                  </div>
+                </section>
+
                 <div class="form-actions">
                   <button id="communication-save-campaign-button" type="submit">
                     Guardar borrador

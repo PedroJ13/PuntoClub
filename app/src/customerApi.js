@@ -146,6 +146,7 @@ let mockPromotionalCampaigns = [
 ];
 let mockPromotionalCampaignRecipients = new Map([["701", []]]);
 let mockPromotionalPreferences = new Map();
+let mockPromotionalCampaignImages = new Map();
 let mockMembershipPlans = [
   {
     id: "501",
@@ -369,6 +370,12 @@ function createHttpCustomerApi(config) {
     getCompanyLogoUrl(logoUrl = "/api/my-company/logo") {
       return buildApiUrl(config, logoUrl || "/api/my-company/logo");
     },
+    getCampaignImageUrl(imageUrl = "") {
+      if (/^(blob:|data:|https?:\/\/)/i.test(String(imageUrl || ""))) {
+        return imageUrl;
+      }
+      return buildApiUrl(config, imageUrl);
+    },
     async acceptCompanyInvitation(payload) {
       const response = await fetch(companyInvitationsAcceptUrl, {
         method: "POST",
@@ -547,6 +554,44 @@ function createHttpCustomerApi(config) {
         ),
         {
           method: "POST",
+          credentials: "include",
+        },
+      );
+      return parseResponse(response);
+    },
+    async getPromotionalCampaignImage(campaignId) {
+      const response = await fetch(
+        buildCompanyUrl(
+          `/promotional-campaigns/${encodeURIComponent(campaignId)}/image`,
+        ),
+        {
+          credentials: "include",
+        },
+      );
+      return parseResponse(response);
+    },
+    async uploadPromotionalCampaignImage(campaignId, file) {
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch(
+        buildCompanyUrl(
+          `/promotional-campaigns/${encodeURIComponent(campaignId)}/image`,
+        ),
+        {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        },
+      );
+      return parseResponse(response);
+    },
+    async deletePromotionalCampaignImage(campaignId) {
+      const response = await fetch(
+        buildCompanyUrl(
+          `/promotional-campaigns/${encodeURIComponent(campaignId)}/image`,
+        ),
+        {
+          method: "DELETE",
           credentials: "include",
         },
       );
@@ -1053,6 +1098,9 @@ function createMockCustomerApi() {
     getCompanyLogoUrl(logoUrl = "") {
       return logoUrl;
     },
+    getCampaignImageUrl(imageUrl = "") {
+      return imageUrl;
+    },
     async acceptCompanyInvitation(payload) {
       await wait(450);
       return acceptMockCompanyInvitation(payload);
@@ -1222,6 +1270,55 @@ function createMockCustomerApi() {
       await wait(250);
       const campaign = findMockPromotionalCampaign(campaignId);
       return buildMockPromotionalPreview(campaign);
+    },
+    async getPromotionalCampaignImage(campaignId) {
+      await wait(180);
+      findMockPromotionalCampaign(campaignId);
+      return {
+        image:
+          cloneMockPromotionalCampaignImage(
+            mockPromotionalCampaignImages.get(String(campaignId)),
+          ) || null,
+      };
+    },
+    async uploadPromotionalCampaignImage(campaignId, file) {
+      await wait(350);
+      const campaign = findMockPromotionalCampaign(campaignId);
+      validateMockCampaignImage(file);
+      const current = mockPromotionalCampaignImages.get(campaign.id);
+      if (current?.imageUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(current.imageUrl);
+      }
+      const now = new Date().toISOString();
+      const image = {
+        id: `${campaign.id}-image-${Date.now()}`,
+        campaignId: campaign.id,
+        companyId: mockCompanySettings.id,
+        fileName: file.name || "imagen-campana",
+        contentType: file.type,
+        sizeBytes: file.size,
+        altText: campaign.name,
+        imageUrl: URL.createObjectURL(file),
+        status: "active",
+        uploadedAt: now,
+        updatedAt: now,
+      };
+      mockPromotionalCampaignImages.set(campaign.id, image);
+      campaign.image = cloneMockPromotionalCampaignImage(image);
+      campaign.updatedAt = now;
+      return { image: cloneMockPromotionalCampaignImage(image) };
+    },
+    async deletePromotionalCampaignImage(campaignId) {
+      await wait(220);
+      const campaign = findMockPromotionalCampaign(campaignId);
+      const current = mockPromotionalCampaignImages.get(campaign.id);
+      if (current?.imageUrl?.startsWith("blob:")) {
+        URL.revokeObjectURL(current.imageUrl);
+      }
+      mockPromotionalCampaignImages.delete(campaign.id);
+      campaign.image = null;
+      campaign.updatedAt = new Date().toISOString();
+      return { deleted: true };
     },
     async listPromotionalRecipients(filters = {}) {
       await wait(300);
@@ -3233,7 +3330,17 @@ function validatePromotionalRecipientSelection(payload) {
 }
 
 function cloneMockPromotionalCampaign(campaign) {
-  return { ...campaign };
+  const image =
+    cloneMockPromotionalCampaignImage(
+      mockPromotionalCampaignImages.get(String(campaign.id)),
+    ) ||
+    cloneMockPromotionalCampaignImage(campaign.image) ||
+    null;
+  return { ...campaign, image };
+}
+
+function cloneMockPromotionalCampaignImage(image) {
+  return image ? { ...image } : null;
 }
 
 function cloneMockPromotionalRecipients(campaignId) {
@@ -3315,6 +3422,9 @@ function buildMockPromotionalPreview(campaign) {
       ? `Tienes ${sampleCustomer.pointsBalance} puntos disponibles en ${companyName}.`
       : null,
     footerText: `Recibes este correo porque aceptas promociones de ${companyName} en Punto Club. Puedes dejar de recibir promociones sin perder tus puntos, beneficios, membresías ni historial.`,
+    image: cloneMockPromotionalCampaignImage(
+      mockPromotionalCampaignImages.get(String(campaign.id)),
+    ),
     sampleCustomer,
     sendBlocked: true,
     blockReason: "feature_flag_disabled",
@@ -3348,6 +3458,31 @@ function validateMockCompanyLogo(file) {
     throw new ApiError(
       "UPLOAD_TOO_LARGE",
       "El archivo supera el tamano maximo permitido.",
+    );
+  }
+}
+
+function validateMockCampaignImage(file) {
+  const allowedTypes = new Set(["image/png", "image/jpeg", "image/webp"]);
+
+  if (!file) {
+    throw new ApiError(
+      "PROMOTIONAL_CAMPAIGN_IMAGE_REQUIRED",
+      "Selecciona una imagen para la campaña.",
+    );
+  }
+
+  if (!allowedTypes.has(file.type)) {
+    throw new ApiError(
+      "PROMOTIONAL_CAMPAIGN_IMAGE_UNSUPPORTED_TYPE",
+      "Usa una imagen JPG, PNG o WebP.",
+    );
+  }
+
+  if (file.size > 1048576) {
+    throw new ApiError(
+      "PROMOTIONAL_CAMPAIGN_IMAGE_TOO_LARGE",
+      "La imagen supera el limite de 1 MB.",
     );
   }
 }

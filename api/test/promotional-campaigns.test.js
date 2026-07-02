@@ -136,6 +136,11 @@ test("promotional email renders only the selected recipient message", () => {
       subject: "Hola {{customer.name}}",
       bodyText: "Tienes una promo en {{company.name}}.",
       includePoints: true,
+      image: {
+        imageUrl:
+          "https://func-puntoclub-prod-br-001.azurewebsites.net/api/public/promotional-campaign-images/11111111-1111-4111-8111-111111111111",
+        altText: "Promo frecuente",
+      },
     },
     { name: "Cafe Centro" },
     {
@@ -153,6 +158,8 @@ test("promotional email renders only the selected recipient message", () => {
   assert.equal(email.to[0].address, "ana@example.com");
   assert.equal(email.subject, "Hola Ana");
   assert.match(email.plainText, /42 puntos/);
+  assert.match(email.html, /<img/);
+  assert.match(email.html, /Promo frecuente/);
 });
 
 test("promotional send skips unsubscribed recipients and sends selected subscribed recipients", async () => {
@@ -252,6 +259,7 @@ test("promotional send default repository adapter exports selected-recipient ope
     "listPendingPromotionalCampaignRecipientsForSend",
     "recordPromotionalCampaignRecipientResult",
     "completePromotionalCampaignSend",
+    "getActivePromotionalCampaignImage",
   ];
 
   requiredMethods.forEach((methodName) => {

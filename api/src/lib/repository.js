@@ -288,6 +288,39 @@ function mapPromotionalCampaign(row) {
   };
 }
 
+function mapPromotionalCampaignImage(row) {
+  if (!row || !row.image_id) {
+    return null;
+  }
+
+  const publicId = String(row.public_id);
+  return {
+    id: toApiId(row.image_id),
+    campaignId: toApiId(row.campaign_id),
+    companyId: toApiId(row.company_id),
+    fileName: row.original_file_name,
+    contentType: row.content_type,
+    sizeBytes: Number(row.size_bytes || 0),
+    altText: row.alt_text || null,
+    imageUrl: `/api/public/promotional-campaign-images/${publicId}`,
+    publicId,
+    status: row.image_status,
+    uploadedAt: toIsoTimestamp(row.image_created_at),
+    updatedAt: toIsoTimestamp(row.image_updated_at),
+  };
+}
+
+function mapPromotionalCampaignImageStorage(row) {
+  const mapped = mapPromotionalCampaignImage(row);
+  return mapped
+    ? {
+        ...mapped,
+        blobContainer: row.blob_container,
+        blobPath: row.blob_path,
+      }
+    : null;
+}
+
 function mapPromotionalRecipient(row) {
   return {
     id: toApiId(row.id),
@@ -1354,6 +1387,255 @@ async function getPromotionalCampaignById(companyId, campaignId) {
   }
 
   return mapPromotionalCampaign(result.recordset[0]);
+}
+
+async function getActivePromotionalCampaignImage(companyId, campaignId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("campaign_id", sql.BigInt, campaignId).query(`
+      SELECT TOP (1)
+        images.id AS image_id,
+        images.company_id,
+        images.campaign_id,
+        images.status AS image_status,
+        images.blob_container,
+        images.blob_path,
+        images.public_id,
+        images.original_file_name,
+        images.content_type,
+        images.size_bytes,
+        images.alt_text,
+        images.created_at AS image_created_at,
+        images.updated_at AS image_updated_at
+      FROM dbo.PromotionalCampaignImages AS images
+      WHERE images.company_id = @company_id
+        AND images.campaign_id = @campaign_id
+        AND images.status = 'active'
+      ORDER BY images.updated_at DESC, images.id DESC
+    `);
+
+  return mapPromotionalCampaignImageStorage(result.recordset[0]);
+}
+
+async function getPromotionalCampaignImageByPublicId(publicId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("public_id", sql.UniqueIdentifier, publicId).query(`
+      SELECT TOP (1)
+        images.id AS image_id,
+        images.company_id,
+        images.campaign_id,
+        images.status AS image_status,
+        images.blob_container,
+        images.blob_path,
+        images.public_id,
+        images.original_file_name,
+        images.content_type,
+        images.size_bytes,
+        images.alt_text,
+        images.created_at AS image_created_at,
+        images.updated_at AS image_updated_at
+      FROM dbo.PromotionalCampaignImages AS images
+      WHERE images.public_id = @public_id
+        AND images.status = 'active'
+    `);
+
+  const image = mapPromotionalCampaignImageStorage(result.recordset[0]);
+  if (!image) {
+    throw new ApiError(
+      404,
+      "PROMOTIONAL_CAMPAIGN_IMAGE_NOT_FOUND",
+      "Campaign image was not found.",
+    );
+  }
+
+  return image;
+}
+
+async function replacePromotionalCampaignImage(
+  companyId,
+  campaignId,
+  image,
+  options = {},
+) {
+  const sql = getSql();
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+
+  await transaction.begin();
+
+  try {
+    const campaignResult = await new sql.Request(transaction)
+      .input("company_id", sql.BigInt, companyId)
+      .input("campaign_id", sql.BigInt, campaignId).query(`
+        SELECT id, status
+        FROM dbo.PromotionalCampaigns WITH (UPDLOCK, HOLDLOCK)
+        WHERE company_id = @company_id
+          AND id = @campaign_id
+      `);
+
+    if (!campaignResult.recordset.length) {
+      throw new ApiError(
+        404,
+        "PROMOTIONAL_CAMPAIGN_NOT_FOUND",
+        "Promotional campaign was not found.",
+      );
+    }
+
+    if (!["draft", "ready"].includes(campaignResult.recordset[0].status)) {
+      throw new ApiError(
+        409,
+        "PROMOTIONAL_CAMPAIGN_NOT_EDITABLE",
+        "Promotional campaign image can only be changed before sending.",
+      );
+    }
+
+    await new sql.Request(transaction)
+      .input("company_id", sql.BigInt, companyId)
+      .input("campaign_id", sql.BigInt, campaignId)
+      .input("updated_by_user_id", sql.BigInt, options.updatedByUserId || null)
+      .query(`
+        UPDATE dbo.PromotionalCampaignImages
+        SET
+          status = 'replaced',
+          replaced_at = SYSUTCDATETIME(),
+          updated_at = SYSUTCDATETIME(),
+          updated_by_user_id = @updated_by_user_id
+        WHERE company_id = @company_id
+          AND campaign_id = @campaign_id
+          AND status = 'active'
+      `);
+
+    const insertResult = await new sql.Request(transaction)
+      .input("company_id", sql.BigInt, companyId)
+      .input("campaign_id", sql.BigInt, campaignId)
+      .input("blob_container", sql.NVarChar(63), image.blobContainer)
+      .input("blob_path", sql.NVarChar(512), image.blobPath)
+      .input("original_file_name", sql.NVarChar(255), image.originalFileName)
+      .input("content_type", sql.VarChar(80), image.contentType)
+      .input("size_bytes", sql.Int, image.sizeBytes)
+      .input(
+        "checksum_sha256",
+        sql.VarBinary(32),
+        image.checksumSha256
+          ? Buffer.from(image.checksumSha256, "hex")
+          : null,
+      )
+      .input("alt_text", sql.NVarChar(160), image.altText || null)
+      .input("created_by_user_id", sql.BigInt, options.createdByUserId || null)
+      .input("updated_by_user_id", sql.BigInt, options.updatedByUserId || null)
+      .query(`
+        INSERT INTO dbo.PromotionalCampaignImages (
+          company_id,
+          campaign_id,
+          blob_container,
+          blob_path,
+          original_file_name,
+          content_type,
+          size_bytes,
+          checksum_sha256,
+          alt_text,
+          created_by_user_id,
+          updated_by_user_id
+        )
+        OUTPUT
+          INSERTED.id AS image_id,
+          INSERTED.company_id,
+          INSERTED.campaign_id,
+          INSERTED.status AS image_status,
+          INSERTED.blob_container,
+          INSERTED.blob_path,
+          INSERTED.public_id,
+          INSERTED.original_file_name,
+          INSERTED.content_type,
+          INSERTED.size_bytes,
+          INSERTED.alt_text,
+          INSERTED.created_at AS image_created_at,
+          INSERTED.updated_at AS image_updated_at
+        VALUES (
+          @company_id,
+          @campaign_id,
+          @blob_container,
+          @blob_path,
+          @original_file_name,
+          @content_type,
+          @size_bytes,
+          @checksum_sha256,
+          @alt_text,
+          @created_by_user_id,
+          @updated_by_user_id
+        )
+      `);
+
+    await transaction.commit();
+    return mapPromotionalCampaignImageStorage(insertResult.recordset[0]);
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch {
+      // Preserve original error.
+    }
+    throw error;
+  }
+}
+
+async function deletePromotionalCampaignImage(
+  companyId,
+  campaignId,
+  options = {},
+) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("campaign_id", sql.BigInt, campaignId)
+    .input("updated_by_user_id", sql.BigInt, options.updatedByUserId || null)
+    .query(`
+      UPDATE images
+      SET
+        status = 'deleted',
+        deleted_at = SYSUTCDATETIME(),
+        updated_at = SYSUTCDATETIME(),
+        updated_by_user_id = @updated_by_user_id
+      OUTPUT
+        INSERTED.id AS image_id,
+        INSERTED.company_id,
+        INSERTED.campaign_id,
+        INSERTED.status AS image_status,
+        INSERTED.blob_container,
+        INSERTED.blob_path,
+        INSERTED.public_id,
+        INSERTED.original_file_name,
+        INSERTED.content_type,
+        INSERTED.size_bytes,
+        INSERTED.alt_text,
+        INSERTED.created_at AS image_created_at,
+        INSERTED.updated_at AS image_updated_at
+      FROM dbo.PromotionalCampaignImages AS images
+      INNER JOIN dbo.PromotionalCampaigns AS campaigns
+        ON campaigns.company_id = images.company_id
+       AND campaigns.id = images.campaign_id
+      WHERE images.company_id = @company_id
+        AND images.campaign_id = @campaign_id
+        AND images.status = 'active'
+        AND campaigns.status IN ('draft', 'ready')
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(
+      404,
+      "PROMOTIONAL_CAMPAIGN_IMAGE_NOT_FOUND",
+      "Campaign image was not found.",
+    );
+  }
+
+  return mapPromotionalCampaignImageStorage(result.recordset[0]);
 }
 
 async function createPromotionalCampaign(companyId, payload, options = {}) {
@@ -5115,6 +5397,7 @@ module.exports = {
   createPurchase,
   createRedemption,
   customerExists,
+  deletePromotionalCampaignImage,
   ensureActiveCompany,
   getActivity,
   getActivityReport,
@@ -5131,8 +5414,10 @@ module.exports = {
   getCustomerReport,
   getCustomerById,
   getOperationalEmailSettings,
+  getActivePromotionalCampaignImage,
   listOperationalEmailHistory,
   getPromotionalCampaignById,
+  getPromotionalCampaignImageByPublicId,
   getLocalPasswordUserByEmail,
   getMembershipFinancialReport,
   getActiveCustomerMembership,
@@ -5149,6 +5434,7 @@ module.exports = {
   listPromotionalCampaigns,
   listPendingPromotionalCampaignRecipientsForSend,
   listPromotionalRecipients,
+  replacePromotionalCampaignImage,
   replacePromotionalCampaignRecipients,
   listCustomers,
   listCompanyRegistrationRequests,

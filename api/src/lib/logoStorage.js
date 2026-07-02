@@ -59,10 +59,10 @@ function trimTrailingCrlf(buffer) {
   return buffer;
 }
 
-function parseMultipartFile(buffer, contentType, fieldName = 'file') {
+function parseMultipartFile(buffer, contentType, fieldName = 'file', errorField = 'logoFile') {
   const boundary = getBoundary(contentType);
   if (!boundary) {
-    throw validationError([{ field: 'logoFile', message: 'Logo upload must be multipart/form-data.' }]);
+    throw validationError([{ field: errorField, message: 'Upload must be multipart/form-data.' }]);
   }
 
   const delimiter = Buffer.from(`--${boundary}`);
@@ -101,7 +101,7 @@ function parseMultipartFile(buffer, contentType, fieldName = 'file') {
     position = nextDelimiter;
   }
 
-  throw validationError([{ field: 'logoFile', message: 'Logo file is required.' }]);
+  throw validationError([{ field: errorField, message: 'File is required.' }]);
 }
 
 function getLogoExtension(contentType) {
