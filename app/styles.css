@@ -1694,6 +1694,10 @@ body:not(.public-registration-mode)
   margin-top: 2px;
 }
 
+.form-actions.align-end {
+  align-self: end;
+}
+
 .customers-list {
   display: grid;
   gap: 8px;
@@ -2447,7 +2451,10 @@ body:not(.public-registration-mode)
 
 .communication-image-panel {
   display: grid;
-  grid-template-columns: minmax(150px, 220px) minmax(130px, 180px) minmax(0, 1fr);
+  grid-template-columns: minmax(150px, 220px) minmax(130px, 180px) minmax(
+      0,
+      1fr
+    );
   gap: 12px;
   align-items: center;
   padding: 12px;

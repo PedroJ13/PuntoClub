@@ -1522,9 +1522,7 @@ async function replacePromotionalCampaignImage(
       .input(
         "checksum_sha256",
         sql.VarBinary(32),
-        image.checksumSha256
-          ? Buffer.from(image.checksumSha256, "hex")
-          : null,
+        image.checksumSha256 ? Buffer.from(image.checksumSha256, "hex") : null,
       )
       .input("alt_text", sql.NVarChar(160), image.altText || null)
       .input("created_by_user_id", sql.BigInt, options.createdByUserId || null)
@@ -1689,6 +1687,61 @@ async function createPromotionalCampaign(companyId, payload, options = {}) {
     `);
 
   return mapPromotionalCampaign(result.recordset[0]);
+}
+
+async function updatePromotionalCampaign(companyId, campaignId, payload) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("campaign_id", sql.BigInt, campaignId)
+    .input("name", sql.NVarChar(160), payload.name)
+    .input("subject", sql.NVarChar(200), payload.subject)
+    .input("body_text", sql.NVarChar(2000), payload.bodyText)
+    .input("include_points", sql.Bit, payload.includePoints).query(`
+      UPDATE dbo.PromotionalCampaigns
+      SET
+        name = @name,
+        subject = @subject,
+        body_text = @body_text,
+        include_points = @include_points,
+        updated_at = SYSUTCDATETIME()
+      OUTPUT
+        INSERTED.id,
+        INSERTED.company_id,
+        INSERTED.name,
+        INSERTED.subject,
+        INSERTED.body_text,
+        INSERTED.include_points,
+        INSERTED.status,
+        INSERTED.recipient_limit,
+        INSERTED.last_preview_at,
+        INSERTED.confirmed_at,
+        INSERTED.sent_at,
+        INSERTED.cancelled_at,
+        INSERTED.created_at,
+        INSERTED.updated_at,
+        0 AS recipient_count,
+        0 AS pending_count,
+        0 AS sent_count,
+        0 AS failed_count,
+        0 AS skipped_count
+      WHERE company_id = @company_id
+        AND id = @campaign_id
+        AND status IN ('draft', 'ready');
+    `);
+
+  if (result.recordset.length) {
+    return getPromotionalCampaignById(companyId, campaignId);
+  }
+
+  const existing = await getPromotionalCampaignById(companyId, campaignId);
+  throw new ApiError(
+    409,
+    "PROMOTIONAL_CAMPAIGN_NOT_EDITABLE",
+    `Promotional campaign cannot be changed when status is ${existing.status}.`,
+  );
 }
 
 async function updatePromotionalCampaignPreviewAt(companyId, campaignId) {
@@ -5438,6 +5491,7 @@ module.exports = {
   replacePromotionalCampaignRecipients,
   listCustomers,
   listCompanyRegistrationRequests,
+  updatePromotionalCampaign,
   mapCompanyInvitation,
   mapCompanyInvitationWithCompany,
   mapCompanyRegistrationRequest,

@@ -51,14 +51,12 @@ function buildAbsoluteApiUrl(path, request) {
     return path;
   }
 
-  const publicApiBaseUrl = String(process.env.PUBLIC_API_BASE_URL || "").replace(
-    /\/$/,
-    "",
-  );
-  const appPublicBaseUrl = String(process.env.APP_PUBLIC_BASE_URL || "").replace(
-    /\/$/,
-    "",
-  );
+  const publicApiBaseUrl = String(
+    process.env.PUBLIC_API_BASE_URL || "",
+  ).replace(/\/$/, "");
+  const appPublicBaseUrl = String(
+    process.env.APP_PUBLIC_BASE_URL || "",
+  ).replace(/\/$/, "");
   const requestApiBaseUrl =
     request && request.url
       ? new URL("/api", request.url).toString().replace(/\/$/, "")
@@ -205,7 +203,9 @@ async function sendPromotionalCampaignToRecipients({
       campaignId,
     ),
   ]);
-  if (typeof repositoryAdapter.getActivePromotionalCampaignImage === "function") {
+  if (
+    typeof repositoryAdapter.getActivePromotionalCampaignImage === "function"
+  ) {
     campaign.image = await repositoryAdapter.getActivePromotionalCampaignImage(
       companyId,
       campaignId,
@@ -293,6 +293,61 @@ async function sendPromotionalCampaignToRecipients({
   };
 }
 
+async function updatePromotionalCampaignContent({
+  request,
+  repositoryAdapter = repository,
+  getIdentity = requireSessionIdentity,
+}) {
+  const companyId = await getPromotionalCompanyId(request, getIdentity);
+  await repositoryAdapter.ensureActiveCompany(companyId);
+  const campaignId = await getCampaignId(request);
+  const { patch } = validatePromotionalCampaignPayload(
+    await readJson(request),
+    {
+      partial: true,
+    },
+  );
+  const current = await repositoryAdapter.getPromotionalCampaignById(
+    companyId,
+    campaignId,
+  );
+
+  if (!["draft", "ready"].includes(current.status)) {
+    throw new ApiError(
+      409,
+      "PROMOTIONAL_CAMPAIGN_NOT_EDITABLE",
+      "Promotional campaign can only be changed before sending.",
+    );
+  }
+
+  const campaign = await repositoryAdapter.updatePromotionalCampaign(
+    companyId,
+    campaignId,
+    {
+      name: patch.name ?? current.name,
+      subject: patch.subject ?? current.subject,
+      bodyText: patch.bodyText ?? current.bodyText,
+      includePoints: Object.prototype.hasOwnProperty.call(
+        patch,
+        "includePoints",
+      )
+        ? patch.includePoints
+        : current.includePoints,
+    },
+  );
+
+  if (
+    typeof repositoryAdapter.getActivePromotionalCampaignImage === "function"
+  ) {
+    campaign.image = await repositoryAdapter.getActivePromotionalCampaignImage(
+      companyId,
+      campaignId,
+    );
+  }
+
+  return { campaign };
+}
+
 async function getCampaignId(request) {
   return parsePositiveInteger(request.params.campaignId, "campaignId");
 }
@@ -374,6 +429,15 @@ app.http("getPromotionalCampaign", {
   }),
 });
 
+app.http("updatePromotionalCampaign", {
+  methods: ["PATCH"],
+  authLevel: "anonymous",
+  route: "companies/{companyId}/promotional-campaigns/{campaignId}",
+  handler: handle(async (request) => {
+    return ok(await updatePromotionalCampaignContent({ request }));
+  }),
+});
+
 app.http("previewPromotionalCampaign", {
   methods: ["POST"],
   authLevel: "anonymous",
@@ -389,7 +453,9 @@ app.http("previewPromotionalCampaign", {
     ]);
     campaign.image = image;
     await repository.updatePromotionalCampaignPreviewAt(companyId, campaignId);
-    return ok(buildPreview(campaign, company, defaultPreviewCustomer, { request }));
+    return ok(
+      buildPreview(campaign, company, defaultPreviewCustomer, { request }),
+    );
   }),
 });
 
@@ -416,7 +482,10 @@ app.http("uploadPromotionalCampaignImage", {
   route: "companies/{companyId}/promotional-campaigns/{campaignId}/image",
   handler: handle(async (request) => {
     const identity = await requireSessionIdentity(request);
-    const companyId = await getPromotionalCompanyId(request, async () => identity);
+    const companyId = await getPromotionalCompanyId(
+      request,
+      async () => identity,
+    );
     await repository.ensureActiveCompany(companyId);
     const campaignId = await getCampaignId(request);
     const campaign = await repository.getPromotionalCampaignById(
@@ -448,12 +517,9 @@ app.http("uploadPromotionalCampaignImage", {
       metadata.contentType,
     );
 
-    await uploadCampaignImageBlob(
-      blobPath,
-      file.buffer,
-      metadata.contentType,
-      { config },
-    );
+    await uploadCampaignImageBlob(blobPath, file.buffer, metadata.contentType, {
+      config,
+    });
     const image = await repository.replacePromotionalCampaignImage(
       companyId,
       campaignId,
@@ -482,7 +548,10 @@ app.http("deletePromotionalCampaignImage", {
   route: "companies/{companyId}/promotional-campaigns/{campaignId}/image",
   handler: handle(async (request) => {
     const identity = await requireSessionIdentity(request);
-    const companyId = await getPromotionalCompanyId(request, async () => identity);
+    const companyId = await getPromotionalCompanyId(
+      request,
+      async () => identity,
+    );
     await repository.ensureActiveCompany(companyId);
     const campaignId = await getCampaignId(request);
     await repository.getPromotionalCampaignById(companyId, campaignId);
@@ -512,9 +581,8 @@ app.http("renderPromotionalCampaignImage", {
       );
     }
 
-    const image = await repository.getPromotionalCampaignImageByPublicId(
-      publicId,
-    );
+    const image =
+      await repository.getPromotionalCampaignImageByPublicId(publicId);
     const buffer = await downloadCampaignImageBlob(image.blobPath, {
       config: getCampaignAssetConfig(),
     });
@@ -628,4 +696,5 @@ module.exports = {
   getPromotionalCompanyId,
   getPromotionalRecipientSkipReason,
   sendPromotionalCampaignToRecipients,
+  updatePromotionalCampaignContent,
 };

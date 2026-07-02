@@ -547,6 +547,20 @@ function createHttpCustomerApi(config) {
       );
       return parseResponse(response);
     },
+    async updatePromotionalCampaign(campaignId, payload) {
+      const response = await fetch(
+        buildCompanyUrl(
+          `/promotional-campaigns/${encodeURIComponent(campaignId)}`,
+        ),
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
+      return parseResponse(response);
+    },
     async previewPromotionalCampaign(campaignId) {
       const response = await fetch(
         buildCompanyUrl(
@@ -1265,6 +1279,30 @@ function createMockCustomerApi() {
         campaign: cloneMockPromotionalCampaign(campaign),
         recipients: cloneMockPromotionalRecipients(campaign.id),
       };
+    },
+    async updatePromotionalCampaign(campaignId, payload) {
+      await wait(300);
+      const campaign = findMockPromotionalCampaign(campaignId);
+      if (!["draft", "ready"].includes(campaign.status)) {
+        throw new ApiError(
+          "PROMOTIONAL_CAMPAIGN_NOT_EDITABLE",
+          "Promotional campaign can only be changed before sending.",
+        );
+      }
+      validatePromotionalCampaign(payload);
+      const now = new Date().toISOString();
+      campaign.name = String(payload.name).trim();
+      campaign.subject = String(payload.subject).trim();
+      campaign.bodyText = String(payload.bodyText).trim();
+      campaign.includePoints = Boolean(payload.includePoints);
+      campaign.updatedAt = now;
+      const image = mockPromotionalCampaignImages.get(campaign.id);
+      if (image) {
+        image.altText = campaign.name;
+        image.updatedAt = now;
+        campaign.image = cloneMockPromotionalCampaignImage(image);
+      }
+      return cloneMockPromotionalCampaign(campaign);
     },
     async previewPromotionalCampaign(campaignId) {
       await wait(250);

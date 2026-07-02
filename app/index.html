@@ -3423,25 +3423,27 @@
             <section
               class="communications-campaign-panel zone-card"
               data-communication-panel="send"
-              aria-labelledby="communications-campaign-title"
+              aria-labelledby="communications-manage-campaign-title"
             >
               <div class="section-header">
                 <div>
-                  <h2 id="communications-campaign-title">Enviar campañas</h2>
+                  <h2 id="communications-manage-campaign-title">
+                    Crear/Editar campaña
+                  </h2>
                   <p class="section-support">
-                    Elige una campaña guardada, revisa el preview y selecciona
-                    hasta 5 clientes elegibles al momento de enviar.
+                    Gestiona la plantilla y su imagen antes de preparar un
+                    envío.
                   </p>
                 </div>
-              </div>
-              <div class="communication-saved-campaigns">
-                <div class="section-header compact">
-                  <div>
-                    <h3>Campañas guardadas</h3>
-                    <p class="section-support">
-                      Selecciona una plantilla para preparar un envío.
-                    </p>
-                  </div>
+                <div class="form-actions">
+                  <button
+                    class="secondary-button"
+                    id="communication-refresh-campaigns-button"
+                    type="button"
+                    data-icon="refresh"
+                  >
+                    Refrescar lista
+                  </button>
                   <button
                     class="secondary-button"
                     id="communication-new-campaign-button"
@@ -3449,27 +3451,25 @@
                     data-icon="plus"
                     aria-expanded="false"
                   >
-                    Crear campaña
+                    Nueva campaña
                   </button>
                 </div>
-                <div class="communication-campaign-picker">
-                  <div class="field">
-                    <label for="communication-campaign-search"
-                      >Buscar campaña</label
-                    >
-                    <input
-                      id="communication-campaign-search"
-                      type="search"
-                      maxlength="160"
-                      placeholder="Nombre o asunto"
-                    />
-                  </div>
-                  <div class="field">
-                    <label for="communication-campaign-list"
-                      >Campaña seleccionada</label
-                    >
-                    <select id="communication-campaign-list"></select>
-                  </div>
+              </div>
+              <div class="communication-campaign-picker">
+                <div class="field">
+                  <label for="communication-manage-campaign-list"
+                    >Campaña para editar</label
+                  >
+                  <select id="communication-manage-campaign-list"></select>
+                </div>
+                <div class="form-actions align-end">
+                  <button
+                    class="secondary-button"
+                    id="communication-edit-campaign-button"
+                    type="button"
+                  >
+                    Editar seleccionada
+                  </button>
                 </div>
               </div>
 
@@ -3480,9 +3480,14 @@
               >
                 <div class="section-header compact">
                   <div>
-                    <h3>Nueva campaña</h3>
-                    <p class="section-support">
-                      Guarda el borrador para seleccionarlo y preparar el envío.
+                    <h3 id="communication-campaign-form-title">
+                      Nueva campaña
+                    </h3>
+                    <p
+                      class="section-support"
+                      id="communication-campaign-form-support"
+                    >
+                      Guarda el borrador para agregar imagen y preparar envíos.
                     </p>
                   </div>
                 </div>
@@ -3540,7 +3545,7 @@
                     <h4 id="communication-image-title">Imagen opcional</h4>
                     <p class="section-support">
                       JPG, PNG o WebP. Máximo 1 MB. Selecciona una imagen y
-                      presiona Agregar imagen para guardarla antes de enviar.
+                      presiona Agregar imagen para guardarla.
                     </p>
                   </div>
                   <div class="communication-image-preview">
@@ -3598,6 +3603,52 @@
                   </button>
                 </div>
               </form>
+            </section>
+
+            <section
+              class="communications-campaign-panel zone-card"
+              data-communication-panel="send"
+              aria-labelledby="communications-campaign-title"
+            >
+              <div class="section-header">
+                <div>
+                  <h2 id="communications-campaign-title">Enviar campañas</h2>
+                  <p class="section-support">
+                    Elige una campaña guardada, revisa el preview y selecciona
+                    hasta 5 clientes elegibles al momento de enviar.
+                  </p>
+                </div>
+              </div>
+              <div class="communication-saved-campaigns">
+                <div class="section-header compact">
+                  <div>
+                    <h3>Campañas guardadas</h3>
+                    <p class="section-support">
+                      Selecciona una plantilla para preparar un envío.
+                    </p>
+                  </div>
+                </div>
+                <div class="communication-campaign-picker">
+                  <div class="field">
+                    <label for="communication-campaign-search"
+                      >Buscar campaña</label
+                    >
+                    <input
+                      id="communication-campaign-search"
+                      type="search"
+                      maxlength="160"
+                      placeholder="Nombre o asunto"
+                    />
+                  </div>
+                  <div class="field">
+                    <label for="communication-campaign-list"
+                      >Campaña seleccionada</label
+                    >
+                    <select id="communication-campaign-list"></select>
+                  </div>
+                </div>
+              </div>
+
               <div class="form-actions communication-send-actions">
                 <button id="communication-send-button" type="button" disabled>
                   Enviar campaña

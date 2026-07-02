@@ -14,12 +14,26 @@ const {
   getPromotionalRecipientSkipReason,
   getPromotionalCompanyId,
   sendPromotionalCampaignToRecipients,
+  updatePromotionalCampaignContent,
 } = require("../src/functions/promotionalCampaigns");
 const repository = require("../src/lib/repository");
 
 function makePromotionRequest({ companyId = "10" } = {}) {
   return {
     params: { companyId },
+  };
+}
+
+function makeCampaignUpdateRequest({
+  companyId = "10",
+  campaignId = "5",
+  body = {},
+} = {}) {
+  return {
+    params: { companyId, campaignId },
+    async json() {
+      return body;
+    },
   };
 }
 
@@ -129,6 +143,121 @@ test("promotional endpoints use route company only when it matches session compa
   );
 
   assert.equal(companyId, 10);
+});
+
+test("promotional campaign update changes editable content for authenticated company", async () => {
+  const calls = [];
+  const fakeRepository = {
+    async ensureActiveCompany(companyId) {
+      calls.push(["ensureActiveCompany", companyId]);
+    },
+    async getPromotionalCampaignById(companyId, campaignId) {
+      calls.push(["getPromotionalCampaignById", companyId, campaignId]);
+      return {
+        id: String(campaignId),
+        companyId: String(companyId),
+        name: "Anterior",
+        subject: "Asunto anterior",
+        bodyText: "Mensaje anterior",
+        includePoints: false,
+        status: "draft",
+      };
+    },
+    async updatePromotionalCampaign(companyId, campaignId, payload) {
+      calls.push(["updatePromotionalCampaign", companyId, campaignId, payload]);
+      return {
+        id: String(campaignId),
+        companyId: String(companyId),
+        ...payload,
+        status: "draft",
+      };
+    },
+    async getActivePromotionalCampaignImage(companyId, campaignId) {
+      calls.push(["getActivePromotionalCampaignImage", companyId, campaignId]);
+      return null;
+    },
+  };
+
+  const result = await updatePromotionalCampaignContent({
+    request: makeCampaignUpdateRequest({
+      body: {
+        name: "Nueva promo",
+        subject: "Nuevo asunto",
+        bodyText: "Nuevo mensaje",
+        includePoints: true,
+      },
+    }),
+    repositoryAdapter: fakeRepository,
+    getIdentity: async () => ({ company: { id: "10" } }),
+  });
+
+  assert.equal(result.campaign.name, "Nueva promo");
+  assert.equal(result.campaign.subject, "Nuevo asunto");
+  assert.equal(result.campaign.bodyText, "Nuevo mensaje");
+  assert.equal(result.campaign.includePoints, true);
+  assert.equal(result.campaign.image, null);
+  assert.deepEqual(calls[0], ["ensureActiveCompany", 10]);
+  assert.equal(calls[2][0], "updatePromotionalCampaign");
+});
+
+test("promotional campaign update rejects another company session", async () => {
+  await assert.rejects(
+    () =>
+      updatePromotionalCampaignContent({
+        request: makeCampaignUpdateRequest({
+          companyId: "11",
+          body: {
+            name: "Nueva promo",
+            subject: "Nuevo asunto",
+            bodyText: "Nuevo mensaje",
+            includePoints: true,
+          },
+        }),
+        repositoryAdapter: {},
+        getIdentity: async () => ({ company: { id: "10" } }),
+      }),
+    (error) =>
+      error instanceof ApiError &&
+      error.status === 403 &&
+      error.code === "FORBIDDEN",
+  );
+});
+
+test("promotional campaign update rejects sent campaigns", async () => {
+  const fakeRepository = {
+    async ensureActiveCompany() {},
+    async getPromotionalCampaignById(companyId, campaignId) {
+      return {
+        id: String(campaignId),
+        companyId: String(companyId),
+        name: "Enviada",
+        subject: "Asunto",
+        bodyText: "Mensaje",
+        includePoints: true,
+        status: "sent",
+      };
+    },
+  };
+
+  await assert.rejects(
+    () =>
+      updatePromotionalCampaignContent({
+        request: makeCampaignUpdateRequest({
+          body: {
+            name: "Nueva promo",
+            subject: "Nuevo asunto",
+            bodyText: "Nuevo mensaje",
+            includePoints: true,
+          },
+        }),
+        repositoryAdapter: fakeRepository,
+        getIdentity: async () => ({ company: { id: "10" } }),
+      }),
+    (error) =>
+      error instanceof ApiError &&
+      error.status === 409 &&
+      error.code === "PROMOTIONAL_CAMPAIGN_NOT_EDITABLE",
+  );
 });
 
 test("promotional email renders only the selected recipient message", () => {
