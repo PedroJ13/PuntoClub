@@ -2598,6 +2598,12 @@ async function sendPromotionalCampaign() {
     updatePromotionalSelectionSummary();
   } catch (error) {
     renderCommunicationCampaignError(error, { action: "send" });
+    if (isPromotionalDuplicateRecipientError(error)) {
+      await loadPromotionalRecipients({ silent: true });
+      renderCommunicationHistory();
+      renderCommunicationCampaignList();
+      updatePromotionalSelectionSummary();
+    }
   } finally {
     updatePromotionalSendState();
   }
@@ -3173,6 +3179,30 @@ function showCommunicationCampaignError(message, shouldFocus = true) {
   }
 }
 
+function showPromotionalDuplicateRecipientWarning() {
+  const status = elements.communicationCampaignStatus;
+  const heading = document.createElement("strong");
+  const details = document.createElement("span");
+
+  elements.communicationCampaignError.textContent = "";
+  heading.textContent = "Destinatario ya incluido";
+  details.textContent =
+    "Este cliente ya fue incluido en esta campaña. Para volver a enviarle una promoción, crea una nueva campaña o selecciona otra.";
+  status.replaceChildren(heading, details);
+  status.hidden = false;
+  elements.communicationResultPanel.hidden = false;
+  focusCommunicationCampaignMessage(status);
+}
+
+function isPromotionalDuplicateRecipientError(error) {
+  return (
+    error instanceof ApiError &&
+    (error.code === "PROMOTIONAL_RECIPIENT_ALREADY_SELECTED" ||
+      error.message ===
+        "Promotional recipient is already selected for this campaign.")
+  );
+}
+
 function formatPromotionalResultReason(reason) {
   const rawReason = String(reason || "").trim();
 
@@ -3256,6 +3286,11 @@ function renderCommunicationCampaignError(error, options = {}) {
   }
 
   if (options.action === "send" && error instanceof ApiError) {
+    if (isPromotionalDuplicateRecipientError(error)) {
+      showPromotionalDuplicateRecipientWarning();
+      return;
+    }
+
     if (
       error.code === "INTERNAL_ERROR" ||
       error.message === "Unexpected API error."
