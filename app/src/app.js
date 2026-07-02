@@ -4602,7 +4602,7 @@ async function refreshAuthIdentity(options = {}) {
     currentAuthIdentity = identity;
     renderAuthIdentity(identity);
 
-    if (isLoginPage) {
+    if (isCompanyLoginRoute()) {
       await showMainApp({ replaceLoginRoute: true, refreshCompany: true });
     }
 
@@ -9105,7 +9105,8 @@ async function showMainApp(options = {}) {
   if (isCompactViewport()) {
     window.scrollTo({ top: 0, left: 0, behavior: "auto" });
   }
-  setActiveSection(getDefaultLoyaltySection(), {
+  const requestedSection = options.section || getDefaultLoyaltySection();
+  setActiveSection(requestedSection, {
     focus: options.focus !== false,
   });
 
