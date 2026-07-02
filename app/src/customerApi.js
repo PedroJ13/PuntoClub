@@ -559,7 +559,8 @@ function createHttpCustomerApi(config) {
           body: JSON.stringify(payload),
         },
       );
-      return parseResponse(response);
+      const result = await parseResponse(response);
+      return result.campaign || result;
     },
     async previewPromotionalCampaign(campaignId) {
       const response = await fetch(

@@ -2271,12 +2271,13 @@ async function submitPromotionalCampaignDraft() {
   try {
     const isNewCampaign =
       isManagingNewPromotionalCampaign || !managedPromotionalCampaign?.id;
-    managedPromotionalCampaign = isNewCampaign
+    const savedCampaign = isNewCampaign
       ? await api.createPromotionalCampaign(payload)
       : await api.updatePromotionalCampaign(
           managedPromotionalCampaign.id,
           payload,
         );
+    managedPromotionalCampaign = savedCampaign?.campaign || savedCampaign;
     isManagingNewPromotionalCampaign = false;
     communicationCampaigns = isNewCampaign
       ? [
