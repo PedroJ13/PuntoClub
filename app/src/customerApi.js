@@ -1434,6 +1434,22 @@ function createMockCustomerApi() {
       await wait(250);
       const campaign = findMockPromotionalCampaign(campaignId);
       validatePromotionalRecipientSelection({ customerIds });
+      const selectedCustomerIds = new Set(customerIds.map((id) => String(id)));
+      const existingSentRecipient = (
+        mockPromotionalCampaignRecipients.get(campaign.id) || []
+      ).find(
+        (recipient) =>
+          recipient.status !== "pending" &&
+          selectedCustomerIds.has(String(recipient.customerId)),
+      );
+
+      if (existingSentRecipient) {
+        throw new ApiError(
+          "PROMOTIONAL_RECIPIENT_ALREADY_SELECTED",
+          "Promotional recipient is already selected for this campaign.",
+        );
+      }
+
       const recipients = customerIds
         .map((customerId) => {
           const candidate = mapMockPromotionalRecipientCandidate(

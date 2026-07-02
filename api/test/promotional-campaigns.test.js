@@ -449,6 +449,43 @@ test("promotional send skips unsubscribed recipients and sends selected subscrib
   assert.equal(savedResults[1].result.skipReason, "unsubscribed");
 });
 
+test("promotional send blocks duplicate selected recipients before sending email", async () => {
+  let sendEmailCalled = false;
+  const fakeRepository = {
+    async replacePromotionalCampaignRecipients() {
+      throw new ApiError(
+        409,
+        "PROMOTIONAL_RECIPIENT_ALREADY_SELECTED",
+        "Promotional recipient is already selected for this campaign.",
+      );
+    },
+  };
+
+  await assert.rejects(
+    () =>
+      sendPromotionalCampaignToRecipients({
+        companyId: 10,
+        campaignId: 5,
+        customerIds: [100],
+        emailConfig: {
+          senderAddress: "DoNotReply@example.com",
+          senderDisplayName: "Punto Club",
+        },
+        repositoryAdapter: fakeRepository,
+        async sendEmail() {
+          sendEmailCalled = true;
+          return { provider: "acs-email", status: "sent", id: "message-1" };
+        },
+      }),
+    (error) =>
+      error instanceof ApiError &&
+      error.status === 409 &&
+      error.code === "PROMOTIONAL_RECIPIENT_ALREADY_SELECTED",
+  );
+
+  assert.equal(sendEmailCalled, false);
+});
+
 test("promotional send default repository adapter exports selected-recipient operations", () => {
   const requiredMethods = [
     "replacePromotionalCampaignRecipients",

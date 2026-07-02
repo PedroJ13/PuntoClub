@@ -1932,8 +1932,38 @@ async function replacePromotionalCampaignRecipients(
       );
     }
 
+    let existingRecipientResult = { recordset: [] };
+    if (customerIds.length) {
+      const existingRecipientRequest = new sql.Request(transaction).input(
+        "campaign_id",
+        sql.BigInt,
+        campaignId,
+      );
+      const customerIdParams = customerIds.map((customerId, index) => {
+        const paramName = `customer_id_${index}`;
+        existingRecipientRequest.input(paramName, sql.BigInt, customerId);
+        return `@${paramName}`;
+      });
+
+      existingRecipientResult = await existingRecipientRequest.query(`
+        SELECT TOP (1) customer_id
+        FROM dbo.PromotionalCampaignRecipients
+        WHERE campaign_id = @campaign_id
+          AND status <> 'pending'
+          AND customer_id IN (${customerIdParams.join(", ")})
+      `);
+    }
+
+    if (existingRecipientResult.recordset.length) {
+      throw new ApiError(
+        409,
+        "PROMOTIONAL_RECIPIENT_ALREADY_SELECTED",
+        "Promotional recipient is already selected for this campaign.",
+      );
+    }
+
     const campaign = campaignResult.recordset[0];
-    if (!["draft", "ready", "sent", "failed"].includes(campaign.status)) {
+    if (!["draft", "ready"].includes(campaign.status)) {
       throw new ApiError(
         409,
         "PROMOTIONAL_CAMPAIGN_NOT_EDITABLE",
