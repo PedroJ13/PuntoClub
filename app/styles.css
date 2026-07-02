@@ -2611,6 +2611,10 @@ body:not(.public-registration-mode)
   justify-content: flex-end;
 }
 
+.communication-customer-search {
+  margin: 10px 0;
+}
+
 .communication-customer-card {
   display: grid;
   grid-template-columns:

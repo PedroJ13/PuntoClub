@@ -173,6 +173,9 @@ const elements = {
   communicationCustomerList: document.querySelector(
     "#communication-customer-list",
   ),
+  communicationCustomerSearchInput: document.querySelector(
+    "#communication-customer-search",
+  ),
   communicationSelectedCount: document.querySelector(
     "#communication-selected-count",
   ),
@@ -1014,6 +1017,7 @@ let adminRequestLogoPreviewLoadId = 0;
 let pendingAdminConfirmation = null;
 let globalLoadingTimer = null;
 let activeCommunicationFilter = "all";
+let activeCommunicationCustomerSearch = "";
 let activeCompanySubsection = "profile";
 let activeCommunicationView = "send";
 let isCommunicationCampaignFormOpen = false;
@@ -1665,6 +1669,12 @@ elements.communicationFilterButtons.forEach((button) => {
   });
 });
 
+elements.communicationCustomerSearchInput.addEventListener("input", () => {
+  activeCommunicationCustomerSearch =
+    elements.communicationCustomerSearchInput.value.trim();
+  renderCommunicationCustomers();
+});
+
 elements.communicationCustomerList.addEventListener("change", (event) => {
   const checkbox = event.target.closest("[data-promotional-customer-id]");
   if (!checkbox) {
@@ -1703,6 +1713,7 @@ elements.communicationSelectPointsButton.addEventListener("click", () => {
 
 elements.communicationClearSelectionButton.addEventListener("click", () => {
   selectedPromotionalRecipientIds = new Set();
+  clearCommunicationCampaignMessages();
   renderCommunicationCustomers();
   updatePromotionalSelectionSummary();
   updatePromotionalSendState();
@@ -1986,7 +1997,7 @@ function updateCompanySubnavState() {
 }
 
 function setCommunicationView(view, options = {}) {
-  const nextView = ["send", "settings", "customers", "history"].includes(view)
+  const nextView = ["send", "customers", "history"].includes(view)
     ? view
     : "send";
   activeCommunicationView = nextView;
@@ -2009,7 +2020,6 @@ function setCommunicationView(view, options = {}) {
 
   const focusTarget = {
     send: elements.communicationCampaignSearchInput,
-    settings: document.querySelector(".communications-settings-panel input"),
     customers: elements.communicationFilterButtons[0],
     history: document.querySelector(".communication-history-table"),
   }[nextView];
@@ -2389,15 +2399,24 @@ function renderCommunicationCustomers() {
   });
 
   const customers = communicationCustomers.filter(
-    (customer) =>
-      activeCommunicationFilter === "all" ||
-      (customer.promotionalStatus || customer.status) ===
-        activeCommunicationFilter,
+    (customer) => {
+      const matchesStatus =
+        activeCommunicationFilter === "all" ||
+        (customer.promotionalStatus || customer.status) ===
+          activeCommunicationFilter;
+      const search = normalize(activeCommunicationCustomerSearch);
+      const matchesSearch =
+        !search ||
+        normalize(customer.name).includes(search) ||
+        normalize(customer.email).includes(search);
+
+      return matchesStatus && matchesSearch;
+    },
   );
 
   if (!customers.length) {
     elements.communicationCustomerList.innerHTML =
-      '<div class="empty-state">No hay clientes en esta vista.</div>';
+      '<div class="empty-state">No hay destinatarios para este filtro.</div>';
     return;
   }
 
