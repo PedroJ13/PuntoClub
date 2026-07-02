@@ -1043,6 +1043,7 @@ let activeCompanySubsection = "profile";
 let activeCommunicationView = "send";
 let isCommunicationCampaignFormOpen = false;
 let isCommunicationPreviewExpanded = false;
+let isCreatingPromotionalCampaignDraft = false;
 let currentPromotionalCampaign = null;
 let communicationCampaigns = [];
 let promotionalRecipients = [];
@@ -1669,9 +1670,19 @@ elements.communicationCampaignForm.addEventListener("submit", async (event) => {
 
 elements.communicationCampaignImageInput.addEventListener("change", () => {
   clearCommunicationCampaignImageMessages();
+  if (!canModifyCurrentPromotionalCampaignImage()) {
+    elements.communicationCampaignImageInput.value = "";
+    renderCommunicationCampaignImage(currentPromotionalCampaign?.image || null);
+    updatePromotionalSendState();
+    return;
+  }
   const [file] = elements.communicationCampaignImageInput.files;
   if (!file) {
-    renderCommunicationCampaignImage(currentPromotionalCampaign?.image || null);
+    renderCommunicationCampaignImage(
+      isCreatingPromotionalCampaignDraft
+        ? null
+        : currentPromotionalCampaign?.image || null,
+    );
     updatePromotionalSendState();
     return;
   }
@@ -2143,6 +2154,7 @@ async function loadPromotionalCampaigns(options = {}) {
 
 async function selectPromotionalCampaign(campaignId, options = {}) {
   clearCommunicationCampaignMessages();
+  isCreatingPromotionalCampaignDraft = false;
 
   try {
     const detail = await api.getPromotionalCampaign(campaignId);
@@ -2175,6 +2187,7 @@ async function submitPromotionalCampaignDraft() {
   setPromotionalCampaignSubmitting(true);
   try {
     currentPromotionalCampaign = await api.createPromotionalCampaign(payload);
+    isCreatingPromotionalCampaignDraft = false;
     communicationCampaigns = [
       currentPromotionalCampaign,
       ...communicationCampaigns.filter(
@@ -2187,7 +2200,6 @@ async function submitPromotionalCampaignDraft() {
     showCommunicationCampaignStatus(
       "Campaña guardada. Ahora elige destinatarios para este envío.",
     );
-    setCommunicationCampaignFormOpen(false);
     renderCommunicationCampaignList();
     updatePromotionalSendState();
     await loadPromotionalCampaignPreview();
@@ -2235,9 +2247,18 @@ async function loadPromotionalCampaignPreview() {
 async function uploadPromotionalCampaignImage() {
   clearCommunicationCampaignImageMessages();
 
-  if (!currentPromotionalCampaign) {
+  if (isCreatingPromotionalCampaignDraft || !currentPromotionalCampaign?.id) {
     elements.communicationCampaignImageError.textContent =
-      "Guarda la campaña antes de agregar una imagen.";
+      "Guarda la campaña para agregar una imagen";
+    renderCommunicationCampaignImage(null);
+    updatePromotionalSendState();
+    return;
+  }
+
+  if (!isPromotionalCampaignEditable(currentPromotionalCampaign)) {
+    elements.communicationCampaignImageError.textContent =
+      "No se puede modificar la imagen de una campaña enviada.";
+    updatePromotionalSendState();
     return;
   }
 
@@ -2280,6 +2301,18 @@ async function uploadPromotionalCampaignImage() {
 
 async function deletePromotionalCampaignImage() {
   clearCommunicationCampaignImageMessages();
+
+  if (!canModifyCurrentPromotionalCampaignImage()) {
+    if (isCreatingPromotionalCampaignDraft || !currentPromotionalCampaign?.id) {
+      elements.communicationCampaignImageError.textContent =
+        "Guarda la campaña para agregar una imagen";
+    } else {
+      elements.communicationCampaignImageError.textContent =
+        "No se puede modificar la imagen de una campaña enviada.";
+    }
+    updatePromotionalSendState();
+    return;
+  }
 
   if (!currentPromotionalCampaign?.image) {
     return;
@@ -2435,6 +2468,7 @@ async function sendPromotionalCampaign() {
 }
 
 function resetPromotionalCampaignForm() {
+  isCreatingPromotionalCampaignDraft = true;
   elements.communicationCampaignNameInput.value = "";
   elements.communicationCampaignSubjectInput.value = "";
   elements.communicationCampaignAudienceInput.value = "subscribed";
@@ -2442,7 +2476,9 @@ function resetPromotionalCampaignForm() {
   elements.communicationIncludePointsInput.checked = true;
   elements.communicationCampaignImageInput.value = "";
   clearCommunicationCampaignImageMessages();
-  renderCommunicationCampaignImage(currentPromotionalCampaign?.image || null);
+  renderCommunicationCampaignImage(null);
+  renderCommunicationPreview();
+  updatePromotionalSendState();
 }
 
 function setCommunicationCampaignFormOpen(isOpen, options = {}) {
@@ -2464,6 +2500,12 @@ function setCommunicationCampaignFormOpen(isOpen, options = {}) {
         preventScroll: isCompactViewport(),
       });
     });
+  } else if (!isOpen && isCreatingPromotionalCampaignDraft) {
+    isCreatingPromotionalCampaignDraft = false;
+    elements.communicationCampaignImageInput.value = "";
+    renderCommunicationCampaignImage(currentPromotionalCampaign?.image || null);
+    renderCommunicationPreview();
+    updatePromotionalSendState();
   }
 }
 
@@ -2530,6 +2572,21 @@ function clearCommunicationCampaignImageMessages() {
   elements.communicationCampaignImageStatus.textContent = "";
 }
 
+function isPromotionalCampaignEditable(campaign = currentPromotionalCampaign) {
+  if (!campaign?.id) {
+    return false;
+  }
+
+  return ["draft", "ready"].includes(String(campaign.status || "draft"));
+}
+
+function canModifyCurrentPromotionalCampaignImage() {
+  return (
+    !isCreatingPromotionalCampaignDraft &&
+    isPromotionalCampaignEditable(currentPromotionalCampaign)
+  );
+}
+
 function renderCommunicationImageDraft(file) {
   const draftUrl = URL.createObjectURL(file);
   elements.communicationCampaignImagePreview.src = draftUrl;
@@ -2562,6 +2619,31 @@ function renderCommunicationCampaignImage(image) {
     elements.communicationUploadImageButton,
     imageUrl ? "Reemplazar" : "Agregar imagen",
   );
+  updateCommunicationCampaignImageControls(imageUrl);
+}
+
+function updateCommunicationCampaignImageControls(imageUrl = "") {
+  const isNewDraft = isCreatingPromotionalCampaignDraft;
+  const hasSavedCampaign = Boolean(currentPromotionalCampaign?.id);
+  const isExistingNotEditable =
+    hasSavedCampaign &&
+    !isPromotionalCampaignEditable(currentPromotionalCampaign);
+  const canModify = canModifyCurrentPromotionalCampaignImage();
+
+  elements.communicationCampaignImageInput.disabled = !canModify;
+  elements.communicationUploadImageButton.disabled = !canModify;
+  elements.communicationDeleteImageButton.disabled = !canModify || !imageUrl;
+
+  if (isNewDraft || !hasSavedCampaign) {
+    elements.communicationCampaignImageStatus.textContent =
+      "Guarda la campaña para agregar una imagen";
+    return;
+  }
+
+  if (isExistingNotEditable) {
+    elements.communicationCampaignImageError.textContent =
+      "No se puede modificar la imagen de una campaña enviada.";
+  }
 }
 
 function renderCommunicationCampaignImageError(error) {
@@ -2585,9 +2667,11 @@ function renderCommunicationCampaignImageError(error) {
 }
 
 function setCommunicationImageSubmitting(isSubmitting) {
-  elements.communicationUploadImageButton.disabled = isSubmitting;
+  const canModify = canModifyCurrentPromotionalCampaignImage();
+  elements.communicationCampaignImageInput.disabled = isSubmitting || !canModify;
+  elements.communicationUploadImageButton.disabled = isSubmitting || !canModify;
   elements.communicationDeleteImageButton.disabled =
-    isSubmitting || !currentPromotionalCampaign?.image;
+    isSubmitting || !canModify || !currentPromotionalCampaign?.image;
   setButtonText(
     elements.communicationUploadImageButton,
     isSubmitting
@@ -2607,21 +2691,32 @@ function formatFileSize(bytes) {
 }
 
 function hasPendingCampaignImageSelection() {
-  return Boolean(elements.communicationCampaignImageInput.files?.length);
+  return (
+    canModifyCurrentPromotionalCampaignImage() &&
+    Boolean(elements.communicationCampaignImageInput.files?.length)
+  );
 }
 
 function renderCommunicationPreview(preview = null) {
   const companyName = currentCompanySettings?.name || "Punto Club Demo";
   const subject =
     preview?.subject ||
-    currentPromotionalCampaign?.subject ||
+    (isCreatingPromotionalCampaignDraft
+      ? elements.communicationCampaignSubjectInput.value.trim()
+      : currentPromotionalCampaign?.subject) ||
     "Selecciona una campaña guardada";
   const body =
     preview?.bodyText ||
-    currentPromotionalCampaign?.bodyText ||
+    (isCreatingPromotionalCampaignDraft
+      ? elements.communicationCampaignBodyInput.value.trim()
+      : currentPromotionalCampaign?.bodyText) ||
     "El preview se mostrará cuando tengas una campaña seleccionada.";
-  const includePoints = Boolean(currentPromotionalCampaign?.includePoints);
-  const image = preview?.image || currentPromotionalCampaign?.image || null;
+  const includePoints = isCreatingPromotionalCampaignDraft
+    ? elements.communicationIncludePointsInput.checked
+    : Boolean(currentPromotionalCampaign?.includePoints);
+  const image = isCreatingPromotionalCampaignDraft
+    ? null
+    : preview?.image || currentPromotionalCampaign?.image || null;
   const imageUrl = image?.imageUrl ? api.getCampaignImageUrl(image.imageUrl) : "";
   const renderedBody = preview
     ? body
@@ -2840,6 +2935,7 @@ function updatePromotionalSendState() {
   const hasPendingImage = hasPendingCampaignImageSelection();
   const canSend =
     Boolean(currentPromotionalCampaign) &&
+    !isCreatingPromotionalCampaignDraft &&
     selectedCount > 0 &&
     selectedCount <= 5 &&
     !hasPendingImage;
