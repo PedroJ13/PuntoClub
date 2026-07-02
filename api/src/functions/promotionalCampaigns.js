@@ -51,11 +51,22 @@ function buildAbsoluteApiUrl(path, request) {
     return path;
   }
 
-  const apiBaseUrl =
-    process.env.PUBLIC_API_BASE_URL ||
-    (request && request.url
+  const publicApiBaseUrl = String(process.env.PUBLIC_API_BASE_URL || "").replace(
+    /\/$/,
+    "",
+  );
+  const appPublicBaseUrl = String(process.env.APP_PUBLIC_BASE_URL || "").replace(
+    /\/$/,
+    "",
+  );
+  const requestApiBaseUrl =
+    request && request.url
       ? new URL("/api", request.url).toString().replace(/\/$/, "")
-      : "");
+      : "";
+  const apiBaseUrl =
+    publicApiBaseUrl ||
+    (appPublicBaseUrl ? `${appPublicBaseUrl}/api` : "") ||
+    requestApiBaseUrl;
 
   return apiBaseUrl
     ? `${apiBaseUrl}${String(path || "").replace(/^\/api/, "")}`

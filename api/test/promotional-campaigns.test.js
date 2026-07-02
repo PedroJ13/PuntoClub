@@ -9,6 +9,7 @@ const {
   validatePromotionalUnsubscribePayload,
 } = require("../src/lib/validators");
 const {
+  buildPreview,
   buildPromotionalEmail,
   getPromotionalRecipientSkipReason,
   getPromotionalCompanyId,
@@ -131,35 +132,85 @@ test("promotional endpoints use route company only when it matches session compa
 });
 
 test("promotional email renders only the selected recipient message", () => {
-  const email = buildPromotionalEmail(
+  const previousPublicApiBaseUrl = process.env.PUBLIC_API_BASE_URL;
+  const previousAppPublicBaseUrl = process.env.APP_PUBLIC_BASE_URL;
+
+  try {
+    delete process.env.PUBLIC_API_BASE_URL;
+    process.env.APP_PUBLIC_BASE_URL = "https://puntoclub.example.test";
+
+    const email = buildPromotionalEmail(
+      {
+        subject: "Hola {{customer.name}}",
+        bodyText: "Tienes una promo en {{company.name}}.",
+        includePoints: true,
+        image: {
+          imageUrl:
+            "/api/public/promotional-campaign-images/11111111-1111-4111-8111-111111111111",
+          altText: "Promo frecuente",
+        },
+      },
+      { name: "Cafe Centro" },
+      {
+        customerName: "Ana",
+        recipientEmail: "ana@example.com",
+        pointsBalanceSnapshot: 42,
+      },
+      {
+        senderAddress: "DoNotReply@example.com",
+        senderDisplayName: "Punto Club",
+      },
+    );
+
+    assert.equal(email.to.length, 1);
+    assert.equal(email.to[0].address, "ana@example.com");
+    assert.equal(email.subject, "Hola Ana");
+    assert.match(email.plainText, /42 puntos/);
+    assert.match(email.html, /<img/);
+    assert.match(email.html, /Promo frecuente/);
+    assert.match(
+      email.html,
+      /https:\/\/puntoclub\.example\.test\/api\/public\/promotional-campaign-images\/11111111-1111-4111-8111-111111111111/,
+    );
+  } finally {
+    if (previousPublicApiBaseUrl === undefined) {
+      delete process.env.PUBLIC_API_BASE_URL;
+    } else {
+      process.env.PUBLIC_API_BASE_URL = previousPublicApiBaseUrl;
+    }
+    if (previousAppPublicBaseUrl === undefined) {
+      delete process.env.APP_PUBLIC_BASE_URL;
+    } else {
+      process.env.APP_PUBLIC_BASE_URL = previousAppPublicBaseUrl;
+    }
+  }
+});
+
+test("promotional preview includes active campaign image url", () => {
+  const preview = buildPreview(
     {
+      id: "5",
+      name: "Promo con imagen",
       subject: "Hola {{customer.name}}",
-      bodyText: "Tienes una promo en {{company.name}}.",
-      includePoints: true,
+      bodyText: "Promo de {{company.name}}.",
+      includePoints: false,
       image: {
+        fileName: "promo.webp",
+        altText: "Promo con imagen",
         imageUrl:
-          "https://func-puntoclub-prod-br-001.azurewebsites.net/api/public/promotional-campaign-images/11111111-1111-4111-8111-111111111111",
-        altText: "Promo frecuente",
+          "/api/public/promotional-campaign-images/22222222-2222-4222-8222-222222222222",
       },
     },
     { name: "Cafe Centro" },
-    {
-      customerName: "Ana",
-      recipientEmail: "ana@example.com",
-      pointsBalanceSnapshot: 42,
-    },
-    {
-      senderAddress: "DoNotReply@example.com",
-      senderDisplayName: "Punto Club",
-    },
+    { name: "Ana", email: "ana@example.com", pointsBalance: 42 },
   );
 
-  assert.equal(email.to.length, 1);
-  assert.equal(email.to[0].address, "ana@example.com");
-  assert.equal(email.subject, "Hola Ana");
-  assert.match(email.plainText, /42 puntos/);
-  assert.match(email.html, /<img/);
-  assert.match(email.html, /Promo frecuente/);
+  assert.deepEqual(preview.image, {
+    fileName: "promo.webp",
+    altText: "Promo con imagen",
+    imageUrl:
+      "/api/public/promotional-campaign-images/22222222-2222-4222-8222-222222222222",
+  });
 });
 
 test("promotional send skips unsubscribed recipients and sends selected subscribed recipients", async () => {
@@ -182,6 +233,16 @@ test("promotional send skips unsubscribed recipients and sends selected subscrib
         subject: "Promo {{customer.name}}",
         bodyText: "Hola {{customer.name}}, promo de {{company.name}}.",
         includePoints: true,
+      };
+    },
+    async getActivePromotionalCampaignImage(companyId, campaignId) {
+      assert.equal(companyId, 10);
+      assert.equal(campaignId, 5);
+      return {
+        fileName: "promo.webp",
+        altText: "Promo controlada",
+        imageUrl:
+          "/api/public/promotional-campaign-images/33333333-3333-4333-8333-333333333333",
       };
     },
     async getCompanySettings() {
@@ -241,6 +302,10 @@ test("promotional send skips unsubscribed recipients and sends selected subscrib
   ]);
   assert.equal(sentMessages.length, 1);
   assert.equal(sentMessages[0].to[0].address, "ana@example.com");
+  assert.match(
+    sentMessages[0].html,
+    /\/api\/public\/promotional-campaign-images\/33333333-3333-4333-8333-333333333333/,
+  );
   assert.deepEqual(result.summary, {
     selected: 2,
     sent: 1,

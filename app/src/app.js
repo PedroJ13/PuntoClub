@@ -2210,6 +2210,18 @@ async function loadPromotionalCampaignPreview() {
     const preview = await api.previewPromotionalCampaign(
       currentPromotionalCampaign.id,
     );
+    if (Object.prototype.hasOwnProperty.call(preview || {}, "image")) {
+      currentPromotionalCampaign = {
+        ...currentPromotionalCampaign,
+        image: preview.image || null,
+      };
+      communicationCampaigns = communicationCampaigns.map((campaign) =>
+        String(campaign.id) === String(currentPromotionalCampaign.id)
+          ? currentPromotionalCampaign
+          : campaign,
+      );
+      renderCommunicationCampaignImage(currentPromotionalCampaign.image);
+    }
     renderCommunicationPreview(preview);
   } catch (error) {
     renderCommunicationCampaignError(error);
@@ -2377,7 +2389,16 @@ async function sendPromotionalCampaign() {
       currentPromotionalCampaign.id,
       selectedCustomerIds,
     );
-    currentPromotionalCampaign = result.campaign || currentPromotionalCampaign;
+    if (result.campaign) {
+      currentPromotionalCampaign = {
+        ...currentPromotionalCampaign,
+        ...result.campaign,
+        image:
+          result.campaign.image === undefined
+            ? currentPromotionalCampaign.image || null
+            : result.campaign.image,
+      };
+    }
     communicationCampaigns = communicationCampaigns.map((campaign) =>
       String(campaign.id) === String(currentPromotionalCampaign.id)
         ? currentPromotionalCampaign
@@ -4744,10 +4765,25 @@ async function submitCompanyLogin() {
   const stopLoading = startGlobalLoading("Estamos accediendo a tu panel...");
 
   try {
-    const identity = await api.loginCompany({
+    await api.loginCompany({
       email: elements.loginEmailInput.value,
       password: elements.loginPasswordInput.value,
     });
+    let identity;
+    try {
+      identity = await api.getCurrentCompanyUser();
+    } catch (sessionError) {
+      if (
+        sessionError instanceof ApiError &&
+        sessionError.code === "UNAUTHORIZED"
+      ) {
+        throw new ApiError(
+          "SESSION_NOT_PERSISTED",
+          "Login succeeded but the browser did not keep the session.",
+        );
+      }
+      throw sessionError;
+    }
     currentAuthIdentity = identity;
     renderAuthIdentity(identity);
     elements.loginPasswordInput.value = "";
@@ -7691,6 +7727,13 @@ function renderLoginError(error) {
   if (error instanceof ApiError && error.code === "UNAUTHORIZED") {
     showLoginError(
       "Correo o contraseña incorrectos. Revisa los datos o recupera el acceso.",
+    );
+    return;
+  }
+
+  if (error instanceof ApiError && error.code === "SESSION_NOT_PERSISTED") {
+    showLoginError(
+      "No pudimos conservar la sesión en este navegador. Actualiza la página o revisa si el navegador está bloqueando cookies.",
     );
     return;
   }
