@@ -419,6 +419,9 @@ test("promotional send skips unsubscribed recipients and sends selected subscrib
       senderAddress: "DoNotReply@example.com",
       senderDisplayName: "Punto Club",
     },
+    request: {
+      url: "https://api.puntoclubcr.com/api/companies/10/promotional-campaigns/5/send",
+    },
     repositoryAdapter: fakeRepository,
     async sendEmail(message) {
       sentMessages.push(message);
@@ -433,8 +436,9 @@ test("promotional send skips unsubscribed recipients and sends selected subscrib
   assert.equal(sentMessages[0].to[0].address, "ana@example.com");
   assert.match(
     sentMessages[0].html,
-    /\/api\/public\/promotional-campaign-images\/33333333-3333-4333-8333-333333333333/,
+    /https:\/\/api\.puntoclubcr\.com\/api\/public\/promotional-campaign-images\/33333333-3333-4333-8333-333333333333/,
   );
+  assert.doesNotMatch(sentMessages[0].html, /src="\/api\/public\//);
   assert.deepEqual(result.summary, {
     selected: 2,
     sent: 1,

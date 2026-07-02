@@ -63,8 +63,8 @@ function buildAbsoluteApiUrl(path, request) {
       : "";
   const apiBaseUrl =
     publicApiBaseUrl ||
-    (appPublicBaseUrl ? `${appPublicBaseUrl}/api` : "") ||
-    requestApiBaseUrl;
+    requestApiBaseUrl ||
+    (appPublicBaseUrl ? `${appPublicBaseUrl}/api` : "");
 
   return apiBaseUrl
     ? `${apiBaseUrl}${String(path || "").replace(/^\/api/, "")}`
@@ -107,7 +107,13 @@ function buildPreview(
   };
 }
 
-function buildPromotionalEmail(campaign, company, recipient, emailConfig) {
+function buildPromotionalEmail(
+  campaign,
+  company,
+  recipient,
+  emailConfig,
+  options = {},
+) {
   const customer = {
     name: recipient.customerName || "cliente",
     email: recipient.currentRecipientEmail || recipient.recipientEmail,
@@ -115,6 +121,7 @@ function buildPromotionalEmail(campaign, company, recipient, emailConfig) {
   };
   const preview = buildPreview(campaign, company, customer, {
     absoluteImageUrl: true,
+    request: options.request,
   });
   const pointsText =
     campaign.includePoints && preview.pointsLine
@@ -181,6 +188,7 @@ async function sendPromotionalCampaignToRecipients({
   campaignId,
   customerIds,
   emailConfig,
+  request,
   sendEmail = (message) => notifier.sendEmailViaAcs(message, emailConfig),
   repositoryAdapter = repository,
 }) {
@@ -239,6 +247,7 @@ async function sendPromotionalCampaignToRecipients({
         company,
         recipient,
         emailConfig,
+        { request },
       );
       const sendResult = await sendEmail(message);
       const saved =
@@ -667,6 +676,7 @@ app.http("sendPromotionalCampaign", {
       campaignId,
       customerIds: payload.customerIds,
       emailConfig,
+      request,
     });
     return ok(result);
   }),
