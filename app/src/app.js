@@ -186,6 +186,9 @@ const elements = {
   communicationSaveCampaignButton: document.querySelector(
     "#communication-save-campaign-button",
   ),
+  communicationGoToSendButton: document.querySelector(
+    "#communication-go-to-send-button",
+  ),
   communicationCampaignList: document.querySelector(
     "#communication-campaign-list",
   ),
@@ -200,6 +203,9 @@ const elements = {
     "#communication-campaign-error",
   ),
   communicationPreview: document.querySelector("#communication-preview"),
+  communicationManagePreview: document.querySelector(
+    "#communication-manage-preview",
+  ),
   communicationPreviewContent: document.querySelector(
     "#communication-preview-content",
   ),
@@ -1680,8 +1686,8 @@ elements.communicationCampaignForm.addEventListener("submit", async (event) => {
   elements.communicationCampaignBodyInput,
   elements.communicationIncludePointsInput,
 ].forEach((control) => {
-  control.addEventListener("input", renderCommunicationPreview);
-  control.addEventListener("change", renderCommunicationPreview);
+  control.addEventListener("input", renderManagedCommunicationPreview);
+  control.addEventListener("change", renderManagedCommunicationPreview);
 });
 
 elements.communicationCampaignImageInput.addEventListener("change", () => {
@@ -1823,6 +1829,10 @@ elements.communicationSendButton.addEventListener("click", async () => {
   await sendPromotionalCampaign();
 });
 
+elements.communicationGoToSendButton.addEventListener("click", async () => {
+  await goToCommunicationSendFromManagedCampaign();
+});
+
 elements.communicationPreviewToggle.addEventListener("click", () => {
   setCommunicationPreviewExpanded(!isCommunicationPreviewExpanded);
 });
@@ -1887,6 +1897,7 @@ renderCustomerReportPrompt();
 renderAuditPrompt();
 renderAdminPrompt();
 renderCommunicationPreview();
+renderManagedCommunicationPreview();
 renderCommunicationHistory();
 
 if (isInvitationPage) {
@@ -2097,7 +2108,7 @@ function updateCompanySubnavState() {
 }
 
 function setCommunicationView(view, options = {}) {
-  const nextView = ["send", "customers", "history"].includes(view)
+  const nextView = ["send", "manage", "customers", "history"].includes(view)
     ? view
     : "send";
   activeCommunicationView = nextView;
@@ -2120,6 +2131,7 @@ function setCommunicationView(view, options = {}) {
 
   const focusTarget = {
     send: elements.communicationCampaignSearchInput,
+    manage: elements.communicationManageCampaignList,
     customers: elements.communicationFilterButtons[0],
     history: document.querySelector(".communication-history-table"),
   }[nextView];
@@ -2248,6 +2260,7 @@ async function selectManagedPromotionalCampaign(campaignId, options = {}) {
     populatePromotionalCampaignForm(managedPromotionalCampaign);
     renderCommunicationCampaignImage(managedPromotionalCampaign.image || null);
     setCommunicationCampaignFormOpen(true, { reset: false });
+    renderManagedCommunicationPreview();
     renderCommunicationCampaignList();
   } catch (error) {
     if (!options.silent) {
@@ -2315,6 +2328,7 @@ async function submitPromotionalCampaignDraft() {
     }
     populatePromotionalCampaignForm(managedPromotionalCampaign);
     renderCommunicationCampaignImage(managedPromotionalCampaign.image || null);
+    renderManagedCommunicationPreview();
     showCommunicationCampaignStatus(
       isNewCampaign
         ? "Campaña guardada. Ahora puedes agregar una imagen o seleccionarla para envío."
@@ -2335,6 +2349,16 @@ async function submitPromotionalCampaignDraft() {
   } finally {
     setPromotionalCampaignSubmitting(false);
   }
+}
+
+async function goToCommunicationSendFromManagedCampaign() {
+  if (managedPromotionalCampaign?.id) {
+    await selectPromotionalCampaign(managedPromotionalCampaign.id, {
+      silent: true,
+    });
+  }
+
+  setCommunicationView("send");
 }
 
 async function loadPromotionalCampaignPreview() {
@@ -2423,6 +2447,7 @@ async function uploadPromotionalCampaignImage() {
       };
       renderCommunicationPreview();
     }
+    renderManagedCommunicationPreview();
     updatePromotionalSendState();
     elements.communicationCampaignImageStatus.textContent = "Imagen agregada.";
   } catch (error) {
@@ -2480,6 +2505,7 @@ async function deletePromotionalCampaignImage() {
       };
       renderCommunicationPreview();
     }
+    renderManagedCommunicationPreview();
     updatePromotionalSendState();
     elements.communicationCampaignImageStatus.textContent = "Imagen eliminada.";
   } catch (error) {
@@ -2624,6 +2650,7 @@ function resetPromotionalCampaignForm() {
   elements.communicationCampaignImageInput.value = "";
   clearCommunicationCampaignImageMessages();
   renderCommunicationCampaignImage(null);
+  renderManagedCommunicationPreview();
   setButtonText(elements.communicationSaveCampaignButton, "Guardar borrador");
   elements.communicationSaveCampaignButton.disabled = false;
 }
@@ -2651,6 +2678,7 @@ function setCommunicationCampaignFormOpen(isOpen, options = {}) {
     isManagingNewPromotionalCampaign = false;
     elements.communicationCampaignImageInput.value = "";
     renderCommunicationCampaignImage(managedPromotionalCampaign?.image || null);
+    renderManagedCommunicationPreview();
   }
 }
 
@@ -2671,6 +2699,7 @@ function populatePromotionalCampaignForm(campaign) {
   setPromotionalCampaignContentControlsDisabled(
     !isPromotionalCampaignEditable(campaign),
   );
+  renderManagedCommunicationPreview();
   setButtonText(
     elements.communicationSaveCampaignButton,
     isPromotionalCampaignEditable(campaign)
@@ -2957,6 +2986,56 @@ function renderCommunicationPreview(preview = null) {
       ${escapeHtml(
         preview?.footerText ||
           `Recibes este correo porque aceptas promociones de ${companyName} en Punto Club. Puedes dejar de recibir promociones sin perder tus puntos, beneficios, membresías ni historial.`,
+      )}
+    </div>
+  `;
+}
+
+function renderManagedCommunicationPreview() {
+  if (!elements.communicationManagePreview) {
+    return;
+  }
+
+  const companyName = currentCompanySettings?.name || "Punto Club Demo";
+  const subject =
+    elements.communicationCampaignSubjectInput.value.trim() ||
+    "Asunto de la campaña";
+  const body =
+    elements.communicationCampaignBodyInput.value.trim() ||
+    "Guarda la campaña para generar el preview final y agregar imagen.";
+  const includePoints = elements.communicationIncludePointsInput.checked;
+  const image = managedPromotionalCampaign?.image || null;
+  const imageUrl = image?.imageUrl
+    ? api.getCampaignImageUrl(image.imageUrl)
+    : "";
+  const renderedBody = body
+    .replaceAll("{{customer.name}}", communicationPreviewCustomer.name)
+    .replaceAll("{{company.name}}", companyName)
+    .replaceAll(
+      "{{points.currentBalance}}",
+      formatPoints(communicationPreviewCustomer.pointsBalance),
+    )
+    .replaceAll("{{promotion.validUntil}}", "31/07/2026");
+
+  elements.communicationManagePreview.innerHTML = `
+    <div class="communication-preview-meta">
+      <span>Asunto</span>
+      <h3>${escapeHtml(subject)}</h3>
+    </div>
+    ${
+      imageUrl
+        ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(image.altText || managedPromotionalCampaign?.name || "Imagen de campaña")}" />`
+        : ""
+    }
+    <p>${escapeHtml(renderedBody)}</p>
+    ${
+      includePoints
+        ? `<p><strong>Puntos disponibles:</strong> ${formatPoints(communicationPreviewCustomer.pointsBalance)} pts.</p>`
+        : ""
+    }
+    <div class="communication-preview-footer">
+      ${escapeHtml(
+        `Recibes este correo porque aceptas promociones de ${companyName} en Punto Club. Puedes dejar de recibir promociones sin perder tus puntos, beneficios, membresías ni historial.`,
       )}
     </div>
   `;

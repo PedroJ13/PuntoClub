@@ -3349,6 +3349,14 @@
               <button
                 class="section-tab"
                 type="button"
+                data-communication-view="manage"
+                aria-selected="false"
+              >
+                Crear / actualizar campañas
+              </button>
+              <button
+                class="section-tab"
+                type="button"
                 data-communication-view="customers"
                 aria-selected="false"
               >
@@ -3422,7 +3430,7 @@
 
             <section
               class="communications-campaign-panel zone-card"
-              data-communication-panel="send"
+              data-communication-panel="manage"
               aria-labelledby="communications-manage-campaign-title"
             >
               <div class="section-header">
@@ -3601,8 +3609,43 @@
                   <button id="communication-save-campaign-button" type="submit">
                     Guardar borrador
                   </button>
+                  <button
+                    class="secondary-button"
+                    id="communication-go-to-send-button"
+                    type="button"
+                  >
+                    Ir a Enviar campañas
+                  </button>
                 </div>
               </form>
+            </section>
+
+            <section
+              class="communications-preview-panel zone-card"
+              data-communication-panel="manage"
+              aria-labelledby="communications-manage-preview-title"
+            >
+              <div class="section-header">
+                <div>
+                  <h2 id="communications-manage-preview-title">
+                    Preview de edición
+                  </h2>
+                  <p class="section-support">
+                    Revisa el contenido de la campaña que estás creando o
+                    actualizando antes de prepararla para envío.
+                  </p>
+                </div>
+              </div>
+              <article
+                id="communication-manage-preview"
+                class="communication-preview"
+              ></article>
+              <div class="communication-variable-list">
+                <span>{{customer.name}}</span>
+                <span>{{company.name}}</span>
+                <span>{{points.currentBalance}}</span>
+                <span>{{promotion.validUntil}}</span>
+              </div>
             </section>
 
             <section
