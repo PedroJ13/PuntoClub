@@ -3,4 +3,6 @@ node_modules/
 playwright-report/
 test-results/
 .tmp/
+tmp/
+debug.log
 tools/migration/output/
