@@ -13,6 +13,7 @@ const {
   buildPromotionalEmail,
   getPromotionalRecipientSkipReason,
   getPromotionalCompanyId,
+  resolvePromotionalRecipientFilters,
   sendPromotionalCampaignToRecipients,
   updatePromotionalCampaignContent,
 } = require("../src/functions/promotionalCampaigns");
@@ -70,6 +71,54 @@ test("promotional recipient selection rejects duplicates", () => {
       validatePromotionalRecipientSelectionPayload({ customerIds: [10, 10] }),
     (error) => error instanceof ApiError && error.code === "VALIDATION_ERROR",
   );
+});
+
+test("promotional recipient filters force birthdayOnly for birthday campaigns", async () => {
+  const calls = [];
+  const filters = await resolvePromotionalRecipientFilters(
+    8,
+    {
+      status: "all",
+      limit: 25,
+      search: "",
+      birthdayOnly: false,
+      campaignId: 19,
+    },
+    {
+      async getPromotionalCampaignById(companyId, campaignId) {
+        calls.push({ companyId, campaignId });
+        return {
+          id: String(campaignId),
+          companyId: String(companyId),
+          campaignType: "cumpleanos",
+        };
+      },
+    },
+  );
+
+  assert.deepEqual(calls, [{ companyId: 8, campaignId: 19 }]);
+  assert.equal(filters.birthdayOnly, true);
+  assert.equal(filters.campaignId, 19);
+});
+
+test("promotional recipient filters keep explicit birthdayOnly for common campaigns", async () => {
+  const filters = await resolvePromotionalRecipientFilters(
+    8,
+    {
+      status: "subscribed",
+      limit: 25,
+      search: "",
+      birthdayOnly: true,
+      campaignId: 20,
+    },
+    {
+      async getPromotionalCampaignById() {
+        return { id: "20", campaignType: "comun" };
+      },
+    },
+  );
+
+  assert.equal(filters.birthdayOnly, true);
 });
 
 test("promotional unsubscribe keeps optional campaign context", () => {

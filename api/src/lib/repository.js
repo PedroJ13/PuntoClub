@@ -1922,6 +1922,9 @@ async function listPromotionalRecipients(companyId, filters = {}) {
           OR (
             customers.birth_month = @birth_month
             AND customers.birth_day = @birth_day
+            AND customers.email IS NOT NULL
+            AND customers.email LIKE '%_@_%._%'
+            AND COALESCE(preferences.promotional_status, 'subscribed') = 'subscribed'
           )
         )
         AND (

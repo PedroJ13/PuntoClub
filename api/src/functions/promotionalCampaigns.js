@@ -360,6 +360,26 @@ async function updatePromotionalCampaignContent({
   return { campaign };
 }
 
+async function resolvePromotionalRecipientFilters(
+  companyId,
+  filters,
+  repositoryAdapter = repository,
+) {
+  if (!filters.campaignId) {
+    return filters;
+  }
+
+  const campaign = await repositoryAdapter.getPromotionalCampaignById(
+    companyId,
+    filters.campaignId,
+  );
+  return {
+    ...filters,
+    birthdayOnly:
+      Boolean(filters.birthdayOnly) || campaign.campaignType === "cumpleanos",
+  };
+}
+
 async function getCampaignId(request) {
   return parsePositiveInteger(request.params.campaignId, "campaignId");
 }
@@ -618,7 +638,10 @@ app.http("listPromotionalRecipients", {
   handler: handle(async (request) => {
     const companyId = await getPromotionalCompanyId(request);
     await repository.ensureActiveCompany(companyId);
-    const filters = validatePromotionalRecipientQuery(request.query);
+    const filters = await resolvePromotionalRecipientFilters(
+      companyId,
+      validatePromotionalRecipientQuery(request.query),
+    );
     const result = await repository.listPromotionalRecipients(
       companyId,
       filters,
@@ -708,6 +731,7 @@ module.exports = {
   buildPreview,
   getPromotionalCompanyId,
   getPromotionalRecipientSkipReason,
+  resolvePromotionalRecipientFilters,
   sendPromotionalCampaignToRecipients,
   updatePromotionalCampaignContent,
 };

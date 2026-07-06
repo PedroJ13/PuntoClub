@@ -515,9 +515,6 @@ function createHttpCustomerApi(config) {
       if (filters.search) {
         url.searchParams.set("search", filters.search);
       }
-      if (filters.birthdayOnly) {
-        url.searchParams.set("birthdayOnly", "true");
-      }
       const response = await fetch(url, {
         credentials: "include",
       });
@@ -629,6 +626,12 @@ function createHttpCustomerApi(config) {
       url.searchParams.set("limit", filters.limit || "25");
       if (filters.search) {
         url.searchParams.set("search", filters.search);
+      }
+      if (filters.birthdayOnly) {
+        url.searchParams.set("birthdayOnly", "true");
+      }
+      if (filters.campaignId) {
+        url.searchParams.set("campaignId", filters.campaignId);
       }
       const response = await fetch(url, {
         credentials: "include",
@@ -1395,7 +1398,12 @@ function createMockCustomerApi() {
       await wait(300);
       const status = filters.status || "subscribed";
       const search = normalize(filters.search || "");
-      const birthdayOnly = Boolean(filters.birthdayOnly);
+      const campaign = filters.campaignId
+        ? findMockPromotionalCampaign(filters.campaignId)
+        : null;
+      const birthdayOnly =
+        Boolean(filters.birthdayOnly) ||
+        campaign?.campaignType === "cumpleanos";
       const items = mockCustomers
         .map(mapMockPromotionalRecipientCandidate)
         .filter(
@@ -1403,6 +1411,11 @@ function createMockCustomerApi() {
             status === "all" || customer.promotionalStatus === status,
         )
         .filter((customer) => !birthdayOnly || customer.birthdayToday)
+        .filter(
+          (customer) =>
+            !birthdayOnly ||
+            (customer.eligible && customer.promotionalStatus === "subscribed"),
+        )
         .filter(
           (customer) =>
             !search ||

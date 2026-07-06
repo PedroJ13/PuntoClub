@@ -35,6 +35,7 @@ const {
   validateMembershipTransactionsQuery,
   validateMyCompanyPatchPayload,
   validatePurchasePayload,
+  validatePromotionalRecipientQuery,
   validateRedemptionPayload,
 } = require("../src/lib/validators");
 
@@ -74,6 +75,32 @@ test("normalizeEmail trims and lowercases email values", () => {
     "hola@cafecentral.test",
   );
   assert.equal(normalizeEmail(""), "");
+});
+
+test("promotional recipient query accepts campaign context and birthday filter", () => {
+  assert.deepEqual(
+    validatePromotionalRecipientQuery(
+      query({
+        status: "all",
+        limit: "25",
+        search: "maria",
+        birthdayOnly: "true",
+        campaignId: "19",
+      }),
+    ),
+    {
+      status: "all",
+      limit: 25,
+      search: "maria",
+      birthdayOnly: true,
+      campaignId: 19,
+    },
+  );
+
+  assert.throws(
+    () => validatePromotionalRecipientQuery(query({ campaignId: "abc" })),
+    /One or more fields are invalid/,
+  );
 });
 
 test("company registration request requires address and normalizes emails", () => {

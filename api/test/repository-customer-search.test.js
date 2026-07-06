@@ -173,3 +173,74 @@ test("createCustomer uses OUTPUT INTO so Customers triggers do not break inserts
     },
   );
 });
+
+test("listPromotionalRecipients restricts birthday filter to subscribed customers with valid email", async () => {
+  const captured = {
+    inputs: [],
+    query: "",
+  };
+
+  await withMockedRepositoryDb(
+    {
+      getSql() {
+        return {
+          BigInt: "BigInt",
+          Bit: "Bit",
+          Int: "Int",
+          NVarChar: (length) => `NVarChar(${length})`,
+          VarChar: (length) => `VarChar(${length})`,
+        };
+      },
+      async getPool() {
+        return {
+          request() {
+            return {
+              input(name, type, value) {
+                captured.inputs.push({ name, type, value });
+                return this;
+              },
+              async query(queryText) {
+                captured.query = queryText;
+                return { recordset: [] };
+              },
+            };
+          },
+        };
+      },
+    },
+    async (repository) => {
+      const result = await repository.listPromotionalRecipients(8, {
+        status: "all",
+        limit: 25,
+        search: "",
+        birthdayOnly: true,
+        today: new Date("2026-07-06T12:00:00Z"),
+      });
+
+      assert.deepEqual(result.items, []);
+      assert.deepEqual(
+        captured.inputs.map((input) => [input.name, input.type, input.value]),
+        [
+          ["company_id", "BigInt", 8],
+          ["status", "VarChar(20)", null],
+          ["birthday_only", "Bit", true],
+          ["birth_month", "Int", 7],
+          ["birth_day", "Int", 6],
+          ["search", "NVarChar(254)", null],
+          ["search_like", "NVarChar(260)", null],
+          ["limit", "Int", 25],
+        ],
+      );
+      assert.match(
+        captured.query,
+        /customers\.birth_month = @birth_month[\s\S]+customers\.birth_day = @birth_day/,
+      );
+      assert.match(captured.query, /customers\.email IS NOT NULL/);
+      assert.match(captured.query, /customers\.email LIKE '%_@_%\._%'/);
+      assert.match(
+        captured.query,
+        /COALESCE\(preferences\.promotional_status, 'subscribed'\) = 'subscribed'/,
+      );
+    },
+  );
+});

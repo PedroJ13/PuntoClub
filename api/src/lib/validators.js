@@ -660,24 +660,44 @@ function validatePromotionalRecipientQuery(query) {
   const search = normalizeText(query.get("search") || "") || "";
   const birthdayOnly =
     String(query.get("birthdayOnly") || "").toLowerCase() === "true";
+  const campaignIdValue = query.get("campaignId");
+  const campaignId =
+    campaignIdValue == null || campaignIdValue === ""
+      ? null
+      : Number(campaignIdValue);
+  const details = [];
 
   if (!allowedPromotionalPreferenceStatuses.has(status)) {
-    throw validationError([
-      {
-        field: "status",
-        message:
-          "status must be one of subscribed, unsubscribed, suppressed, all.",
-      },
-    ]);
+    details.push({
+      field: "status",
+      message:
+        "status must be one of subscribed, unsubscribed, suppressed, all.",
+    });
   }
 
   if (!Number.isInteger(limit) || ![10, 25, 50].includes(limit)) {
-    throw validationError([
-      { field: "limit", message: "limit must be one of 10, 25, 50." },
-    ]);
+    details.push({
+      field: "limit",
+      message: "limit must be one of 10, 25, 50.",
+    });
   }
 
-  return { status, limit, search, birthdayOnly };
+  if (
+    campaignIdValue != null &&
+    campaignIdValue !== "" &&
+    (!Number.isInteger(campaignId) || campaignId <= 0)
+  ) {
+    details.push({
+      field: "campaignId",
+      message: "campaignId must be a positive integer when provided.",
+    });
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { status, limit, search, birthdayOnly, campaignId };
 }
 
 function validatePromotionalRecipientSelectionPayload(payload) {

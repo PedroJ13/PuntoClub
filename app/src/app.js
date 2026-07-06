@@ -2582,6 +2582,7 @@ async function loadPromotionalRecipients(options = {}) {
     const result = await api.listPromotionalRecipients({
       status: activeCommunicationFilter,
       limit: 25,
+      campaignId: currentPromotionalCampaign?.id || null,
       birthdayOnly: currentPromotionalCampaign?.campaignType === "cumpleanos",
     });
     communicationCustomers = result.items || [];
