@@ -985,6 +985,17 @@
                   <p class="field-error" id="customer-email-error"></p>
                 </div>
 
+                <div class="field">
+                  <label for="customer-birth-date">Fecha de nacimiento</label>
+                  <input
+                    id="customer-birth-date"
+                    name="birthDate"
+                    type="date"
+                    autocomplete="bday"
+                  />
+                  <p class="field-error" id="customer-birth-date-error"></p>
+                </div>
+
                 <div id="form-error" class="form-error" hidden></div>
 
                 <div class="form-actions">
@@ -3517,6 +3528,13 @@
                       type="text"
                       value="Promo especial para clientes frecuentes"
                     />
+                  </div>
+                  <div class="field">
+                    <label for="communication-campaign-type">Tipo</label>
+                    <select id="communication-campaign-type">
+                      <option value="comun">Común</option>
+                      <option value="cumpleanos">Cumpleaños</option>
+                    </select>
                   </div>
                   <div class="field">
                     <label for="communication-campaign-audience"

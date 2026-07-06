@@ -342,6 +342,9 @@ async function updatePromotionalCampaignContent({
       )
         ? patch.includePoints
         : current.includePoints,
+      campaignType: Object.prototype.hasOwnProperty.call(patch, "campaignType")
+        ? patch.campaignType
+        : current.campaignType || "comun",
     },
   );
 

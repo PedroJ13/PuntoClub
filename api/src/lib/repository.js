@@ -17,11 +17,14 @@ function toApiId(value) {
 }
 
 function mapCustomer(row) {
+  const birthDate = row.birth_date ? toIsoDate(row.birth_date) : null;
   return {
     id: toApiId(row.id),
     name: row.name,
     phone: row.phone,
     email: row.email,
+    birthDate,
+    profileIncomplete: !birthDate,
     createdAt: toIsoTimestamp(row.created_at),
     updatedAt: toIsoTimestamp(row.updated_at),
   };
@@ -272,6 +275,7 @@ function mapPromotionalCampaign(row) {
     subject: row.subject,
     bodyText: row.body_text,
     includePoints: Boolean(row.include_points),
+    campaignType: row.campaign_type || "comun",
     status: row.status,
     recipientLimit: Number(row.recipient_limit || 5),
     recipientCount: Number(row.recipient_count || 0),
@@ -359,6 +363,8 @@ function mapEligiblePromotionalCustomer(row) {
     customerId: toApiId(row.customer_id),
     name: row.name,
     email: row.email || null,
+    birthDate: row.birth_date ? toIsoDate(row.birth_date) : null,
+    birthdayToday: Boolean(row.birthday_today),
     pointsBalance: Number(row.points_balance || 0),
     promotionalStatus: row.promotional_status,
     eligible: Boolean(row.eligible),
@@ -1286,6 +1292,7 @@ async function listPromotionalCampaigns(companyId, filters = {}) {
         campaigns.subject,
         campaigns.body_text,
         campaigns.include_points,
+        campaigns.campaign_type,
         campaigns.status,
         campaigns.recipient_limit,
         campaigns.last_preview_at,
@@ -1311,6 +1318,7 @@ async function listPromotionalCampaigns(companyId, filters = {}) {
         campaigns.subject,
         campaigns.body_text,
         campaigns.include_points,
+        campaigns.campaign_type,
         campaigns.status,
         campaigns.recipient_limit,
         campaigns.last_preview_at,
@@ -1343,6 +1351,7 @@ async function getPromotionalCampaignById(companyId, campaignId) {
         campaigns.subject,
         campaigns.body_text,
         campaigns.include_points,
+        campaigns.campaign_type,
         campaigns.status,
         campaigns.recipient_limit,
         campaigns.last_preview_at,
@@ -1368,6 +1377,7 @@ async function getPromotionalCampaignById(companyId, campaignId) {
         campaigns.subject,
         campaigns.body_text,
         campaigns.include_points,
+        campaigns.campaign_type,
         campaigns.status,
         campaigns.recipient_limit,
         campaigns.last_preview_at,
@@ -1646,6 +1656,7 @@ async function createPromotionalCampaign(companyId, payload, options = {}) {
     .input("subject", sql.NVarChar(200), payload.subject)
     .input("body_text", sql.NVarChar(2000), payload.bodyText)
     .input("include_points", sql.Bit, payload.includePoints)
+    .input("campaign_type", sql.VarChar(20), payload.campaignType || "comun")
     .input("created_by_user_id", sql.BigInt, options.createdByUserId || null)
     .query(`
       INSERT INTO dbo.PromotionalCampaigns (
@@ -1654,6 +1665,7 @@ async function createPromotionalCampaign(companyId, payload, options = {}) {
         subject,
         body_text,
         include_points,
+        campaign_type,
         created_by_user_id
       )
       OUTPUT
@@ -1663,6 +1675,7 @@ async function createPromotionalCampaign(companyId, payload, options = {}) {
         INSERTED.subject,
         INSERTED.body_text,
         INSERTED.include_points,
+        INSERTED.campaign_type,
         INSERTED.status,
         INSERTED.recipient_limit,
         INSERTED.last_preview_at,
@@ -1682,6 +1695,7 @@ async function createPromotionalCampaign(companyId, payload, options = {}) {
         @subject,
         @body_text,
         @include_points,
+        @campaign_type,
         @created_by_user_id
       )
     `);
@@ -1699,13 +1713,16 @@ async function updatePromotionalCampaign(companyId, campaignId, payload) {
     .input("name", sql.NVarChar(160), payload.name)
     .input("subject", sql.NVarChar(200), payload.subject)
     .input("body_text", sql.NVarChar(2000), payload.bodyText)
-    .input("include_points", sql.Bit, payload.includePoints).query(`
+    .input("include_points", sql.Bit, payload.includePoints)
+    .input("campaign_type", sql.VarChar(20), payload.campaignType || "comun")
+    .query(`
       UPDATE dbo.PromotionalCampaigns
       SET
         name = @name,
         subject = @subject,
         body_text = @body_text,
         include_points = @include_points,
+        campaign_type = @campaign_type,
         updated_at = SYSUTCDATETIME()
       OUTPUT
         INSERTED.id,
@@ -1714,6 +1731,7 @@ async function updatePromotionalCampaign(companyId, campaignId, payload) {
         INSERTED.subject,
         INSERTED.body_text,
         INSERTED.include_points,
+        INSERTED.campaign_type,
         INSERTED.status,
         INSERTED.recipient_limit,
         INSERTED.last_preview_at,
@@ -1851,6 +1869,10 @@ async function listPromotionalRecipients(companyId, filters = {}) {
   const pool = await getPool();
   const status =
     filters.status === "all" ? null : filters.status || "subscribed";
+  const birthdayOnly = Boolean(filters.birthdayOnly);
+  const today = filters.today || new Date();
+  const birthMonth = today.getUTCMonth() + 1;
+  const birthDay = today.getUTCDate();
   const search =
     typeof filters.search === "string" ? filters.search.trim() : "";
   const limit = filters.limit || 25;
@@ -1858,6 +1880,9 @@ async function listPromotionalRecipients(companyId, filters = {}) {
     .request()
     .input("company_id", sql.BigInt, companyId)
     .input("status", sql.VarChar(20), status)
+    .input("birthday_only", sql.Bit, birthdayOnly)
+    .input("birth_month", sql.Int, birthMonth)
+    .input("birth_day", sql.Int, birthDay)
     .input("search", sql.NVarChar(254), search || null)
     .input("search_like", sql.NVarChar(260), search ? `%${search}%` : null)
     .input("limit", sql.Int, limit).query(`
@@ -1865,6 +1890,11 @@ async function listPromotionalRecipients(companyId, filters = {}) {
         customers.id AS customer_id,
         customers.name,
         customers.email,
+        customers.birth_date,
+        CONVERT(bit, CASE
+          WHEN customers.birth_month = @birth_month
+           AND customers.birth_day = @birth_day
+          THEN 1 ELSE 0 END) AS birthday_today,
         COALESCE(balances.points_balance, 0) AS points_balance,
         COALESCE(preferences.promotional_status, 'subscribed') AS promotional_status,
         CONVERT(bit, CASE
@@ -1888,6 +1918,13 @@ async function listPromotionalRecipients(companyId, filters = {}) {
       WHERE customers.company_id = @company_id
         AND (@status IS NULL OR COALESCE(preferences.promotional_status, 'subscribed') = @status)
         AND (
+          @birthday_only = 0
+          OR (
+            customers.birth_month = @birth_month
+            AND customers.birth_day = @birth_day
+          )
+        )
+        AND (
           @search IS NULL
           OR customers.email COLLATE ${CUSTOMER_SEARCH_COLLATION} = @search COLLATE ${CUSTOMER_SEARCH_COLLATION}
           OR customers.name COLLATE ${CUSTOMER_SEARCH_COLLATION} LIKE @search_like COLLATE ${CUSTOMER_SEARCH_COLLATION}
@@ -1907,6 +1944,7 @@ async function replacePromotionalCampaignRecipients(
   companyId,
   campaignId,
   customerIds,
+  options = {},
 ) {
   const sql = getSql();
   const pool = await getPool();
@@ -1918,7 +1956,7 @@ async function replacePromotionalCampaignRecipients(
     const campaignResult = await new sql.Request(transaction)
       .input("company_id", sql.BigInt, companyId)
       .input("campaign_id", sql.BigInt, campaignId).query(`
-        SELECT id, status, recipient_limit
+        SELECT id, status, recipient_limit, campaign_type
         FROM dbo.PromotionalCampaigns WITH (UPDLOCK, HOLDLOCK)
         WHERE company_id = @company_id
           AND id = @campaign_id
@@ -1963,6 +2001,10 @@ async function replacePromotionalCampaignRecipients(
     }
 
     const campaign = campaignResult.recordset[0];
+    const isBirthdayCampaign = campaign.campaign_type === "cumpleanos";
+    const today = options.today || new Date();
+    const birthMonth = today.getUTCMonth() + 1;
+    const birthDay = today.getUTCDate();
     if (!["draft", "ready"].includes(campaign.status)) {
       throw new ApiError(
         409,
@@ -1996,11 +2038,15 @@ async function replacePromotionalCampaignRecipients(
     for (const customerId of customerIds) {
       const customerResult = await new sql.Request(transaction)
         .input("company_id", sql.BigInt, companyId)
-        .input("customer_id", sql.BigInt, customerId).query(`
+        .input("customer_id", sql.BigInt, customerId)
+        .input("birth_month", sql.Int, birthMonth)
+        .input("birth_day", sql.Int, birthDay).query(`
           SELECT TOP (1)
             customers.id AS customer_id,
             customers.name,
             customers.email,
+            customers.birth_month,
+            customers.birth_day,
             COALESCE(balances.points_balance, 0) AS points_balance,
             COALESCE(preferences.promotional_status, 'subscribed') AS promotional_status
           FROM dbo.Customers AS customers
@@ -2020,6 +2066,18 @@ async function replacePromotionalCampaignRecipients(
       }
 
       const customer = customerResult.recordset[0];
+      if (
+        isBirthdayCampaign &&
+        (Number(customer.birth_month) !== birthMonth ||
+          Number(customer.birth_day) !== birthDay)
+      ) {
+        skipped.push({
+          customerId: toApiId(customer.customer_id),
+          reason: "not_birthday_today",
+        });
+        continue;
+      }
+
       const email = String(customer.email || "").trim();
       if (
         !email ||
@@ -2300,6 +2358,7 @@ async function completePromotionalCampaignSend(companyId, campaignId) {
         INSERTED.subject,
         INSERTED.body_text,
         INSERTED.include_points,
+        INSERTED.campaign_type,
         INSERTED.status,
         INSERTED.recipient_limit,
         INSERTED.last_preview_at,
@@ -3625,7 +3684,7 @@ async function listCustomers(companyId, search) {
       sql.NVarChar(260),
       normalizedSearch ? `%${normalizedSearch}%` : null,
     ).query(`
-      SELECT TOP (50) id, name, phone, email, created_at, updated_at
+      SELECT TOP (50) id, name, phone, email, birth_date, created_at, updated_at
       FROM dbo.Customers
       WHERE company_id = @company_id
         AND (
@@ -3648,13 +3707,114 @@ async function createCustomer(companyId, payload) {
     .input("company_id", sql.BigInt, companyId)
     .input("name", sql.NVarChar(160), payload.name)
     .input("phone", sql.NVarChar(32), payload.phone)
-    .input("email", sql.NVarChar(254), payload.email).query(`
-      INSERT INTO dbo.Customers (company_id, name, phone, email)
-      OUTPUT INSERTED.id, INSERTED.name, INSERTED.phone, INSERTED.email, INSERTED.created_at, INSERTED.updated_at
-      VALUES (@company_id, @name, @phone, @email)
+    .input("email", sql.NVarChar(254), payload.email)
+    .input("birth_date", sql.Date, payload.birthDate || null).query(`
+      INSERT INTO dbo.Customers (company_id, name, phone, email, birth_date)
+      OUTPUT INSERTED.id, INSERTED.name, INSERTED.phone, INSERTED.email, INSERTED.birth_date, INSERTED.created_at, INSERTED.updated_at
+      VALUES (@company_id, @name, @phone, @email, @birth_date)
     `);
 
   return mapCustomer(result.recordset[0]);
+}
+
+async function updateCustomer(companyId, customerId, patch) {
+  const sql = getSql();
+  const pool = await getPool();
+  const current = await getCustomerById(companyId, customerId);
+  const next = {
+    name: Object.prototype.hasOwnProperty.call(patch, "name")
+      ? patch.name
+      : current.name,
+    phone: Object.prototype.hasOwnProperty.call(patch, "phone")
+      ? patch.phone
+      : current.phone,
+    email: Object.prototype.hasOwnProperty.call(patch, "email")
+      ? patch.email
+      : current.email,
+    birthDate: Object.prototype.hasOwnProperty.call(patch, "birthDate")
+      ? patch.birthDate
+      : current.birthDate,
+  };
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("customer_id", sql.BigInt, customerId)
+    .input("name", sql.NVarChar(160), next.name)
+    .input("phone", sql.NVarChar(32), next.phone)
+    .input("email", sql.NVarChar(254), next.email)
+    .input("birth_date", sql.Date, next.birthDate || null).query(`
+      UPDATE dbo.Customers
+      SET
+        name = @name,
+        phone = @phone,
+        email = @email,
+        birth_date = @birth_date,
+        updated_at = SYSUTCDATETIME()
+      OUTPUT INSERTED.id, INSERTED.name, INSERTED.phone, INSERTED.email, INSERTED.birth_date, INSERTED.created_at, INSERTED.updated_at
+      WHERE company_id = @company_id
+        AND id = @customer_id
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(
+      404,
+      "CUSTOMER_NOT_FOUND",
+      "Customer does not exist for this company.",
+    );
+  }
+
+  return mapCustomer(result.recordset[0]);
+}
+
+async function listBirthdayCustomersToday(companyId, options = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const today = options.today || new Date();
+  const birthMonth = today.getUTCMonth() + 1;
+  const birthDay = today.getUTCDate();
+  const result = await pool
+    .request()
+    .input("company_id", sql.BigInt, companyId)
+    .input("birth_month", sql.Int, birthMonth)
+    .input("birth_day", sql.Int, birthDay).query(`
+      SELECT TOP (50)
+        customers.id,
+        customers.name,
+        customers.phone,
+        customers.email,
+        customers.birth_date,
+        customers.created_at,
+        customers.updated_at,
+        COALESCE(preferences.promotional_status, 'subscribed') AS promotional_status,
+        CONVERT(bit, CASE
+          WHEN customers.email IS NOT NULL
+           AND customers.email LIKE '%_@_%._%'
+           AND COALESCE(preferences.promotional_status, 'subscribed') = 'subscribed'
+          THEN 1 ELSE 0 END) AS promotional_eligible
+      FROM dbo.Customers AS customers
+      LEFT JOIN dbo.CustomerPromotionalEmailPreferences AS preferences
+        ON preferences.company_id = customers.company_id
+       AND preferences.customer_id = customers.id
+      WHERE customers.company_id = @company_id
+        AND customers.birth_month = @birth_month
+        AND customers.birth_day = @birth_day
+      ORDER BY customers.name ASC, customers.id ASC
+    `);
+
+  const items = result.recordset.map((row) => ({
+    ...mapCustomer(row),
+    promotionalStatus: row.promotional_status,
+    promotionalEligible: Boolean(row.promotional_eligible),
+  }));
+
+  return {
+    date: today.toISOString().slice(0, 10),
+    total: items.length,
+    eligibleForBirthdayCampaign: items.filter(
+      (customer) => customer.promotionalEligible,
+    ).length,
+    items,
+  };
 }
 
 async function createCompanyPasswordReset(
@@ -3903,7 +4063,7 @@ async function getCustomerById(companyId, customerId) {
     .request()
     .input("company_id", sql.BigInt, companyId)
     .input("customer_id", sql.BigInt, customerId).query(`
-      SELECT id, name, phone, email, created_at, updated_at
+      SELECT id, name, phone, email, birth_date, created_at, updated_at
       FROM dbo.Customers
       WHERE company_id = @company_id
         AND id = @customer_id
@@ -5498,6 +5658,7 @@ module.exports = {
   getCustomerById,
   getOperationalEmailSettings,
   getActivePromotionalCampaignImage,
+  listBirthdayCustomersToday,
   listOperationalEmailHistory,
   getPromotionalCampaignById,
   getPromotionalCampaignImageByPublicId,
@@ -5547,6 +5708,7 @@ module.exports = {
   toApiId,
   toIsoTimestamp,
   unsubscribePromotionalCustomer,
+  updateCustomer,
   updateCompanyLogo,
   updateCompanyRegistrationRequestLogo,
   updateCompanySettings,

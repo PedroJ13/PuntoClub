@@ -4,6 +4,8 @@ const initialCustomers = [
     name: "Mar\u00eda Soto",
     phone: "+50688887777",
     email: "maria@example.com",
+    birthDate: "1990-07-05",
+    profileIncomplete: false,
     createdAt: "2026-06-02T15:20:00Z",
     updatedAt: "2026-06-02T15:20:00Z",
   },
@@ -12,6 +14,8 @@ const initialCustomers = [
     name: "Jos\u00e9 Vega",
     phone: "+50622223333",
     email: "jose@example.com",
+    birthDate: null,
+    profileIncomplete: true,
     createdAt: "2026-06-02T15:28:00Z",
     updatedAt: "2026-06-02T15:28:00Z",
   },
@@ -133,6 +137,7 @@ let mockPromotionalCampaigns = [
     bodyText:
       "Hola {{customer.name}}, {{company.name}} tiene una promoción para clientes de Punto Club.",
     includePoints: true,
+    campaignType: "comun",
     status: "draft",
     recipientLimit: 5,
     recipientCount: 0,
@@ -510,6 +515,9 @@ function createHttpCustomerApi(config) {
       if (filters.search) {
         url.searchParams.set("search", filters.search);
       }
+      if (filters.birthdayOnly) {
+        url.searchParams.set("birthdayOnly", "true");
+      }
       const response = await fetch(url, {
         credentials: "include",
       });
@@ -789,6 +797,28 @@ function createHttpCustomerApi(config) {
         body: JSON.stringify(payload),
       });
 
+      return parseResponse(response);
+    },
+    async updateCustomer(customerId, payload) {
+      const response = await fetch(
+        buildCompanyUrl(`/customers/${encodeURIComponent(customerId)}`),
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify(payload),
+        },
+      );
+
+      return parseResponse(response);
+    },
+    async listTodayBirthdayCustomers() {
+      const response = await fetch(
+        buildCompanyUrl("/customers/birthdays/today"),
+        {
+          credentials: "include",
+        },
+      );
       return parseResponse(response);
     },
     async getCustomerBalance(customerId) {
@@ -1258,6 +1288,7 @@ function createMockCustomerApi() {
         subject: String(payload.subject).trim(),
         bodyText: String(payload.bodyText).trim(),
         includePoints: Boolean(payload.includePoints),
+        campaignType: payload.campaignType || "comun",
         status: "draft",
         recipientLimit: 5,
         recipientCount: 0,
@@ -1296,6 +1327,7 @@ function createMockCustomerApi() {
       campaign.subject = String(payload.subject).trim();
       campaign.bodyText = String(payload.bodyText).trim();
       campaign.includePoints = Boolean(payload.includePoints);
+      campaign.campaignType = payload.campaignType || "comun";
       campaign.updatedAt = now;
       const image = mockPromotionalCampaignImages.get(campaign.id);
       if (image) {
@@ -1363,12 +1395,14 @@ function createMockCustomerApi() {
       await wait(300);
       const status = filters.status || "subscribed";
       const search = normalize(filters.search || "");
+      const birthdayOnly = Boolean(filters.birthdayOnly);
       const items = mockCustomers
         .map(mapMockPromotionalRecipientCandidate)
         .filter(
           (customer) =>
             status === "all" || customer.promotionalStatus === status,
         )
+        .filter((customer) => !birthdayOnly || customer.birthdayToday)
         .filter(
           (customer) =>
             !search ||
@@ -1400,6 +1434,17 @@ function createMockCustomerApi() {
           skipped.push({
             customerId: candidate.customerId,
             reason: candidate.blockedReason || candidate.promotionalStatus,
+          });
+          return;
+        }
+
+        if (
+          campaign.campaignType === "cumpleanos" &&
+          !candidate.birthdayToday
+        ) {
+          skipped.push({
+            customerId: candidate.customerId,
+            reason: "not_birthday_today",
           });
           return;
         }
@@ -1459,6 +1504,13 @@ function createMockCustomerApi() {
           );
 
           if (!candidate || !candidate.eligible) {
+            return null;
+          }
+
+          if (
+            campaign.campaignType === "cumpleanos" &&
+            !candidate.birthdayToday
+          ) {
             return null;
           }
 
@@ -1859,6 +1911,8 @@ function createMockCustomerApi() {
         name: payload.name.trim(),
         phone: payload.phone.trim(),
         email: payload.email.trim(),
+        birthDate: payload.birthDate || null,
+        profileIncomplete: !payload.birthDate,
         createdAt: now,
         updatedAt: now,
       };
@@ -1880,6 +1934,48 @@ function createMockCustomerApi() {
         summary: "Cliente registrado.",
       });
       return customer;
+    },
+    async updateCustomer(customerId, payload) {
+      await wait(350);
+      const customer = mockCustomers.find(
+        (item) => String(item.id) === String(customerId),
+      );
+
+      if (!customer) {
+        throw new ApiError("CUSTOMER_NOT_FOUND", "Cliente no encontrado.");
+      }
+
+      validateCustomer({ ...customer, ...payload });
+      Object.assign(customer, {
+        ...payload,
+        email: Object.prototype.hasOwnProperty.call(payload, "email")
+          ? String(payload.email || "").trim()
+          : customer.email,
+        birthDate: Object.prototype.hasOwnProperty.call(payload, "birthDate")
+          ? payload.birthDate || null
+          : customer.birthDate || null,
+        updatedAt: new Date().toISOString(),
+      });
+      customer.profileIncomplete = !customer.birthDate;
+      return { ...customer };
+    },
+    async listTodayBirthdayCustomers() {
+      await wait(250);
+      const items = mockCustomers.filter((customer) =>
+        isBirthdayToday(customer.birthDate),
+      );
+      return {
+        date: getTodayIsoDate(),
+        total: items.length,
+        eligibleForBirthdayCampaign: items.filter(
+          (customer) => mapMockPromotionalRecipientCandidate(customer).eligible,
+        ).length,
+        items: items.map((customer) => ({
+          ...customer,
+          promotionalEligible:
+            mapMockPromotionalRecipientCandidate(customer).eligible,
+        })),
+      };
     },
     async getCustomerBalance(customerId) {
       await wait(200);
@@ -3199,6 +3295,24 @@ function validateCustomer(payload) {
     });
   }
 
+  if (payload.birthDate) {
+    const date = new Date(`${payload.birthDate}T00:00:00Z`);
+    const normalized = Number.isNaN(date.getTime())
+      ? ""
+      : date.toISOString().slice(0, 10);
+    if (normalized !== payload.birthDate) {
+      details.push({
+        field: "birthDate",
+        message: "La fecha de nacimiento debe ser valida.",
+      });
+    } else if (date > new Date()) {
+      details.push({
+        field: "birthDate",
+        message: "La fecha de nacimiento no puede ser futura.",
+      });
+    }
+  }
+
   if (details.length > 0) {
     throw new ApiError(
       "VALIDATION_ERROR",
@@ -3206,6 +3320,16 @@ function validateCustomer(payload) {
       details,
     );
   }
+}
+
+function isBirthdayToday(birthDate) {
+  if (!birthDate) {
+    return false;
+  }
+
+  const today = new Date();
+  const monthDay = birthDate.slice(5, 10);
+  return monthDay === today.toISOString().slice(5, 10);
 }
 
 function validateCompanySettings(payload) {
@@ -3341,6 +3465,13 @@ function validatePromotionalCampaign(payload) {
     });
   }
 
+  if (!["comun", "cumpleanos"].includes(payload?.campaignType || "comun")) {
+    details.push({
+      field: "campaignType",
+      message: "Selecciona un tipo de campaña válido.",
+    });
+  }
+
   if (details.length > 0) {
     throw new ApiError(
       "VALIDATION_ERROR",
@@ -3440,6 +3571,8 @@ function mapMockPromotionalRecipientCandidate(customer) {
     customerId: String(customer.id),
     name: customer.name,
     email,
+    birthDate: customer.birthDate || null,
+    birthdayToday: isBirthdayToday(customer.birthDate),
     pointsBalance: Number(balance?.pointsBalance || 0),
     promotionalStatus,
     eligible: Boolean(

@@ -172,6 +172,13 @@ function validateCustomerPayload(payload) {
   const name = normalizeText(payload && payload.name);
   const phone = normalizeText(payload && payload.phone);
   const email = normalizeText(payload && payload.email);
+  const birthDateValue = payload && payload.birthDate;
+  const birthDate =
+    birthDateValue === undefined ||
+    birthDateValue === null ||
+    birthDateValue === ""
+      ? null
+      : parseIsoDate(birthDateValue);
 
   if (!name || name.length > 160) {
     details.push({
@@ -194,11 +201,116 @@ function validateCustomerPayload(payload) {
     });
   }
 
+  if (
+    birthDateValue !== undefined &&
+    birthDateValue !== null &&
+    birthDateValue !== "" &&
+    !birthDate
+  ) {
+    details.push({
+      field: "birthDate",
+      message: "Birth date must use YYYY-MM-DD format.",
+    });
+  }
+
+  if (birthDate && birthDate > new Date()) {
+    details.push({
+      field: "birthDate",
+      message: "Birth date cannot be in the future.",
+    });
+  }
+
   if (details.length) {
     throw validationError(details);
   }
 
-  return { name, phone, email: email || null };
+  return {
+    name,
+    phone,
+    email: email || null,
+    birthDate: birthDate ? birthDate.toISOString().slice(0, 10) : null,
+  };
+}
+
+function validateCustomerPatchPayload(payload) {
+  const details = [];
+  const body = payload || {};
+  const allowedFields = ["name", "phone", "email", "birthDate"];
+  const providedFields = allowedFields.filter((field) =>
+    Object.prototype.hasOwnProperty.call(body, field),
+  );
+  const patch = {};
+
+  if (!providedFields.length) {
+    details.push({
+      field: "body",
+      message: "At least one editable customer field must be provided.",
+    });
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "name")) {
+    const name = normalizeText(body.name);
+    if (!name || name.length > 160) {
+      details.push({
+        field: "name",
+        message: "Name must be provided and be 160 characters or fewer.",
+      });
+    } else {
+      patch.name = name;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "phone")) {
+    const phone = normalizeText(body.phone);
+    if (!phone || phone.length > 32) {
+      details.push({
+        field: "phone",
+        message: "Phone must be provided and be 32 characters or fewer.",
+      });
+    } else {
+      patch.phone = phone;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "email")) {
+    const email = normalizeText(body.email);
+    if (email && (email.length > 254 || !emailPattern.test(email))) {
+      details.push({
+        field: "email",
+        message: "Email must be valid and 254 characters or fewer.",
+      });
+    } else {
+      patch.email = email || null;
+    }
+  }
+
+  if (Object.prototype.hasOwnProperty.call(body, "birthDate")) {
+    const value = body.birthDate;
+    const birthDate =
+      value === null || value === "" || value === undefined
+        ? null
+        : parseIsoDate(value);
+
+    if (value !== null && value !== "" && value !== undefined && !birthDate) {
+      details.push({
+        field: "birthDate",
+        message: "Birth date must use YYYY-MM-DD format.",
+      });
+    } else if (birthDate && birthDate > new Date()) {
+      details.push({
+        field: "birthDate",
+        message: "Birth date cannot be in the future.",
+      });
+    } else {
+      patch.birthDate = birthDate ? birthDate.toISOString().slice(0, 10) : null;
+    }
+  }
+
+  if (details.length) {
+    throw validationError(details);
+  }
+
+  return { patch, providedFields };
 }
 
 function validateCompanySettingsPatchPayload(payload) {
@@ -450,7 +562,13 @@ function validatePromotionalCampaignPayload(payload, options = {}) {
   const details = [];
   const body = payload || {};
   const partial = Boolean(options.partial);
-  const allowedFields = ["name", "subject", "bodyText", "includePoints"];
+  const allowedFields = [
+    "name",
+    "subject",
+    "bodyText",
+    "includePoints",
+    "campaignType",
+  ];
   const providedFields = allowedFields.filter((field) =>
     Object.prototype.hasOwnProperty.call(body, field),
   );
@@ -484,6 +602,18 @@ function validatePromotionalCampaignPayload(payload, options = {}) {
       "includePoints",
       details,
     );
+  }
+
+  if (!partial || Object.prototype.hasOwnProperty.call(body, "campaignType")) {
+    const campaignType = normalizeText(body.campaignType || "comun") || "comun";
+    if (!["comun", "cumpleanos"].includes(campaignType)) {
+      details.push({
+        field: "campaignType",
+        message: "campaignType must be comun or cumpleanos.",
+      });
+    } else {
+      campaign.campaignType = campaignType;
+    }
   }
 
   if (partial && !providedFields.length) {
@@ -528,6 +658,8 @@ function validatePromotionalRecipientQuery(query) {
     normalizeText(query.get("status") || "subscribed") || "subscribed";
   const limit = Number(query.get("limit") || 25);
   const search = normalizeText(query.get("search") || "") || "";
+  const birthdayOnly =
+    String(query.get("birthdayOnly") || "").toLowerCase() === "true";
 
   if (!allowedPromotionalPreferenceStatuses.has(status)) {
     throw validationError([
@@ -545,7 +677,7 @@ function validatePromotionalRecipientQuery(query) {
     ]);
   }
 
-  return { status, limit, search };
+  return { status, limit, search, birthdayOnly };
 }
 
 function validatePromotionalRecipientSelectionPayload(payload) {
@@ -2155,6 +2287,7 @@ module.exports = {
   validateCompanyRole,
   validateCustomerMembershipStatusQuery,
   validateCustomerPayload,
+  validateCustomerPatchPayload,
   validateExpirationAlertsQuery,
   validateInvitationAcceptPayload,
   validateLogoFileMetadata,

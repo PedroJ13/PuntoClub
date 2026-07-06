@@ -135,6 +135,9 @@ const elements = {
   communicationCampaignAudienceInput: document.querySelector(
     "#communication-campaign-audience",
   ),
+  communicationCampaignTypeInput: document.querySelector(
+    "#communication-campaign-type",
+  ),
   communicationCampaignBodyInput: document.querySelector(
     "#communication-campaign-body",
   ),
@@ -322,9 +325,11 @@ const elements = {
   nameInput: document.querySelector("#customer-name"),
   phoneInput: document.querySelector("#customer-phone"),
   emailInput: document.querySelector("#customer-email"),
+  birthDateInput: document.querySelector("#customer-birth-date"),
   nameError: document.querySelector("#customer-name-error"),
   phoneError: document.querySelector("#customer-phone-error"),
   emailError: document.querySelector("#customer-email-error"),
+  birthDateError: document.querySelector("#customer-birth-date-error"),
   formError: document.querySelector("#form-error"),
   saveButton: document.querySelector("#save-customer-button"),
   resetFormButton: document.querySelector("#reset-form-button"),
@@ -1060,6 +1065,7 @@ let pendingAdminConfirmation = null;
 let globalLoadingTimer = null;
 let activeCommunicationFilter = "all";
 let activeCommunicationCustomerSearch = "";
+let communicationSendCampaignTypeFilter = "all";
 let activeCompanySubsection = "profile";
 let activeCommunicationView = "send";
 let isCommunicationCampaignFormOpen = false;
@@ -1529,6 +1535,14 @@ elements.membershipCustomerResults.addEventListener("click", async (event) => {
 });
 
 elements.selectedCustomerCard.addEventListener("click", async (event) => {
+  const birthDateButton = event.target.closest(
+    "[data-profile-update-birth-date]",
+  );
+  if (birthDateButton) {
+    await updateSelectedCustomerBirthDate();
+    return;
+  }
+
   const actionButton = event.target.closest("[data-profile-action]");
   if (actionButton) {
     await openOperation(actionButton.dataset.profileAction);
@@ -1755,6 +1769,15 @@ elements.communicationCampaignList.addEventListener("change", async () => {
   }
 
   await selectPromotionalCampaign(elements.communicationCampaignList.value);
+});
+
+elements.operationStatus.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-open-birthday-campaigns]");
+  if (!button) {
+    return;
+  }
+
+  await openBirthdayCampaignSendView();
 });
 
 elements.communicationManageCampaignList.addEventListener(
@@ -2173,8 +2196,43 @@ async function openCommunicationSendView() {
     return;
   }
 
+  communicationSendCampaignTypeFilter = "all";
   setActiveSection("communications");
   setCommunicationView("send");
+  renderCommunicationCampaignList();
+}
+
+async function openBirthdayCampaignSendView() {
+  if (!(await ensureCurrentSessionForOperations())) {
+    return;
+  }
+
+  communicationSendCampaignTypeFilter = "cumpleanos";
+  setActiveSection("communications");
+  setCommunicationView("send");
+  clearCommunicationCampaignMessages();
+  selectedPromotionalRecipientIds = new Set();
+  renderCommunicationCampaignList();
+
+  const birthdayCampaigns = getSendPromotionalCampaigns();
+  if (!birthdayCampaigns.length) {
+    currentPromotionalCampaign = null;
+    promotionalRecipients = [];
+    renderCommunicationCampaignList();
+    renderCommunicationPreview();
+    renderCommunicationCustomers();
+    updatePromotionalSelectionSummary();
+    updatePromotionalSendState();
+    showCommunicationCampaignStatus(
+      "No hay campañas de cumpleaños guardadas. Crea una campaña tipo Cumpleaños antes de enviar.",
+    );
+    return;
+  }
+
+  await selectPromotionalCampaign(birthdayCampaigns[0].id, { silent: true });
+  showCommunicationCampaignStatus(
+    "Mostrando solo campañas de cumpleaños y clientes que cumplen años hoy.",
+  );
 }
 
 async function loadPromotionalCampaigns(options = {}) {
@@ -2189,12 +2247,13 @@ async function loadPromotionalCampaigns(options = {}) {
     });
     communicationCampaigns = result.items || [];
     renderCommunicationCampaignList();
+    const sendCampaigns = getSendPromotionalCampaigns();
     const nextSendCampaign =
       (options.keepCurrent &&
-        communicationCampaigns.find(
+        sendCampaigns.find(
           (campaign) => String(campaign.id) === String(previousSendCampaignId),
         )) ||
-      result.items?.[0] ||
+      sendCampaigns[0] ||
       null;
 
     const nextManagedCampaign =
@@ -2237,6 +2296,7 @@ async function selectPromotionalCampaign(campaignId, options = {}) {
     currentPromotionalCampaign = detail.campaign;
     promotionalRecipients = detail.recipients || [];
     selectedPromotionalRecipientIds = new Set();
+    await loadPromotionalRecipients({ silent: true });
     renderCommunicationCampaignList();
     renderCommunicationHistory();
     updatePromotionalSelectionSummary();
@@ -2278,6 +2338,7 @@ async function submitPromotionalCampaignDraft() {
     subject: elements.communicationCampaignSubjectInput.value.trim(),
     bodyText: elements.communicationCampaignBodyInput.value.trim(),
     includePoints: elements.communicationIncludePointsInput.checked,
+    campaignType: elements.communicationCampaignTypeInput.value || "comun",
   };
 
   setPromotionalCampaignSubmitting(true);
@@ -2521,6 +2582,7 @@ async function loadPromotionalRecipients(options = {}) {
     const result = await api.listPromotionalRecipients({
       status: activeCommunicationFilter,
       limit: 25,
+      birthdayOnly: currentPromotionalCampaign?.campaignType === "cumpleanos",
     });
     communicationCustomers = result.items || [];
     renderCommunicationCustomers();
@@ -2643,6 +2705,7 @@ function resetPromotionalCampaignForm() {
     "Guarda el borrador para agregar imagen y preparar envíos.";
   elements.communicationCampaignNameInput.value = "";
   elements.communicationCampaignSubjectInput.value = "";
+  elements.communicationCampaignTypeInput.value = "comun";
   elements.communicationCampaignAudienceInput.value = "subscribed";
   elements.communicationCampaignBodyInput.value = communicationDefaultBody;
   elements.communicationIncludePointsInput.checked = true;
@@ -2690,6 +2753,8 @@ function populatePromotionalCampaignForm(campaign) {
       : "Esta campaña ya no se puede editar. Puedes revisar su contenido e imagen.";
   elements.communicationCampaignNameInput.value = campaign?.name || "";
   elements.communicationCampaignSubjectInput.value = campaign?.subject || "";
+  elements.communicationCampaignTypeInput.value =
+    campaign?.campaignType || "comun";
   elements.communicationCampaignAudienceInput.value = "subscribed";
   elements.communicationCampaignBodyInput.value =
     campaign?.bodyText || communicationDefaultBody;
@@ -2715,6 +2780,7 @@ function setPromotionalCampaignContentControlsDisabled(isDisabled) {
     elements.communicationCampaignNameInput,
     elements.communicationCampaignSubjectInput,
     elements.communicationCampaignAudienceInput,
+    elements.communicationCampaignTypeInput,
     elements.communicationCampaignBodyInput,
     elements.communicationIncludePointsInput,
   ].forEach((control) => {
@@ -2731,44 +2797,66 @@ function renderCommunicationCampaignList() {
   }
 
   const search = normalize(elements.communicationCampaignSearchInput.value);
-  const campaigns = communicationCampaigns.filter(
+  const sendCampaigns = getSendPromotionalCampaigns().filter(
     (campaign) =>
       !search ||
       normalize(campaign.name).includes(search) ||
       normalize(campaign.subject).includes(search),
   );
+  const manageCampaigns = communicationCampaigns;
 
-  if (!campaigns.length) {
+  if (!sendCampaigns.length) {
     elements.communicationCampaignList.innerHTML =
-      '<option value="">No hay campañas guardadas</option>';
-    elements.communicationManageCampaignList.innerHTML =
-      '<option value="">No hay campañas guardadas</option>';
+      communicationSendCampaignTypeFilter === "cumpleanos"
+        ? '<option value="">No hay campañas de cumpleaños</option>'
+        : '<option value="">No hay campañas guardadas</option>';
     elements.communicationCampaignList.disabled = true;
-    elements.communicationManageCampaignList.disabled = true;
-    elements.communicationEditCampaignButton.disabled = true;
-    return;
+  } else {
+    elements.communicationCampaignList.disabled = false;
   }
 
-  elements.communicationCampaignList.disabled = false;
-  elements.communicationManageCampaignList.disabled = false;
-  elements.communicationEditCampaignButton.disabled = false;
-  const campaignOptions = campaigns
-    .map(
-      (campaign) => `
+  const campaignOptions = sendCampaigns
+    .map((campaign) => {
+      const typeLabel =
+        campaign.campaignType === "cumpleanos" ? "Cumpleaños" : "Común";
+      return `
         <option value="${escapeHtml(campaign.id)}">
-          ${escapeHtml(campaign.name)} - ${escapeHtml(campaign.subject)}
+          ${escapeHtml(campaign.name)} - ${escapeHtml(campaign.subject)} · ${typeLabel}
         </option>
-      `,
-    )
+      `;
+    })
     .join("");
-  elements.communicationCampaignList.innerHTML = `
-    <option value="">Selecciona una campaña para enviar</option>
-    ${campaignOptions}
-  `;
-  elements.communicationManageCampaignList.innerHTML = campaignOptions;
+  if (sendCampaigns.length) {
+    elements.communicationCampaignList.innerHTML = `
+      <option value="">Selecciona una campaña para enviar</option>
+      ${campaignOptions}
+    `;
+  }
+
+  if (!manageCampaigns.length) {
+    elements.communicationManageCampaignList.innerHTML =
+      '<option value="">No hay campañas guardadas</option>';
+    elements.communicationManageCampaignList.disabled = true;
+    elements.communicationEditCampaignButton.disabled = true;
+  } else {
+    elements.communicationManageCampaignList.disabled = false;
+    elements.communicationEditCampaignButton.disabled = false;
+    elements.communicationManageCampaignList.innerHTML = manageCampaigns
+      .map((campaign) => {
+        const typeLabel =
+          campaign.campaignType === "cumpleanos" ? "Cumpleaños" : "Común";
+        return `
+          <option value="${escapeHtml(campaign.id)}">
+            ${escapeHtml(campaign.name)} - ${escapeHtml(campaign.subject)} · ${typeLabel}
+          </option>
+        `;
+      })
+      .join("");
+  }
+
   if (
     currentPromotionalCampaign &&
-    campaigns.some(
+    sendCampaigns.some(
       (campaign) =>
         String(campaign.id) === String(currentPromotionalCampaign.id),
     )
@@ -2779,7 +2867,7 @@ function renderCommunicationCampaignList() {
   }
   if (
     managedPromotionalCampaign &&
-    campaigns.some(
+    manageCampaigns.some(
       (campaign) =>
         String(campaign.id) === String(managedPromotionalCampaign.id),
     )
@@ -2787,6 +2875,16 @@ function renderCommunicationCampaignList() {
     elements.communicationManageCampaignList.value =
       managedPromotionalCampaign.id;
   }
+}
+
+function getSendPromotionalCampaigns() {
+  if (communicationSendCampaignTypeFilter === "cumpleanos") {
+    return communicationCampaigns.filter(
+      (campaign) => campaign.campaignType === "cumpleanos",
+    );
+  }
+
+  return communicationCampaigns;
 }
 
 function getCampaignImageValidationMessage(file) {
@@ -3478,6 +3576,7 @@ async function submitCustomer() {
     name: elements.nameInput.value,
     phone: elements.phoneInput.value,
     email: elements.emailInput.value,
+    birthDate: elements.birthDateInput.value || null,
   };
 
   try {
@@ -5355,6 +5454,9 @@ function renderSelectedCustomer() {
   const membershipAction = getSelectedCustomerMembershipActionLabel();
   const alerts = [
     !selectedCustomer.email ? "Cliente sin correo." : "",
+    selectedCustomer.profileIncomplete || !selectedCustomer.birthDate
+      ? "Datos incompletos: agrega fecha de nacimiento."
+      : "",
     pointsEnabled && points > 0 ? "Cliente tiene puntos disponibles." : "",
     membershipsEnabled &&
     membershipExpirationAlert &&
@@ -5370,6 +5472,14 @@ function renderSelectedCustomer() {
         <span class="profile-kicker">Cliente</span>
         <h3>${escapeHtml(selectedCustomer.name)}</h3>
         <p>${escapeHtml(selectedCustomer.phone)} - ${escapeHtml(selectedCustomer.email || "Sin correo")}</p>
+        <label class="profile-birth-date-field">
+          <span>Fecha de nacimiento</span>
+          <input
+            type="date"
+            value="${escapeHtml(selectedCustomer.birthDate || "")}"
+            data-profile-birth-date
+          />
+        </label>
       </div>
       <div class="profile-summary-grid">
         ${
@@ -5396,6 +5506,7 @@ function renderSelectedCustomer() {
         : ""
     }
     <div class="profile-actions">
+      <button class="secondary-button" type="button" data-icon="save" data-profile-update-birth-date>Guardar fecha</button>
       ${
         pointsEnabled
           ? `<button type="button" data-icon="receipt" data-profile-action="purchase">Registrar compra</button>
@@ -5411,6 +5522,56 @@ function renderSelectedCustomer() {
     </div>
   `;
   renderPointsMembershipContext();
+}
+
+async function updateSelectedCustomerBirthDate() {
+  if (!selectedCustomer) {
+    return;
+  }
+
+  const input = elements.selectedCustomerCard.querySelector(
+    "[data-profile-birth-date]",
+  );
+  const birthDate = input?.value || null;
+  const button = elements.selectedCustomerCard.querySelector(
+    "[data-profile-update-birth-date]",
+  );
+
+  if (button) {
+    button.disabled = true;
+    setButtonText(button, "Guardando...");
+  }
+
+  try {
+    const customer = await api.updateCustomer(selectedCustomer.id, {
+      birthDate,
+    });
+    selectedCustomer = {
+      ...selectedCustomer,
+      ...customer,
+      balance: selectedCustomer.balance,
+    };
+    currentCustomers = currentCustomers.map((item) =>
+      String(item.id) === String(customer.id)
+        ? { ...item, ...customer, balance: item.balance }
+        : item,
+    );
+    selectedMembershipCustomer = { ...selectedCustomer };
+    renderSelectedCustomer();
+    renderCustomers(currentCustomers, elements.searchInput.value.trim());
+    showOperationStatus("Fecha de nacimiento actualizada.");
+  } catch (error) {
+    showOperationStatus(
+      error instanceof ApiError && error.code === "VALIDATION_ERROR"
+        ? "Revisa la fecha de nacimiento antes de guardar."
+        : "No pudimos actualizar la fecha de nacimiento.",
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+      setButtonText(button, "Guardar fecha");
+    }
+  }
 }
 
 function renderHistoryLoading() {
@@ -8346,6 +8507,7 @@ function renderFormError(error) {
         name: elements.nameError,
         phone: elements.phoneError,
         email: elements.emailError,
+        birthDate: elements.birthDateError,
       }[detail.field];
 
       if (target) {
@@ -8916,6 +9078,7 @@ function clearFormMessages(options = {}) {
   elements.nameError.textContent = "";
   elements.phoneError.textContent = "";
   elements.emailError.textContent = "";
+  elements.birthDateError.textContent = "";
   elements.formError.hidden = true;
   elements.formError.textContent = "";
 
@@ -9826,6 +9989,34 @@ async function showMainApp(options = {}) {
   if (options.refreshCompany) {
     await loadCompanySettings();
   }
+
+  await loadBirthdayAlert({ silent: true });
+}
+
+async function loadBirthdayAlert(options = {}) {
+  try {
+    const result = await api.listTodayBirthdayCustomers();
+    if (result.total > 0) {
+      showBirthdayOperationStatus(result);
+    }
+  } catch (error) {
+    if (!options.silent) {
+      showOperationStatus("No pudimos cargar cumpleañeros de hoy.");
+    }
+  }
+}
+
+function showBirthdayOperationStatus(result) {
+  const total = Number(result.total || 0);
+  const eligible = Number(result.eligibleForBirthdayCampaign || 0);
+  elements.operationStatus.hidden = false;
+  elements.operationStatus.innerHTML = `
+    <span>Campanita: ${total} cliente${total === 1 ? "" : "s"} cumple${total === 1 ? "" : "n"} años hoy. ${eligible} apto${eligible === 1 ? "" : "s"} para campaña de cumpleaños.</span>
+    <button class="secondary-button" type="button" data-icon="send" data-open-birthday-campaigns>
+      Enviar campaña de cumpleaños
+    </button>
+  `;
+  applyButtonIcons(elements.operationStatus);
 }
 
 function showPublicCompanyRegistrationPage() {

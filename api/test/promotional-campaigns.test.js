@@ -50,6 +50,7 @@ test("promotional campaign payload normalizes MVP draft fields", () => {
     subject: "Beneficio para clientes",
     bodyText: "Hola {{customer.name}}, tienes una promo.",
     includePoints: true,
+    campaignType: "comun",
   });
 });
 
