@@ -3709,9 +3709,23 @@ async function createCustomer(companyId, payload) {
     .input("phone", sql.NVarChar(32), payload.phone)
     .input("email", sql.NVarChar(254), payload.email)
     .input("birth_date", sql.Date, payload.birthDate || null).query(`
+      DECLARE @inserted TABLE (
+        id bigint,
+        name nvarchar(160),
+        phone nvarchar(32),
+        email nvarchar(254),
+        birth_date date,
+        created_at datetime2,
+        updated_at datetime2
+      );
+
       INSERT INTO dbo.Customers (company_id, name, phone, email, birth_date)
       OUTPUT INSERTED.id, INSERTED.name, INSERTED.phone, INSERTED.email, INSERTED.birth_date, INSERTED.created_at, INSERTED.updated_at
+      INTO @inserted
       VALUES (@company_id, @name, @phone, @email, @birth_date)
+
+      SELECT id, name, phone, email, birth_date, created_at, updated_at
+      FROM @inserted;
     `);
 
   return mapCustomer(result.recordset[0]);
@@ -3743,6 +3757,16 @@ async function updateCustomer(companyId, customerId, patch) {
     .input("phone", sql.NVarChar(32), next.phone)
     .input("email", sql.NVarChar(254), next.email)
     .input("birth_date", sql.Date, next.birthDate || null).query(`
+      DECLARE @updated TABLE (
+        id bigint,
+        name nvarchar(160),
+        phone nvarchar(32),
+        email nvarchar(254),
+        birth_date date,
+        created_at datetime2,
+        updated_at datetime2
+      );
+
       UPDATE dbo.Customers
       SET
         name = @name,
@@ -3751,8 +3775,12 @@ async function updateCustomer(companyId, customerId, patch) {
         birth_date = @birth_date,
         updated_at = SYSUTCDATETIME()
       OUTPUT INSERTED.id, INSERTED.name, INSERTED.phone, INSERTED.email, INSERTED.birth_date, INSERTED.created_at, INSERTED.updated_at
+      INTO @updated
       WHERE company_id = @company_id
         AND id = @customer_id
+
+      SELECT id, name, phone, email, birth_date, created_at, updated_at
+      FROM @updated;
     `);
 
   if (!result.recordset.length) {
