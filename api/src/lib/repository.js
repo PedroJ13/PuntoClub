@@ -31,12 +31,15 @@ function mapCustomer(row) {
 }
 
 function mapCompanySettings(row) {
+  const hasPrivateLogo = Boolean(row.logo_blob_path);
   return {
     id: toApiId(row.id),
     name: row.name,
     email: row.email,
     phone: row.phone,
-    logoUrl: row.logo_url,
+    logoUrl: hasPrivateLogo ? "/api/my-company/logo" : row.logo_url,
+    logoContentType: hasPrivateLogo ? row.logo_content_type : null,
+    logoUpdatedAt: hasPrivateLogo ? toIsoTimestamp(row.logo_updated_at) : null,
     pointsPercentage: Number(row.points_percentage),
     loyaltyPointsEnabled: Boolean(row.loyalty_points_enabled),
     loyaltyMembershipsEnabled: Boolean(row.loyalty_memberships_enabled),
@@ -799,6 +802,9 @@ async function getCompanySettings(companyId) {
         email,
         phone,
         logo_url,
+        logo_blob_path,
+        logo_content_type,
+        logo_updated_at,
         points_percentage,
         loyalty_points_enabled,
         loyalty_memberships_enabled,
@@ -843,6 +849,9 @@ async function updateCompanySettings(companyId, settings) {
         INSERTED.email,
         INSERTED.phone,
         INSERTED.logo_url,
+        INSERTED.logo_blob_path,
+        INSERTED.logo_content_type,
+        INSERTED.logo_updated_at,
         INSERTED.points_percentage,
         INSERTED.loyalty_points_enabled,
         INSERTED.loyalty_memberships_enabled,

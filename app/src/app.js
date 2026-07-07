@@ -4420,6 +4420,7 @@ async function loadAuditEvents() {
 
 async function loadCompanySettings() {
   clearCompanyMessages();
+  clearCompanyLogoMessages();
   renderCompanyLoading();
   setCompanyLoading(true);
   const stopLoading = startGlobalLoading("Estamos cargando la empresa...");
