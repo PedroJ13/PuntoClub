@@ -2688,13 +2688,6 @@ async function sendPromotionalCampaign() {
     return;
   }
 
-  if (selectedCustomerIds.length > 5) {
-    showCommunicationCampaignError(
-      "El MVP permite hasta 5 destinatarios por envío.",
-    );
-    return;
-  }
-
   const confirmed = window.confirm(
     `Vas a enviar "${currentPromotionalCampaign.name}" a ${selectedCustomerIds.length} destinatario${selectedCustomerIds.length === 1 ? "" : "s"} seleccionado${selectedCustomerIds.length === 1 ? "" : "s"}. No se enviará a clientes no seleccionados ni dados de baja. ¿Confirmas el envío real?`,
   );
@@ -3233,19 +3226,7 @@ function renderCommunicationCustomers() {
     button.setAttribute("aria-pressed", isActive ? "true" : "false");
   });
 
-  const customers = communicationCustomers.filter((customer) => {
-    const matchesStatus =
-      activeCommunicationFilter === "all" ||
-      (customer.promotionalStatus || customer.status) ===
-        activeCommunicationFilter;
-    const search = normalize(activeCommunicationCustomerSearch);
-    const matchesSearch =
-      !search ||
-      normalize(customer.name).includes(search) ||
-      normalize(customer.email).includes(search);
-
-    return matchesStatus && matchesSearch;
-  });
+  const customers = getVisibleCommunicationCustomers();
 
   if (!customers.length) {
     elements.communicationCustomerList.innerHTML =
@@ -3258,12 +3239,27 @@ function renderCommunicationCustomers() {
     .join("");
 }
 
+function getVisibleCommunicationCustomers() {
+  return communicationCustomers.filter((customer) => {
+    const matchesStatus =
+      activeCommunicationFilter === "all" ||
+      (customer.promotionalStatus || customer.status) ===
+        activeCommunicationFilter;
+    const search = normalize(activeCommunicationCustomerSearch);
+    const matchesSearch =
+      !search ||
+      normalize(customer.name).includes(search) ||
+      normalize(customer.email).includes(search);
+
+    return matchesStatus && matchesSearch;
+  });
+}
+
 function renderCommunicationCustomerCard(customer) {
   const customerId = customer.customerId || customer.id || customer.email;
   const status = customer.promotionalStatus || customer.status;
   const checked = selectedPromotionalRecipientIds.has(String(customerId));
-  const disabled =
-    !customer.eligible || selectedPromotionalRecipientIds.size >= 5;
+  const disabled = !customer.eligible;
   const disabledReason = getCommunicationBlockedReason(customer);
   const shouldShowDisabledReason =
     disabledReason && !["unsubscribed", "suppressed"].includes(status);
@@ -3310,11 +3306,7 @@ function renderCommunicationCustomerCard(customer) {
 function selectPromotionalRecipientsByRule(predicate) {
   const selectedIds = [];
 
-  for (const customer of communicationCustomers) {
-    if (selectedIds.length >= 5) {
-      break;
-    }
-
+  for (const customer of getVisibleCommunicationCustomers()) {
     if (predicate(customer)) {
       selectedIds.push(String(customer.customerId || customer.id));
     }
@@ -3393,16 +3385,13 @@ function getPromotionalRecipientStatusLabel(status) {
 
 function updatePromotionalSelectionSummary() {
   const count = selectedPromotionalRecipientIds.size;
-  elements.communicationSelectedCount.textContent = `${count} seleccionado${count === 1 ? "" : "s"} de 5`;
+  elements.communicationSelectedCount.textContent = `${count} seleccionado${count === 1 ? "" : "s"}`;
   elements.communicationClearSelectionButton.disabled = count === 0;
 }
 
 function updatePromotionalSendState() {
   const selectedCount = selectedPromotionalRecipientIds.size;
-  const canSend =
-    Boolean(currentPromotionalCampaign) &&
-    selectedCount > 0 &&
-    selectedCount <= 5;
+  const canSend = Boolean(currentPromotionalCampaign) && selectedCount > 0;
 
   elements.communicationSendButton.disabled = !canSend;
   elements.communicationSendButton.textContent = canSend

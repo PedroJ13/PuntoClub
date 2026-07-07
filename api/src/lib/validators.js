@@ -711,11 +711,6 @@ function validatePromotionalRecipientSelectionPayload(payload) {
       field: "customerIds",
       message: "Select at least one recipient.",
     });
-  } else if (customerIds.length > 5) {
-    details.push({
-      field: "customerIds",
-      message: "Promotional MVP allows up to 5 recipients per campaign.",
-    });
   }
 
   const normalizedIds = (customerIds || []).map((value, index) => {

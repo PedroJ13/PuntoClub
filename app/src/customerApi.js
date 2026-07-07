@@ -1465,6 +1465,7 @@ function createMockCustomerApi() {
       await wait(350);
       const campaign = findMockPromotionalCampaign(campaignId);
       validatePromotionalRecipientSelection({ customerIds });
+      validateMockPromotionalEligibility(campaign, customerIds);
       const recipients = [];
       const skipped = [];
 
@@ -1474,30 +1475,6 @@ function createMockCustomerApi() {
             (customer) => String(customer.id) === String(customerId),
           ),
         );
-
-        if (!candidate) {
-          skipped.push({ customerId: String(customerId), reason: "not_found" });
-          return;
-        }
-
-        if (!candidate.eligible) {
-          skipped.push({
-            customerId: candidate.customerId,
-            reason: candidate.blockedReason || candidate.promotionalStatus,
-          });
-          return;
-        }
-
-        if (
-          campaign.campaignType === "cumpleanos" &&
-          !candidate.birthdayToday
-        ) {
-          skipped.push({
-            customerId: candidate.customerId,
-            reason: "not_birthday_today",
-          });
-          return;
-        }
 
         recipients.push({
           id: `${campaign.id}-${candidate.customerId}`,
@@ -1529,6 +1506,7 @@ function createMockCustomerApi() {
       await wait(250);
       const campaign = findMockPromotionalCampaign(campaignId);
       validatePromotionalRecipientSelection({ customerIds });
+      validateMockPromotionalEligibility(campaign, customerIds);
       const selectedCustomerIds = new Set(customerIds.map((id) => String(id)));
       const existingSentRecipient = (
         mockPromotionalCampaignRecipients.get(campaign.id) || []
@@ -3542,19 +3520,47 @@ function validatePromotionalRecipientSelection(payload) {
     });
   }
 
-  if (ids.length > 5) {
-    details.push({
-      field: "customerIds",
-      message: "El MVP permite hasta 5 destinatarios por campaña.",
-    });
-  }
-
   if (new Set(ids.map(String)).size !== ids.length) {
     details.push({
       field: "customerIds",
       message: "La selección no debe tener clientes duplicados.",
     });
   }
+
+  if (details.length > 0) {
+    throw new ApiError(
+      "VALIDATION_ERROR",
+      "Revisa los destinatarios seleccionados.",
+      details,
+    );
+  }
+}
+
+function validateMockPromotionalEligibility(campaign, customerIds) {
+  const details = [];
+
+  customerIds.forEach((customerId, index) => {
+    const candidate = mapMockPromotionalRecipientCandidate(
+      mockCustomers.find(
+        (customer) => String(customer.id) === String(customerId),
+      ),
+    );
+
+    if (!candidate || !candidate.eligible) {
+      details.push({
+        field: `customerIds[${index}]`,
+        message: "Selecciona solo clientes elegibles para esta campaña.",
+      });
+      return;
+    }
+
+    if (campaign.campaignType === "cumpleanos" && !candidate.birthdayToday) {
+      details.push({
+        field: `customerIds[${index}]`,
+        message: "Selecciona solo cumpleañeros del día para esta campaña.",
+      });
+    }
+  });
 
   if (details.length > 0) {
     throw new ApiError(

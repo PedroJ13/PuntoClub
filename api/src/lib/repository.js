@@ -1,4 +1,4 @@
-const { ApiError } = require("./errors");
+const { ApiError, validationError } = require("./errors");
 const { getFailedAttemptUpdate } = require("./authRateLimit");
 const { getPool, getSql } = require("./db");
 
@@ -1883,7 +1883,6 @@ async function beginPromotionalCampaignSend(companyId, campaignId) {
 
     const campaign = campaignResult.recordset[0];
     const pendingCount = Number(campaign.pending_count || 0);
-    const recipientLimit = Number(campaign.recipient_limit || 5);
 
     if (campaign.status !== "ready") {
       throw new ApiError(
@@ -1898,14 +1897,6 @@ async function beginPromotionalCampaignSend(companyId, campaignId) {
         409,
         "PROMOTIONAL_RECIPIENTS_REQUIRED",
         "Promotional campaign requires selected recipients before sending.",
-      );
-    }
-
-    if (pendingCount > recipientLimit) {
-      throw new ApiError(
-        409,
-        "PROMOTIONAL_RECIPIENT_LIMIT_EXCEEDED",
-        "Promotional recipient limit exceeded.",
       );
     }
 
@@ -2086,15 +2077,6 @@ async function replacePromotionalCampaignRecipients(
       );
     }
 
-    if (customerIds.length > Number(campaign.recipient_limit || 5)) {
-      throw new ApiError(400, "VALIDATION_ERROR", "Recipient limit exceeded.", [
-        {
-          field: "customerIds",
-          message: `Select ${campaign.recipient_limit} recipients or fewer.`,
-        },
-      ]);
-    }
-
     await new sql.Request(transaction).input(
       "campaign_id",
       sql.BigInt,
@@ -2134,8 +2116,12 @@ async function replacePromotionalCampaignRecipients(
         `);
 
       if (!customerResult.recordset.length) {
-        skipped.push({ customerId: toApiId(customerId), reason: "not_found" });
-        continue;
+        throw validationError([
+          {
+            field: "customerIds",
+            message: `Customer ${customerId} is not eligible for this campaign.`,
+          },
+        ]);
       }
 
       const customer = customerResult.recordset[0];
@@ -2144,27 +2130,26 @@ async function replacePromotionalCampaignRecipients(
         (Number(customer.birth_month) !== birthMonth ||
           Number(customer.birth_day) !== birthDay)
       ) {
-        skipped.push({
-          customerId: toApiId(customer.customer_id),
-          reason: "not_birthday_today",
-        });
-        continue;
+        throw validationError([
+          {
+            field: "customerIds",
+            message: `Customer ${customer.customer_id} is not eligible for this campaign.`,
+          },
+        ]);
       }
 
       const email = String(customer.email || "").trim();
       if (
         !email ||
-        !email.includes("@") ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) ||
         customer.promotional_status !== "subscribed"
       ) {
-        skipped.push({
-          customerId: toApiId(customer.customer_id),
-          reason:
-            !email || !email.includes("@")
-              ? "missing_email"
-              : customer.promotional_status,
-        });
-        continue;
+        throw validationError([
+          {
+            field: "customerIds",
+            message: `Customer ${customer.customer_id} is not eligible for this campaign.`,
+          },
+        ]);
       }
 
       const insertResult = await new sql.Request(transaction)

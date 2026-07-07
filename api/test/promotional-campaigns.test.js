@@ -55,14 +55,12 @@ test("promotional campaign payload normalizes MVP draft fields", () => {
   });
 });
 
-test("promotional recipient selection enforces five-recipient MVP limit", () => {
-  assert.throws(
-    () =>
-      validatePromotionalRecipientSelectionPayload({
-        customerIds: [1, 2, 3, 4, 5, 6],
-      }),
-    (error) => error instanceof ApiError && error.code === "VALIDATION_ERROR",
-  );
+test("promotional recipient selection accepts more than five recipients", () => {
+  const payload = validatePromotionalRecipientSelectionPayload({
+    customerIds: [1, 2, 3, 4, 5, 6],
+  });
+
+  assert.deepEqual(payload, { customerIds: [1, 2, 3, 4, 5, 6] });
 });
 
 test("promotional recipient selection rejects duplicates", () => {
@@ -497,6 +495,135 @@ test("promotional send skips unsubscribed recipients and sends selected subscrib
   });
   assert.equal(savedResults[1].result.status, "skipped");
   assert.equal(savedResults[1].result.skipReason, "unsubscribed");
+});
+
+test("promotional send accepts more than five selected eligible recipients", async () => {
+  const customerIds = [100, 101, 102, 103, 104, 105];
+  const selectedPayloads = [];
+  const sentMessages = [];
+  const savedResults = [];
+  const fakeRepository = {
+    async replacePromotionalCampaignRecipients(
+      companyId,
+      campaignId,
+      selectedCustomerIds,
+    ) {
+      selectedPayloads.push({
+        companyId,
+        campaignId,
+        customerIds: selectedCustomerIds,
+      });
+      return { recipients: [], skipped: [] };
+    },
+    async beginPromotionalCampaignSend() {
+      return {
+        id: "5",
+        name: "Promo multiple",
+        subject: "Promo {{customer.name}}",
+        bodyText: "Hola {{customer.name}}, promo de {{company.name}}.",
+        includePoints: false,
+      };
+    },
+    async getActivePromotionalCampaignImage() {
+      return null;
+    },
+    async getCompanySettings() {
+      return { id: "10", name: "Cafe Centro" };
+    },
+    async listPendingPromotionalCampaignRecipientsForSend() {
+      return customerIds.map((customerId) => ({
+        id: String(customerId),
+        customerId: String(customerId),
+        customerName: `Cliente ${customerId}`,
+        recipientEmail: `cliente${customerId}@example.com`,
+        pointsBalanceSnapshot: customerId,
+        currentPreferenceStatus: "subscribed",
+        status: "pending",
+      }));
+    },
+    async recordPromotionalCampaignRecipientResult(
+      companyId,
+      campaignId,
+      recipientId,
+      result,
+    ) {
+      savedResults.push({ companyId, campaignId, recipientId, result });
+      return { id: recipientId, status: result.status };
+    },
+    async completePromotionalCampaignSend() {
+      return { id: "5", status: "sent" };
+    },
+  };
+
+  const result = await sendPromotionalCampaignToRecipients({
+    companyId: 10,
+    campaignId: 5,
+    customerIds,
+    emailConfig: {
+      senderAddress: "DoNotReply@example.com",
+      senderDisplayName: "Punto Club",
+    },
+    repositoryAdapter: fakeRepository,
+    async sendEmail(message) {
+      sentMessages.push(message);
+      return { provider: "acs-email", status: "sent", id: "message-1" };
+    },
+  });
+
+  assert.deepEqual(selectedPayloads, [
+    { companyId: 10, campaignId: 5, customerIds },
+  ]);
+  assert.equal(sentMessages.length, 6);
+  assert.equal(savedResults.length, 6);
+  assert.deepEqual(result.summary, {
+    selected: 6,
+    sent: 6,
+    failed: 0,
+    skipped: 0,
+  });
+});
+
+test("promotional send stops before email when selected recipients are not eligible", async () => {
+  let sendEmailCalled = false;
+  const fakeRepository = {
+    async replacePromotionalCampaignRecipients() {
+      throw new ApiError(
+        400,
+        "VALIDATION_ERROR",
+        "One or more fields are invalid.",
+        [
+          {
+            field: "customerIds",
+            message: "Customer 101 is not eligible for this campaign.",
+          },
+        ],
+      );
+    },
+  };
+
+  await assert.rejects(
+    () =>
+      sendPromotionalCampaignToRecipients({
+        companyId: 10,
+        campaignId: 5,
+        customerIds: [100, 101, 102, 103, 104, 105],
+        emailConfig: {
+          senderAddress: "DoNotReply@example.com",
+          senderDisplayName: "Punto Club",
+        },
+        repositoryAdapter: fakeRepository,
+        async sendEmail() {
+          sendEmailCalled = true;
+          return { provider: "acs-email", status: "sent", id: "message-1" };
+        },
+      }),
+    (error) =>
+      error instanceof ApiError &&
+      error.status === 400 &&
+      error.code === "VALIDATION_ERROR",
+  );
+
+  assert.equal(sendEmailCalled, false);
 });
 
 test("promotional send blocks duplicate selected recipients before sending email", async () => {
