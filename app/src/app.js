@@ -7463,6 +7463,7 @@ function renderCompanyLogo(settings) {
     elements.companyLogoPreviewText.hidden = false;
     elements.companyLogoPreviewText.textContent = "Sin logo cargado";
     elements.companyLogoPreviewImage.hidden = true;
+    elements.companyLogoPreviewImage.onerror = null;
     elements.companyLogoPreviewImage.removeAttribute("src");
     return;
   }
@@ -7473,6 +7474,15 @@ function renderCompanyLogo(settings) {
     : "Logo cargado";
   elements.companyLogoPreviewText.hidden = true;
   elements.companyLogoPreviewImage.hidden = false;
+  elements.companyLogoPreviewImage.onerror = () => {
+    elements.companyCurrentLogo.textContent =
+      "Logo configurado, pero no pudimos cargar la imagen.";
+    elements.companyLogoPreviewText.hidden = false;
+    elements.companyLogoPreviewText.textContent =
+      "No pudimos mostrar el logo cargado.";
+    elements.companyLogoPreviewImage.hidden = true;
+    elements.companyLogoPreviewImage.removeAttribute("src");
+  };
   elements.companyLogoPreviewImage.src = `${logoUrl}${cacheKey}`;
 }
 
@@ -7492,6 +7502,7 @@ function previewSelectedCompanyLogo() {
   companyLogoPreviewUrl = URL.createObjectURL(file);
   elements.companyLogoPreviewText.hidden = true;
   elements.companyLogoPreviewImage.hidden = false;
+  elements.companyLogoPreviewImage.onerror = null;
   elements.companyLogoPreviewImage.src = companyLogoPreviewUrl;
   showCompanyLogoStatus("Logo listo para subir.");
 }
@@ -8541,6 +8552,7 @@ function renderActiveCompanyIdentity(company) {
   if (!companyName) {
     elements.activeCompanyIdentity.hidden = true;
     elements.activeCompanyLogoImage.hidden = true;
+    elements.activeCompanyLogoImage.onerror = null;
     elements.activeCompanyLogoImage.removeAttribute("src");
     elements.activeCompanyName.textContent = "";
     return;
@@ -8560,6 +8572,7 @@ function renderActiveCompanyIdentity(company) {
   if (!logoUrl) {
     elements.activeCompanyLogoFallback.hidden = false;
     elements.activeCompanyLogoImage.hidden = true;
+    elements.activeCompanyLogoImage.onerror = null;
     elements.activeCompanyLogoImage.removeAttribute("src");
     return;
   }
@@ -8567,6 +8580,11 @@ function renderActiveCompanyIdentity(company) {
   const cacheKey = updatedAt ? `?v=${encodeURIComponent(updatedAt)}` : "";
   elements.activeCompanyLogoFallback.hidden = true;
   elements.activeCompanyLogoImage.hidden = false;
+  elements.activeCompanyLogoImage.onerror = () => {
+    elements.activeCompanyLogoFallback.hidden = false;
+    elements.activeCompanyLogoImage.hidden = true;
+    elements.activeCompanyLogoImage.removeAttribute("src");
+  };
   elements.activeCompanyLogoImage.src = `${logoUrl}${cacheKey}`;
 }
 
