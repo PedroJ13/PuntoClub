@@ -13,6 +13,7 @@ const {
   buildPromotionalEmail,
   getPromotionalRecipientSkipReason,
   getPromotionalCompanyId,
+  getPromotionalSendPaceDelayMs,
   resolvePromotionalRecipientFilters,
   sanitizePromotionalSendError,
   sendPromotionalEmailWithRetry,
@@ -495,6 +496,7 @@ test("promotional send skips unsubscribed recipients and sends selected subscrib
       url: "https://api.puntoclubcr.com/api/companies/10/promotional-campaigns/5/send",
     },
     repositoryAdapter: fakeRepository,
+    paceDelayMs: 0,
     async sendEmail(message) {
       sentMessages.push(message);
       return { provider: "acs-email", status: "sent", id: "message-1" };
@@ -588,6 +590,7 @@ test("promotional send accepts more than five selected eligible recipients", asy
       senderDisplayName: "Punto Club",
     },
     repositoryAdapter: fakeRepository,
+    paceDelayMs: 0,
     async sendEmail(message) {
       sentMessages.push(message);
       return { provider: "acs-email", status: "sent", id: "message-1" };
@@ -662,6 +665,133 @@ test("promotional send records safe throttling reason after retry exhaustion", a
   );
 });
 
+test("promotional send pacing delay is configurable and bounded", () => {
+  assert.equal(getPromotionalSendPaceDelayMs({}), 750);
+  assert.equal(
+    getPromotionalSendPaceDelayMs({
+      PROMOTIONAL_EMAIL_SEND_PACE_DELAY_MS: "1250",
+    }),
+    1250,
+  );
+  assert.equal(
+    getPromotionalSendPaceDelayMs({
+      PROMOTIONAL_EMAIL_SEND_PACE_DELAY_MS: "999999",
+    }),
+    10000,
+  );
+  assert.equal(
+    getPromotionalSendPaceDelayMs({
+      PROMOTIONAL_EMAIL_SEND_PACE_DELAY_MS: "invalid",
+    }),
+    750,
+  );
+});
+
+test("promotional send paces eligible recipients without delaying skipped recipients", async () => {
+  const delays = [];
+  const sentMessages = [];
+  const fakeRepository = {
+    async replacePromotionalCampaignRecipients() {
+      return { recipients: [], skipped: [] };
+    },
+    async beginPromotionalCampaignSend() {
+      return {
+        id: "5",
+        name: "Promo pace",
+        subject: "Promo {{customer.name}}",
+        bodyText: "Hola {{customer.name}}, promo de {{company.name}}.",
+        includePoints: false,
+      };
+    },
+    async getActivePromotionalCampaignImage() {
+      return null;
+    },
+    async getCompanySettings() {
+      return { id: "10", name: "Cafe Centro" };
+    },
+    async listPendingPromotionalCampaignRecipientsForSend() {
+      return [
+        {
+          id: "100",
+          customerName: "Ana",
+          recipientEmail: "ana@example.com",
+          currentRecipientEmail: "ana@example.com",
+          currentPreferenceStatus: "subscribed",
+          status: "pending",
+        },
+        {
+          id: "101",
+          customerName: "Luis",
+          recipientEmail: "luis@example.com",
+          currentRecipientEmail: "luis@example.com",
+          currentPreferenceStatus: "unsubscribed",
+          status: "pending",
+        },
+        {
+          id: "102",
+          customerName: "Marta",
+          recipientEmail: "marta@example.com",
+          currentRecipientEmail: "marta@example.com",
+          currentPreferenceStatus: "subscribed",
+          status: "pending",
+        },
+        {
+          id: "103",
+          customerName: "Jose",
+          recipientEmail: "jose@example.com",
+          currentRecipientEmail: "jose@example.com",
+          currentPreferenceStatus: "subscribed",
+          status: "pending",
+        },
+      ];
+    },
+    async recordPromotionalCampaignRecipientResult(
+      companyId,
+      campaignId,
+      recipientId,
+      result,
+    ) {
+      return { id: recipientId, status: result.status };
+    },
+    async completePromotionalCampaignSend() {
+      return { id: "5", status: "sent" };
+    },
+  };
+
+  const result = await sendPromotionalCampaignToRecipients({
+    companyId: 10,
+    campaignId: 5,
+    customerIds: [100, 101, 102, 103],
+    emailConfig: {
+      senderAddress: "DoNotReply@example.com",
+      senderDisplayName: "Punto Club",
+    },
+    repositoryAdapter: fakeRepository,
+    paceDelayMs: 25,
+    retryDelaysMs: [],
+    async delay(ms) {
+      delays.push(ms);
+    },
+    async sendEmail(message) {
+      sentMessages.push(message);
+      return {
+        provider: "acs-email",
+        status: "sent",
+        id: `message-${sentMessages.length}`,
+      };
+    },
+  });
+
+  assert.equal(sentMessages.length, 3);
+  assert.deepEqual(delays, [25, 25]);
+  assert.deepEqual(result.summary, {
+    selected: 4,
+    sent: 3,
+    failed: 0,
+    skipped: 1,
+  });
+});
+
 test("promotional send retries only failed recipients without replacing sent recipients", async () => {
   const calls = [];
   const sentMessages = [];
@@ -726,6 +856,7 @@ test("promotional send retries only failed recipients without replacing sent rec
       senderDisplayName: "Punto Club",
     },
     repositoryAdapter: fakeRepository,
+    paceDelayMs: 0,
     async sendEmail(message) {
       sentMessages.push(message);
       return { provider: "acs-email", status: "sent", id: "retry-message-1" };

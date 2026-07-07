@@ -251,6 +251,15 @@ const elements = {
   communicationHistoryBody: document.querySelector(
     "#communication-history-body",
   ),
+  communicationHistoryActions: document.querySelector(
+    "#communication-history-actions",
+  ),
+  communicationHistoryRetrySummary: document.querySelector(
+    "#communication-history-retry-summary",
+  ),
+  communicationRetryFailedButton: document.querySelector(
+    "#communication-retry-failed-button",
+  ),
   companySubsectionButtons: [
     ...document.querySelectorAll("[data-company-subsection]"),
   ],
@@ -1866,6 +1875,19 @@ elements.communicationSendButton.addEventListener("click", async () => {
   await sendPromotionalCampaign();
 });
 
+elements.communicationResultPanel.addEventListener("click", async (event) => {
+  const button = event.target.closest("[data-promotional-retry-failed]");
+  if (!button) {
+    return;
+  }
+
+  await retryFailedPromotionalCampaign();
+});
+
+elements.communicationRetryFailedButton.addEventListener("click", async () => {
+  await retryFailedPromotionalCampaign();
+});
+
 elements.communicationGoToSendButton.addEventListener("click", async () => {
   await goToCommunicationSendFromManagedCampaign();
 });
@@ -2742,6 +2764,76 @@ async function sendPromotionalCampaign() {
   }
 }
 
+async function retryFailedPromotionalCampaign() {
+  const failedRecipients = getFailedPromotionalRecipients();
+
+  if (!currentPromotionalCampaign) {
+    showCommunicationCampaignError(
+      "Elige una campaña guardada antes de reintentar.",
+    );
+    return;
+  }
+
+  if (!failedRecipients.length) {
+    showCommunicationCampaignStatus(
+      "No hay destinatarios fallidos pendientes para reintentar.",
+    );
+    renderCommunicationHistory();
+    return;
+  }
+
+  const retryLabel = `${failedRecipients.length} destinatario${failedRecipients.length === 1 ? "" : "s"} fallido${failedRecipients.length === 1 ? "" : "s"}`;
+  const confirmed = window.confirm(
+    `Vas a reintentar solo ${retryLabel} de esta campaña.\n\nCampaña: ${currentPromotionalCampaign.name}\n\nNo se reenviará a destinatarios ya enviados. ¿Confirmas el reintento?`,
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  setPromotionalRetryFailedButtonsDisabled(true);
+
+  try {
+    const result = await api.sendPromotionalCampaign(
+      currentPromotionalCampaign.id,
+      [],
+      { retryFailedOnly: true },
+    );
+
+    if (result.campaign) {
+      currentPromotionalCampaign = {
+        ...currentPromotionalCampaign,
+        ...result.campaign,
+        image:
+          result.campaign.image === undefined
+            ? currentPromotionalCampaign.image || null
+            : result.campaign.image,
+      };
+    }
+
+    communicationCampaigns = communicationCampaigns.map((campaign) =>
+      String(campaign.id) === String(currentPromotionalCampaign.id)
+        ? currentPromotionalCampaign
+        : campaign,
+    );
+    promotionalRecipients = mergePromotionalRecipients(
+      promotionalRecipients,
+      result.recipients || [],
+    );
+    showPromotionalSendResult(result, { retry: true });
+    await loadCommunicationsSummary({ silent: true });
+    renderCommunicationHistory();
+    renderCommunicationCampaignList();
+    renderCommunicationCustomers();
+    updatePromotionalSelectionSummary();
+  } catch (error) {
+    renderCommunicationCampaignError(error, { action: "send" });
+  } finally {
+    updatePromotionalSendState();
+    renderCommunicationHistory();
+  }
+}
+
 function resetPromotionalCampaignForm() {
   isManagingNewPromotionalCampaign = true;
   managedPromotionalCampaign = null;
@@ -3345,6 +3437,51 @@ function renderCommunicationHistory() {
       `,
     )
     .join("");
+  renderCommunicationHistoryRetryAction();
+}
+
+function getFailedPromotionalRecipients() {
+  return promotionalRecipients.filter(
+    (recipient) => String(recipient.status || "").toLowerCase() === "failed",
+  );
+}
+
+function mergePromotionalRecipients(currentRecipients, updatedRecipients) {
+  if (!Array.isArray(updatedRecipients) || !updatedRecipients.length) {
+    return currentRecipients;
+  }
+
+  const byId = new Map(
+    currentRecipients.map((recipient) => [String(recipient.id), recipient]),
+  );
+
+  updatedRecipients.forEach((recipient) => {
+    byId.set(String(recipient.id), recipient);
+  });
+
+  return [...byId.values()];
+}
+
+function renderCommunicationHistoryRetryAction() {
+  const failedCount = getFailedPromotionalRecipients().length;
+  const canRetry = Boolean(currentPromotionalCampaign) && failedCount > 0;
+
+  elements.communicationHistoryActions.hidden = !canRetry;
+  elements.communicationRetryFailedButton.disabled = !canRetry;
+
+  if (canRetry) {
+    elements.communicationHistoryRetrySummary.textContent = `${failedCount} destinatario${failedCount === 1 ? "" : "s"} fallido${failedCount === 1 ? "" : "s"} disponible${failedCount === 1 ? "" : "s"} para reintento.`;
+  } else {
+    elements.communicationHistoryRetrySummary.textContent = "";
+  }
+}
+
+function setPromotionalRetryFailedButtonsDisabled(disabled) {
+  document
+    .querySelectorAll("[data-promotional-retry-failed]")
+    .forEach((button) => {
+      button.disabled = disabled;
+    });
 }
 
 function getCommunicationPreferenceLabel(status) {
@@ -3471,6 +3608,9 @@ function formatPromotionalResultReason(reason) {
     unsubscribed: "Cliente dado de baja.",
     provider_not_sent: "El proveedor no confirmó el envío.",
     send_failed: "El proveedor reportó un fallo de envío.",
+    acs_email_throttled_retry_exhausted:
+      "El proveedor pidió reintentar más tarde.",
+    acs_email_transient_retry_exhausted: "El proveedor tuvo un fallo temporal.",
   };
 
   if (knownReasons[rawReason]) {
@@ -3484,7 +3624,7 @@ function formatPromotionalResultReason(reason) {
   return rawReason.slice(0, 160);
 }
 
-function showPromotionalSendResult(result) {
+function showPromotionalSendResult(result, options = {}) {
   const summary = result?.summary || {};
   const sent = Number(summary.sent || 0);
   const failed = Number(summary.failed || 0);
@@ -3494,7 +3634,7 @@ function showPromotionalSendResult(result) {
   const heading = document.createElement("strong");
   const details = document.createElement("span");
 
-  heading.textContent = `Envío finalizado: ${sent} enviado${sent === 1 ? "" : "s"}, ${failed} fallido${failed === 1 ? "" : "s"} y ${skipped} omitido${skipped === 1 ? "" : "s"}.`;
+  heading.textContent = `${options.retry ? "Reintento finalizado" : "Envío finalizado"}: ${sent} enviado${sent === 1 ? "" : "s"}, ${failed} fallido${failed === 1 ? "" : "s"} y ${skipped} omitido${skipped === 1 ? "" : "s"}.`;
   details.textContent = recipients.length
     ? "Resultado guardado para los destinatarios seleccionados."
     : "No se registraron destinatarios procesados.";
@@ -3526,6 +3666,19 @@ function showPromotionalSendResult(result) {
     });
 
     status.append(list);
+  }
+
+  if (failed > 0) {
+    const actions = document.createElement("div");
+    const retryButton = document.createElement("button");
+
+    actions.className = "communication-result-actions";
+    retryButton.className = "secondary-button";
+    retryButton.type = "button";
+    retryButton.dataset.promotionalRetryFailed = "true";
+    retryButton.textContent = "Reintentar fallidos";
+    actions.append(retryButton);
+    status.append(actions);
   }
 
   status.hidden = false;

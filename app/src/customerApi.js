@@ -658,7 +658,10 @@ function createHttpCustomerApi(config) {
       );
       return parseResponse(response);
     },
-    async sendPromotionalCampaign(campaignId, customerIds = []) {
+    async sendPromotionalCampaign(campaignId, customerIds = [], options = {}) {
+      const body = options.retryFailedOnly
+        ? { confirmSend: true, retryFailedOnly: true }
+        : { confirmSend: true, customerIds };
       const response = await fetch(
         buildCompanyUrl(
           `/promotional-campaigns/${encodeURIComponent(campaignId)}/send`,
@@ -667,7 +670,7 @@ function createHttpCustomerApi(config) {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ confirmSend: true, customerIds }),
+          body: JSON.stringify(body),
         },
       );
       return parseResponse(response);
@@ -1502,9 +1505,79 @@ function createMockCustomerApi() {
         skipped,
       };
     },
-    async sendPromotionalCampaign(campaignId, customerIds = []) {
+    async sendPromotionalCampaign(campaignId, customerIds = [], options = {}) {
       await wait(250);
       const campaign = findMockPromotionalCampaign(campaignId);
+      if (options.retryFailedOnly) {
+        const existingRecipients =
+          mockPromotionalCampaignRecipients.get(campaign.id) || [];
+        const failedRecipients = existingRecipients.filter(
+          (recipient) => recipient.status === "failed",
+        );
+
+        if (!failedRecipients.length) {
+          throw new ApiError(
+            "PROMOTIONAL_FAILED_RECIPIENTS_REQUIRED",
+            "No hay destinatarios fallidos para reintentar.",
+          );
+        }
+
+        const sentAt = new Date().toISOString();
+        const retriedRecipients = failedRecipients.map((recipient) => ({
+          ...recipient,
+          status: "sent",
+          provider: "mock-email",
+          providerMessageId: `mock-retry-${recipient.id}`,
+          lastError: null,
+          skipReason: null,
+          sentAt,
+          updatedAt: sentAt,
+        }));
+        const retriedById = new Map(
+          retriedRecipients.map((recipient) => [
+            String(recipient.id),
+            recipient,
+          ]),
+        );
+        const nextRecipients = existingRecipients.map(
+          (recipient) => retriedById.get(String(recipient.id)) || recipient,
+        );
+        const sentCount = nextRecipients.filter(
+          (recipient) => recipient.status === "sent",
+        ).length;
+        const failedCount = nextRecipients.filter(
+          (recipient) => recipient.status === "failed",
+        ).length;
+        const skippedCount = nextRecipients.filter(
+          (recipient) => recipient.status === "skipped",
+        ).length;
+
+        mockPromotionalCampaignRecipients.set(campaign.id, nextRecipients);
+        Object.assign(campaign, {
+          status: sentCount > 0 ? "sent" : "failed",
+          recipientCount: nextRecipients.length,
+          pendingCount: nextRecipients.filter(
+            (recipient) => recipient.status === "pending",
+          ).length,
+          sentCount,
+          failedCount,
+          skippedCount,
+          sentAt: campaign.sentAt || sentAt,
+          updatedAt: sentAt,
+        });
+
+        return {
+          campaign: cloneMockPromotionalCampaign(campaign),
+          summary: {
+            selected: retriedRecipients.length,
+            sent: retriedRecipients.length,
+            failed: 0,
+            skipped: 0,
+          },
+          recipients: retriedRecipients.map((recipient) => ({ ...recipient })),
+        };
+      }
+
       validatePromotionalRecipientSelection({ customerIds });
       validateMockPromotionalEligibility(campaign, customerIds);
       const selectedCustomerIds = new Set(customerIds.map((id) => String(id)));

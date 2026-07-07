@@ -2542,6 +2542,32 @@ body:not(.public-registration-mode)
   margin: 0;
 }
 
+.communication-result-actions,
+.communication-history-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.communication-history-actions {
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+}
+
+.communication-history-actions[hidden] {
+  display: none;
+}
+
+.communication-history-actions p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
 .communications-preview-panel.is-collapsed {
   align-self: start;
 }

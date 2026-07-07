@@ -184,6 +184,8 @@ function getPromotionalRecipientSkipReason(recipient) {
 }
 
 const PROMOTIONAL_SEND_RETRY_DELAYS_MS = [500, 1500];
+const DEFAULT_PROMOTIONAL_SEND_PACE_DELAY_MS = 750;
+const MAX_PROMOTIONAL_SEND_PACE_DELAY_MS = 10000;
 
 function wait(ms) {
   return new Promise((resolve) => {
@@ -238,6 +240,22 @@ function sanitizePromotionalSendError(error) {
   return "send_failed";
 }
 
+function getPromotionalSendPaceDelayMs(env = process.env) {
+  const rawDelay = env.PROMOTIONAL_EMAIL_SEND_PACE_DELAY_MS;
+
+  if (rawDelay == null || rawDelay === "") {
+    return DEFAULT_PROMOTIONAL_SEND_PACE_DELAY_MS;
+  }
+
+  const delay = Number(rawDelay);
+
+  if (!Number.isFinite(delay) || delay < 0) {
+    return DEFAULT_PROMOTIONAL_SEND_PACE_DELAY_MS;
+  }
+
+  return Math.min(Math.floor(delay), MAX_PROMOTIONAL_SEND_PACE_DELAY_MS);
+}
+
 async function sendPromotionalEmailWithRetry({
   message,
   sendEmail,
@@ -290,6 +308,7 @@ async function sendPromotionalCampaignToRecipients({
   sendEmail = (message) => notifier.sendEmailViaAcs(message, emailConfig),
   repositoryAdapter = repository,
   retryDelaysMs,
+  paceDelayMs = getPromotionalSendPaceDelayMs(),
   delay,
 }) {
   if (retryFailedOnly) {
@@ -326,6 +345,8 @@ async function sendPromotionalCampaignToRecipients({
   }
   const results = [];
 
+  let processedSendAttempts = 0;
+
   for (const recipient of recipients) {
     const skipReason = getPromotionalRecipientSkipReason(recipient);
 
@@ -345,6 +366,11 @@ async function sendPromotionalCampaignToRecipients({
       results.push(skipped);
       continue;
     }
+
+    if (processedSendAttempts > 0 && paceDelayMs > 0) {
+      await (delay || wait)(paceDelayMs);
+    }
+    processedSendAttempts += 1;
 
     try {
       const message = buildPromotionalEmail(
@@ -842,6 +868,7 @@ module.exports = {
   buildPreview,
   getPromotionalCompanyId,
   getPromotionalRecipientSkipReason,
+  getPromotionalSendPaceDelayMs,
   isTransientPromotionalSendError,
   resolvePromotionalRecipientFilters,
   sanitizePromotionalSendError,
