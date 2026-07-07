@@ -744,7 +744,7 @@ function validatePromotionalRecipientSelectionPayload(payload) {
 
 function validatePromotionalSendPayload(payload) {
   const body = payload || {};
-  const recipientSelection = validatePromotionalRecipientSelectionPayload(body);
+  const retryFailedOnly = body.retryFailedOnly === true;
 
   if (body.confirmSend !== true) {
     throw validationError([
@@ -755,7 +755,26 @@ function validatePromotionalSendPayload(payload) {
     ]);
   }
 
-  return { confirmSend: true, customerIds: recipientSelection.customerIds };
+  if (retryFailedOnly) {
+    if (body.customerIds != null) {
+      throw validationError([
+        {
+          field: "customerIds",
+          message: "customerIds must be omitted when retryFailedOnly is true.",
+        },
+      ]);
+    }
+
+    return { confirmSend: true, customerIds: null, retryFailedOnly: true };
+  }
+
+  const recipientSelection = validatePromotionalRecipientSelectionPayload(body);
+
+  return {
+    confirmSend: true,
+    customerIds: recipientSelection.customerIds,
+    retryFailedOnly: false,
+  };
 }
 
 function validatePromotionalUnsubscribePayload(payload) {

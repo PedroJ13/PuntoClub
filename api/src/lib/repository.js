@@ -2319,6 +2319,97 @@ async function listPendingPromotionalCampaignRecipientsForSend(
   return result.recordset.map(mapPromotionalSendRecipient);
 }
 
+async function preparePromotionalCampaignFailedRetry(companyId, campaignId) {
+  const sql = getSql();
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+
+  await transaction.begin();
+
+  try {
+    const campaignResult = await new sql.Request(transaction)
+      .input("company_id", sql.BigInt, companyId)
+      .input("campaign_id", sql.BigInt, campaignId).query(`
+        SELECT
+          campaigns.id,
+          campaigns.status,
+          SUM(CASE WHEN recipients.status = 'failed' THEN 1 ELSE 0 END) AS failed_count
+        FROM dbo.PromotionalCampaigns AS campaigns WITH (UPDLOCK, HOLDLOCK)
+        LEFT JOIN dbo.PromotionalCampaignRecipients AS recipients WITH (UPDLOCK, HOLDLOCK)
+          ON recipients.company_id = campaigns.company_id
+         AND recipients.campaign_id = campaigns.id
+        WHERE campaigns.company_id = @company_id
+          AND campaigns.id = @campaign_id
+        GROUP BY campaigns.id, campaigns.status
+      `);
+
+    if (!campaignResult.recordset.length) {
+      throw new ApiError(
+        404,
+        "PROMOTIONAL_CAMPAIGN_NOT_FOUND",
+        "Promotional campaign was not found.",
+      );
+    }
+
+    const campaign = campaignResult.recordset[0];
+    const failedCount = Number(campaign.failed_count || 0);
+
+    if (!["sent", "failed", "ready"].includes(campaign.status)) {
+      throw new ApiError(
+        409,
+        "PROMOTIONAL_CAMPAIGN_NOT_RETRYABLE",
+        "Promotional campaign cannot retry failed recipients in this status.",
+      );
+    }
+
+    if (failedCount <= 0) {
+      throw new ApiError(
+        409,
+        "PROMOTIONAL_FAILED_RECIPIENTS_REQUIRED",
+        "Promotional campaign has no failed recipients to retry.",
+      );
+    }
+
+    await new sql.Request(transaction)
+      .input("company_id", sql.BigInt, companyId)
+      .input("campaign_id", sql.BigInt, campaignId).query(`
+        UPDATE dbo.PromotionalCampaignRecipients
+        SET
+          status = 'pending',
+          skip_reason = NULL,
+          provider = NULL,
+          provider_message_id = NULL,
+          last_error = NULL,
+          sent_at = NULL,
+          updated_at = SYSUTCDATETIME()
+        WHERE company_id = @company_id
+          AND campaign_id = @campaign_id
+          AND status = 'failed'
+      `);
+
+    await new sql.Request(transaction)
+      .input("company_id", sql.BigInt, companyId)
+      .input("campaign_id", sql.BigInt, campaignId).query(`
+        UPDATE dbo.PromotionalCampaigns
+        SET
+          status = 'ready',
+          updated_at = SYSUTCDATETIME()
+        WHERE company_id = @company_id
+          AND id = @campaign_id
+      `);
+
+    await transaction.commit();
+    return { retryCount: failedCount };
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch {
+      // Preserve original error.
+    }
+    throw error;
+  }
+}
+
 async function recordPromotionalCampaignRecipientResult(
   companyId,
   campaignId,
@@ -5774,6 +5865,7 @@ module.exports = {
   listPromotionalCampaigns,
   listPendingPromotionalCampaignRecipientsForSend,
   listPromotionalRecipients,
+  preparePromotionalCampaignFailedRetry,
   replacePromotionalCampaignImage,
   replacePromotionalCampaignRecipients,
   listCustomers,

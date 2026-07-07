@@ -14,6 +14,8 @@ const {
   getPromotionalRecipientSkipReason,
   getPromotionalCompanyId,
   resolvePromotionalRecipientFilters,
+  sanitizePromotionalSendError,
+  sendPromotionalEmailWithRetry,
   sendPromotionalCampaignToRecipients,
   updatePromotionalCampaignContent,
 } = require("../src/functions/promotionalCampaigns");
@@ -141,6 +143,19 @@ test("promotional send requires explicit confirmation payload", () => {
     {
       confirmSend: true,
       customerIds: [10],
+      retryFailedOnly: false,
+    },
+  );
+
+  assert.deepEqual(
+    validatePromotionalSendPayload({
+      confirmSend: true,
+      retryFailedOnly: true,
+    }),
+    {
+      confirmSend: true,
+      customerIds: null,
+      retryFailedOnly: true,
     },
   );
 
@@ -154,6 +169,15 @@ test("promotional send requires explicit confirmation payload", () => {
   );
   assert.throws(
     () => validatePromotionalSendPayload({ confirmSend: true }),
+    (error) => error instanceof ApiError && error.code === "VALIDATION_ERROR",
+  );
+  assert.throws(
+    () =>
+      validatePromotionalSendPayload({
+        confirmSend: true,
+        retryFailedOnly: true,
+        customerIds: [10],
+      }),
     (error) => error instanceof ApiError && error.code === "VALIDATION_ERROR",
   );
 });
@@ -583,6 +607,149 @@ test("promotional send accepts more than five selected eligible recipients", asy
   });
 });
 
+test("promotional send retries transient ACS throttling before recording success", async () => {
+  const delays = [];
+  let attempts = 0;
+  const result = await sendPromotionalEmailWithRetry({
+    message: { to: [{ address: "ana@example.com" }] },
+    retryDelaysMs: [10, 20],
+    async delay(ms) {
+      delays.push(ms);
+    },
+    async sendEmail() {
+      attempts += 1;
+      if (attempts < 3) {
+        throw new Error("Please try again after 0 seconds");
+      }
+      return { provider: "acs-email", status: "sent", id: "message-3" };
+    },
+  });
+
+  assert.equal(attempts, 3);
+  assert.deepEqual(delays, [10, 20]);
+  assert.deepEqual(result, {
+    provider: "acs-email",
+    status: "sent",
+    id: "message-3",
+  });
+});
+
+test("promotional send records safe throttling reason after retry exhaustion", async () => {
+  let attempts = 0;
+  const result = await sendPromotionalEmailWithRetry({
+    message: { to: [{ address: "ana@example.com" }] },
+    retryDelaysMs: [10],
+    async delay() {},
+    async sendEmail() {
+      attempts += 1;
+      return {
+        provider: "acs-email",
+        status: "failed",
+        reason: "Please try again after 0 seconds",
+      };
+    },
+  });
+
+  assert.equal(attempts, 2);
+  assert.deepEqual(result, {
+    provider: "acs-email",
+    status: "failed",
+    reason: "acs_email_throttled_retry_exhausted",
+  });
+  assert.equal(
+    sanitizePromotionalSendError(new Error("Please try again after 0 seconds")),
+    "acs_email_throttled_retry_exhausted",
+  );
+});
+
+test("promotional send retries only failed recipients without replacing sent recipients", async () => {
+  const calls = [];
+  const sentMessages = [];
+  const savedResults = [];
+  const fakeRepository = {
+    async preparePromotionalCampaignFailedRetry(companyId, campaignId) {
+      calls.push({ method: "prepareFailedRetry", companyId, campaignId });
+      return { retryCount: 1 };
+    },
+    async replacePromotionalCampaignRecipients() {
+      calls.push({ method: "replaceRecipients" });
+    },
+    async beginPromotionalCampaignSend() {
+      return {
+        id: "5",
+        name: "Promo retry",
+        subject: "Promo {{customer.name}}",
+        bodyText: "Hola {{customer.name}}, promo de {{company.name}}.",
+        includePoints: false,
+      };
+    },
+    async getActivePromotionalCampaignImage() {
+      return null;
+    },
+    async getCompanySettings() {
+      return { id: "10", name: "Cafe Centro" };
+    },
+    async listPendingPromotionalCampaignRecipientsForSend() {
+      return [
+        {
+          id: "101",
+          customerId: "101",
+          customerName: "Luis",
+          recipientEmail: "luis@example.com",
+          currentRecipientEmail: "luis@example.com",
+          pointsBalanceSnapshot: 20,
+          currentPreferenceStatus: "subscribed",
+          status: "pending",
+        },
+      ];
+    },
+    async recordPromotionalCampaignRecipientResult(
+      companyId,
+      campaignId,
+      recipientId,
+      result,
+    ) {
+      savedResults.push({ companyId, campaignId, recipientId, result });
+      return { id: recipientId, status: result.status };
+    },
+    async completePromotionalCampaignSend() {
+      return { id: "5", status: "sent" };
+    },
+  };
+
+  const result = await sendPromotionalCampaignToRecipients({
+    companyId: 10,
+    campaignId: 5,
+    retryFailedOnly: true,
+    emailConfig: {
+      senderAddress: "DoNotReply@example.com",
+      senderDisplayName: "Punto Club",
+    },
+    repositoryAdapter: fakeRepository,
+    async sendEmail(message) {
+      sentMessages.push(message);
+      return { provider: "acs-email", status: "sent", id: "retry-message-1" };
+    },
+    async delay() {},
+    retryDelaysMs: [],
+  });
+
+  assert.deepEqual(calls, [
+    { method: "prepareFailedRetry", companyId: 10, campaignId: 5 },
+  ]);
+  assert.equal(sentMessages.length, 1);
+  assert.equal(sentMessages[0].to[0].address, "luis@example.com");
+  assert.equal(savedResults.length, 1);
+  assert.equal(savedResults[0].recipientId, "101");
+  assert.equal(savedResults[0].result.status, "sent");
+  assert.deepEqual(result.summary, {
+    selected: 1,
+    sent: 1,
+    failed: 0,
+    skipped: 0,
+  });
+});
+
 test("promotional send stops before email when selected recipients are not eligible", async () => {
   let sendEmailCalled = false;
   const fakeRepository = {
@@ -669,6 +836,7 @@ test("promotional send default repository adapter exports selected-recipient ope
     "beginPromotionalCampaignSend",
     "getCompanySettings",
     "listPendingPromotionalCampaignRecipientsForSend",
+    "preparePromotionalCampaignFailedRetry",
     "recordPromotionalCampaignRecipientResult",
     "completePromotionalCampaignSend",
     "getActivePromotionalCampaignImage",

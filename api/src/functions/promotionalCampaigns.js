@@ -183,16 +183,121 @@ function getPromotionalRecipientSkipReason(recipient) {
   return null;
 }
 
+const PROMOTIONAL_SEND_RETRY_DELAYS_MS = [500, 1500];
+
+function wait(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
+function getPromotionalSendErrorText(error) {
+  return String(
+    (error &&
+      (error.message || error.reason || error.code || error.statusCode)) ||
+      "",
+  );
+}
+
+function isTransientPromotionalSendError(error) {
+  const text = getPromotionalSendErrorText(error).toLowerCase();
+  return (
+    text.includes("try again after") ||
+    text.includes("throttl") ||
+    text.includes("too many") ||
+    text.includes("rate limit") ||
+    text.includes("timeout") ||
+    text.includes("temporar") ||
+    text.includes("econnreset") ||
+    text.includes("etimedout") ||
+    text.includes("429") ||
+    text.includes("500") ||
+    text.includes("502") ||
+    text.includes("503") ||
+    text.includes("504")
+  );
+}
+
+function sanitizePromotionalSendError(error) {
+  const text = getPromotionalSendErrorText(error).toLowerCase();
+
+  if (
+    text.includes("try again after") ||
+    text.includes("throttl") ||
+    text.includes("too many") ||
+    text.includes("rate limit") ||
+    text.includes("429")
+  ) {
+    return "acs_email_throttled_retry_exhausted";
+  }
+
+  if (isTransientPromotionalSendError(error)) {
+    return "acs_email_transient_retry_exhausted";
+  }
+
+  return "send_failed";
+}
+
+async function sendPromotionalEmailWithRetry({
+  message,
+  sendEmail,
+  retryDelaysMs = PROMOTIONAL_SEND_RETRY_DELAYS_MS,
+  delay = wait,
+}) {
+  let lastError = null;
+  const maxAttempts = retryDelaysMs.length + 1;
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      const result = await sendEmail(message);
+      if (result.status === "sent") {
+        return result;
+      }
+
+      lastError = {
+        reason: result.reason || "provider_not_sent",
+        provider: result.provider,
+      };
+      if (!isTransientPromotionalSendError(lastError)) {
+        return result;
+      }
+    } catch (error) {
+      lastError = error;
+      if (!isTransientPromotionalSendError(error)) {
+        throw error;
+      }
+    }
+
+    if (attempt < maxAttempts) {
+      await delay(retryDelaysMs[attempt - 1]);
+    }
+  }
+
+  return {
+    provider: "acs-email",
+    status: "failed",
+    reason: sanitizePromotionalSendError(lastError),
+  };
+}
+
 async function sendPromotionalCampaignToRecipients({
   companyId,
   campaignId,
   customerIds,
+  retryFailedOnly = false,
   emailConfig,
   request,
   sendEmail = (message) => notifier.sendEmailViaAcs(message, emailConfig),
   repositoryAdapter = repository,
+  retryDelaysMs,
+  delay,
 }) {
-  if (Array.isArray(customerIds)) {
+  if (retryFailedOnly) {
+    await repositoryAdapter.preparePromotionalCampaignFailedRetry(
+      companyId,
+      campaignId,
+    );
+  } else if (Array.isArray(customerIds)) {
     await repositoryAdapter.replacePromotionalCampaignRecipients(
       companyId,
       campaignId,
@@ -249,7 +354,12 @@ async function sendPromotionalCampaignToRecipients({
         emailConfig,
         { request },
       );
-      const sendResult = await sendEmail(message);
+      const sendResult = await sendPromotionalEmailWithRetry({
+        message,
+        sendEmail,
+        retryDelaysMs,
+        delay,
+      });
       const saved =
         await repositoryAdapter.recordPromotionalCampaignRecipientResult(
           companyId,
@@ -262,7 +372,7 @@ async function sendPromotionalCampaignToRecipients({
             lastError:
               sendResult.status === "sent"
                 ? null
-                : sendResult.reason || "provider_not_sent",
+                : sanitizePromotionalSendError(sendResult),
           },
         );
       results.push(saved);
@@ -275,7 +385,7 @@ async function sendPromotionalCampaignToRecipients({
           {
             status: "failed",
             provider: "acs-email",
-            lastError: error && error.message ? error.message : "send_failed",
+            lastError: sanitizePromotionalSendError(error),
           },
         );
       results.push(failed);
@@ -701,6 +811,7 @@ app.http("sendPromotionalCampaign", {
       companyId,
       campaignId,
       customerIds: payload.customerIds,
+      retryFailedOnly: payload.retryFailedOnly,
       emailConfig,
       request,
     });
@@ -731,7 +842,10 @@ module.exports = {
   buildPreview,
   getPromotionalCompanyId,
   getPromotionalRecipientSkipReason,
+  isTransientPromotionalSendError,
   resolvePromotionalRecipientFilters,
+  sanitizePromotionalSendError,
+  sendPromotionalEmailWithRetry,
   sendPromotionalCampaignToRecipients,
   updatePromotionalCampaignContent,
 };
