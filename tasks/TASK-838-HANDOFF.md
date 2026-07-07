@@ -7,6 +7,7 @@ Fecha: 2026-07-07
 Resultado:
 - Decision aprobada: publicar API/Web para persistencia visible de logo de empresa.
 - Se revisaron los handoffs TASK-834, TASK-835, TASK-836 y TASK-837.
+- Actualizacion posterior: TASK-835 ya fue completada con consulta read-only de Azure SQL y confirmo que Aurisbel tiene metadata de logo persistida.
 - Alcance confirmado:
   - Backend/API corrigio `GET /api/companies/{companyId}/settings` para incluir metadata privada de logo:
     - `logoUrl`;
@@ -18,7 +19,11 @@ Resultado:
   - QA publicada TASK-837 no aprobo porque el fix API/Web aun no estaba publicado.
 
 Decision:
-- Aprobado avanzar con TASK-839 para commit y push controlado API/Web.
+- Aprobado publicar API/Web.
+- Publicacion ya ejecutada en commit `9e86733cb16a44e2ebb7dd5bf04d0bf0d7a06367`.
+- Workflows verificados:
+  - Deploy Punto Club frontend: success.
+  - Deploy Punto Club API: success.
 
 Restricciones:
 - No cambiar SQL.
@@ -28,13 +33,12 @@ Restricciones:
 - Mantener fuera archivos no relacionados y handoffs antiguos no solicitados.
 
 Uso Azure SQL:
-- No en esta decision.
-- TASK-835 intento lectura directa y quedo bloqueada por firewall antes de ejecutar SELECT.
+- No para la decision de release.
+- TASK-835 si uso Azure SQL en modo read-only, con regla temporal retirada y lock restaurado, para confirmar metadata de logo de Aurisbel.
 
 Riesgos o pendientes:
 - Requiere QA publicada posterior para confirmar que, despues de subir logo, `Actualizar`, refresh y logout/login conservan logo visible.
 - Puede quedar un logo QA subido durante TASK-837, pero no se borro ni reemplazo durante esta decision.
 
 Siguiente recomendado:
-- Ejecutar TASK-839.
-- Despues, ejecutar QA publicada TASK-840.
+- Ejecutar QA publicada posterior a `9e86733`.
