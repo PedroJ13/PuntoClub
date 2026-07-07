@@ -1875,10 +1875,8 @@ elements.companyOpenCampaignsButton.addEventListener("click", async () => {
 
 elements.communicationViewButtons.forEach((button) => {
   button.addEventListener("click", async () => {
-    if (
-      button.dataset.communicationView === "send" &&
-      !(await ensureCurrentSessionForOperations())
-    ) {
+    if (button.dataset.communicationView === "send") {
+      await openCommunicationSendView();
       return;
     }
     setCommunicationView(button.dataset.communicationView);
@@ -1895,10 +1893,8 @@ elements.navButtons.forEach((button) => {
       return;
     }
 
-    if (
-      button.dataset.sectionTarget === "communications" &&
-      !(await ensureCurrentSessionForOperations())
-    ) {
+    if (button.dataset.sectionTarget === "communications") {
+      await openCommunicationSendView();
       return;
     }
 
@@ -2191,14 +2187,49 @@ async function ensureCurrentSessionForOperations() {
   return false;
 }
 
-async function openCommunicationSendView() {
+async function openCommunicationSendView(options = {}) {
   if (!(await ensureCurrentSessionForOperations())) {
     return;
   }
 
+  const preferCommonCampaign = options.preferCommonCampaign !== false;
+  const wasBirthdayFlow = communicationSendCampaignTypeFilter === "cumpleanos";
   communicationSendCampaignTypeFilter = "all";
   setActiveSection("communications");
   setCommunicationView("send");
+
+  if (
+    preferCommonCampaign &&
+    currentPromotionalCampaign?.campaignType === "cumpleanos"
+  ) {
+    clearCommunicationCampaignMessages();
+    selectedPromotionalRecipientIds = new Set();
+    const nextCommonCampaign =
+      communicationCampaigns.find(
+        (campaign) => campaign.campaignType !== "cumpleanos",
+      ) || null;
+
+    if (nextCommonCampaign) {
+      await selectPromotionalCampaign(nextCommonCampaign.id, {
+        silent: true,
+      });
+      return;
+    }
+
+    currentPromotionalCampaign = null;
+    promotionalRecipients = [];
+    communicationCustomers = [];
+    renderCommunicationPreview();
+    renderCommunicationCustomers();
+    updatePromotionalSelectionSummary();
+    updatePromotionalSendState();
+  } else if (wasBirthdayFlow) {
+    clearCommunicationCampaignMessages();
+    selectedPromotionalRecipientIds = new Set();
+    updatePromotionalSelectionSummary();
+    updatePromotionalSendState();
+  }
+
   renderCommunicationCampaignList();
 }
 
