@@ -2688,8 +2688,10 @@ async function sendPromotionalCampaign() {
     return;
   }
 
+  const recipientCount = selectedCustomerIds.length;
+  const recipientLabel = `${recipientCount} destinatario${recipientCount === 1 ? "" : "s"} seleccionado${recipientCount === 1 ? "" : "s"}`;
   const confirmed = window.confirm(
-    `Vas a enviar "${currentPromotionalCampaign.name}" a ${selectedCustomerIds.length} destinatario${selectedCustomerIds.length === 1 ? "" : "s"} seleccionado${selectedCustomerIds.length === 1 ? "" : "s"}. No se enviará a clientes no seleccionados ni dados de baja. ¿Confirmas el envío real?`,
+    `Vas a enviar esta campaña a ${recipientLabel}.\n\nCampaña: ${currentPromotionalCampaign.name}\n\nNo se enviará a clientes no seleccionados ni dados de baja. ¿Confirmas el envío real?`,
   );
 
   if (!confirmed) {
