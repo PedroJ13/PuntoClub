@@ -244,3 +244,79 @@ test("listPromotionalRecipients restricts birthday filter to subscribed customer
     },
   );
 });
+
+test("getCommunicationsSummary counts real communication KPIs by company", async () => {
+  const captured = {
+    inputs: [],
+    query: "",
+  };
+
+  await withMockedRepositoryDb(
+    {
+      getSql() {
+        return {
+          BigInt: "BigInt",
+        };
+      },
+      async getPool() {
+        return {
+          request() {
+            return {
+              input(name, type, value) {
+                captured.inputs.push({ name, type, value });
+                return this;
+              },
+              async query(queryText) {
+                captured.query = queryText;
+                return {
+                  recordset: [
+                    {
+                      company_id: 8,
+                      operational_active_count: 2,
+                      promotional_subscribed_count: 7,
+                      promotional_unsubscribed_count: 3,
+                      campaign_draft_count: 4,
+                      campaign_sent_count: 5,
+                      generated_at: new Date("2026-07-07T02:00:00Z"),
+                    },
+                  ],
+                };
+              },
+            };
+          },
+        };
+      },
+    },
+    async (repository) => {
+      const result = await repository.getCommunicationsSummary(8, {
+        promotionalSendEnabled: false,
+      });
+
+      assert.deepEqual(captured.inputs, [
+        { name: "company_id", type: "BigInt", value: 8 },
+      ]);
+      assert.match(captured.query, /companies\.id = @company_id/);
+      assert.match(captured.query, /companies\.status = 'active'/);
+      assert.match(captured.query, /customers\.email IS NOT NULL/);
+      assert.match(captured.query, /customers\.email LIKE '%_@_%\._%'/);
+      assert.match(
+        captured.query,
+        /COALESCE\(preferences\.promotional_status, 'subscribed'\) = 'subscribed'/,
+      );
+      assert.match(
+        captured.query,
+        /COALESCE\(preferences\.promotional_status, 'subscribed'\) = 'unsubscribed'/,
+      );
+      assert.deepEqual(result, {
+        operationalActiveCount: 2,
+        promotionalSubscribedCount: 7,
+        promotionalUnsubscribedCount: 3,
+        promotionalSendStatus: "paused",
+        promotionalSendStatusLabel: "Pausadas",
+        campaignDraftCount: 4,
+        campaignSentCount: 5,
+        generatedAt: "2026-07-07T02:00:00.000Z",
+      });
+    },
+  );
+});

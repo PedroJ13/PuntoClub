@@ -192,6 +192,18 @@ const elements = {
   communicationGoToSendButton: document.querySelector(
     "#communication-go-to-send-button",
   ),
+  communicationsKpiOperational: document.querySelector(
+    "#communications-kpi-operational",
+  ),
+  communicationsKpiSubscribed: document.querySelector(
+    "#communications-kpi-subscribed",
+  ),
+  communicationsKpiUnsubscribed: document.querySelector(
+    "#communications-kpi-unsubscribed",
+  ),
+  communicationsKpiPromotions: document.querySelector(
+    "#communications-kpi-promotions",
+  ),
   communicationCampaignList: document.querySelector(
     "#communication-campaign-list",
   ),
@@ -1074,6 +1086,7 @@ let isManagingNewPromotionalCampaign = false;
 let currentPromotionalCampaign = null;
 let managedPromotionalCampaign = null;
 let communicationCampaigns = [];
+let currentCommunicationsSummary = null;
 let promotionalRecipients = [];
 let selectedPromotionalRecipientIds = new Set();
 const customerBalances = new Map();
@@ -1747,6 +1760,7 @@ elements.communicationNewCampaignButton.addEventListener("click", () => {
 elements.communicationRefreshCampaignsButton.addEventListener(
   "click",
   async () => {
+    await loadCommunicationsSummary({ silent: true });
     await loadPromotionalCampaigns({ keepCurrent: true });
   },
 );
@@ -2197,6 +2211,7 @@ async function openCommunicationSendView(options = {}) {
   communicationSendCampaignTypeFilter = "all";
   setActiveSection("communications");
   setCommunicationView("send");
+  await loadCommunicationsSummary({ silent: true });
 
   if (
     preferCommonCampaign &&
@@ -2426,6 +2441,7 @@ async function submitPromotionalCampaignDraft() {
         ? "Campaña guardada. Ahora puedes agregar una imagen o seleccionarla para envío."
         : "Campaña actualizada.",
     );
+    await loadCommunicationsSummary({ silent: true });
     renderCommunicationCampaignList();
     if (!previousSendCampaignId && isNewCampaign) {
       currentPromotionalCampaign = null;
@@ -2644,6 +2660,7 @@ async function unsubscribePromotionalCustomer(customerId) {
         "Baja promocional registrada. Los puntos y beneficios se mantienen.",
     );
     await loadPromotionalRecipients();
+    await loadCommunicationsSummary({ silent: true });
     renderCommunicationHistory();
     updatePromotionalSelectionSummary();
     updatePromotionalSendState();
@@ -2712,6 +2729,7 @@ async function sendPromotionalCampaign() {
     promotionalRecipients = result.recipients || promotionalRecipients;
     selectedPromotionalRecipientIds = new Set();
     showPromotionalSendResult(result);
+    await loadCommunicationsSummary({ silent: true });
     renderCommunicationHistory();
     renderCommunicationCampaignList();
     renderCommunicationCustomers();
@@ -2907,6 +2925,42 @@ function renderCommunicationCampaignList() {
     elements.communicationManageCampaignList.value =
       managedPromotionalCampaign.id;
   }
+}
+
+function setCommunicationsSummaryValues({
+  operational = "-",
+  subscribed = "-",
+  unsubscribed = "-",
+  promotions = "-",
+} = {}) {
+  elements.communicationsKpiOperational.textContent = operational;
+  elements.communicationsKpiSubscribed.textContent = subscribed;
+  elements.communicationsKpiUnsubscribed.textContent = unsubscribed;
+  elements.communicationsKpiPromotions.textContent = promotions;
+}
+
+function renderCommunicationsSummaryLoading() {
+  setCommunicationsSummaryValues({
+    operational: "...",
+    subscribed: "...",
+    unsubscribed: "...",
+    promotions: "...",
+  });
+}
+
+function renderCommunicationsSummaryError() {
+  setCommunicationsSummaryValues();
+}
+
+function renderCommunicationsSummary(summary) {
+  setCommunicationsSummaryValues({
+    operational: formatReportNumber(summary?.operationalActiveCount || 0),
+    subscribed: formatReportNumber(summary?.promotionalSubscribedCount || 0),
+    unsubscribed: formatReportNumber(
+      summary?.promotionalUnsubscribedCount || 0,
+    ),
+    promotions: summary?.promotionalSendStatusLabel || "-",
+  });
 }
 
 function getSendPromotionalCampaigns() {
@@ -4385,6 +4439,7 @@ async function loadCompanySettings() {
     renderCompanySettings(settings);
     renderActiveCompanyIdentity(settings);
     updateMembershipNavigation(settings);
+    await loadCommunicationsSummary({ silent: true });
     await loadOperationalEmailSettings({ silent: true });
     await loadOperationalEmailHistory({ silent: true });
     await loadPromotionalCampaigns({ silent: true });
@@ -4404,6 +4459,21 @@ async function loadCompanySettings() {
   } finally {
     stopLoading();
     setCompanyLoading(false);
+  }
+}
+
+async function loadCommunicationsSummary(options = {}) {
+  renderCommunicationsSummaryLoading();
+
+  try {
+    currentCommunicationsSummary = await api.getCommunicationsSummary();
+    renderCommunicationsSummary(currentCommunicationsSummary);
+  } catch (error) {
+    currentCommunicationsSummary = null;
+    renderCommunicationsSummaryError();
+    if (!options.silent) {
+      renderCommunicationCampaignError(error);
+    }
   }
 }
 
@@ -4501,6 +4571,7 @@ async function submitOperationalEmailSettings() {
     const settings = await api.updateOperationalEmailSettings(payload);
     currentOperationalEmailSettings = settings;
     renderOperationalEmailSettings(settings);
+    await loadCommunicationsSummary({ silent: true });
     showOperationalEmailStatus("Correos operativos actualizados.");
   } catch (error) {
     renderOperationalEmailError(error);

@@ -167,6 +167,22 @@ function mapOperationalEmailSettings(row) {
   };
 }
 
+function mapCommunicationsSummary(row, options = {}) {
+  const promotionalSendEnabled = Boolean(options.promotionalSendEnabled);
+  return {
+    operationalActiveCount: Number(row.operational_active_count || 0),
+    promotionalSubscribedCount: Number(row.promotional_subscribed_count || 0),
+    promotionalUnsubscribedCount: Number(
+      row.promotional_unsubscribed_count || 0,
+    ),
+    promotionalSendStatus: promotionalSendEnabled ? "active" : "paused",
+    promotionalSendStatusLabel: promotionalSendEnabled ? "Activas" : "Pausadas",
+    campaignDraftCount: Number(row.campaign_draft_count || 0),
+    campaignSentCount: Number(row.campaign_sent_count || 0),
+    generatedAt: toIsoTimestamp(row.generated_at),
+  };
+}
+
 function mapOperationalEmailEvent(row) {
   return {
     id: toApiId(row.id),
@@ -906,6 +922,60 @@ async function getOperationalEmailSettings(companyId) {
   }
 
   return mapOperationalEmailSettings(result.recordset[0]);
+}
+
+async function getCommunicationsSummary(companyId, options = {}) {
+  const sql = getSql();
+  const pool = await getPool();
+  const result = await pool.request().input("company_id", sql.BigInt, companyId)
+    .query(`
+      SELECT
+        companies.id AS company_id,
+        (
+          CASE WHEN COALESCE(settings.welcome_enabled, CONVERT(bit, 1)) = 1 THEN 1 ELSE 0 END
+          + CASE WHEN COALESCE(settings.purchase_enabled, CONVERT(bit, 1)) = 1 THEN 1 ELSE 0 END
+          + CASE WHEN COALESCE(settings.redemption_enabled, CONVERT(bit, 1)) = 1 THEN 1 ELSE 0 END
+        ) AS operational_active_count,
+        COALESCE(promotional_customers.subscribed_count, 0) AS promotional_subscribed_count,
+        COALESCE(promotional_customers.unsubscribed_count, 0) AS promotional_unsubscribed_count,
+        COALESCE(campaign_counts.draft_count, 0) AS campaign_draft_count,
+        COALESCE(campaign_counts.sent_count, 0) AS campaign_sent_count,
+        SYSUTCDATETIME() AS generated_at
+      FROM dbo.Companies AS companies
+      LEFT JOIN dbo.CompanyOperationalEmailSettings AS settings
+        ON settings.company_id = companies.id
+      OUTER APPLY (
+        SELECT
+          SUM(CASE
+            WHEN customers.email IS NOT NULL
+             AND customers.email LIKE '%_@_%._%'
+             AND COALESCE(preferences.promotional_status, 'subscribed') = 'subscribed'
+            THEN 1 ELSE 0 END) AS subscribed_count,
+          SUM(CASE
+            WHEN COALESCE(preferences.promotional_status, 'subscribed') = 'unsubscribed'
+            THEN 1 ELSE 0 END) AS unsubscribed_count
+        FROM dbo.Customers AS customers
+        LEFT JOIN dbo.CustomerPromotionalEmailPreferences AS preferences
+          ON preferences.company_id = customers.company_id
+         AND preferences.customer_id = customers.id
+        WHERE customers.company_id = companies.id
+      ) AS promotional_customers
+      OUTER APPLY (
+        SELECT
+          SUM(CASE WHEN campaigns.status IN ('draft', 'ready') THEN 1 ELSE 0 END) AS draft_count,
+          SUM(CASE WHEN campaigns.status = 'sent' THEN 1 ELSE 0 END) AS sent_count
+        FROM dbo.PromotionalCampaigns AS campaigns
+        WHERE campaigns.company_id = companies.id
+      ) AS campaign_counts
+      WHERE companies.id = @company_id
+        AND companies.status = 'active'
+    `);
+
+  if (!result.recordset.length) {
+    throw new ApiError(404, "COMPANY_NOT_FOUND", "Company was not found.");
+  }
+
+  return mapCommunicationsSummary(result.recordset[0], options);
 }
 
 async function updateOperationalEmailSettings(companyId, settings) {
@@ -5678,6 +5748,7 @@ module.exports = {
   getAuthAttemptLimit,
   getAuthIdentityBySessionTokenHash,
   getBalance,
+  getCommunicationsSummary,
   getCompanyInvitationById,
   getCompanyInvitationByTokenHash,
   getCompanyPasswordResetByTokenHash,
@@ -5718,6 +5789,7 @@ module.exports = {
   mapCompanyInvitationWithCompany,
   mapCompanyRegistrationRequest,
   mapCompanySettings,
+  mapCommunicationsSummary,
   mapCompanyPasswordReset,
   mapCompanyUser,
   mapMembershipBenefit,

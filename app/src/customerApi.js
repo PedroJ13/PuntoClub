@@ -502,6 +502,12 @@ function createHttpCustomerApi(config) {
 
       return parseResponse(response);
     },
+    async getCommunicationsSummary() {
+      const response = await fetch(buildCompanyUrl("/communications/summary"), {
+        credentials: "include",
+      });
+      return parseResponse(response);
+    },
     async listOperationalEmailHistory(filters = {}) {
       const url = new URL(
         buildCompanyUrl("/operational-email-history"),
@@ -1236,6 +1242,37 @@ function createMockCustomerApi() {
         updatedAt: new Date().toISOString(),
       };
       return { ...mockOperationalEmailSettings };
+    },
+    async getCommunicationsSummary() {
+      await wait(250);
+      const candidates = mockCustomers.map(
+        mapMockPromotionalRecipientCandidate,
+      );
+      const promotionalSubscribedCount = candidates.filter(
+        (customer) => customer.eligible,
+      ).length;
+      const promotionalUnsubscribedCount = candidates.filter(
+        (customer) => customer.promotionalStatus === "unsubscribed",
+      ).length;
+      const operationalActiveCount = [
+        mockOperationalEmailSettings.welcomeEnabled,
+        mockOperationalEmailSettings.purchaseEnabled,
+        mockOperationalEmailSettings.redemptionEnabled,
+      ].filter(Boolean).length;
+      return {
+        operationalActiveCount,
+        promotionalSubscribedCount,
+        promotionalUnsubscribedCount,
+        promotionalSendStatus: "paused",
+        promotionalSendStatusLabel: "Pausadas",
+        campaignDraftCount: mockPromotionalCampaigns.filter((campaign) =>
+          ["draft", "ready"].includes(campaign.status),
+        ).length,
+        campaignSentCount: mockPromotionalCampaigns.filter(
+          (campaign) => campaign.status === "sent",
+        ).length,
+        generatedAt: new Date().toISOString(),
+      };
     },
     async listOperationalEmailHistory(filters = {}) {
       await wait(250);
