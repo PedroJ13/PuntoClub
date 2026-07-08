@@ -359,12 +359,14 @@ test("promotional email renders only the selected recipient message", () => {
         pointsBalanceSnapshot: 42,
       },
       {
-        senderAddress: "DoNotReply@example.com",
-        senderDisplayName: "Punto Club",
+        senderAddress: "campanas@mail.puntoclubcr.com",
+        senderDisplayName: "Punto Club Campañas",
       },
     );
 
     assert.equal(email.to.length, 1);
+    assert.equal(email.senderAddress, "campanas@mail.puntoclubcr.com");
+    assert.equal(email.senderDisplayName, "Punto Club Campañas");
     assert.equal(email.to[0].address, "ana@example.com");
     assert.equal(email.subject, "Hola Ana");
     assert.match(email.plainText, /42 puntos/);

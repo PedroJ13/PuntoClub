@@ -824,7 +824,7 @@ app.http("sendPromotionalCampaign", {
       );
     }
 
-    const emailConfig = notifier.getEmailConfig();
+    const emailConfig = notifier.getPromotionalEmailConfig();
     if (!emailConfig.enabled) {
       throw new ApiError(
         503,
