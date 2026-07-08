@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 
 const { ApiError } = require("../src/lib/errors");
 const {
+  classifyEmailSendFailure,
   createInternalRegistrationEmail,
   createRequesterAcknowledgementEmail,
   defaultInternalNotificationEmail,
@@ -316,6 +317,31 @@ test("getPromotionalEmailConfig prefers promotional sender with global fallback"
   assert.equal(fallback.enabled, true);
   assert.equal(fallback.senderAddress, "operaciones@example.test");
   assert.equal(fallback.senderDisplayName, "Punto Club Operaciones");
+});
+
+test("classifyEmailSendFailure maps ACS failures to safe action codes", () => {
+  assert.equal(
+    classifyEmailSendFailure(
+      new Error("The specified sender domain has not been linked."),
+    ),
+    "acs_sender_domain_not_linked",
+  );
+  assert.equal(
+    classifyEmailSendFailure(new Error("Please try again after 0 seconds"), {
+      retryExhausted: true,
+    }),
+    "acs_email_throttled_retry_exhausted",
+  );
+  assert.equal(
+    classifyEmailSendFailure(new Error("Recipient address was rejected")),
+    "acs_recipient_rejected",
+  );
+  assert.equal(
+    classifyEmailSendFailure(
+      new Error("Authentication failed for the ACS credential"),
+    ),
+    "acs_email_config_error",
+  );
 });
 
 test("email templates use approved copy and escape HTML content", () => {

@@ -667,6 +667,15 @@ test("promotional send records safe throttling reason after retry exhaustion", a
   );
 });
 
+test("promotional send records safe sender domain linkage reason", async () => {
+  assert.equal(
+    sanitizePromotionalSendError(
+      new Error("The specified sender domain has not been linked."),
+    ),
+    "acs_sender_domain_not_linked",
+  );
+});
+
 test("promotional send pacing delay is configurable and bounded", () => {
   assert.equal(getPromotionalSendPaceDelayMs({}), 750);
   assert.equal(

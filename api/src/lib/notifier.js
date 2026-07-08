@@ -47,6 +47,111 @@ function getPromotionalEmailConfig(env = process.env) {
   };
 }
 
+function getEmailSendErrorText(error) {
+  if (!error) {
+    return "";
+  }
+
+  return [
+    error.message,
+    error.reason,
+    error.code,
+    error.statusCode,
+    error.status,
+  ]
+    .filter((value) => value != null && value !== "")
+    .map((value) => String(value))
+    .join(" ");
+}
+
+function isTransientEmailSendError(error) {
+  const text = getEmailSendErrorText(error).toLowerCase();
+  return (
+    text.includes("try again after") ||
+    text.includes("throttl") ||
+    text.includes("too many") ||
+    text.includes("rate limit") ||
+    text.includes("timeout") ||
+    text.includes("temporar") ||
+    text.includes("econnreset") ||
+    text.includes("etimedout") ||
+    text.includes("429") ||
+    text.includes("500") ||
+    text.includes("502") ||
+    text.includes("503") ||
+    text.includes("504")
+  );
+}
+
+function classifyEmailSendFailure(error, options = {}) {
+  const text = getEmailSendErrorText(error).toLowerCase();
+  const retrySuffix = options.retryExhausted ? "_retry_exhausted" : "";
+
+  if (
+    text.includes("sender domain has not been linked") ||
+    text.includes("specified sender domain has not been linked") ||
+    text.includes("domain has not been linked")
+  ) {
+    return "acs_sender_domain_not_linked";
+  }
+
+  if (
+    text.includes("domain") &&
+    (text.includes("not verified") || text.includes("verification"))
+  ) {
+    return "acs_sender_domain_not_verified";
+  }
+
+  if (
+    text.includes("sender") &&
+    (text.includes("unauthorized") ||
+      text.includes("not authorized") ||
+      text.includes("not allowed") ||
+      text.includes("not permitted") ||
+      text.includes("invalid sender"))
+  ) {
+    return "acs_sender_not_authorized";
+  }
+
+  if (
+    text.includes("recipient") &&
+    (text.includes("rejected") ||
+      text.includes("invalid") ||
+      text.includes("suppressed") ||
+      text.includes("blocked"))
+  ) {
+    return "acs_recipient_rejected";
+  }
+
+  if (
+    text.includes("try again after") ||
+    text.includes("throttl") ||
+    text.includes("too many") ||
+    text.includes("rate limit") ||
+    text.includes("429")
+  ) {
+    return `acs_email_throttled${retrySuffix}`;
+  }
+
+  if (
+    text.includes("connection string") ||
+    text.includes("authentication failed") ||
+    text.includes("access key") ||
+    text.includes("credential") ||
+    text.includes("unauthorized") ||
+    text.includes("401") ||
+    text.includes("403")
+  ) {
+    return "acs_email_config_error";
+  }
+
+  if (isTransientEmailSendError(error)) {
+    return `acs_email_transient${retrySuffix}`;
+  }
+
+  return "send_failed";
+}
+
 function escapeHtml(value) {
   return String(value == null ? "" : value)
     .replace(/&/g, "&amp;")
@@ -891,6 +996,7 @@ async function notifyMembershipBenefitUsed(details, context, options = {}) {
 }
 
 module.exports = {
+  classifyEmailSendFailure,
   createCompanyInvitationEmail,
   createCompanyPasswordResetEmail,
   createInternalPasswordResetSentEmail,
@@ -903,6 +1009,7 @@ module.exports = {
   escapeHtml,
   getEmailConfig,
   getPromotionalEmailConfig,
+  isTransientEmailSendError,
   notifyCompanyInvitationCreated,
   notifyCompanyPasswordResetCreated,
   notifyCompanyRegistrationSubmitted,

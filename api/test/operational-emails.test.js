@@ -155,6 +155,48 @@ test("sendOperationalEmailBestEffort sends and logs one attempt", async () => {
   assert.equal(repository.state.attempts.length, 1);
 });
 
+test("sendOperationalEmailBestEffort records safe ACS failure reason", async () => {
+  const repository = createFakeRepository();
+  const warnings = [];
+  const result = await sendOperationalEmailBestEffort(
+    repository,
+    {
+      companyId: "10",
+      eventType: "purchase",
+      idempotencyKey: "purchase:31",
+      sourceEntityType: "purchase",
+      sourceEntityId: "31",
+      customerId: "20",
+    },
+    sampleDetails,
+    {
+      warn(message) {
+        warnings.push(message);
+      },
+    },
+    {
+      config: emailConfig,
+      sendEmail: async () => {
+        throw new Error("The specified sender domain has not been linked.");
+      },
+    },
+  );
+
+  assert.equal(result.status, "failed");
+  assert.equal(result.reason, "acs_sender_domain_not_linked");
+  assert.equal(repository.state.attempts.length, 1);
+  assert.equal(
+    repository.state.attempts[0].attempt.reason,
+    "acs_sender_domain_not_linked",
+  );
+  assert.equal(
+    repository.state.attempts[0].attempt.errorMessage,
+    "acs_sender_domain_not_linked",
+  );
+  assert.match(warnings[0], /acs_sender_domain_not_linked/);
+  assert.doesNotMatch(warnings[0], /specified sender domain/);
+});
+
 test("sendOperationalEmailBestEffort skips duplicate idempotency key", async () => {
   const repository = createFakeRepository({ duplicate: true });
   const result = await sendOperationalEmailBestEffort(

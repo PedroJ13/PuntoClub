@@ -202,42 +202,11 @@ function getPromotionalSendErrorText(error) {
 }
 
 function isTransientPromotionalSendError(error) {
-  const text = getPromotionalSendErrorText(error).toLowerCase();
-  return (
-    text.includes("try again after") ||
-    text.includes("throttl") ||
-    text.includes("too many") ||
-    text.includes("rate limit") ||
-    text.includes("timeout") ||
-    text.includes("temporar") ||
-    text.includes("econnreset") ||
-    text.includes("etimedout") ||
-    text.includes("429") ||
-    text.includes("500") ||
-    text.includes("502") ||
-    text.includes("503") ||
-    text.includes("504")
-  );
+  return notifier.isTransientEmailSendError(error);
 }
 
 function sanitizePromotionalSendError(error) {
-  const text = getPromotionalSendErrorText(error).toLowerCase();
-
-  if (
-    text.includes("try again after") ||
-    text.includes("throttl") ||
-    text.includes("too many") ||
-    text.includes("rate limit") ||
-    text.includes("429")
-  ) {
-    return "acs_email_throttled_retry_exhausted";
-  }
-
-  if (isTransientPromotionalSendError(error)) {
-    return "acs_email_transient_retry_exhausted";
-  }
-
-  return "send_failed";
+  return notifier.classifyEmailSendFailure(error, { retryExhausted: true });
 }
 
 function getPromotionalSendPaceDelayMs(env = process.env) {
