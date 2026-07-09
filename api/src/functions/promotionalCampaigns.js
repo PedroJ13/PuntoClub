@@ -29,6 +29,10 @@ const defaultPreviewCustomer = {
 };
 
 function isPromotionalSendEnabled() {
+  if (notifier.isEmailSendDisabled(process.env)) {
+    return false;
+  }
+
   return (
     String(process.env.PROMOTIONAL_EMAIL_SEND_ENABLED || "").toLowerCase() ===
     "true"

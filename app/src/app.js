@@ -36,6 +36,7 @@ const SEO_NOINDEX_CONFIG = {
 };
 
 const elements = {
+  environmentBadge: document.querySelector("#environment-badge"),
   publicHomePage: document.querySelector("#public-home-page"),
   publicProductPage: document.querySelector("#public-product-page"),
   globalLoading: document.querySelector("#global-loading"),
@@ -1162,6 +1163,7 @@ const isLoginPage = isCompanyLoginRoute();
 const isRegistrationPage = isCompanyRegistrationRoute();
 const isAdminCompaniesPage = isAdminCompaniesRoute();
 
+setupEnvironmentBadge();
 relocateLoyaltyPanels();
 
 elements.dataSourceStatus.textContent = api.sourceLabel;
@@ -11268,6 +11270,21 @@ function exportAuditCsv() {
   link.remove();
   URL.revokeObjectURL(url);
   showAuditStatus("CSV de historial exportado desde los datos cargados.");
+}
+
+function setupEnvironmentBadge() {
+  const environmentName = String(config.environmentName || "").toLowerCase();
+  const isStaging =
+    environmentName === "staging" ||
+    /(^|[.-])stg([.-]|$)/i.test(config.apiBaseUrl || "") ||
+    /staging/i.test(config.apiBaseUrl || "");
+
+  if (!elements.environmentBadge) {
+    return;
+  }
+
+  elements.environmentBadge.hidden = !isStaging;
+  document.body.classList.toggle("is-staging-environment", isStaging);
 }
 
 function buildMembershipFinancialReportCsv(report) {

@@ -85,4 +85,11 @@ test("promotional send flag is disabled unless explicitly true", () => {
     isPromotionalSendEnabled({ PROMOTIONAL_EMAIL_SEND_ENABLED: "TRUE" }),
     true,
   );
+  assert.equal(
+    isPromotionalSendEnabled({
+      EMAIL_SEND_MODE: "disabled",
+      PROMOTIONAL_EMAIL_SEND_ENABLED: "true",
+    }),
+    false,
+  );
 });

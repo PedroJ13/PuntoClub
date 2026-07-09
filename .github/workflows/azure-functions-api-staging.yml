@@ -1,0 +1,81 @@
+name: Deploy Punto Club API staging
+
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_FUNCTIONAPP_NAME: func-puntoclub-stg-br-001
+  AZURE_RESOURCE_GROUP: resource_group_main
+  AZURE_CLIENT_ID: 84308cf7-053b-46b1-beef-b8245e851271
+  AZURE_TENANT_ID: a50d6327-9af1-45f4-ab3e-4a931f70e318
+  AZURE_SUBSCRIPTION_ID: ea1a3068-3abc-425a-ad65-53be62bdf0c6
+  API_BASE_URL: https://func-puntoclub-stg-br-001.azurewebsites.net/api
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Test and deploy API staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+
+      - name: Install dependencies
+        working-directory: api
+        run: npm ci
+
+      - name: Run tests
+        working-directory: api
+        run: npm test
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ env.AZURE_CLIENT_ID }}
+          tenant-id: ${{ env.AZURE_TENANT_ID }}
+          subscription-id: ${{ env.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Package API
+        run: |
+          cd api
+          zip -r ../api-staging-deploy.zip . \
+            -x "local.settings.json" \
+            -x "local-secrets/*" \
+            -x "*.log" \
+            -x "test/*"
+
+      - name: Set staging safety settings
+        run: |
+          az functionapp config appsettings set \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_FUNCTIONAPP_NAME" \
+            --settings \
+              "ENVIRONMENT_NAME=staging" \
+              "EMAIL_SEND_MODE=disabled" \
+              "PROMOTIONAL_EMAIL_SEND_ENABLED=false" \
+              "COMPANY_REGISTRATION_REVIEW_ENABLED=false" \
+              "COMPANY_INVITATION_MANAGEMENT_ENABLED=false" \
+              "COMPANY_PASSWORD_RESET_ENABLED=false"
+
+      - name: Deploy Azure Functions staging
+        run: |
+          az functionapp deployment source config-zip \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_FUNCTIONAPP_NAME" \
+            --src api-staging-deploy.zip
+
+      - name: Smoke API staging without writes
+        run: |
+          curl --fail --show-error "$API_BASE_URL/health"
+          status=$(curl --silent --output /tmp/me.json --write-out "%{http_code}" "$API_BASE_URL/me")
+          test "$status" = "401"

@@ -9,6 +9,7 @@ const {
   defaultInternalNotificationEmail,
   getEmailConfig,
   getPromotionalEmailConfig,
+  isEmailSendDisabled,
   notifyCompanyRegistrationSubmitted,
   sendEmailViaAcs,
 } = require("../src/lib/notifier");
@@ -421,6 +422,56 @@ test("notifyCompanyRegistrationSubmitted skips safely when ACS email is not conf
     provider: "acs-email",
     status: "skipped",
     reason: "not_configured",
+  });
+});
+
+test("EMAIL_SEND_MODE disabled blocks email even when ACS is configured", async () => {
+  const env = {
+    EMAIL_SEND_MODE: "disabled",
+    ACS_EMAIL_CONNECTION_STRING: "secret-connection-string",
+    ACS_EMAIL_SENDER_ADDRESS: "ops@example.test",
+    INTERNAL_NOTIFICATION_EMAIL: "ops@example.test",
+  };
+  const config = getEmailConfig(env);
+  assert.equal(isEmailSendDisabled(env), true);
+  assert.equal(config.enabled, false);
+
+  const result = await notifyCompanyRegistrationSubmitted(
+    sampleRegistrationRequest,
+    null,
+    {
+      env,
+      sendEmail() {
+        throw new Error("sendEmail should not be called");
+      },
+    },
+  );
+
+  assert.deepEqual(result, {
+    provider: "acs-email",
+    status: "skipped",
+    reason: "email_send_disabled",
+  });
+});
+
+test("sendEmailViaAcs honors EMAIL_SEND_MODE disabled", async () => {
+  const result = await sendEmailViaAcs(
+    {
+      senderAddress: "DoNotReply@example.test",
+      senderDisplayName: "Punto Club",
+      to: [{ address: "ops@example.test" }],
+      subject: "Test",
+      plainText: "Hello",
+      html: "<p>Hello</p>",
+    },
+    { connectionString: "secret-connection-string" },
+    { env: { EMAIL_SEND_MODE: "disabled" } },
+  );
+
+  assert.deepEqual(result, {
+    provider: "acs-email",
+    status: "skipped",
+    reason: "email_send_disabled",
   });
 });
 

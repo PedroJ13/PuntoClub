@@ -1,0 +1,36 @@
+name: Deploy Punto Club frontend staging
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_and_deploy_job:
+    runs-on: ubuntu-latest
+    name: Deploy Web staging
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Generate staging app config
+        run: |
+          cat > app/app-config.js <<'EOF'
+          window.PUNTO_CLUB_API_BASE_URL = "https://func-puntoclub-stg-br-001.azurewebsites.net";
+          window.PUNTO_CLUB_COMPANY_ID = "6";
+          window.PUNTO_CLUB_ENVIRONMENT = "staging";
+          window.PUNTO_CLUB_USE_MOCK_API = false;
+          EOF
+
+      - name: Guard against production API in staging config
+        run: |
+          grep -q "func-puntoclub-stg-br-001.azurewebsites.net" app/app-config.js
+          ! grep -q "api.puntoclubcr.com" app/app-config.js
+
+      - name: Deploy staging
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_SWA_PUNTOCLUB_STG_001 }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: app
+          api_location: ""
+          output_location: ""

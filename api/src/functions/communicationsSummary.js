@@ -2,10 +2,15 @@ const { app } = require("@azure/functions");
 const { ApiError } = require("../lib/errors");
 const { handle, ok } = require("../lib/http");
 const { parsePositiveInteger } = require("../lib/validators");
+const notifier = require("../lib/notifier");
 const repository = require("../lib/repository");
 const { requireSessionIdentity } = require("./companyAuth");
 
 function isPromotionalSendEnabled(env = process.env) {
+  if (notifier.isEmailSendDisabled(env)) {
+    return false;
+  }
+
   return (
     String(env.PROMOTIONAL_EMAIL_SEND_ENABLED || "").toLowerCase() === "true"
   );

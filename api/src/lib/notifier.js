@@ -4,6 +4,22 @@ function normalizeText(value) {
   return typeof value === "string" ? value.trim() : "";
 }
 
+function getEmailSendMode(env = process.env) {
+  return normalizeText(env.EMAIL_SEND_MODE).toLowerCase();
+}
+
+function isEmailSendDisabled(env = process.env) {
+  return getEmailSendMode(env) === "disabled";
+}
+
+function emailDisabledResult() {
+  return {
+    provider: "acs-email",
+    status: "skipped",
+    reason: "email_send_disabled",
+  };
+}
+
 function getEmailConfig(env = process.env) {
   const connectionString = normalizeText(env.ACS_EMAIL_CONNECTION_STRING);
   const senderAddress = normalizeText(env.ACS_EMAIL_SENDER_ADDRESS);
@@ -21,7 +37,10 @@ function getEmailConfig(env = process.env) {
     internalNotificationEmail,
     publicBaseUrl,
     enabled: Boolean(
-      connectionString && senderAddress && internalNotificationEmail,
+      !isEmailSendDisabled(env) &&
+      connectionString &&
+      senderAddress &&
+      internalNotificationEmail,
     ),
   };
 }
@@ -40,6 +59,7 @@ function getPromotionalEmailConfig(env = process.env) {
     senderAddress: promotionalSenderAddress || config.senderAddress,
     senderDisplayName: promotionalSenderDisplayName || config.senderDisplayName,
     enabled: Boolean(
+      !isEmailSendDisabled(env) &&
       config.connectionString &&
       (promotionalSenderAddress || config.senderAddress) &&
       config.internalNotificationEmail,
@@ -714,6 +734,13 @@ function loadAcsEmailClient() {
 }
 
 async function sendEmailViaAcs(message, config, options = {}) {
+  if (
+    isEmailSendDisabled(options.env || process.env) ||
+    normalizeText(config?.emailSendMode).toLowerCase() === "disabled"
+  ) {
+    return emailDisabledResult();
+  }
+
   const EmailClient = options.EmailClient || loadAcsEmailClient();
   if (!EmailClient) {
     return {
@@ -764,11 +791,13 @@ async function notifyCompanyRegistrationSubmitted(
 ) {
   const config = options.config || getEmailConfig(options.env || process.env);
   if (!config.enabled) {
-    return {
-      provider: "acs-email",
-      status: "skipped",
-      reason: "not_configured",
-    };
+    return isEmailSendDisabled(options.env || process.env)
+      ? emailDisabledResult()
+      : {
+          provider: "acs-email",
+          status: "skipped",
+          reason: "not_configured",
+        };
   }
 
   const sendEmail =
@@ -820,11 +849,13 @@ async function notifyCompanyInvitationCreated(
 ) {
   const config = options.config || getEmailConfig(options.env || process.env);
   if (!config.enabled) {
-    return {
-      provider: "acs-email",
-      status: "skipped",
-      reason: "not_configured",
-    };
+    return isEmailSendDisabled(options.env || process.env)
+      ? emailDisabledResult()
+      : {
+          provider: "acs-email",
+          status: "skipped",
+          reason: "not_configured",
+        };
   }
 
   const inviteMessage = createCompanyInvitationEmail(invitation, token, config);
@@ -882,11 +913,13 @@ async function notifyCompanyPasswordResetCreated(
 ) {
   const config = options.config || getEmailConfig(options.env || process.env);
   if (!config.enabled) {
-    return {
-      provider: "acs-email",
-      status: "skipped",
-      reason: "not_configured",
-    };
+    return isEmailSendDisabled(options.env || process.env)
+      ? emailDisabledResult()
+      : {
+          provider: "acs-email",
+          status: "skipped",
+          reason: "not_configured",
+        };
   }
 
   const resetMessage = createCompanyPasswordResetEmail(reset, token, config);
@@ -939,11 +972,13 @@ async function notifyCompanyPasswordResetCreated(
 async function notifyMembershipBenefitUsed(details, context, options = {}) {
   const config = options.config || getEmailConfig(options.env || process.env);
   if (!config.enabled) {
-    return {
-      provider: "acs-email",
-      status: "skipped",
-      reason: "not_configured",
-    };
+    return isEmailSendDisabled(options.env || process.env)
+      ? emailDisabledResult()
+      : {
+          provider: "acs-email",
+          status: "skipped",
+          reason: "not_configured",
+        };
   }
 
   const sendEmail =
@@ -1008,6 +1043,7 @@ module.exports = {
   defaultInternalNotificationEmail,
   escapeHtml,
   getEmailConfig,
+  isEmailSendDisabled,
   getPromotionalEmailConfig,
   isTransientEmailSendError,
   notifyCompanyInvitationCreated,
