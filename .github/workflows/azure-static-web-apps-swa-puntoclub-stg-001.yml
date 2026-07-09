@@ -1,6 +1,12 @@
 name: Deploy Punto Club frontend staging
 
 on:
+  push:
+    branches:
+      - staging
+    paths:
+      - "app/**"
+      - ".github/workflows/azure-static-web-apps-swa-puntoclub-stg-001.yml"
   workflow_dispatch:
 
 jobs:

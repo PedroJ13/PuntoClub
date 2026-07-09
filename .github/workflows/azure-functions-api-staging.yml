@@ -1,6 +1,12 @@
 name: Deploy Punto Club API staging
 
 on:
+  push:
+    branches:
+      - staging
+    paths:
+      - "api/**"
+      - ".github/workflows/azure-functions-api-staging.yml"
   workflow_dispatch:
 
 permissions:
