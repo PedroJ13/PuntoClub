@@ -73,6 +73,13 @@ jobs:
               "COMPANY_INVITATION_MANAGEMENT_ENABLED=false" \
               "COMPANY_PASSWORD_RESET_ENABLED=false"
 
+      - name: Clear run-from-package setting
+        run: |
+          az functionapp config appsettings delete \
+            --resource-group "$AZURE_RESOURCE_GROUP" \
+            --name "$AZURE_FUNCTIONAPP_NAME" \
+            --setting-names WEBSITE_RUN_FROM_PACKAGE
+
       - name: Deploy Azure Functions staging
         run: |
           az functionapp deployment source config-zip \
