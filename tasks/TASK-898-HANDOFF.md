@@ -6,7 +6,7 @@ Fecha: 2026-07-09
 
 ## Estado
 
-Completada.
+Completada en Git/workflows. Bloqueada para ejecucion exitosa de pipelines por configuracion externa pendiente.
 
 Se creo la rama remota `staging` desde `origin/main` y se ajustaron los workflows staging para escuchar `push` a `staging` manteniendo `workflow_dispatch`.
 
@@ -55,6 +55,12 @@ git ls-remote --heads origin staging
 Resultado: staging existe
 ```
 
+Commit publicado en staging:
+
+```txt
+f5dc7cbd999a9f80dcb14347cda40181ffb87aab
+```
+
 Formato YAML:
 
 ```txt
@@ -74,6 +80,41 @@ Workflows staging:
 - azure-static-web-apps-swa-puntoclub-stg-001.yml escucha push a staging
 ```
 
+Runs disparados por push a `staging`:
+
+```txt
+Deploy Punto Club API staging
+Run: 29055231141
+Resultado: failure
+Causa: Azure OIDC no tiene federated credential para subject repo:PedroJ13/PuntoClub:ref:refs/heads/staging.
+
+Deploy Punto Club frontend staging
+Run: 29055231074
+Resultado: failure
+Causa: GitHub secret AZURE_STATIC_WEB_APPS_API_TOKEN_SWA_PUNTOCLUB_STG_001 no esta disponible para el workflow.
+```
+
+## Pendiente para destrabar ejecucion
+
+Requiere aprobacion explicita del Product Owner/Infra para:
+
+1. Crear una federated credential OIDC nueva en la app registration usada por GitHub Actions:
+
+```txt
+name: github-staging
+issuer: https://token.actions.githubusercontent.com
+subject: repo:PedroJ13/PuntoClub:ref:refs/heads/staging
+audience: api://AzureADTokenExchange
+```
+
+2. Crear/confirmar el GitHub secret staging:
+
+```txt
+AZURE_STATIC_WEB_APPS_API_TOKEN_SWA_PUNTOCLUB_STG_001
+```
+
+No se aplicaron estos dos cambios porque expanden configuracion persistente de confianza/secrets y requieren aprobacion explicita separada.
+
 ## Restricciones respetadas
 
 - No se cambio SQL.
@@ -86,4 +127,3 @@ Workflows staging:
 ## Uso Azure SQL
 
 No se uso Azure SQL.
-
