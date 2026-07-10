@@ -1157,6 +1157,7 @@ const invitationToken = getInvitationTokenFromUrl();
 const passwordResetToken = getPasswordResetTokenFromUrl();
 const isInvitationPage = isCompanyInvitationRoute();
 const isPasswordResetPage = isCompanyPasswordResetRoute();
+const isPublicHomePage = isPublicHomeRoute();
 const isProductPage = isProductRoute();
 const isOperationalAppPage = isOperationalAppRoute();
 const isLoginPage = isCompanyLoginRoute();
@@ -1963,6 +1964,8 @@ if (isInvitationPage) {
 } else if (isPasswordResetPage) {
   showPasswordResetPage();
   validateCompanyPasswordReset(passwordResetToken);
+} else if (isPublicHomePage) {
+  showPublicHomePage();
 } else if (isProductPage) {
   showProductPage();
 } else if (isOperationalAppPage) {
@@ -11032,7 +11035,12 @@ function isCompanyPasswordResetRoute() {
 
 function isProductRoute() {
   const route = window.location.pathname.replace(/\/$/, "") || "/";
-  return route === "/" || route === "/producto";
+  return route === "/producto";
+}
+
+function isPublicHomeRoute() {
+  const route = window.location.pathname.replace(/\/$/, "") || "/";
+  return route === "/";
 }
 
 function isOperationalAppRoute() {

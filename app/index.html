@@ -84,7 +84,7 @@
             type="button"
             data-icon="log-in"
           >
-            Acceder a mi panel
+            Iniciar sesion
           </button>
           <button
             class="secondary-button icon-button logout-icon-button"
@@ -107,39 +107,182 @@
         aria-labelledby="public-home-title"
         hidden
       >
-        <div class="public-home-copy">
-          <p class="eyebrow">Fidelización para empresas</p>
-          <h2 id="public-home-title">Punto Club</h2>
-          <p>
-            App de fidelización para negocios en Costa Rica: gestiona puntos,
-            membresías y beneficios para que tus clientes vuelvan con más
-            frecuencia.
-          </p>
-          <div class="public-home-actions">
-            <a class="button-link secondary-link" href="/producto"
-              >Conocer producto</a
-            >
-            <a class="button-link" href="/login">Acceder a mi panel</a>
-            <a class="button-link secondary-link" href="/company-registration"
+        <nav class="public-home-nav" aria-label="Navegación pública">
+          <a class="public-home-brand" href="/" aria-label="Punto Club inicio">
+            <span>PC</span>
+            <strong>Punto Club</strong>
+          </a>
+          <div class="public-home-nav-links">
+            <a href="#beneficios">Beneficios</a>
+            <a href="#funciones">Funciones</a>
+            <a href="#como-funciona">Cómo funciona</a>
+            <a href="#contacto">Contacto</a>
+          </div>
+          <div class="public-home-nav-actions">
+            <a class="public-home-login" href="/login">Iniciar sesion</a>
+            <a class="public-home-cta" href="/company-registration"
               >Crear programa</a
             >
           </div>
+        </nav>
+
+        <div class="public-home-hero">
+          <div class="public-home-copy">
+            <p class="eyebrow">Plataforma de fidelización para empresas</p>
+            <h2 id="public-home-title">
+              Haz crecer tu negocio fidelizando clientes
+            </h2>
+            <p>
+              Crea programas de puntos, membresías y beneficios desde un panel
+              web claro para tu equipo. Punto Club te ayuda a registrar
+              clientes, premiar compras y dar seguimiento a la recompra.
+            </p>
+            <div class="public-home-actions">
+              <a class="public-home-cta" href="/company-registration"
+                >Crear programa</a
+              >
+              <a class="public-home-secondary" href="#como-funciona"
+                >Ver cómo funciona</a
+              >
+            </div>
+          </div>
+
+          <div class="public-home-dashboard" aria-label="Panel de ejemplo">
+            <div class="public-dashboard-header">
+              <div>
+                <span>Panel Punto Club</span>
+                <strong>Resumen operativo</strong>
+              </div>
+              <em>Datos de ejemplo</em>
+            </div>
+            <div class="public-dashboard-metrics">
+              <article>
+                <span>Clientes activos</span>
+                <strong>384</strong>
+              </article>
+              <article>
+                <span>Puntos otorgados</span>
+                <strong>18,420</strong>
+              </article>
+              <article>
+                <span>Redenciones</span>
+                <strong>126</strong>
+              </article>
+            </div>
+            <div class="public-dashboard-grid">
+              <div class="public-dashboard-chart">
+                <div class="chart-bar chart-bar-a"></div>
+                <div class="chart-bar chart-bar-b"></div>
+                <div class="chart-bar chart-bar-c"></div>
+                <div class="chart-bar chart-bar-d"></div>
+                <div class="chart-bar chart-bar-e"></div>
+              </div>
+              <div class="public-dashboard-card">
+                <span>Membresía activa</span>
+                <strong>Oro</strong>
+                <p>Beneficio aplicado en la última compra.</p>
+              </div>
+            </div>
+            <div class="public-dashboard-activity">
+              <span>Actividad reciente</span>
+              <p>Compra registrada · puntos acumulados · redención aprobada</p>
+            </div>
+          </div>
         </div>
 
-        <div class="public-home-visual" aria-hidden="true">
-          <div class="loyalty-card loyalty-card-primary">
-            <span>Ejemplo visual</span>
-            <strong>1,240 pts</strong>
-          </div>
-          <div class="loyalty-card loyalty-card-secondary">
-            <span>Beneficio activo</span>
-            <strong>10% descuento</strong>
-          </div>
-          <div class="loyalty-card loyalty-card-tertiary">
-            <span>Membresía</span>
-            <strong>Vence en 5 días</strong>
-          </div>
+        <div class="public-home-proof" id="beneficios">
+          <article>
+            <strong>Puntos automáticos</strong>
+            <span>Premia cada compra sin cálculos manuales.</span>
+          </article>
+          <article>
+            <strong>Membresías flexibles</strong>
+            <span>Crea niveles y beneficios según el perfil del cliente.</span>
+          </article>
+          <article>
+            <strong>Reportes claros</strong>
+            <span
+              >Consulta actividad, puntos y redenciones desde el panel.</span
+            >
+          </article>
         </div>
+
+        <section
+          class="public-home-section"
+          id="como-funciona"
+          aria-label="Cómo funciona Punto Club"
+        >
+          <div class="public-section-heading">
+            <p class="eyebrow">Cómo funciona</p>
+            <h3>Un flujo simple para operar tu programa</h3>
+          </div>
+          <div class="public-home-cards">
+            <article>
+              <span>1</span>
+              <h4>Registra clientes</h4>
+              <p>
+                Guarda los datos básicos para identificar a cada cliente
+                recurrente.
+              </p>
+            </article>
+            <article>
+              <span>2</span>
+              <h4>Premia compras</h4>
+              <p>
+                Asocia compras, calcula puntos y evita duplicados operativos.
+              </p>
+            </article>
+            <article>
+              <span>3</span>
+              <h4>Da seguimiento</h4>
+              <p>
+                Consulta saldo, historial, redenciones y reportes del programa.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section
+          class="public-home-section public-home-feature-band"
+          id="funciones"
+          aria-label="Funciones de Punto Club"
+        >
+          <div class="public-section-heading">
+            <p class="eyebrow">Funciones</p>
+            <h3>Pensado para operar desde la web</h3>
+          </div>
+          <div class="public-home-cards public-home-feature-cards">
+            <article>
+              <span>✓</span>
+              <h4>Acceso por empresa</h4>
+              <p>Cada negocio trabaja con su propio panel y configuración.</p>
+            </article>
+            <article>
+              <span>✓</span>
+              <h4>Beneficios exclusivos</h4>
+              <p>Ofrece experiencias y recompensas que tus clientes valoran.</p>
+            </article>
+            <article>
+              <span>✓</span>
+              <h4>Auditoría y reportes</h4>
+              <p>Mantén visibilidad de compras, puntos y redenciones.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="public-home-final" id="contacto">
+          <div>
+            <p class="eyebrow">Punto Club</p>
+            <h3>Listo para preparar tu programa de fidelización</h3>
+            <p>
+              Solicita acceso y revisamos la configuración inicial de tu
+              empresa.
+            </p>
+          </div>
+          <a class="public-home-cta" href="/company-registration"
+            >Crear programa</a
+          >
+        </section>
       </section>
 
       <section
@@ -154,7 +297,7 @@
           <a href="#product-features">Funciones</a>
           <a href="#product-pricing">Precios</a>
           <a href="#product-contact">Contacto</a>
-          <a class="product-nav-panel" href="/login">Acceder a mi panel</a>
+          <a class="product-nav-panel" href="/login">Iniciar sesion</a>
           <a class="product-nav-cta" href="/company-registration"
             >Crear programa</a
           >
@@ -180,7 +323,7 @@
               <a class="button-link product-secondary-cta" href="#product-steps"
                 >Ver cómo funciona</a
               >
-              <a class="product-panel-link" href="/login">Acceder a mi panel</a>
+              <a class="product-panel-link" href="/login">Iniciar sesion</a>
             </div>
             <div class="product-trust-row" aria-label="Confianza operativa">
               <span>Piloto operativo en marcha</span>
