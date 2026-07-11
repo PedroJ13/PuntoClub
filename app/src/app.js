@@ -10130,6 +10130,8 @@ function showPublicHomePage() {
   document.body.classList.add("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
+  document.body.classList.remove("public-auth-mode");
+  document.body.classList.remove("public-invitation-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = false;
   elements.publicProductPage.hidden = true;
@@ -10150,6 +10152,8 @@ function showProductPage() {
   document.body.classList.remove("public-home-mode");
   document.body.classList.add("public-product-mode");
   document.body.classList.remove("public-registration-mode");
+  document.body.classList.remove("public-auth-mode");
+  document.body.classList.remove("public-invitation-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
   elements.publicProductPage.hidden = false;
@@ -10169,6 +10173,8 @@ function showInvitationPage() {
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
+  document.body.classList.remove("public-auth-mode");
+  document.body.classList.add("public-invitation-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
   elements.publicProductPage.hidden = true;
@@ -10186,6 +10192,8 @@ function showPasswordResetPage() {
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
+  document.body.classList.add("public-auth-mode");
+  document.body.classList.remove("public-invitation-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
   elements.publicProductPage.hidden = true;
@@ -10206,6 +10214,8 @@ function showLoginPage(options = {}) {
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
+  document.body.classList.add("public-auth-mode");
+  document.body.classList.remove("public-invitation-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
   elements.publicProductPage.hidden = true;
@@ -10236,6 +10246,8 @@ async function showMainApp(options = {}) {
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
+  document.body.classList.remove("public-auth-mode");
+  document.body.classList.remove("public-invitation-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
   elements.publicProductPage.hidden = true;
@@ -10295,6 +10307,8 @@ function showPublicCompanyRegistrationPage() {
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.add("public-registration-mode");
+  document.body.classList.remove("public-auth-mode");
+  document.body.classList.remove("public-invitation-mode");
   document.body.classList.remove("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
   elements.publicProductPage.hidden = true;
@@ -10328,6 +10342,8 @@ function showAdminCompaniesPage() {
   document.body.classList.remove("public-home-mode");
   document.body.classList.remove("public-product-mode");
   document.body.classList.remove("public-registration-mode");
+  document.body.classList.remove("public-auth-mode");
+  document.body.classList.remove("public-invitation-mode");
   document.body.classList.add("admin-companies-page-mode");
   elements.publicHomePage.hidden = true;
   elements.publicProductPage.hidden = true;
