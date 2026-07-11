@@ -564,6 +564,7 @@ const elements = {
   ),
   companyLogoFileInput: document.querySelector("#company-logo-file"),
   companyLogoFileError: document.querySelector("#company-logo-file-error"),
+  companyLogoPreview: document.querySelector("#company-logo-preview"),
   companyLogoPreviewText: document.querySelector("#company-logo-preview-text"),
   companyLogoPreviewImage: document.querySelector(
     "#company-logo-preview-image",
@@ -7541,7 +7542,7 @@ function renderOperationalEmailError(error) {
     error.details.forEach((detail) => {
       if (detail.field === "replyToEmail") {
         elements.companyEmailReplyToError.textContent =
-          "Ingresa un correo reply-to válido.";
+          "Ingresa un correo de respuesta válido.";
       }
     });
     showOperationalEmailError("Revisa los campos marcados antes de continuar.");
@@ -7619,8 +7620,9 @@ function renderCompanyLogo(settings) {
 
   if (!logoUrl) {
     elements.companyCurrentLogo.textContent = "Sin logo cargado";
+    elements.companyLogoPreview.classList.remove("is-unavailable");
     elements.companyLogoPreviewText.hidden = false;
-    elements.companyLogoPreviewText.textContent = "Sin logo cargado";
+    elements.companyLogoPreviewText.textContent = "Sin logo";
     elements.companyLogoPreviewImage.hidden = true;
     elements.companyLogoPreviewImage.onerror = null;
     elements.companyLogoPreviewImage.removeAttribute("src");
@@ -7632,13 +7634,15 @@ function renderCompanyLogo(settings) {
     ? `Actualizado ${formatDateTime(updatedAt)}`
     : "Logo cargado";
   elements.companyLogoPreviewText.hidden = true;
+  elements.companyLogoPreview.classList.remove("is-unavailable");
   elements.companyLogoPreviewImage.hidden = false;
   elements.companyLogoPreviewImage.onerror = () => {
     elements.companyCurrentLogo.textContent =
       "Logo configurado, pero no pudimos cargar la imagen.";
     elements.companyLogoPreviewText.hidden = false;
     elements.companyLogoPreviewText.textContent =
-      "No pudimos mostrar el logo cargado.";
+      "Logo configurado, pero no pudimos mostrar la imagen.";
+    elements.companyLogoPreview.classList.add("is-unavailable");
     elements.companyLogoPreviewImage.hidden = true;
     elements.companyLogoPreviewImage.removeAttribute("src");
   };
@@ -7660,6 +7664,7 @@ function previewSelectedCompanyLogo() {
   revokeCompanyLogoPreviewUrl();
   companyLogoPreviewUrl = URL.createObjectURL(file);
   elements.companyLogoPreviewText.hidden = true;
+  elements.companyLogoPreview.classList.remove("is-unavailable");
   elements.companyLogoPreviewImage.hidden = false;
   elements.companyLogoPreviewImage.onerror = null;
   elements.companyLogoPreviewImage.src = companyLogoPreviewUrl;
@@ -7669,6 +7674,7 @@ function previewSelectedCompanyLogo() {
 function clearSelectedCompanyLogo(options = {}) {
   elements.companyLogoFileInput.value = "";
   revokeCompanyLogoPreviewUrl();
+  elements.companyLogoPreview.classList.remove("is-unavailable");
 
   if (!options.keepMessages) {
     clearCompanyLogoMessages();
@@ -9488,14 +9494,8 @@ function clearCompanyPasswordForm(options = {}) {
 
 function setCompanyPasswordPanelVisible(isVisible, options = {}) {
   elements.companyPasswordForm.hidden = !isVisible;
-  elements.toggleCompanyPasswordPanelButton.setAttribute(
-    "aria-expanded",
-    String(isVisible),
-  );
-  setButtonText(
-    elements.toggleCompanyPasswordPanelButton,
-    isVisible ? "Ocultar cambio de contraseña" : "Cambiar contraseña",
-  );
+  elements.toggleCompanyPasswordPanelButton.removeAttribute("aria-expanded");
+  setButtonText(elements.toggleCompanyPasswordPanelButton, "Ir a Acceso");
 
   if (!isVisible && !options.keepForm) {
     clearCompanyPasswordForm();
@@ -10501,7 +10501,7 @@ function validateOperationalEmailSettingsForm() {
   const replyToEmail = elements.companyEmailReplyToInput.value.trim();
   if (replyToEmail && !isEmail(replyToEmail)) {
     elements.companyEmailReplyToError.textContent =
-      "Ingresa un correo reply-to válido.";
+      "Ingresa un correo de respuesta válido.";
     showOperationalEmailError("Revisa los datos ingresados.");
     return false;
   }

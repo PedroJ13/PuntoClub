@@ -25,8 +25,8 @@
   --focus-ring: 0 0 0 3px rgba(20, 184, 166, 0.18);
   --radius-sm: 8px;
   --radius-md: 12px;
-  --radius-lg: 16px;
-  --shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+  --radius-lg: 12px;
+  --shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
   --shadow-card: 0 18px 42px rgba(15, 23, 42, 0.1);
 }
 
@@ -50,8 +50,8 @@ body {
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  font-size: 15px;
-  line-height: 1.4;
+  font-size: 14px;
+  line-height: 1.45;
 }
 
 .environment-badge {
@@ -59,16 +59,16 @@ body {
   top: 10px;
   right: 10px;
   z-index: 1000;
-  border: 1px solid rgba(15, 118, 110, 0.34);
+  border: 1px solid #fde68a;
   border-radius: 999px;
-  padding: 4px 9px;
-  background: rgba(236, 253, 245, 0.96);
-  color: #115e59;
-  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.12);
+  padding: 5px 8px;
+  background: #fffbeb;
+  color: #92400e;
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.12);
   font-size: 11px;
   font-weight: 900;
   line-height: 1;
-  letter-spacing: 0;
+  letter-spacing: 0.04em;
   pointer-events: none;
 }
 
@@ -91,7 +91,8 @@ button {
   background: var(--accent);
   color: #ffffff;
   cursor: pointer;
-  font-weight: 800;
+  font-size: 13px;
+  font-weight: 850;
   transition:
     background 160ms ease,
     border-color 160ms ease,
@@ -211,9 +212,9 @@ textarea:focus {
 }
 
 .app-shell {
-  width: min(1240px, calc(100% - 28px));
+  width: min(1280px, calc(100% - 28px));
   margin: 0 auto;
-  padding: 18px 0 28px;
+  padding: 16px 0 28px;
 }
 
 .topbar {
@@ -221,16 +222,13 @@ textarea:focus {
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+  min-height: 72px;
   margin-bottom: 14px;
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   padding: 12px 14px;
   background:
-    linear-gradient(
-      135deg,
-      rgba(223, 247, 244, 0.84),
-      rgba(255, 255, 255, 0.96) 42%
-    ),
+    linear-gradient(135deg, rgba(223, 247, 244, 0.7), #ffffff 58%),
     var(--surface);
   box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
 }
@@ -252,8 +250,8 @@ textarea:focus {
   padding: 5px 9px 5px 5px;
   background: var(--surface);
   color: var(--text);
-  font-size: 0.88rem;
-  font-weight: 900;
+  font-size: 13px;
+  font-weight: 850;
   gap: 8px;
 }
 
@@ -280,10 +278,12 @@ textarea:focus {
   place-items: center;
   background: var(--accent-soft);
   color: var(--accent-strong);
-  font-size: 0.76rem;
+  font-size: 12px;
+  font-weight: 900;
 }
 
 .active-company-identity img {
+  border: 1px solid rgba(15, 118, 110, 0.14);
   object-fit: contain;
   background: #ffffff;
 }
@@ -335,9 +335,9 @@ textarea:focus {
 }
 
 .topbar h1 {
-  font-size: 1.55rem;
-  font-weight: 900;
-  line-height: 1.05;
+  font-size: 22px;
+  font-weight: 850;
+  line-height: 1.08;
 }
 
 .topbar .eyebrow {
@@ -355,13 +355,17 @@ textarea:focus {
 
 .status-pill {
   flex: 0 0 auto;
+  max-width: 260px;
+  overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 999px;
   padding: 7px 11px;
-  background: var(--accent-soft);
+  background: var(--surface-strong);
   color: var(--accent-strong);
-  font-size: 0.84rem;
+  font-size: 12px;
   font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .public-home-mode {
@@ -1435,7 +1439,7 @@ textarea:focus {
 
 .app-body {
   display: grid;
-  grid-template-columns: 210px minmax(0, 1fr);
+  grid-template-columns: 220px minmax(0, 1fr);
   gap: 14px;
   align-items: start;
 }
@@ -1446,23 +1450,25 @@ textarea:focus {
   display: grid;
   gap: 8px;
   min-width: 0;
-  border: 1px solid var(--line);
+  border: 1px solid rgba(223, 247, 244, 0.16);
   border-radius: var(--radius-md);
-  background: linear-gradient(
-    180deg,
-    rgba(2, 44, 46, 0.98),
-    rgba(4, 63, 58, 0.96)
-  );
+  background: #021f22;
   box-shadow: 0 18px 42px rgba(2, 44, 46, 0.16);
   padding: 10px;
 }
 
 .nav-button {
   width: 100%;
+  min-height: 40px;
   border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 10px 11px;
   background: transparent;
   color: rgba(248, 250, 252, 0.82);
+  font-size: 13px;
+  font-weight: 800;
   text-align: left;
+  box-shadow: none;
 }
 
 .nav-button:hover,
@@ -1480,7 +1486,7 @@ textarea:focus {
 
 .side-nav-group {
   display: grid;
-  gap: 6px;
+  gap: 4px;
 }
 
 .side-subnav {
@@ -1499,9 +1505,11 @@ textarea:focus {
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   background: transparent;
-  color: rgba(248, 250, 252, 0.74);
-  font-size: 0.84rem;
+  color: #b6d7d2;
+  font-size: 12px;
+  font-weight: 800;
   text-align: left;
+  box-shadow: none;
 }
 
 .nav-subbutton:hover,
@@ -1702,6 +1710,9 @@ body:not(.public-registration-mode)
 
 .company-panel {
   grid-area: company;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
 }
 
 .report-panel {
@@ -1763,6 +1774,27 @@ body:not(.public-registration-mode)
   display: grid;
   gap: 14px;
   margin-top: 14px;
+}
+
+.company-panel .membership-config-host {
+  margin-top: 0;
+}
+
+@media (min-width: 1100px) {
+  .company-panel .membership-config-host {
+    grid-template-columns: minmax(0, 1fr) minmax(320px, 0.72fr);
+    align-items: start;
+  }
+
+  .company-panel .membership-config-host .membership-plans-panel,
+  .company-panel .membership-config-host .membership-benefits-panel {
+    grid-column: 1;
+  }
+
+  .company-panel .membership-config-host .membership-plan-form-panel,
+  .company-panel .membership-config-host .membership-benefit-form-panel {
+    grid-column: 2;
+  }
 }
 
 .membership-config-host .membership-plans-panel,
@@ -1834,12 +1866,11 @@ body:not(.public-registration-mode)
 .membership-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  gap: 0.55rem;
-  padding: 0.75rem 0.85rem;
-  border: 1px solid rgba(15, 118, 110, 0.16);
+  gap: 6px;
+  padding: 10px;
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   background: var(--surface);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
   transition:
     background 160ms ease,
     border-color 160ms ease,
@@ -1852,9 +1883,9 @@ body:not(.public-registration-mode)
 }
 
 .membership-card.is-selected {
-  border-color: rgba(15, 118, 110, 0.42);
-  background: #f0fdfa;
-  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.12);
+  border-color: var(--accent-action);
+  background: var(--surface-strong);
+  box-shadow: none;
 }
 
 .membership-card-title {
@@ -1867,13 +1898,14 @@ body:not(.public-registration-mode)
 .membership-card-title h3 {
   margin: 0;
   color: var(--text);
-  font-size: 0.95rem;
+  font-size: 15px;
+  font-weight: 850;
 }
 
 .membership-card p {
   margin: 0.25rem 0 0;
   color: var(--muted);
-  font-size: 0.9rem;
+  font-size: 13px;
 }
 
 .membership-meta,
@@ -1885,7 +1917,7 @@ body:not(.public-registration-mode)
 }
 
 .membership-meta span {
-  border: 1px solid rgba(15, 118, 110, 0.18);
+  border: 1px solid rgba(15, 118, 110, 0.2);
   border-radius: 999px;
   padding: 0.24rem 0.5rem;
   background: var(--surface-strong);
@@ -1901,7 +1933,7 @@ body:not(.public-registration-mode)
 }
 
 .membership-controls {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
 }
 
 .membership-form > .membership-controls,
@@ -2129,10 +2161,10 @@ body:not(.public-registration-mode)
 .zone-card {
   min-width: 0;
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   background: var(--surface);
   box-shadow: var(--shadow);
-  padding: 16px;
+  padding: 14px;
 }
 
 .zone-card:focus-within {
@@ -2149,14 +2181,23 @@ body:not(.public-registration-mode)
 }
 
 .section-header h2 {
-  font-size: 1.12rem;
+  font-size: 20px;
+  line-height: 1.2;
+  font-weight: 800;
+}
+
+.section-header h3,
+.zone-card h3 {
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 800;
 }
 
 .section-support {
-  max-width: 780px;
+  max-width: 680px;
   margin: 6px 0 0;
   color: var(--muted);
-  font-size: 0.92rem;
+  font-size: 14px;
   font-weight: 700;
 }
 
@@ -2207,23 +2248,23 @@ body:not(.public-registration-mode)
 }
 
 .feedback {
-  border: 1px solid #f4d38b;
-  background: var(--surface-warm);
-  color: var(--warning);
+  border: 1px solid #fde68a;
+  background: #fffbeb;
+  color: #92400e;
 }
 
 .form-error {
-  border: 1px solid rgba(180, 35, 24, 0.18);
-  background: #fff1f0;
-  color: var(--error);
+  border: 1px solid #fecaca;
+  background: #fef2f2;
+  color: #991b1b;
 }
 
 .success-message {
   margin-top: 0;
   margin-bottom: 12px;
-  border: 1px solid rgba(15, 122, 66, 0.18);
-  background: #ecfdf3;
-  color: var(--success);
+  border: 1px solid #bbf7d0;
+  background: #ecfdf5;
+  color: #166534;
 }
 
 .status-message:focus,
@@ -2669,19 +2710,15 @@ body:not(.public-registration-mode)
 }
 
 .company-controls {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(240px, 1fr));
 }
 
 .company-form > .company-controls,
 .company-registration-form > .company-registration-controls {
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   padding: 12px;
-  background: linear-gradient(
-    135deg,
-    rgba(223, 247, 244, 0.42),
-    rgba(255, 255, 255, 0.94)
-  );
+  background: #ffffff;
 }
 
 .company-registration-panel {
@@ -2840,9 +2877,9 @@ body:not(.public-registration-mode)
 
 .company-logo-panel {
   display: grid;
-  gap: 10px;
+  gap: 12px;
   border: 1px solid rgba(15, 118, 110, 0.18);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   padding: 12px;
   background: var(--surface);
   box-shadow: 0 12px 28px rgba(15, 23, 42, 0.05);
@@ -2872,7 +2909,9 @@ body:not(.public-registration-mode)
 }
 
 .compact-header h3 {
-  font-size: 1rem;
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 850;
 }
 
 .company-logo-grid {
@@ -2885,6 +2924,7 @@ body:not(.public-registration-mode)
 .company-logo-preview {
   display: grid;
   place-items: center;
+  width: 180px;
   min-height: 128px;
   overflow: hidden;
   border: 1px dashed rgba(15, 118, 110, 0.36);
@@ -2898,6 +2938,12 @@ body:not(.public-registration-mode)
   font-size: 0.86rem;
   font-weight: 800;
   text-align: center;
+}
+
+.company-logo-preview.is-unavailable {
+  border-color: #fde68a;
+  background: #fffbeb;
+  color: #92400e;
 }
 
 .company-logo-preview img {
@@ -2914,7 +2960,7 @@ body:not(.public-registration-mode)
 
 .company-panel .compact-auth-form {
   border: 1px solid rgba(15, 118, 110, 0.16);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   padding: 12px;
   background: var(--surface);
 }
@@ -2935,7 +2981,13 @@ body:not(.public-registration-mode)
   border-top: 1px solid var(--line);
 }
 
+.company-operational-email-form {
+  display: grid;
+  gap: 12px;
+}
+
 .company-email-history-filters {
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   align-items: end;
 }
 
@@ -2987,15 +3039,15 @@ body:not(.public-registration-mode)
 
 .company-future div {
   min-width: 0;
-  border: 1px solid rgba(183, 121, 31, 0.18);
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
   padding: 11px;
-  background: var(--surface-warm);
+  background: var(--surface-strong);
 }
 
 .company-future span {
   display: block;
-  color: var(--loyalty-strong);
+  color: var(--accent-strong);
   font-size: 0.68rem;
   font-weight: 900;
   letter-spacing: 0;
@@ -3027,16 +3079,31 @@ body:not(.public-registration-mode)
 }
 
 .password-toggle {
-  width: 43px;
-  min-width: 43px;
-  min-height: 43px;
+  width: 40px;
+  min-width: 40px;
+  min-height: 40px;
   padding: 0;
   gap: 0;
   justify-content: center;
 }
 
+.password-toggle[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+
 .company-future strong {
   font-size: 0.92rem;
+}
+
+.communication-scope-note {
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .communications-kpis {
@@ -3050,11 +3117,10 @@ body:not(.public-registration-mode)
 .communication-preview,
 .communication-customer-card {
   min-width: 0;
-  border: 1px solid rgba(15, 118, 110, 0.16);
+  border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  padding: 11px;
-  background: var(--surface);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  padding: 10px;
+  background: #f8fafc;
 }
 
 .communications-kpis span,
@@ -3073,7 +3139,13 @@ body:not(.public-registration-mode)
   display: block;
   margin-top: 2px;
   color: var(--text);
+  font-size: 22px;
+  font-weight: 850;
   overflow-wrap: anywhere;
+}
+
+.communication-customer-card strong {
+  font-size: 14px;
 }
 
 .communication-switch-list,
@@ -3218,24 +3290,23 @@ body:not(.public-registration-mode)
   grid-template-columns: auto minmax(0, 1fr);
   gap: 10px;
   align-items: start;
+  min-height: 44px;
   border: 1px solid var(--line);
   border-radius: var(--radius-sm);
-  padding: 11px;
-  background: linear-gradient(
-    135deg,
-    rgba(223, 247, 244, 0.42),
-    rgba(255, 255, 255, 0.94)
-  );
+  padding: 10px;
+  background: var(--surface);
 }
 
 .communication-switch.is-locked {
-  background: var(--surface-warm);
+  background: #e2e8f0;
+  color: #64748b;
 }
 
 .communication-switch input {
   width: auto;
   min-height: 0;
   margin-top: 3px;
+  accent-color: var(--accent-strong);
 }
 
 .communication-switch strong,
@@ -3247,6 +3318,10 @@ body:not(.public-registration-mode)
   margin-top: 2px;
   color: var(--muted);
   font-weight: 750;
+}
+
+.communication-switch.is-locked small {
+  color: #64748b;
 }
 
 .communication-campaign-controls {
@@ -3843,7 +3918,7 @@ body:not(.public-registration-mode)
 .audit-table th,
 .audit-table td {
   border-bottom: 1px solid var(--line);
-  padding: 10px 11px;
+  padding: 9px 10px;
   text-align: left;
   vertical-align: top;
 }
@@ -3852,8 +3927,8 @@ body:not(.public-registration-mode)
 .audit-table th {
   background: var(--surface-strong);
   color: var(--accent-strong);
-  font-size: 0.72rem;
-  font-weight: 900;
+  font-size: 12px;
+  font-weight: 850;
   letter-spacing: 0;
   text-transform: uppercase;
 }
@@ -3865,7 +3940,7 @@ body:not(.public-registration-mode)
 
 .report-table td,
 .audit-table td {
-  font-size: 0.9rem;
+  font-size: 13px;
 }
 
 .report-table td strong,
@@ -3894,11 +3969,23 @@ body:not(.public-registration-mode)
 }
 
 .empty-state {
+  border: 1px dashed var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  background: var(--surface-strong);
   color: var(--muted);
   font-weight: 800;
 }
 
 .loading-state {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  background: linear-gradient(
+    135deg,
+    rgba(223, 247, 244, 0.72),
+    rgba(255, 255, 255, 0.96)
+  );
   color: var(--accent-strong);
   font-weight: 800;
 }
@@ -4022,9 +4109,24 @@ body:not(.public-registration-mode)
   .side-nav {
     position: static;
     grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    background: #021f22;
   }
 
   .nav-button {
+    text-align: center;
+  }
+
+  .side-nav-group {
+    display: contents;
+  }
+
+  .side-subnav {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(auto-fit, minmax(118px, 1fr));
+    padding-left: 0;
+  }
+
+  .nav-subbutton {
     text-align: center;
   }
 
@@ -4082,6 +4184,21 @@ body:not(.public-registration-mode)
   button,
   .button-link {
     width: 100%;
+  }
+
+  .environment-badge {
+    top: 8px;
+    right: 8px;
+  }
+
+  .topbar {
+    padding-top: 36px;
+  }
+
+  .active-company-identity,
+  .status-pill {
+    width: 100%;
+    max-width: 100%;
   }
 
   .topbar .icon-button {

@@ -985,6 +985,7 @@
             class="nav-button is-active"
             type="button"
             data-section-target="operations"
+            aria-current="page"
           >
             Atender cliente
           </button>
@@ -996,6 +997,7 @@
               data-section-target="company"
               aria-controls="company-side-subnav"
               aria-expanded="false"
+              aria-current="false"
             >
               Mi empresa
             </button>
@@ -1051,6 +1053,7 @@
             class="nav-button"
             type="button"
             data-section-target="reports"
+            aria-current="false"
           >
             Reportes
           </button>
@@ -1058,6 +1061,7 @@
             class="nav-button"
             type="button"
             data-section-target="communications"
+            aria-current="false"
           >
             Enviar campañas
           </button>
@@ -1065,6 +1069,7 @@
             class="nav-button"
             type="button"
             data-section-target="adminCompanies"
+            aria-current="false"
             hidden
           >
             Panel interno
@@ -1834,8 +1839,8 @@
                 <div>
                   <h2 id="company-title">Mi empresa</h2>
                   <p class="section-support">
-                    Actualiza los datos que vera tu equipo y que Punto Club
-                    usara para calcular puntos futuros.
+                    Actualiza la información operativa que usa Punto Club para
+                    mostrar tu empresa y calcular puntos.
                   </p>
                 </div>
                 <button
@@ -1878,6 +1883,10 @@
                   <div class="section-header compact-header">
                     <div>
                       <h3 id="company-logo-title">Logo de empresa</h3>
+                      <p class="section-support">
+                        Sube una imagen simple para identificar tu empresa en el
+                        encabezado y pantallas internas.
+                      </p>
                     </div>
                   </div>
 
@@ -1989,6 +1998,9 @@
                       class="field-error"
                       id="company-points-percentage-error"
                     ></p>
+                    <p class="field-help">
+                      Porcentaje de cada venta que se convierte en puntos.
+                    </p>
                   </div>
                 </div>
 
@@ -1997,7 +2009,8 @@
                     <span>Acceso</span>
                     <strong
                       >Los accesos por correo se gestionan desde el panel
-                      interno.</strong
+                      interno. Para cambiar la contraseña de esta empresa, usa
+                      la sección Acceso.</strong
                     >
                   </div>
                 </div>
@@ -2007,11 +2020,9 @@
                     class="secondary-button"
                     id="toggle-company-password-panel"
                     type="button"
-                    aria-controls="company-password-form"
-                    aria-expanded="false"
                     data-icon="key"
                   >
-                    Cambiar contraseña
+                    Ir a Acceso
                   </button>
                   <button
                     id="save-company-button"
@@ -2166,10 +2177,14 @@
                   <div>
                     <h3 id="company-communications-title">Comunicaciones</h3>
                     <p class="section-support">
-                      Configura los correos operativos que acompañan acciones
-                      del programa. Las promociones siguen bloqueadas.
+                      Define qué correos operativos puede enviar Punto Club y a
+                      qué dirección responderán tus clientes.
                     </p>
                   </div>
+                </div>
+                <div class="communication-scope-note">
+                  Correos automáticos del programa de puntos. Los envíos
+                  promocionales se gestionan desde Enviar campañas.
                 </div>
                 <div
                   id="company-operational-email-status"
@@ -2226,15 +2241,15 @@
                       <input type="checkbox" disabled />
                       <span>
                         <strong>Promociones y campañas</strong>
-                        <small
-                          >Se mantienen bloqueadas para envíos reales.</small
-                        >
+                        <small>Se gestionan desde Enviar campañas.</small>
                       </span>
                     </label>
                   </div>
 
                   <div class="field">
-                    <label for="company-email-reply-to">Reply-to</label>
+                    <label for="company-email-reply-to"
+                      >Correo de respuesta</label
+                    >
                     <input
                       id="company-email-reply-to"
                       name="replyToEmail"
@@ -2243,8 +2258,8 @@
                       autocomplete="email"
                     />
                     <p class="field-help">
-                      Opcional. Las respuestas de clientes pueden ir a este
-                      correo.
+                      Tus clientes verán esta dirección para responder mensajes
+                      operativos.
                     </p>
                     <p
                       class="field-error"
@@ -2348,11 +2363,12 @@
                 </section>
                 <div class="form-actions">
                   <button
+                    class="secondary-button"
                     id="company-open-campaigns-button"
                     type="button"
                     data-icon="send"
                   >
-                    Abrir Enviar campañas
+                    Ir a Enviar campañas
                   </button>
                 </div>
               </section>
