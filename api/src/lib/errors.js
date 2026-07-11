@@ -34,6 +34,18 @@ function mapSqlError(error) {
     );
   }
 
+  if (
+    code === "ELOGIN" &&
+    message.includes("Cannot open server") &&
+    message.includes("is not allowed to access the server")
+  ) {
+    return new ApiError(
+      503,
+      "SERVICE_UNAVAILABLE",
+      "Database is temporarily unavailable. Please try again.",
+    );
+  }
+
   if (["ETIMEOUT", "ESOCKET", "ECONNCLOSED"].includes(code)) {
     return new ApiError(
       503,
