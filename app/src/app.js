@@ -7977,7 +7977,6 @@ function renderAdminRequestCard(request) {
     selectedAdminRequest &&
     String(selectedAdminRequest.id) === String(request.id);
   const invitationLabel = getAdminInvitationLabel(request.invitation);
-  const canApprove = request.status === "pending";
 
   return `
     <article class="admin-request-card ${isSelected ? "is-selected" : ""}">
@@ -7992,28 +7991,15 @@ function renderAdminRequestCard(request) {
         <span>${escapeHtml(invitationLabel)}</span>
       </div>
       <div class="row-actions">
-        ${
-          canApprove
-            ? `
-              <button
-                type="button"
-                data-admin-request-id="${escapeHtml(request.id)}"
-                data-icon="check"
-                data-admin-card-action="approve"
-              >
-                Activar
-              </button>
-            `
-            : ""
-        }
         <button
-          class="secondary-button icon-button"
+          class="secondary-button"
           type="button"
           data-icon="eye"
           data-admin-request-id="${escapeHtml(request.id)}"
           aria-label="Ver detalle de ${escapeHtml(request.companyName || "empresa")}"
-          title="Ver detalle"
-        ></button>
+        >
+          Revisar
+        </button>
       </div>
     </article>
   `;

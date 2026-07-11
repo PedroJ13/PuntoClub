@@ -1614,7 +1614,8 @@ textarea:focus {
 }
 
 .admin-companies-page-mode .app-shell {
-  width: min(1040px, calc(100% - 28px));
+  width: min(1080px, calc(100% - 28px));
+  padding-top: 18px;
 }
 
 .admin-companies-page-mode .side-nav,
@@ -1633,6 +1634,16 @@ textarea:focus {
 
 .admin-companies-page-mode [data-section="adminCompanies"] {
   display: grid;
+}
+
+.admin-companies-page-mode {
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(20, 184, 166, 0.18),
+      transparent 34rem
+    ),
+    linear-gradient(135deg, #07191b 0%, #0b2528 100%);
 }
 
 .admin-companies-page-mode .workspace-section[hidden],
@@ -3667,23 +3678,31 @@ body:not(.public-registration-mode)
 
 .admin-companies-section {
   position: relative;
+  gap: 14px;
+  align-items: start;
 }
 
 .admin-companies-header {
-  border: 1px solid rgba(15, 118, 110, 0.18);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  background: linear-gradient(
-    135deg,
-    rgba(223, 247, 244, 0.58),
-    rgba(255, 255, 255, 0.94)
-  );
-  box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
+  border: 1px solid rgba(153, 246, 228, 0.24);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #063235 0%, #0b2528 100%);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.32);
 }
 
 .admin-companies-header h2 {
   margin: 0;
-  font-size: 1.32rem;
+  color: #f8fafc;
+  font-size: 1.5rem;
+  font-weight: 750;
+  line-height: 1.15;
+}
+
+.admin-companies-header p:not(.eyebrow) {
+  margin: 6px 0 0;
+  color: #b7c7c9;
+  font-size: 0.92rem;
+  font-weight: 600;
 }
 
 .admin-companies-section.has-admin-token .admin-access-panel {
@@ -3700,15 +3719,19 @@ body:not(.public-registration-mode)
 }
 
 .admin-controls {
-  grid-template-columns: minmax(180px, 0.34fr) minmax(0, 1fr);
+  grid-template-columns: 220px minmax(280px, 1fr);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   padding: 12px;
-  background: linear-gradient(
-    135deg,
-    rgba(223, 247, 244, 0.46),
-    rgba(255, 255, 255, 0.94)
-  );
+  background: #ffffff;
+}
+
+.admin-requests-form .form-actions {
+  margin-top: 10px;
+}
+
+.admin-requests-form .form-actions button {
+  min-height: 40px;
 }
 
 .admin-summary,
@@ -3729,7 +3752,7 @@ body:not(.public-registration-mode)
   border-radius: var(--radius-sm);
   padding: 11px;
   background: var(--surface);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  box-shadow: none;
 }
 
 .admin-summary span,
@@ -3787,6 +3810,9 @@ body:not(.public-registration-mode)
 .admin-requests-list {
   display: grid;
   gap: 10px;
+  max-height: min(620px, calc(100vh - 360px));
+  overflow: auto;
+  padding-right: 2px;
 }
 
 .admin-request-card {
@@ -3798,7 +3824,8 @@ body:not(.public-registration-mode)
   border-radius: var(--radius-sm);
   padding: 12px;
   background: var(--surface);
-  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
+  min-height: 82px;
+  box-shadow: none;
   transition:
     background 160ms ease,
     border-color 160ms ease,
@@ -3806,8 +3833,9 @@ body:not(.public-registration-mode)
 }
 
 .admin-request-card:hover {
-  border-color: rgba(15, 118, 110, 0.28);
+  border-color: rgba(20, 184, 166, 0.62);
   background: rgba(223, 247, 244, 0.32);
+  transform: translateY(-1px);
 }
 
 .admin-request-card .row-actions {
@@ -3815,9 +3843,9 @@ body:not(.public-registration-mode)
 }
 
 .admin-request-card.is-selected {
-  border-color: rgba(15, 118, 110, 0.42);
+  border-color: #14b8a6;
   background: #f0fdfa;
-  box-shadow: 0 12px 28px rgba(15, 118, 110, 0.12);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.16);
 }
 
 .admin-request-main h3 {
@@ -3891,14 +3919,25 @@ body:not(.public-registration-mode)
 }
 
 .admin-action-panel {
-  border: 1px solid rgba(154, 77, 0, 0.18);
-  border-radius: var(--radius-md);
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
   padding: 12px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 248, 230, 0.72),
-    rgba(255, 255, 255, 0.94)
-  );
+  background: #fffbeb;
+}
+
+.admin-action-panel .danger-button {
+  border-color: rgba(220, 38, 38, 0.42);
+  color: #b91c1c;
+}
+
+.admin-action-panel .danger-button:hover {
+  background: #fef2f2;
+}
+
+#resend-admin-invitation-button,
+#send-admin-password-reset-button {
+  border-color: rgba(37, 99, 235, 0.32);
+  color: #1d4ed8;
 }
 
 .admin-invitation-panel h3 {
@@ -3912,24 +3951,62 @@ body:not(.public-registration-mode)
   font-weight: 700;
 }
 
-.admin-companies-section.is-admin-drawer-open .admin-detail-panel {
-  position: fixed;
-  top: 0;
-  right: 0;
-  z-index: 30;
-  width: min(520px, 100vw);
-  max-height: 100vh;
-  overflow: auto;
-  border-radius: 8px 0 0 8px;
-  box-shadow: -18px 0 40px rgba(15, 23, 42, 0.18);
+@media (min-width: 1100px) {
+  .admin-companies-section {
+    grid-template-columns: minmax(460px, 1.25fr) minmax(360px, 0.95fr);
+  }
+
+  .admin-companies-header,
+  .admin-access-panel {
+    grid-column: 1 / -1;
+  }
+
+  .admin-list-panel {
+    grid-column: 1;
+  }
+
+  .admin-detail-panel {
+    position: sticky;
+    top: 14px;
+    grid-column: 2;
+    max-height: calc(100vh - 28px);
+    overflow: auto;
+  }
+
+  .admin-companies-section.is-admin-drawer-open .admin-detail-panel {
+    position: sticky;
+    top: 14px;
+    width: auto;
+    max-height: calc(100vh - 28px);
+    border-radius: var(--radius-md);
+    box-shadow: 0 18px 45px rgba(2, 31, 34, 0.12);
+  }
+
+  .admin-companies-section.is-admin-drawer-open::after {
+    content: none;
+  }
 }
 
-.admin-companies-section.is-admin-drawer-open::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 20;
-  background: rgba(15, 23, 42, 0.18);
+@media (max-width: 1099px) {
+  .admin-companies-section.is-admin-drawer-open .admin-detail-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    z-index: 30;
+    width: min(520px, 88vw);
+    max-height: 100vh;
+    overflow: auto;
+    border-radius: 8px 0 0 8px;
+    box-shadow: -18px 0 40px rgba(15, 23, 42, 0.18);
+  }
+
+  .admin-companies-section.is-admin-drawer-open::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    background: rgba(2, 31, 34, 0.52);
+  }
 }
 
 .modal-backdrop {
@@ -4335,6 +4412,29 @@ body:not(.public-registration-mode)
     grid-column: 2 / -1;
     justify-self: start;
   }
+
+  .admin-controls {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .admin-requests-form .form-actions {
+    justify-content: flex-start;
+  }
+
+  .admin-summary,
+  .admin-detail-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .admin-logo-preview {
+    width: 88px;
+    height: 88px;
+  }
+
+  .admin-logo-preview img {
+    max-width: 76px;
+    max-height: 76px;
+  }
 }
 
 @media (max-width: 560px) {
@@ -4373,6 +4473,23 @@ body:not(.public-registration-mode)
   .membership-expiration-grid,
   .customer-row {
     grid-template-columns: 1fr;
+  }
+
+  .admin-companies-page-mode .app-shell {
+    width: min(100% - 20px, 1080px);
+    padding-top: 12px;
+  }
+
+  .admin-controls,
+  .admin-summary,
+  .admin-detail-grid,
+  .admin-request-card {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-requests-list {
+    max-height: none;
+    overflow: visible;
   }
 
   .section-header,
