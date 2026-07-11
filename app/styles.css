@@ -1662,7 +1662,6 @@ textarea:focus {
 .reports-section .report-panel,
 .reports-section .audit-panel,
 .communications-section .communications-hero,
-.communications-section .communications-settings-panel,
 .communications-section .communications-campaign-panel,
 .communications-section .communications-preview-panel,
 .communications-section .communications-customers-panel,
@@ -3139,6 +3138,60 @@ body:not(.public-registration-mode)
   margin-top: 12px;
 }
 
+.communications-section .communications-hero,
+.communications-section .communications-campaign-panel,
+.communications-section .communications-preview-panel,
+.communications-section .communications-customers-panel,
+.communications-section .communications-history-panel {
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.07);
+}
+
+.communications-section .communications-hero {
+  display: grid;
+  gap: 12px;
+}
+
+.communications-section .communications-hero .section-header {
+  margin: 0;
+}
+
+.communications-section .communications-hero h2,
+.communications-section .communications-campaign-panel h2,
+.communications-section .communications-preview-panel h2,
+.communications-section .communications-customers-panel h2,
+.communications-section .communications-history-panel h2 {
+  font-size: 20px;
+  line-height: 1.2;
+}
+
+.communications-subnav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 12px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.communications-subnav .section-tab {
+  min-height: 40px;
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.communications-subnav .section-tab.active,
+.communications-subnav .section-tab[aria-selected="true"] {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(15, 118, 110, 0.14);
+}
+
 .communications-kpis div,
 .communication-preview,
 .communication-customer-card {
@@ -3170,6 +3223,15 @@ body:not(.public-registration-mode)
   overflow-wrap: anywhere;
 }
 
+.communications-kpis div {
+  padding: 10px;
+  background: #ffffff;
+}
+
+.communications-kpis strong {
+  font-variant-numeric: tabular-nums;
+}
+
 .communication-customer-card strong {
   font-size: 14px;
 }
@@ -3183,6 +3245,10 @@ body:not(.public-registration-mode)
 
 .communication-saved-campaigns {
   margin-bottom: 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  background: #ffffff;
 }
 
 .communication-campaign-picker {
@@ -3254,6 +3320,16 @@ body:not(.public-registration-mode)
   margin-top: 14px;
 }
 
+.communication-send-note {
+  margin-top: 10px;
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: #fffbeb;
+  color: #92400e;
+  font-weight: 850;
+}
+
 .communication-result-panel {
   display: grid;
   gap: 8px;
@@ -3292,8 +3368,10 @@ body:not(.public-registration-mode)
 
 .communication-history-actions {
   justify-content: space-between;
-  padding-top: 10px;
-  border-top: 1px solid var(--line);
+  border: 1px solid #fde68a;
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  background: #fffbeb;
 }
 
 .communication-history-actions[hidden] {
@@ -3302,9 +3380,15 @@ body:not(.public-registration-mode)
 
 .communication-history-actions p {
   margin: 0;
-  color: var(--muted);
+  color: #92400e;
   font-size: 0.9rem;
   font-weight: 800;
+}
+
+.communication-sensitive-action {
+  border-color: #fde68a;
+  background: #ffffff;
+  color: #92400e;
 }
 
 .communications-preview-panel.is-collapsed {
@@ -3433,6 +3517,7 @@ body:not(.public-registration-mode)
 }
 
 .communication-filter-row .is-active {
+  border-color: rgba(15, 118, 110, 0.3);
   background: var(--accent-soft);
   color: var(--accent-strong);
 }
@@ -3444,6 +3529,16 @@ body:not(.public-registration-mode)
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+}
+
+.communication-selection-summary > strong {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  background: var(--surface-strong);
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 850;
 }
 
 .communication-selection-actions {
@@ -3468,11 +3563,15 @@ body:not(.public-registration-mode)
 }
 
 .communication-customer-card.is-disabled {
-  background: var(--surface-strong);
+  border-color: #d8e5e3;
+  background: #eef6f5;
 }
 
 .communication-disabled-reason {
   grid-column: 2 / -1;
+  color: #92400e;
+  font-size: 12px;
+  font-weight: 850;
 }
 
 .communication-recipient-check input {
@@ -3482,6 +3581,10 @@ body:not(.public-registration-mode)
 
 .communication-unsubscribe-button {
   justify-self: end;
+}
+
+.communication-history-table {
+  min-width: 760px;
 }
 
 .communication-customer-identity {
@@ -4211,9 +4314,48 @@ body:not(.public-registration-mode)
   .customer-report-controls .report-action-field {
     grid-column: 1 / -1;
   }
+
+  .communications-kpis {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .communication-campaign-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .communication-campaign-controls .communication-inline-check {
+    grid-column: 1 / -1;
+  }
+
+  .communication-customer-card {
+    grid-template-columns: auto minmax(0, 1fr) minmax(120px, auto);
+  }
+
+  .communication-unsubscribe-button {
+    grid-column: 2 / -1;
+    justify-self: start;
+  }
 }
 
 @media (max-width: 560px) {
+  .communications-section .communications-hero,
+  .communications-section .communications-campaign-panel,
+  .communications-section .communications-preview-panel,
+  .communications-section .communications-customers-panel,
+  .communications-section .communications-history-panel {
+    padding: 12px;
+  }
+
+  .communications-subnav {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .communications-subnav .section-tab {
+    width: 100%;
+    min-width: 0;
+  }
+
   .report-tabs {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

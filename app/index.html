@@ -3569,12 +3569,16 @@
 
             <nav
               class="section-tabs communications-subnav"
+              role="tablist"
               aria-label="Vistas de Comunicaciones"
             >
               <button
                 class="section-tab active"
                 type="button"
+                role="tab"
+                id="communication-tab-send"
                 data-communication-view="send"
+                aria-controls="communications-send-panel communications-send-preview-panel communications-customers-panel"
                 aria-selected="true"
               >
                 Enviar campañas
@@ -3582,7 +3586,10 @@
               <button
                 class="section-tab"
                 type="button"
+                role="tab"
+                id="communication-tab-manage"
                 data-communication-view="manage"
+                aria-controls="communications-manage-panel communications-manage-preview-panel"
                 aria-selected="false"
               >
                 Crear / actualizar campañas
@@ -3590,7 +3597,10 @@
               <button
                 class="section-tab"
                 type="button"
+                role="tab"
+                id="communication-tab-customers"
                 data-communication-view="customers"
+                aria-controls="communications-customers-panel"
                 aria-selected="false"
               >
                 Clientes
@@ -3598,7 +3608,10 @@
               <button
                 class="section-tab"
                 type="button"
+                role="tab"
+                id="communication-tab-history"
                 data-communication-view="history"
+                aria-controls="communications-history-panel"
                 aria-selected="false"
               >
                 Historial
@@ -3606,70 +3619,16 @@
             </nav>
 
             <section
-              class="communications-settings-panel zone-card"
-              data-communication-panel="settings"
-              aria-labelledby="communications-settings-title"
-            >
-              <div class="section-header">
-                <div>
-                  <h2 id="communications-settings-title">Configuración</h2>
-                  <p class="section-support">
-                    Los operativos acompañan acciones del programa. Las
-                    promociones quedan protegidas hasta tener dominio y bajas.
-                  </p>
-                </div>
-              </div>
-
-              <div class="communication-switch-list">
-                <label class="communication-switch">
-                  <input type="checkbox" checked />
-                  <span>
-                    <strong>Bienvenida al registrar cliente</strong>
-                    <small
-                      >Enviar cuando se registre un cliente con correo.</small
-                    >
-                  </span>
-                </label>
-                <label class="communication-switch">
-                  <input type="checkbox" checked />
-                  <span>
-                    <strong>Compra registrada</strong>
-                    <small>Puntos ganados y saldo total como snapshot.</small>
-                  </span>
-                </label>
-                <label class="communication-switch">
-                  <input type="checkbox" checked />
-                  <span>
-                    <strong>Canje o redención</strong>
-                    <small>Puntos redimidos y saldo actualizado.</small>
-                  </span>
-                </label>
-                <label class="communication-switch">
-                  <input type="checkbox" />
-                  <span>
-                    <strong>Beneficio o membresía</strong>
-                    <small>Uso de beneficio y membresías activadas.</small>
-                  </span>
-                </label>
-                <label class="communication-switch is-locked">
-                  <input type="checkbox" disabled />
-                  <span>
-                    <strong>Campañas promocionales</strong>
-                    <small>Requiere dominio promocional, baja y cuotas.</small>
-                  </span>
-                </label>
-              </div>
-            </section>
-
-            <section
+              id="communications-manage-panel"
               class="communications-campaign-panel zone-card"
               data-communication-panel="manage"
-              aria-labelledby="communications-manage-campaign-title"
+              role="tabpanel"
+              aria-labelledby="communication-tab-manage"
             >
               <div class="section-header">
                 <div>
                   <h2 id="communications-manage-campaign-title">
-                    Crear/Editar campaña
+                    Crear / actualizar campaña
                   </h2>
                   <p class="section-support">
                     Gestiona la plantilla y su imagen antes de preparar un
@@ -3861,9 +3820,11 @@
             </section>
 
             <section
+              id="communications-manage-preview-panel"
               class="communications-preview-panel zone-card"
               data-communication-panel="manage"
-              aria-labelledby="communications-manage-preview-title"
+              role="tabpanel"
+              aria-labelledby="communication-tab-manage"
             >
               <div class="section-header">
                 <div>
@@ -3889,9 +3850,11 @@
             </section>
 
             <section
+              id="communications-send-panel"
               class="communications-campaign-panel zone-card"
               data-communication-panel="send"
-              aria-labelledby="communications-campaign-title"
+              role="tabpanel"
+              aria-labelledby="communication-tab-send"
             >
               <div class="section-header">
                 <div>
@@ -3937,7 +3900,7 @@
                   Enviar campaña
                 </button>
               </div>
-              <p class="section-support">
+              <p class="section-support communication-send-note">
                 El envío real requiere campaña guardada, destinatarios
                 seleccionados, confirmación y feature flag activo.
               </p>
@@ -3962,9 +3925,11 @@
             </section>
 
             <section
+              id="communications-send-preview-panel"
               class="communications-preview-panel zone-card is-collapsed"
               data-communication-panel="send"
-              aria-labelledby="communications-preview-title"
+              role="tabpanel"
+              aria-labelledby="communication-tab-send"
             >
               <div class="section-header">
                 <div>
@@ -3998,9 +3963,11 @@
             </section>
 
             <section
+              id="communications-customers-panel"
               class="communications-customers-panel zone-card"
               data-communication-panel="send customers"
-              aria-labelledby="communications-customers-title"
+              role="tabpanel"
+              aria-labelledby="communication-tab-customers"
             >
               <div class="section-header">
                 <div>
@@ -4096,13 +4063,21 @@
             </section>
 
             <section
+              id="communications-history-panel"
               class="communications-history-panel zone-card"
               data-communication-panel="history"
-              aria-labelledby="communications-history-title"
+              role="tabpanel"
+              aria-labelledby="communication-tab-history"
             >
               <div class="section-header">
                 <div>
-                  <h2 id="communications-history-title">Historial local</h2>
+                  <h2 id="communications-history-title">
+                    Historial de campañas
+                  </h2>
+                  <p class="section-support">
+                    Revisa resultados recientes y reintenta fallidos solo con
+                    confirmación explícita.
+                  </p>
                 </div>
               </div>
               <div class="report-table-wrap">
@@ -4125,7 +4100,7 @@
               >
                 <p id="communication-history-retry-summary"></p>
                 <button
-                  class="secondary-button"
+                  class="secondary-button communication-sensitive-action"
                   id="communication-retry-failed-button"
                   type="button"
                   data-promotional-retry-failed
