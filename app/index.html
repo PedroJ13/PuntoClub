@@ -3087,8 +3087,10 @@
               <button
                 class="report-tab active"
                 type="button"
+                role="tab"
                 data-icon="bar-chart"
                 data-report-view="activity"
+                aria-controls="report-panel"
                 aria-selected="true"
               >
                 Actividad
@@ -3096,8 +3098,10 @@
               <button
                 class="report-tab"
                 type="button"
+                role="tab"
                 data-icon="crown"
                 data-report-view="memberships"
+                aria-controls="membership-financial-report-panel"
                 aria-selected="false"
               >
                 Membresías
@@ -3105,8 +3109,10 @@
               <button
                 class="report-tab"
                 type="button"
+                role="tab"
                 data-icon="clipboard-list"
                 data-report-view="audit"
+                aria-controls="audit-panel"
                 aria-selected="false"
               >
                 Historial
@@ -3114,8 +3120,10 @@
               <button
                 class="report-tab"
                 type="button"
+                role="tab"
                 data-icon="user"
                 data-report-view="customer"
+                aria-controls="customer-report-panel"
                 aria-selected="false"
               >
                 Cliente
@@ -3126,6 +3134,7 @@
               id="report-panel"
               class="report-panel zone-card"
               data-report-panel="activity"
+              role="tabpanel"
               aria-labelledby="report-title"
             >
               <div class="section-header">
@@ -3208,6 +3217,7 @@
               id="membership-financial-report-panel"
               class="report-panel zone-card"
               data-report-panel="memberships"
+              role="tabpanel"
               aria-labelledby="membership-financial-report-title"
               hidden
             >
@@ -3321,6 +3331,7 @@
               id="audit-panel"
               class="audit-panel zone-card"
               data-report-panel="audit"
+              role="tabpanel"
               aria-labelledby="audit-title"
               hidden
             >
@@ -3402,6 +3413,7 @@
               id="customer-report-panel"
               class="report-panel zone-card"
               data-report-panel="customer"
+              role="tabpanel"
               aria-labelledby="customer-report-title"
               hidden
             >

@@ -1719,7 +1719,6 @@ body:not(.public-registration-mode)
   grid-area: report;
 }
 
-.report-tabs,
 .section-tabs {
   display: flex;
   flex-wrap: wrap;
@@ -1732,7 +1731,17 @@ body:not(.public-registration-mode)
   background: var(--surface-strong);
 }
 
-.report-tab,
+.report-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin: 0 0 12px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+}
+
 .section-tab {
   border: 1px solid var(--line);
   background: var(--surface);
@@ -1742,14 +1751,31 @@ body:not(.public-registration-mode)
   font-size: 0.86rem;
 }
 
-.report-tab.active,
-.report-tab[aria-selected="true"],
+.report-tab {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  color: var(--accent-strong);
+  min-height: 40px;
+  border-radius: var(--radius-sm);
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 850;
+}
+
 .section-tab.active,
 .section-tab[aria-selected="true"] {
   border-color: var(--brand);
   background: var(--brand);
   color: #ffffff;
   box-shadow: 0 10px 24px rgba(15, 118, 110, 0.18);
+}
+
+.report-tab.active,
+.report-tab[aria-selected="true"] {
+  border-color: var(--brand);
+  background: var(--brand);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(15, 118, 110, 0.14);
 }
 
 .audit-panel {
@@ -3501,19 +3527,30 @@ body:not(.public-registration-mode)
 .audit-controls,
 .customer-report-controls {
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: 10px;
   padding: 12px;
-  background: linear-gradient(
-    135deg,
-    rgba(223, 247, 244, 0.56),
-    rgba(255, 255, 255, 0.92)
-  );
+  background: #ffffff;
 }
 
 .report-action-field button {
   width: 100%;
-  min-height: 43px;
+  min-height: 40px;
   box-shadow: 0 10px 22px rgba(15, 118, 110, 0.14);
+}
+
+.report-form .form-actions,
+.audit-form .form-actions,
+.customer-report-form .form-actions {
+  margin-top: 10px;
+}
+
+.report-form .form-actions .secondary-button:disabled,
+.audit-form .form-actions .secondary-button:disabled,
+.customer-report-form .form-actions .secondary-button:disabled {
+  border-color: var(--line);
+  background: #e2e8f0;
+  color: #94a3b8;
+  opacity: 1;
 }
 
 .admin-token-form,
@@ -3828,9 +3865,9 @@ body:not(.public-registration-mode)
 
 .report-summary {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 8px;
-  margin: 12px 0;
+  margin: 10px 0;
 }
 
 .report-summary div {
@@ -3863,8 +3900,9 @@ body:not(.public-registration-mode)
   display: block;
   margin-top: 2px;
   color: var(--text);
-  font-size: 1rem;
-  font-weight: 900;
+  font-size: 20px;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
   overflow-wrap: anywhere;
 }
 
@@ -3902,7 +3940,7 @@ body:not(.public-registration-mode)
   max-width: 100%;
   overflow-x: auto;
   border: 1px solid var(--line);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   background: var(--surface);
 }
 
@@ -3911,6 +3949,17 @@ body:not(.public-registration-mode)
   width: 100%;
   min-width: 760px;
   border-collapse: collapse;
+}
+
+#membership-financial-report-table-wrap .report-table,
+#audit-table-wrap .audit-table {
+  min-width: 820px;
+}
+
+.report-table td:last-child,
+#membership-financial-report-table-wrap .report-table td:last-child {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
 
 .report-table th,
@@ -4154,7 +4203,27 @@ body:not(.public-registration-mode)
   }
 }
 
+@media (max-width: 1100px) {
+  .customer-report-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .customer-report-controls .report-action-field {
+    grid-column: 1 / -1;
+  }
+}
+
 @media (max-width: 560px) {
+  .report-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .report-tab {
+    width: 100%;
+    min-width: 0;
+  }
+
   .search-row,
   .field-grid,
   .membership-controls,

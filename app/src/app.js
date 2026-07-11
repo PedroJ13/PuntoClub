@@ -6137,23 +6137,22 @@ function renderReportLoading() {
 function renderReport(report) {
   const items = Array.isArray(report.items) ? report.items : [];
   const summary = report.summary ?? {};
+  const pointsEarnedTotal = Number(summary.pointsEarnedTotal ?? 0) || 0;
+  const pointsRedeemedTotal = Number(summary.pointsRedeemedTotal ?? 0) || 0;
+  const pointsBalance = pointsEarnedTotal - pointsRedeemedTotal;
 
   elements.reportSummary.hidden = false;
   elements.reportSummary.innerHTML = `
+    <div>
+      <span>Movimientos</span>
+      <strong>${formatReportNumber(items.length)}</strong>
+    </div>
     <div>
       <span>Compras</span>
       <strong>${formatReportNumber(summary.purchaseCount)}</strong>
     </div>
     <div>
-      <span>Monto total</span>
-      <strong>${formatMoney(summary.purchaseAmountTotal)}</strong>
-    </div>
-    <div>
-      <span>Puntos ganados</span>
-      <strong>${formatReportNumber(summary.pointsEarnedTotal)}</strong>
-    </div>
-    <div>
-      <span>Puntos redimidos</span>
+      <span>Redenciones</span>
       <strong>${formatReportNumber(summary.redemptionCount)}</strong>
     </div>
     <div>
@@ -6161,12 +6160,16 @@ function renderReport(report) {
       <strong>${formatReportNumber(summary.membershipCount)}</strong>
     </div>
     <div>
-      <span>Total redimido</span>
-      <strong>${formatReportNumber(summary.pointsRedeemedTotal)}</strong>
+      <span>Puntos acumulados</span>
+      <strong>${formatReportNumber(pointsEarnedTotal)}</strong>
     </div>
     <div>
-      <span>Clientes activos</span>
-      <strong>${formatReportNumber(summary.activeCustomerCount)}</strong>
+      <span>Puntos redimidos</span>
+      <strong>${formatReportNumber(pointsRedeemedTotal)}</strong>
+    </div>
+    <div>
+      <span>Balance neto</span>
+      <strong>${formatReportNumber(pointsBalance)}</strong>
     </div>
   `;
 
@@ -6281,13 +6284,16 @@ function renderCustomerReportLoading() {
   elements.customerReportCandidates.innerHTML = "";
   elements.customerReportTableWrap.hidden = true;
   elements.customerReportEmpty.hidden = false;
-  elements.customerReportEmpty.textContent = "Cargando reporte por cliente...";
+  elements.customerReportEmpty.textContent = "Cargando reporte del cliente...";
   elements.exportCustomerReportButton.disabled = true;
 }
 
 function renderCustomerReport(report) {
   const items = Array.isArray(report.items) ? report.items : [];
   const summary = report.summary ?? {};
+  const pointsEarnedTotal = Number(summary.pointsEarnedTotal ?? 0) || 0;
+  const pointsRedeemedTotal = Number(summary.pointsRedeemedTotal ?? 0) || 0;
+  const pointsBalance = pointsEarnedTotal - pointsRedeemedTotal;
 
   elements.customerReportCandidates.hidden = true;
   elements.customerReportCandidates.innerHTML = "";
@@ -6300,7 +6306,7 @@ function renderCustomerReport(report) {
     elements.customerReportSummary.innerHTML = "";
     elements.customerReportEmpty.hidden = false;
     elements.customerReportEmpty.textContent =
-      "No encontramos un cliente con ese dato. Revisa teléfono, nombre o correo.";
+      "No encontramos clientes para esa búsqueda.";
     showCustomerReportStatus("Sin cliente encontrado para la búsqueda.");
     return;
   }
@@ -6310,7 +6316,7 @@ function renderCustomerReport(report) {
     elements.customerReportSummary.innerHTML = "";
     elements.customerReportEmpty.hidden = false;
     elements.customerReportEmpty.textContent =
-      "Hay varios clientes posibles. Refina la búsqueda con teléfono o correo exacto.";
+      "Selecciona el cliente correcto para ver su reporte.";
     elements.customerReportCandidates.hidden = false;
     elements.customerReportCandidates.innerHTML = (report.candidates || [])
       .map(
@@ -6339,31 +6345,31 @@ function renderCustomerReport(report) {
       <strong>${formatReportNumber(summary.purchaseCount)}</strong>
     </div>
     <div>
-      <span>Monto compras</span>
-      <strong>${formatMoney(summary.purchaseAmountTotal)}</strong>
-    </div>
-    <div>
-      <span>Puntos ganados</span>
-      <strong>${formatReportNumber(summary.pointsEarnedTotal)}</strong>
-    </div>
-    <div>
-      <span>Puntos redimidos</span>
-      <strong>${formatReportNumber(summary.pointsRedeemedTotal)}</strong>
-    </div>
-    <div>
-      <span>Membresías</span>
-      <strong>${formatReportNumber(summary.membershipCount)}</strong>
+      <span>Redenciones</span>
+      <strong>${formatReportNumber(summary.redemptionCount)}</strong>
     </div>
     <div>
       <span>Beneficios</span>
       <strong>${formatReportNumber(summary.benefitUsageCount)}</strong>
+    </div>
+    <div>
+      <span>Puntos acumulados</span>
+      <strong>${formatReportNumber(pointsEarnedTotal)}</strong>
+    </div>
+    <div>
+      <span>Puntos redimidos</span>
+      <strong>${formatReportNumber(pointsRedeemedTotal)}</strong>
+    </div>
+    <div>
+      <span>Balance</span>
+      <strong>${formatReportNumber(pointsBalance)}</strong>
     </div>
   `;
 
   if (items.length === 0) {
     elements.customerReportEmpty.hidden = false;
     elements.customerReportEmpty.textContent =
-      "Cliente encontrado, sin movimientos para el rango seleccionado.";
+      "El cliente no tiene movimientos para los filtros seleccionados.";
     return;
   }
 
@@ -6425,24 +6431,27 @@ function renderMembershipFinancialReportLoading() {
 function renderMembershipFinancialReport(report) {
   const items = Array.isArray(report.items) ? report.items : [];
   const summary = report.summary || {};
+  const incomeTotal =
+    (Number(summary.newMembershipAmount ?? 0) || 0) +
+    (Number(summary.renewalAmount ?? 0) || 0);
 
   elements.membershipFinancialReportSummary.hidden = false;
   elements.membershipFinancialReportSummary.innerHTML = `
     <div>
-      <span>Membresías nuevas</span>
-      <strong>${formatReportNumber(summary.newMembershipCount)}</strong>
+      <span>Movimientos</span>
+      <strong>${formatReportNumber(items.length)}</strong>
     </div>
     <div>
-      <span>Monto nuevas</span>
-      <strong>${formatMoney(summary.newMembershipAmount)}</strong>
+      <span>Nuevas</span>
+      <strong>${formatReportNumber(summary.newMembershipCount)}</strong>
     </div>
     <div>
       <span>Renovaciones</span>
       <strong>${formatReportNumber(summary.renewalCount)}</strong>
     </div>
     <div>
-      <span>Monto renovaciones</span>
-      <strong>${formatMoney(summary.renewalAmount)}</strong>
+      <span>Ingresos</span>
+      <strong>${formatMoney(incomeTotal)}</strong>
     </div>
   `;
 
@@ -6450,7 +6459,7 @@ function renderMembershipFinancialReport(report) {
   elements.membershipFinancialPaymentSummary.hidden = false;
   elements.membershipFinancialPaymentSummary.innerHTML = `
     <div>
-      <span>Monto por método de pago</span>
+      <span>Métodos</span>
       <strong>${paymentMethods.length ? formatReportNumber(paymentMethods.length) : "0"}</strong>
     </div>
     ${paymentMethods
@@ -6468,7 +6477,7 @@ function renderMembershipFinancialReport(report) {
   if (!items.length) {
     elements.membershipFinancialReportEmpty.hidden = false;
     elements.membershipFinancialReportEmpty.textContent =
-      "Sin transacciones de membresía para el rango seleccionado.";
+      "Sin ventas o renovaciones para el rango seleccionado.";
     elements.membershipFinancialReportTableWrap.hidden = true;
     elements.membershipFinancialReportTableBody.innerHTML = "";
     elements.exportMembershipFinancialReportButton.disabled = true;
