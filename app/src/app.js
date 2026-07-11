@@ -6,14 +6,14 @@ const api = createCustomerApi(config);
 const SEO_BASE_URL = "https://puntoclubcr.com";
 const SEO_ROUTE_CONFIG = {
   "/": {
-    title: "Punto Club | App de fidelización de clientes en Costa Rica",
+    title: "Punto Club | Plataforma de fidelización para empresas",
     description:
-      "Crea programas de puntos, membresías y beneficios con Punto Club. Fideliza clientes, aumenta la recompra y opera tu programa desde un panel simple.",
+      "Solicita acceso a Punto Club para preparar un programa web de puntos, membresías y beneficios para tu empresa.",
     canonical: `${SEO_BASE_URL}/`,
     robots: "index,follow",
-    ogTitle: "Punto Club | App de fidelización de clientes",
+    ogTitle: "Punto Club | Plataforma de fidelización para empresas",
     ogDescription:
-      "Crea programas de puntos, membresías y beneficios para que tus clientes regresen con más frecuencia.",
+      "Programa web de puntos, membresías y beneficios para fidelizar clientes frecuentes.",
   },
   "/producto": {
     title: "Software de fidelización de clientes | Punto Club",
@@ -7796,8 +7796,8 @@ function renderCompanyRegistrationSuccess(result) {
   elements.registrationResult.innerHTML = `
     <h3>Datos recibidos</h3>
     <p>
-      Recibimos los datos de ${escapeHtml(companyName)}. Prepararemos el programa y enviaremos
-      los siguientes pasos al correo de contacto cuando el acceso este listo.
+      Recibimos la solicitud de ${escapeHtml(companyName)}. Revisaremos la informacion y enviaremos
+      los siguientes pasos al correo de contacto cuando el acceso piloto este listo.
     </p>
     <div class="registration-summary">
       ${renderAdminDetailItem("Empresa", companyName)}
@@ -7806,9 +7806,9 @@ function renderCompanyRegistrationSuccess(result) {
       ${renderAdminDetailItem("Estado del programa", getRegistrationStatusLabel(result.status || "pending"))}
       ${renderAdminDetailItem("Logo", hasLogo ? "Incluido" : "No incluido")}
     </div>
-    <p>Tambien notificamos internamente al equipo de Punto Club para dar seguimiento.</p>
+    <p>Tambien notificamos al equipo de Punto Club para revisar la solicitud.</p>
     <div class="form-actions">
-      <button class="secondary-button" id="new-registration-button" type="button" data-icon="send">Enviar otros datos</button>
+      <button class="secondary-button" id="new-registration-button" type="button" data-icon="send">Enviar otra solicitud</button>
     </div>
   `;
   elements.companyRegistrationForm.hidden = true;
@@ -7873,7 +7873,7 @@ function renderCompanyRegistrationError(error) {
     error.code === "REGISTRATION_ALREADY_PENDING"
   ) {
     showCompanyRegistrationError(
-      "Ya hay datos recibidos para ese correo. Prepararemos el acceso y enviaremos los siguientes pasos cuando este listo.",
+      "Ya hay una solicitud recibida para ese correo. Revisaremos el acceso piloto y enviaremos los siguientes pasos cuando este listo.",
     );
     return;
   }
