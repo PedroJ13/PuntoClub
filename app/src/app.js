@@ -5531,7 +5531,7 @@ async function submitCreateAccess() {
   }
 
   setCreateAccessSubmitting(true);
-  const stopLoading = startGlobalLoading("Estamos creando tu acceso...");
+  const stopLoading = startGlobalLoading("Estamos configurando el acceso...");
 
   try {
     const result = await api.acceptCompanyInvitation({
@@ -5551,7 +5551,7 @@ async function submitCreateAccess() {
 async function submitCompanyLogin() {
   clearLoginMessages();
   setLoginSubmitting(true);
-  const stopLoading = startGlobalLoading("Estamos accediendo a tu panel...");
+  const stopLoading = startGlobalLoading("Estamos accediendo al panel...");
 
   try {
     await api.loginCompany({
@@ -8490,7 +8490,8 @@ function renderPasswordResetValid(result) {
   elements.newPasswordInput.value = "";
   elements.newPasswordConfirmationInput.value = "";
   elements.passwordResetStatus.hidden = false;
-  elements.passwordResetStatus.textContent = `Enlace válido para ${result.email || "la empresa"}.`;
+  elements.passwordResetStatus.textContent =
+    "Enlace revisado. Define una nueva contraseña para recuperar el acceso.";
   window.requestAnimationFrame(() => {
     elements.newPasswordInput.focus();
   });
@@ -8519,7 +8520,7 @@ function renderAccessCreated(result) {
   elements.createAccessForm.hidden = true;
   elements.accessStatus.hidden = false;
   elements.accessStatus.textContent =
-    "Acceso creado correctamente. Ya puedes acceder a tu panel.";
+    "Acceso configurado correctamente. Ya puedes acceder al panel.";
   if (email) {
     window.sessionStorage.setItem("puntoclubLoginEmail", email);
   }
@@ -8565,7 +8566,7 @@ function renderCreateAccessError(error) {
     return;
   }
 
-  showAccessError("No pudimos crear el acceso. Intenta de nuevo.");
+  showAccessError("No pudimos configurar el acceso. Intenta de nuevo.");
 }
 
 function renderLoginError(error) {
@@ -8580,9 +8581,7 @@ function renderLoginError(error) {
         target.textContent = getLoginValidationMessage(detail);
       }
     });
-    showLoginError(
-      "Completa el correo y la contraseña para acceder a tu panel.",
-    );
+    showLoginError("Completa el correo y la contraseña para acceder al panel.");
     return;
   }
 
@@ -8624,7 +8623,7 @@ function renderLoginError(error) {
     return;
   }
 
-  showLoginError("No pudimos acceder a tu panel. Intenta de nuevo.");
+  showLoginError("No pudimos acceder al panel. Intenta de nuevo.");
 }
 
 function renderPasswordResetRequestError(error) {
@@ -10049,7 +10048,7 @@ function setCreateAccessSubmitting(isSubmitting) {
   elements.createAccessButton.disabled = isSubmitting;
   setButtonText(
     elements.createAccessButton,
-    isSubmitting ? "Creando..." : "Crear acceso",
+    isSubmitting ? "Configurando..." : "Configurar acceso",
   );
 }
 
@@ -10057,7 +10056,7 @@ function setLoginSubmitting(isSubmitting) {
   elements.submitLoginButton.disabled = isSubmitting;
   setButtonText(
     elements.submitLoginButton,
-    isSubmitting ? "Accediendo..." : "Acceder a mi panel",
+    isSubmitting ? "Accediendo..." : "Acceder al panel",
   );
 }
 
