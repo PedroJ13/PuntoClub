@@ -4464,6 +4464,77 @@ body:not(.public-registration-mode)
     min-width: 0;
   }
 
+  .communications-history-panel .report-table-wrap {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+
+  .communication-history-table {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    border-collapse: separate;
+  }
+
+  .communication-history-table thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .communication-history-table tbody {
+    display: grid;
+    gap: 10px;
+  }
+
+  .communication-history-table tr {
+    display: grid;
+    gap: 8px;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 10px;
+    background: var(--surface);
+  }
+
+  .communication-history-table td {
+    display: grid;
+    grid-template-columns: minmax(88px, 0.38fr) minmax(0, 1fr);
+    gap: 8px;
+    min-width: 0;
+    border-bottom: 0;
+    padding: 0;
+    overflow-wrap: anywhere;
+    text-align: left;
+  }
+
+  .communication-history-table td::before {
+    color: var(--accent-strong);
+    font-size: 11px;
+    font-weight: 850;
+    letter-spacing: 0;
+    text-transform: uppercase;
+  }
+
+  .communication-history-table td:nth-child(1)::before {
+    content: "Fecha";
+  }
+
+  .communication-history-table td:nth-child(2)::before {
+    content: "Campaña";
+  }
+
+  .communication-history-table td:nth-child(3)::before {
+    content: "Destinatario";
+  }
+
+  .communication-history-table td:nth-child(4)::before {
+    content: "Estado";
+  }
+
   .report-tabs {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
