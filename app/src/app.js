@@ -2211,7 +2211,7 @@ function setCommunicationPreviewExpanded(isExpanded) {
   );
   setButtonText(
     elements.communicationPreviewToggle,
-    isExpanded ? "Ocultar preview" : "Ver preview",
+    isExpanded ? "Ocultar vista previa" : "Ver vista previa",
   );
   elements.communicationPreviewToggle
     .closest(".communications-preview-panel")
@@ -2503,7 +2503,7 @@ async function loadPromotionalCampaignPreview() {
   if (!currentPromotionalCampaign) {
     renderCommunicationPreview();
     showCommunicationCampaignStatus(
-      "Guarda el borrador para generar preview con el contrato real.",
+      "Guarda el borrador para generar la vista previa final.",
     );
     return;
   }
@@ -3124,7 +3124,7 @@ function renderCommunicationCampaignImage(image) {
   elements.communicationCampaignImagePreviewText.hidden = Boolean(imageUrl);
   elements.communicationCampaignImagePreviewText.textContent = "Sin imagen";
   elements.communicationCampaignImagePreview.alt =
-    image?.altText || "Preview de imagen de campaña";
+    image?.altText || "Vista previa de imagen de campaña";
   elements.communicationCampaignImagePreview.removeAttribute("src");
 
   if (imageUrl) {
@@ -3224,7 +3224,7 @@ function renderCommunicationPreview(preview = null) {
   const body =
     preview?.bodyText ||
     currentPromotionalCampaign?.bodyText ||
-    "El preview se mostrará cuando tengas una campaña seleccionada.";
+    "La vista previa se mostrará cuando tengas una campaña seleccionada.";
   const includePoints = Boolean(currentPromotionalCampaign?.includePoints);
   const image = preview?.image || currentPromotionalCampaign?.image || null;
   const imageUrl = image?.imageUrl
@@ -3279,7 +3279,7 @@ function renderManagedCommunicationPreview() {
     "Asunto de la campaña";
   const body =
     elements.communicationCampaignBodyInput.value.trim() ||
-    "Guarda la campaña para generar el preview final y agregar imagen.";
+    "Guarda la campaña para generar la vista previa final y agregar imagen.";
   const includePoints = elements.communicationIncludePointsInput.checked;
   const image = managedPromotionalCampaign?.image || null;
   const imageUrl = image?.imageUrl
@@ -3495,7 +3495,7 @@ function getCommunicationPreferenceLabel(status) {
     subscribed: "Suscrito",
     unsubscribed: "Baja promocional",
     suppressed: "Suprimido",
-    blocked: "No apto",
+    blocked: "No elegible",
   };
 
   return labels[status] ?? "Sin estado";
@@ -3511,10 +3511,10 @@ function getCommunicationBlockedReason(customer) {
     missing_email: "No tiene correo válido.",
     unsubscribed: "Dado de baja de promociones.",
     suppressed: "Correo suprimido para promociones.",
-    blocked: "No apto para este envío.",
+    blocked: "No elegible para este envío.",
   };
 
-  return labels[reason] || "No apto para este envío.";
+  return labels[reason] || "No elegible para este envío.";
 }
 
 function getPromotionalRecipientStatusLabel(status) {
@@ -3730,7 +3730,7 @@ function renderCommunicationCampaignError(error, options = {}) {
 
   if (error instanceof ApiError && error.code === "PROMOTIONAL_SEND_BLOCKED") {
     showCommunicationCampaignError(
-      "El envío real de promociones no está habilitado en el servidor.",
+      "El envío real de promociones debe estar habilitado antes de continuar.",
     );
     return;
   }
@@ -5203,7 +5203,7 @@ async function submitAdminToken() {
   if (!nextToken) {
     elements.adminTokenError.textContent =
       "Ingresa el token interno para cargar empresas por activar.";
-    showAdminGlobalError("Token interno requerido.");
+    showAdminGlobalError("Ingresa el token interno para continuar.");
     return;
   }
 
@@ -8307,7 +8307,7 @@ function renderAdminListError(error) {
 
   if (isAdminPermissionError(error)) {
     showAdminListError(
-      "El token interno no es válido o venció. Ingrésalo de nuevo.",
+      "No tienes acceso con la sesión interna actual. Solicita una sesión interna asistida.",
     );
     return;
   }
@@ -8318,7 +8318,7 @@ function renderAdminListError(error) {
   }
 
   showAdminListError(
-    "No pudimos cargar las empresas. Revisa el token interno e intenta de nuevo.",
+    "No pudimos cargar las empresas. Solicita una sesión interna asistida e intenta de nuevo.",
   );
 }
 
@@ -8335,7 +8335,7 @@ function requestAdminConfirmation(options) {
   }
 
   elements.adminConfirmationTitle.textContent =
-    options.title || "Confirmar accion";
+    options.title || "Confirmar acción";
   elements.adminConfirmationMessage.textContent = options.message || "";
   elements.adminConfirmationConfirm.textContent =
     options.confirmLabel || "Confirmar";
@@ -8366,7 +8366,7 @@ function resolveAdminConfirmation(value) {
 function renderAdminActionError(error) {
   if (isAdminPermissionError(error)) {
     showAdminDetailError(
-      "No tienes acceso para realizar esta accion con el token actual.",
+      "No tienes acceso para realizar esta acción con la sesión interna actual.",
     );
     return;
   }
@@ -8384,7 +8384,7 @@ function renderAdminActionError(error) {
   }
 
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
-    showAdminDetailError("Revisa los datos de la accion e intenta de nuevo.");
+    showAdminDetailError("Revisa los datos de la acción e intenta de nuevo.");
     return;
   }
 
@@ -8420,7 +8420,7 @@ function renderAdminActionError(error) {
     return;
   }
 
-  showAdminDetailError("No pudimos completar la accion. Intenta de nuevo.");
+  showAdminDetailError("No pudimos completar la acción. Intenta de nuevo.");
 }
 
 function renderInvitationLoading() {
