@@ -4723,7 +4723,7 @@ async function submitOperationalEmailSettings() {
     currentOperationalEmailSettings = settings;
     renderOperationalEmailSettings(settings);
     await loadCommunicationsSummary({ silent: true });
-    showOperationalEmailStatus("Correos operativos actualizados.");
+    showOperationalEmailStatus("Correos operativos guardados.");
   } catch (error) {
     renderOperationalEmailError(error);
   } finally {
@@ -4751,7 +4751,7 @@ async function submitCompanyPasswordChange() {
       passwordConfirmation: elements.companyNewPasswordConfirmationInput.value,
     });
     clearCompanyPasswordForm({ keepStatus: true });
-    showCompanyPasswordStatus("Contraseña actualizada correctamente.");
+    showCompanyPasswordStatus("Contraseña actualizada.");
   } catch (error) {
     renderCompanyPasswordChangeError(error);
   } finally {
@@ -4773,7 +4773,7 @@ async function submitCompanyLogo() {
   }
 
   setCompanyLogoSubmitting(true);
-  const stopLoading = startGlobalLoading("Estamos guardando los cambios...");
+  const stopLoading = startGlobalLoading("Subiendo logo...");
 
   try {
     const result = await api.uploadCompanyLogo(file);
@@ -6130,7 +6130,7 @@ function renderReportLoading() {
   elements.reportSummary.hidden = true;
   elements.reportTableWrap.hidden = true;
   elements.reportEmpty.hidden = false;
-  elements.reportEmpty.textContent = "Cargando reporte...";
+  elements.reportEmpty.textContent = "Consultando reporte...";
   elements.exportReportButton.disabled = true;
 }
 
@@ -6176,7 +6176,7 @@ function renderReport(report) {
   if (items.length === 0) {
     elements.reportEmpty.hidden = false;
     elements.reportEmpty.textContent =
-      "Sin movimientos para el rango seleccionado.";
+      "No hay movimientos para el rango seleccionado.";
     elements.reportTableWrap.hidden = true;
     elements.reportTableBody.innerHTML = "";
     elements.exportReportButton.disabled = true;
@@ -6261,7 +6261,9 @@ function renderReportError(error) {
     return;
   }
 
-  showReportError("No pudimos cargar el reporte. Intenta de nuevo.");
+  showReportError(
+    "No pudimos cargar el reporte. Revisa el rango e intenta de nuevo.",
+  );
 }
 
 function renderCustomerReportPrompt() {
@@ -6414,7 +6416,7 @@ function renderMembershipFinancialReportPrompt() {
   elements.membershipFinancialReportTableBody.innerHTML = "";
   elements.membershipFinancialReportEmpty.hidden = false;
   elements.membershipFinancialReportEmpty.textContent =
-    "Selecciona un rango de fechas para ver ventas y renovaciones.";
+    "Selecciona un rango de fechas para consultar membresías.";
   elements.exportMembershipFinancialReportButton.disabled = true;
 }
 
@@ -6424,7 +6426,7 @@ function renderMembershipFinancialReportLoading() {
   elements.membershipFinancialReportTableWrap.hidden = true;
   elements.membershipFinancialReportEmpty.hidden = false;
   elements.membershipFinancialReportEmpty.textContent =
-    "Cargando reporte de membresías...";
+    "Consultando reporte de membresías...";
   elements.exportMembershipFinancialReportButton.disabled = true;
 }
 
@@ -6477,7 +6479,7 @@ function renderMembershipFinancialReport(report) {
   if (!items.length) {
     elements.membershipFinancialReportEmpty.hidden = false;
     elements.membershipFinancialReportEmpty.textContent =
-      "Sin ventas o renovaciones para el rango seleccionado.";
+      "No hay membresías para el rango seleccionado.";
     elements.membershipFinancialReportTableWrap.hidden = true;
     elements.membershipFinancialReportTableBody.innerHTML = "";
     elements.exportMembershipFinancialReportButton.disabled = true;
@@ -6491,7 +6493,7 @@ function renderMembershipFinancialReport(report) {
     .join("");
   elements.exportMembershipFinancialReportButton.disabled = false;
   showMembershipFinancialReportStatus(
-    `Reporte de membresías cargado: ${formatReportNumber(items.length)} transacciones.`,
+    `Reporte de membresías cargado: ${formatReportNumber(items.length)} movimientos.`,
   );
 }
 
@@ -6532,7 +6534,7 @@ function renderMembershipFinancialReportError(error) {
   }
 
   showMembershipFinancialReportError(
-    "No pudimos cargar el reporte de membresías.",
+    "No pudimos cargar el reporte de membresías. Revisa el rango e intenta de nuevo.",
   );
 }
 
@@ -6542,14 +6544,14 @@ function renderAuditPrompt() {
   elements.auditTableBody.innerHTML = "";
   elements.auditEmpty.hidden = false;
   elements.auditEmpty.textContent =
-    "Selecciona un rango de fechas para ver eventos recientes.";
+    "Selecciona un rango de fechas para ver movimientos recientes.";
   elements.exportAuditButton.disabled = true;
 }
 
 function renderAuditLoading() {
   elements.auditTableWrap.hidden = true;
   elements.auditEmpty.hidden = false;
-  elements.auditEmpty.textContent = "Cargando historial...";
+  elements.auditEmpty.textContent = "Consultando historial operativo...";
   elements.exportAuditButton.disabled = true;
 }
 
@@ -6560,7 +6562,8 @@ function renderAuditEvents(result) {
     elements.auditTableWrap.hidden = true;
     elements.auditTableBody.innerHTML = "";
     elements.auditEmpty.hidden = false;
-    elements.auditEmpty.textContent = "Sin eventos para el rango seleccionado.";
+    elements.auditEmpty.textContent =
+      "No hay movimientos para el rango seleccionado.";
     elements.exportAuditButton.disabled = true;
     return;
   }
@@ -6572,7 +6575,7 @@ function renderAuditEvents(result) {
     .join("");
   elements.exportAuditButton.disabled = false;
   showAuditStatus(
-    `Historial cargado: ${formatReportNumber(items.length)} eventos.`,
+    `Historial cargado: ${formatReportNumber(items.length)} movimientos.`,
   );
 }
 
@@ -6605,7 +6608,7 @@ function renderAuditError(error) {
   elements.exportAuditButton.disabled = true;
 
   if (error instanceof ApiError && error.code === "VALIDATION_ERROR") {
-    showAuditError("Revisa el rango de fechas y el límite de eventos.");
+    showAuditError("Revisa el rango de fechas y la cantidad de movimientos.");
     return;
   }
 
@@ -6615,7 +6618,7 @@ function renderAuditError(error) {
   }
 
   showAuditError(
-    "No pudimos consultar el historial. Revisa el rango e intenta de nuevo despues del deploy.",
+    "No pudimos consultar el historial. Revisa el rango e intenta de nuevo.",
   );
 }
 
@@ -6879,7 +6882,7 @@ function renderMembershipActivationPreview() {
 
   if (!plan) {
     elements.membershipActivationPreview.innerHTML =
-      "Selecciona un plan activo.";
+      "Selecciona un plan de membresía activo.";
     return;
   }
 
@@ -6888,7 +6891,7 @@ function renderMembershipActivationPreview() {
     : null;
   elements.membershipActivationPreview.innerHTML = `
     <div><strong>${escapeHtml(plan.name)}</strong></div>
-    <div>Duracion: ${formatReportNumber(plan.durationDays)} días</div>
+    <div>Duración: ${formatReportNumber(plan.durationDays)} días</div>
     <div>Precio: ${formatMoney(elements.membershipActivationPricePaidInput.value || plan.price)}</div>
     <div>Vence: ${expectedEndDate ? formatDate(expectedEndDate) : "Selecciona fecha de inicio"}</div>
   `;
@@ -6944,7 +6947,7 @@ function renderMembershipPlanCard(plan) {
           <h3>${escapeHtml(plan.name)}</h3>
           <span class="status-pill">${getMembershipStatusLabel(plan.status)}</span>
         </div>
-        <p>${escapeHtml(plan.description || "Sin descripcion")}</p>
+        <p>${escapeHtml(plan.description || "Sin descripción")}</p>
         <div class="membership-meta">
           <span>${formatReportNumber(plan.durationDays)} días</span>
           <span>${formatMoney(plan.price)}</span>
@@ -6985,7 +6988,7 @@ function renderMembershipBenefits() {
   if (!membershipBenefits.length) {
     elements.membershipBenefitsList.innerHTML = renderMembershipEmptyState({
       title: "Este plan aún no tiene beneficios",
-      text: "Agrega beneficios para explicar que incluye la membresía y controlar usos limitados.",
+      text: "Agrega beneficios para explicar qué incluye la membresía y controlar usos limitados.",
       action: "Crear beneficio",
       actionAttribute: 'data-membership-benefit-action="create"',
     });
@@ -7206,9 +7209,9 @@ function renderMembershipBenefitFormError(error) {
 function renderMembershipCustomerSearchError(error) {
   const message = isAuthRequiredError(error)
     ? getAuthRequiredMessage()
-    : "No pudimos buscar clientes.";
+    : "No pudimos buscar clientes. Intenta de nuevo.";
   elements.membershipCustomerResults.innerHTML =
-    '<div class="empty-state">Sin clientes cargados.</div>';
+    '<div class="empty-state">No hay clientes cargados.</div>';
   showMembershipCustomerSearchError(message);
 }
 
@@ -7217,7 +7220,7 @@ function renderCustomerMembershipsError(error) {
     ? getAuthRequiredMessage()
     : "No pudimos cargar las membresías del cliente.";
   elements.membershipCustomerMembershipsList.innerHTML =
-    '<div class="empty-state">Sin membresías cargadas.</div>';
+    '<div class="empty-state">No hay membresías cargadas.</div>';
   showMembershipCustomerMembershipsError(message);
 }
 
@@ -7431,7 +7434,7 @@ function renderCompanyLoading() {
     panel.hidden = true;
   });
   elements.companyEmpty.hidden = false;
-  elements.companyEmpty.textContent = "Cargando configuración...";
+  elements.companyEmpty.textContent = "Cargando configuración de empresa...";
 }
 
 function renderCompanySettings(settings) {
@@ -7543,7 +7546,7 @@ function renderCompanySettingsError(error) {
     return;
   }
 
-  showCompanyError("No pudimos cargar la informacion de la empresa.");
+  showCompanyError("No pudimos cargar la información de la empresa.");
 }
 
 function renderOperationalEmailError(error) {
@@ -7647,10 +7650,10 @@ function renderCompanyLogo(settings) {
   elements.companyLogoPreviewImage.hidden = false;
   elements.companyLogoPreviewImage.onerror = () => {
     elements.companyCurrentLogo.textContent =
-      "Logo configurado, pero no pudimos cargar la imagen.";
+      "No pudimos cargar el logo. Intenta subirlo de nuevo.";
     elements.companyLogoPreviewText.hidden = false;
     elements.companyLogoPreviewText.textContent =
-      "Logo configurado, pero no pudimos mostrar la imagen.";
+      "No pudimos cargar el logo. Intenta subirlo de nuevo.";
     elements.companyLogoPreview.classList.add("is-unavailable");
     elements.companyLogoPreviewImage.hidden = true;
     elements.companyLogoPreviewImage.removeAttribute("src");
@@ -7761,7 +7764,7 @@ function renderCompanyLogoError(error) {
   }
 
   if (error instanceof ApiError && error.code === "UNSUPPORTED_MEDIA_TYPE") {
-    showCompanyLogoError("Use una imagen PNG, JPG o WebP.");
+    showCompanyLogoError("Usa una imagen PNG, JPG o WebP.");
     return;
   }
 
@@ -8909,11 +8912,11 @@ function getRedemptionValidationMessage(detail) {
 
 function getCompanyValidationMessage(detail) {
   const messagesByField = {
-    name: "El nombre es requerido y debe tener 160 caracteres o menos.",
-    email: "El correo debe tener un formato válido y 254 caracteres o menos.",
-    phone: "El teléfono debe tener entre 7 y 32 caracteres.",
+    name: "Ingresa el nombre de la empresa.",
+    email: "Ingresa un correo válido para la empresa.",
+    phone: "Ingresa un teléfono válido para la empresa.",
     pointsPercentage:
-      "El porcentaje debe ser mayor que 0 y menor o igual que 100.",
+      "Ingresa un porcentaje de puntos mayor que 0 y menor o igual que 100.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
