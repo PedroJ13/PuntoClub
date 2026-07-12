@@ -3794,7 +3794,7 @@ async function loadCustomers(search) {
 
     if (currentCustomers.length === 0) {
       setCustomersFeedback(
-        "No encontramos ese cliente. Completa el registro para crearlo.",
+        "No encontramos ese cliente. Completa el registro para continuar la atención.",
       );
       elements.nameInput.focus();
     }
@@ -3824,7 +3824,7 @@ async function submitCustomer() {
     renderCustomers(currentCustomers, customer.phone);
     await selectCustomer(customerWithBalance);
     showSuccess(
-      `Cliente registrado: ${customer.name}. Ya puedes continuar la atención.`,
+      `Cliente registrado: ${customer.name}. Ya puedes registrar compras o redimir puntos.`,
     );
     clearForm({ keepSuccess: true, focus: false });
     elements.selectedCustomerCard.focus?.();
@@ -3929,7 +3929,7 @@ async function submitPurchase() {
     clearPurchaseForm({ keepStatus: true });
     await openOperation(
       "history",
-      `Compra registrada. Puntos ganados: ${formatPoints(purchase.pointsEarned)}.`,
+      `Compra registrada. Los puntos fueron actualizados: ${formatPoints(purchase.pointsEarned)} ganados.`,
     );
   } catch (error) {
     renderPurchaseError(error);
@@ -3961,7 +3961,7 @@ async function submitRedemption() {
     clearRedemptionForm({ keepStatus: true });
     await openOperation(
       "history",
-      `Puntos redimidos: ${formatPoints(redemption.pointsRedeemed)}.`,
+      `Redención registrada. El saldo fue actualizado: ${formatPoints(redemption.pointsRedeemed)} puntos redimidos.`,
     );
   } catch (error) {
     renderRedemptionError(error);
@@ -4016,7 +4016,7 @@ async function safeGetBalance(customerId) {
 function renderSearchPrompt() {
   setCustomersFeedback("");
   elements.customersList.innerHTML =
-    '<div class="empty-state">Busca un cliente para atenderlo o registra uno nuevo.</div>';
+    '<div class="empty-state">Busca o registra un cliente para iniciar la atención.</div>';
 }
 
 function renderLoading() {
@@ -4027,8 +4027,8 @@ function renderLoading() {
 function renderCustomers(customers, search) {
   if (customers.length === 0) {
     const text = search
-      ? "No encontramos clientes con esa búsqueda. Puedes registrar uno nuevo para continuar."
-      : "Busca un cliente para atenderlo o registra uno nuevo.";
+      ? "No encontramos clientes con esa búsqueda. Registra el cliente para continuar la atención."
+      : "Busca o registra un cliente para iniciar la atención.";
     elements.customersList.innerHTML = `<div class="empty-state">${escapeHtml(text)}</div>`;
     return;
   }
@@ -5831,7 +5831,7 @@ async function updateSelectedCustomerBirthDate() {
 function renderHistoryLoading() {
   elements.historySummary.innerHTML = "";
   elements.historyList.innerHTML =
-    '<div class="loading-state">Cargando historial...</div>';
+    '<div class="loading-state">Cargando historial del cliente...</div>';
 }
 
 function renderHistory(activity) {
@@ -5855,7 +5855,7 @@ function renderHistory(activity) {
 
   if (items.length === 0) {
     elements.historyList.innerHTML =
-      '<div class="empty-state">Sin movimientos para este cliente.</div>';
+      '<div class="empty-state">Este cliente no tiene movimientos registrados.</div>';
     return;
   }
 
@@ -5890,7 +5890,7 @@ function renderHistoryError(error) {
     ? getAuthRequiredMessage()
     : error instanceof ApiError && error.code === "CUSTOMER_NOT_FOUND"
       ? "El cliente seleccionado ya no está disponible."
-      : "No pudimos cargar el historial. Intenta de nuevo.";
+      : "No pudimos cargar el historial del cliente. Intenta de nuevo.";
   elements.historySummary.innerHTML = "";
   elements.historyList.innerHTML = "";
   elements.historyError.hidden = false;
@@ -8766,7 +8766,7 @@ function renderCustomersError(error) {
       ? "No pudimos consultar clientes. Intenta de nuevo."
       : error instanceof ApiError
         ? error.message
-        : "No pudimos buscar clientes.";
+        : "No pudimos buscar clientes. Intenta de nuevo.";
   elements.customersList.innerHTML = "";
   setCustomersFeedback(message);
 }
@@ -8878,9 +8878,10 @@ function renderRedemptionError(error) {
 
 function getCustomerValidationMessage(detail) {
   const messagesByField = {
-    name: "El nombre es requerido y debe tener 160 caracteres o menos.",
-    phone: "El teléfono es requerido y debe tener 32 caracteres o menos.",
-    email: "El correo debe tener un formato válido y 254 caracteres o menos.",
+    name: "Ingresa el nombre del cliente.",
+    phone: "Ingresa un teléfono válido para identificar al cliente.",
+    email: "Ingresa un correo válido o deja el campo vacío.",
+    birthDate: "Ingresa una fecha de nacimiento válida.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
@@ -8888,10 +8889,9 @@ function getCustomerValidationMessage(detail) {
 
 function getPurchaseValidationMessage(detail) {
   const messagesByField = {
-    invoiceNumber:
-      "La factura o comprobante es requerido y debe tener 80 caracteres o menos.",
-    purchaseDate: "La fecha de compra es requerida.",
-    amount: "El monto debe ser mayor que 0.",
+    invoiceNumber: "Ingresa la factura o comprobante de la compra.",
+    purchaseDate: "Selecciona la fecha de compra.",
+    amount: "Ingresa un monto mayor que 0.",
   };
 
   return messagesByField[detail.field] ?? detail.message;
@@ -8899,8 +8899,8 @@ function getPurchaseValidationMessage(detail) {
 
 function getRedemptionValidationMessage(detail) {
   const messagesByField = {
-    redemptionDate: "La fecha de redención es requerida.",
-    pointsRedeemed: "Los puntos a redimir deben ser un entero mayor que 0.",
+    redemptionDate: "Selecciona la fecha de redención.",
+    pointsRedeemed: "Ingresa la cantidad de puntos a redimir.",
     note: "La nota debe tener 500 caracteres o menos.",
   };
 
