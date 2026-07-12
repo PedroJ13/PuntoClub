@@ -18,6 +18,13 @@ Textos principales ajustados:
 
 No se tocaron Campanas/Promociones fuera de Mi empresa > Comunicaciones, Admin, API, SQL, auth, sesiones, ACS, sender, flags, reglas de negocio ni datos.
 
+Publicacion staging:
+- Commit: `901c84f` (`TASK-991 aplicar copy gestion staging`).
+- Rama: `staging`.
+- Workflow: `Deploy Punto Club frontend staging`.
+- Resultado: `success`.
+- URL base staging: `https://calm-coast-0fabaec0f.7.azurestaticapps.net`.
+
 ## Archivos cambiados
 
 - `app/index.html`
@@ -38,6 +45,11 @@ No se tocaron Campanas/Promociones fuera de Mi empresa > Comunicaciones, Admin, 
   - textos anteriores ausentes;
   - sin overflow horizontal;
   - sin login real ni escrituras de datos.
+- Smoke publicado sin sesion en Web staging:
+  - `GET /app` - 200.
+  - `app/src/app.js` publicado - 200.
+  - Presentes: `Cargando configuración de empresa`, `Reporte de membresías`, `Movimientos recientes`, `No pudimos cargar el logo. Intenta subirlo de nuevo.`, `No pudimos cargar el reporte. Revisa el rango e intenta de nuevo.`
+  - Ausentes: `Puntos ganados y saldo total como snapshot`, `Reporte diario de membresías`, `despues del deploy`, `Cargando reporte...`.
 
 ## Uso Azure SQL
 
