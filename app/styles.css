@@ -1928,14 +1928,22 @@ body:not(.public-registration-mode)
   display: flex;
   align-items: center;
   justify-content: space-between;
+  min-width: 0;
   gap: 0.55rem;
 }
 
 .membership-card-title h3 {
+  min-width: 0;
   margin: 0;
   color: var(--text);
   font-size: 15px;
   font-weight: 850;
+  overflow-wrap: anywhere;
+}
+
+.membership-card-title .status-pill {
+  width: auto;
+  max-width: 100%;
 }
 
 .membership-card p {
@@ -4527,6 +4535,16 @@ body:not(.public-registration-mode)
   .status-pill {
     width: 100%;
     max-width: 100%;
+  }
+
+  .membership-card-title {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .membership-card-title .status-pill {
+    flex: 0 1 auto;
+    width: auto;
   }
 
   .topbar .icon-button {
