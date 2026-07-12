@@ -15,6 +15,13 @@ Cambio aplicado:
 
 No se cambiaron textos aprobados de TASK-991, logica de membresias, beneficios, reportes, API, SQL, auth, sesiones, campanas, admin, ACS, sender, flags ni datos.
 
+Publicacion staging:
+- Commit: `0b28a43` (`TASK-993 fix overflow mobile membresias`).
+- Rama: `staging`.
+- Workflow: `Deploy Punto Club frontend staging`.
+- Resultado: `success`.
+- URL base staging: `https://calm-coast-0fabaec0f.7.azurestaticapps.net`.
+
 ## Archivos cambiados
 
 - `app/styles.css`
@@ -27,6 +34,12 @@ No se cambiaron textos aprobados de TASK-991, logica de membresias, beneficios, 
   - `390x844`: `horizontalOverflow=false`, `scrollWidth=390`, `clientWidth=390`, pill visible y dentro de la tarjeta.
   - `1024x768`: `horizontalOverflow=false`, pill visible y dentro de la tarjeta.
   - `1366x768`: `horizontalOverflow=false`, pill visible y dentro de la tarjeta.
+- Smoke publicado sin sesion en Web staging:
+  - `GET /app` - 200.
+  - `GET /styles.css` - 200.
+  - CSS publicado contiene `.membership-card-title h3` con `min-width: 0` y `overflow-wrap: anywhere`.
+  - CSS publicado contiene `.membership-card-title .status-pill` con `width: auto` y `max-width: 100%`.
+  - CSS publicado contiene override mobile `flex-wrap: wrap` para `.membership-card-title`.
 
 ## Evidencia viewport 390x844
 
