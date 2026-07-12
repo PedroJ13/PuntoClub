@@ -6,7 +6,7 @@ Tarea completada: TASK-995 - Aplicar copy de comunicaciones y admin en staging
 
 ## Resultado
 
-Se aplico la ola de copy aprobada para `Enviar campañas` y `Admin empresas` en Web staging, sin cambiar reglas de envio, seleccion, reintentos, bajas, API, SQL ni configuracion.
+Se aplico y publico en Web staging la ola de copy aprobada para `Enviar campañas` y `Admin empresas`, sin cambiar reglas de envio, seleccion, reintentos, bajas, API, SQL ni configuracion.
 
 Textos principales ajustados:
 
@@ -42,6 +42,15 @@ Textos principales ajustados:
   - Copy nuevo presente.
   - Remanentes principales ausentes.
   - Sin overflow horizontal.
+- Deploy Web staging:
+  - Commit publicado en rama `staging`: `5ba5f01`.
+  - Workflow `Deploy Punto Club frontend staging`: success.
+  - Run: `29197762261`.
+- Smoke publicado read-only en `https://calm-coast-0fabaec0f.7.azurestaticapps.net`:
+  - `/` responde con bundle staging y contiene `Admin empresas`, `Vista previa`, `Actualizar lista` y `No elegibles`.
+  - `/src/app.js` contiene `Ocultar vista previa`, `Ver vista previa`, `No elegible para este envío` y mensajes de sesion interna actual.
+  - `/admin-companies` responde `200` y contiene `Admin empresas`.
+  - No se encontraron `Refrescar lista`, `feature flag activo`, `No aptos`, `Preview de edición`, `>Preview<`, `Ocultar preview`, `Ver preview` ni `generar preview`.
 
 ## Uso Azure SQL
 
@@ -57,9 +66,9 @@ No detectados en validacion local.
 
 ## Riesgos o pendientes
 
-- Pendiente confirmar el despliegue de Web staging y smoke publicado en `/app` para `Enviar campañas` y `/admin-companies` sin acciones sensibles.
+- No se ejecuto smoke autenticado dentro de `Enviar campañas` porque requeriria sesion asistida; la validacion publicada fue read-only sobre bundle/DOM y ruta admin sin token.
 - No se enviaron campañas, no se reintentaron fallidos, no se registraron bajas y no se ejecutaron acciones de admin.
 
 ## Siguiente recomendado
 
-- Publicar/verificar el bundle en Web staging y pasar a QA visual/copy de TASK-995.
+- Pasar a QA visual/copy de TASK-995 en Web staging con sesion asistida, sin enviar campañas ni ejecutar acciones admin.
