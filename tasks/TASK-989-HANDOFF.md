@@ -20,6 +20,13 @@ Textos principales ajustados:
 
 No se cambiaron reglas de negocio, calculos, API, SQL, auth, sesiones, membresias, reportes, campanas, admin, ACS, sender, flags ni datos.
 
+Publicacion staging:
+- Commit: `c5b0888` (`TASK-989 aplicar copy operativo atencion cliente`).
+- Rama: `staging`.
+- Workflow: `Deploy Punto Club frontend staging`.
+- Resultado: `success`.
+- URL base staging: `https://calm-coast-0fabaec0f.7.azurestaticapps.net`.
+
 ## Archivos cambiados
 
 - `app/index.html`
@@ -36,6 +43,11 @@ No se cambiaron reglas de negocio, calculos, API, SQL, auth, sesiones, membresia
   - Textos antiguos ausentes.
   - Sin overflow horizontal detectado.
   - Sin login real ni escrituras de datos.
+- Smoke publicado sin sesion en Web staging:
+  - `GET /app` - 200.
+  - `app/src/app.js` publicado - 200.
+  - Presentes: `Teléfono, nombre o correo`, `Clientes encontrados`, `Compra registrada. Los puntos fueron actualizados`, `Redención registrada. El saldo fue actualizado`, `Busca o registra un cliente para iniciar la atención`.
+  - Ausentes: placeholder anterior `Ej. 8888...`, `Puntos ganados:`, `Puntos redimidos:`.
 
 ## Uso Azure SQL
 
